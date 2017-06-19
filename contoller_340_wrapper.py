@@ -26,17 +26,20 @@ def get_temp_k(res):
 
 def get_pid(res):
     """Get PID values of the controller; return as a tuple: <P value>,<I value>,<D value>."""
-    return res.query('PID? {0}'.format(str(res.current_loop)))
+    #return res.query('PID? {0}'.format(str(res.current_loop)))
+    return res.query('PID? {0}'.format(1))
 
 
 def get_set_point(res):
     """Get temperature setpoint."""
-    return res.query('SETP? {0}'.format(str(res.current_loop)))
+    #return res.query('SETP? {0}'.format(str(res.current_loop)))
+    return res.query('SETP? {0}'.format(1))
 
 
 def get_zone(res, zone):
     """Get the number of the zone that temp controller is currently in."""
-    return res.query('ZONE? {0},{1}'.format(str(res.current_loop), zone))
+    #return res.query('ZONE? {0},{1}'.format(str(res.current_loop), zone))
+    return res.query('ZONE? {0},{1}'.format(1, zone))
 
 
 def set_remote_mode(res):
@@ -46,7 +49,8 @@ def set_remote_mode(res):
 
 def set_pid(res, PVal, IVal, DVal):
     """Set PID for temperature controller and format input as integers."""
-    res.query('PID {0},{1},{2},'.format(str(res.current_loop), PVal, IVal, DVal))
+    #res.query('PID {0},{1},{2},'.format(str(res.current_loop), PVal, IVal, DVal))
+    res.query('PID {0},{1},{2}, {3}'.format(1, PVal, IVal, DVal))
     # fix PID format string
 
 
@@ -67,4 +71,5 @@ def set_zone(res, zone, topVal, PVal, IVal, DVal, manualOut, range):
     manualOut -- specifies manual output percentage for this zone.  Valid values: 0 to 100%
     range - heater range for this zone.  Valid values: 0 to 3
     """
-    res.query('ZONE {0},{1},{2},{3},{4},{5},{6},{7}'.format(str(res.current_loop), zone, topVal, PVal, IVal, DVal, manualOut, range))
+    #res.query('ZONE {0},{1},{2},{3},{4},{5},{6},{7}'.format(str(res.current_loop), zone, topVal, PVal, IVal, DVal, manualOut, range))
+    res.query('ZONE {0},{1},{2},{3},{4},{5},{6},{7}'.format(1, zone, topVal, PVal, IVal, DVal, manualOut, range))

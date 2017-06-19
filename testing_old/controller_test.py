@@ -1,5 +1,5 @@
 import visa
-import controller_331_wrapper
+import contoller_340_wrapper
 
 iRM = visa.ResourceManager()
 instr = iRM.list_resources()
@@ -9,7 +9,7 @@ iTC.get_temp_k()
 
 # iGP = iRM.open_resource('GPIB0::3::INSTR', read_termination='\n')
 
-__all__ = ['controller_331_wrapper']
+__all__ = ['contoller_340_wrapper.py']
 
 """print("TCclass is "+iTC)
 print(iTC.query("KRDG?\n"))
