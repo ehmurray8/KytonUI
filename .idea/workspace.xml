@@ -1,35 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f5b4f49c-06ea-4167-b62f-9ffb293e9fb5" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/testing/devices_test.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_SF.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_controller.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_data.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_dummy_vars.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_handle_data_dummied.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_pseudocode_SM125_channel.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_pseudocode_SM125_peak_detect.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_sm125.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_sm125_peaks.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_socket.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_stability.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_structure_metaclass_unpacking.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_time.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_udp.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_application.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_application_b.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_options.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_options_b.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_plotting.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/testing/testing_ui_table.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/cryo_py3.iml" afterPath="$PROJECT_DIR$/.idea/KytonUI.iml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/controller_331_wrapper.py" afterPath="$PROJECT_DIR$/contoller_340_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/handle_data.py" afterPath="$PROJECT_DIR$/handle_data.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main_run.py" afterPath="$PROJECT_DIR$/main_run.py" />
-    </list>
+    <list default="true" id="f5b4f49c-06ea-4167-b62f-9ffb293e9fb5" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -63,8 +35,8 @@
       <file leaf-file-name="devices_test.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/testing/devices_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="538">
-              <caret line="88" column="14" lean-forward="false" selection-start-line="88" selection-start-column="14" selection-end-line="88" selection-end-column="14" />
+            <state relative-caret-position="986">
+              <caret line="58" column="0" lean-forward="true" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -800,8 +772,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/testing/devices_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="538">
-          <caret line="88" column="14" lean-forward="false" selection-start-line="88" selection-start-column="14" selection-end-line="88" selection-end-column="14" />
+        <state relative-caret-position="986">
+          <caret line="58" column="0" lean-forward="true" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
