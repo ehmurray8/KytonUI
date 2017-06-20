@@ -75,7 +75,7 @@ print("Setting remote mode...")
 controller_wrapper.set_remote_mode(controller);
 time.sleep(2)
 
-print("Setting oven set point to 333.333")
+print("Setting oven set point to 333.333...")
 controller_wrapper.set_set_point(controller, 333.333, 1)
 
 print("Setting zone up...")
