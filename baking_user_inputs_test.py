@@ -134,7 +134,7 @@ class Application(tk.Frame):
           sum = 0
           while (count < self.num_pts_entry.get()):
                #sum += wavelength
-               count++
+               count += 1
               
 
 def format_selected(flag):
