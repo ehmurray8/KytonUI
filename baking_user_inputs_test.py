@@ -1,9 +1,16 @@
 import tkinter as tk
 from tkinter import *
+import os.path
+import controller_340_wrapper as temp_controller  
+import init_instruments as init
+import xlsxwriter
 
 class Application(tk.Frame):
      def __init__(self, master):
           super().__init__(master)
+
+          self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+
           master.title("Kyton Baking")
           self.menu=Menu(master,tearoff=0)
           master.config(menu=self.menu)
@@ -16,7 +23,8 @@ class Application(tk.Frame):
           self.create_num_pts_input()
           self.create_time_ints()
           self.create_file_input()
-          self.create_confirm_btn()
+          self.create_baking_start()
+          self.create_start_btn()
 
      def create_instrs_grid(self):
           instrs_grid = tk.Frame(self)
@@ -87,13 +95,32 @@ class Application(tk.Frame):
           self.file_entry = tk.Entry(file_frame, width=25)
           self.file_entry.grid(row=0, column=1)
 
-     def create_confirm_btn(self):
+          workbook = xlsxwriter.Workbook('test.xlsx.')
+          worksheet = workbook.add_worksheet()
+          worksheet.set_column('A:A', 20)
+          bold = workbook.add_format({'bold': True})
+          worksheet.write('A1', 'Hello')
+          worksheet.write('A2', 'World', bold)
+          worksheet.write(2, 0, 123)
+          worksheet.write(3, 0, 123.456)
+          workbook.close()
+
+     def create_baking_start(self):
+          baking_temp_frame = tk.Frame(self)
+          baking_temp_frame.pack()
+
+          baking_temp_lbl = tk.Label(baking_temp_frame, text="Baking temp: ")
+          baking_temp_lbl.grid(row=0, sticky="w")
+          self.baking_temp_entry = tk.Entry(baking_temp_frame, width = 10)
+          self.baking_temp_entry.grid(row=0, column=1) 
+
+     def create_start_btn(self):
           self.confirm_button = tk.Button(self)
-          self.confirm_button["text"] = "Confirm"
-          self.confirm_button["command"] = self.confirm
+          self.confirm_button["text"] = "Start"
+          self.confirm_button["command"] = self.start
           self.confirm_button.pack()
      
-     def confirm(self):
+     def start(self):
           print("SM125: " + format_selected(self.sm125_state.get()))
           print("GP700: " + format_selected(self.gp700_state.get()))
           print("Temp340: " + format_selected(self.temp340_state.get()))
@@ -102,13 +129,30 @@ class Application(tk.Frame):
           print("Primary time interval: " + self.prim_time_entry.get())
           print("Secondary time interval: " + self.sec_time_entry.get())          
           print("File name: " + self.file_entry.get())
+          print("Baking temp: " + self.baking_temp_entry.get())
+          if os.path.isfile(self.file_entry.get()):
+               file_obj = open(self.file_entry.get(), "a")
+               file_obj.write("Testing appending...\n") 
+               file_obj.close()
+          else:
+               file_obj = open(self.file_entry.get(), "w")
+               file_obj.write("Testing writing!!!\n")
+               file_obj.close()
+
+     def baking_loop(self):
+          self.controller.set_temp_c(self.baking_temp_entry.get())     
+          count = 0
+          sum = 0
+          while (count < self.num_pts_entry.get()):
+               #sum += wavelength
+               count += 1
+              
 
 def format_selected(flag):
-     if flag == 1: 
+     if flag == 1:
           return "On"
      else:
           return "Off"    
-
 
 root = tk.Tk()
 app = Application(master=root)

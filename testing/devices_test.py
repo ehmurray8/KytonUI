@@ -101,5 +101,10 @@ print("M type module channel select: " + gp700_wrapper.get_m(gp700, 1))
 #gp700_wrapper.set_m(gp700, 1, 2)
 #time.sleep(2)
 
+<<<<<<< HEAD
 #print("Setting Matrix channel select to 5...")
 #gp700_wrapper.set_i(gp700, 2, 10)
+=======
+print("Setting Matrix channel select to 5...")
+gp700_wrapper.set_i(gp700, 2, 10)
+>>>>>>> 97aae59bdecc9d052de7186c33854a371f15a2c0
