@@ -1,0 +1,27 @@
+(date time) (date) (elapsed days) (hours into curr day) (delta hours*)
+
+Peak 1. (Temp K) (peak wavelength nm) (peak power dbm) (Temp K) (Avg. of temps)
+
+Peak 2. (Temp K) (peak wavelength nm) (peak power dbm) (Temp K) (Avg. of temps)
+
+Peak 3. (Temp K) (peak wavelength nm) (peak power dbm) (Temp K) (Avg. of temps)
+
+Peak 4. (Temp K) (peak wavelength nm) (peak power dbm) (Temp K) (Avg. of temps)
+
+(Peak 1 delta amplitude from start nm) (Peak 2 ...) (Peak 3 ...) (Peak 4 ...)
+
+(Mean delta T from start K) (Mean delta T from start K dK)
+
+(Delta time from start hours*)
+
+(Delta amplitude nm) (Delta amplitude pm) 
+
+(.01nm / K) ?
+
+?
+
+?
+
+?
+
+?

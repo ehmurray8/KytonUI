@@ -2,13 +2,14 @@ import tkinter as tk
 from tkinter import *
 import os.path
 import controller_340_wrapper as temp_controller  
-import init_instruments as init
+#import init_instruments as init
+import xlsxwriter
 
 class Application(tk.Frame):
      def __init__(self, master):
           super().__init__(master)
 
-          self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+          #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
           master.title("Kyton Baking")
           self.menu=Menu(master,tearoff=0)
@@ -93,6 +94,16 @@ class Application(tk.Frame):
           file_lbl.grid(row=0, sticky="w")
           self.file_entry = tk.Entry(file_frame, width=25)
           self.file_entry.grid(row=0, column=1)
+
+          workbook = xlsxwriter.Workbook('test.xlsx.')
+          worksheet = workbook.add_worksheet()
+          worksheet.set_column('A:A', 20)
+          bold = workbook.add_format({'bold': True})
+          worksheet.write('A1', 'Hello')
+          worksheet.write('A2', 'World', bold)
+          worksheet.write(2, 0, 123)
+          worksheet.write(3, 0, 123.456)
+          workbook.close()
 
      def create_baking_start(self):
           baking_temp_frame = tk.Frame(self)
