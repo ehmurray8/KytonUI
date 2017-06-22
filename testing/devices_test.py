@@ -34,25 +34,25 @@ gp700 = resource_manager.open_resource(gp700_location, read_termination=term_cha
 interrogator_socket = interrogator_wrapper.setup(interrogator_location, interrogator_port)
 
 #Oven testing
-print("Turning oven cooling on...")
-oven_wrapper.cooling_on(oven)
-time.sleep(2)
+#print("Turning oven cooling on...")
+#oven_wrapper.cooling_on(oven)
+#time.sleep(2)
 
-print("Setting oven temperature to 251.2...")
-oven_wrapper.set_temp(oven, 251.2)
-time.sleep(2)
+#print("Setting oven temperature to 251.2...")
+#oven_wrapper.set_temp(oven, 251.2)
+#time.sleep(2)
 
-print("Turning oven cooling off...")
-oven_wrapper.cooling_off(oven)
-time.sleep(2)
+#print("Turning oven cooling off...")
+#oven_wrapper.cooling_off(oven)
+#time.sleep(2)
 
-print("Turning oven heater on...")
-oven_wrapper.heater_on(oven)
-time.sleep(2)
+#print("Turning oven heater on...")
+#oven_wrapper.heater_on(oven)
+#time.sleep(2)
 
-print("Turning oven heater off...")
-oven_wrapper.heater_off(oven)
-time.sleep(2)
+#print("Turning oven heater off...")
+#oven_wrapper.heater_off(oven)
+#time.sleep(2)
 
 #Temp Controller Testing
 print("Heater output: " + controller_wrapper.get_heater_output(controller))
@@ -71,15 +71,15 @@ print("Setting PID to 100, 100, 100")
 controller_wrapper.set_pid(controller, 100, 100, 100)
 time.sleep(2)
 
-print("Setting remote mode...")
-controller_wrapper.set_remote_mode(controller);
-time.sleep(2)
+#print("Setting remote mode...")
+#controller_wrapper.set_remote_mode(controller);
+#time.sleep(2)
 
 print("Setting oven set point to 333.333...")
 controller_wrapper.set_set_point(controller, 333.333, 1)
 
-print("Setting zone up...")
-controller_wrapper.set_zone(controller, 1, 400, 27, 28, 29, 67, 1)
+#print("Setting zone up...")
+#controller_wrapper.set_zone(controller, 1, 400, 27, 28, 29, 67, 1)
 
 #SM125 Testing
 print("Data: " + interrogator_wrapper.get_data(interrogator_socket))
@@ -93,13 +93,13 @@ print("Matrix channel select: " + gp700_wrapper.get_i(gp700, 1))
 
 print("M type module channel select: " + gp700_wrapper.get_m(gp700, 1))
 
-print("Setting attenuation level to 20...")
-gp700_wrapper.set_a(gp700, 1, 20)
-time.sleep(2)
+#print("Setting attenuation level to 20...")
+#gp700_wrapper.set_a(gp700, 1, 20)
+#time.sleep(2)
 
-print("Setting M-type module channel to 2...")
-gp700_wrapper.set_m(gp700, 1, 2)
-time.sleep(2)
+#print("Setting M-type module channel to 2...")
+#gp700_wrapper.set_m(gp700, 1, 2)
+#time.sleep(2)
 
-print("Setting Matrix channel select to 5...")
-gp700_wrapper.set_i(gp700, 2, 10)
+#print("Setting Matrix channel select to 5...")
+#gp700_wrapper.set_i(gp700, 2, 10)
