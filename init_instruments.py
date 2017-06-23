@@ -27,4 +27,4 @@ def setup_instruments():
 
      # Setup socket to interrogator
      interrogator_socket = interrogator_wrapper.setup(interrogator_location, interrogator_port)
-     return conroller, oven, gp700, interrogator_socket
+     return controller, oven, gp700, interrogator_socket

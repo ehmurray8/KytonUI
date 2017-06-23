@@ -1,6 +1,6 @@
 import time
 import visa
-import contoller_340_wrapper as controller_wrapper
+import controller_340_wrapper as controller_wrapper
 import sm125_wrapper as interrogator_wrapper
 import delta_oven_wrapper as oven_wrapper
 import gp700_wrapper
@@ -9,7 +9,7 @@ term_char = '/n'
 
 controller_location = "GPIB::12::INSTR"
 oven_location = "GPIB0::27::INSTR"
-gp700_location = "GPIB::3::INSTR"
+gp700_location = "GPIB0::09::INSTR"
 interrogator_location = "10.0.0.122"
 interrogator_port = 50000
 num_temps_for_drift = 5
@@ -82,16 +82,18 @@ controller_wrapper.set_set_point(controller, 333.333, 1)
 #controller_wrapper.set_zone(controller, 1, 400, 27, 28, 29, 67, 1)
 
 #SM125 Testing
-print("Data: " + interrogator_wrapper.get_data(interrogator_socket))
+#print("Data: " + interrogator_wrapper.get_data(interrogator_socket))
 
-print("Built in Data: " + interrogator_wrapper.get_data_built_in(interrogator_socket))
+#print("Built in Data: " + interrogator_wrapper.get_data_built_in(interrogator_socket))
 
 #GP700 Testing
-print("Attenuation level: " + gp700_wrapper.get_a(gp700, 1))
+print("Disp Off")
+print("Error: " + gp700_wrapper.op_complete_query(gp700))
+print("Attenuation level: " + gp700_wrapper.get_a(gp700, 8))
 
-print("Matrix channel select: " + gp700_wrapper.get_i(gp700, 1))
+#print("Matrix channel select: " + gp700_wrapper.get_i(gp700, 1))
 
-print("M type module channel select: " + gp700_wrapper.get_m(gp700, 1))
+#print("M type module channel select: " + gp700_wrapper.get_m(gp700, 1))
 
 #print("Setting attenuation level to 20...")
 #gp700_wrapper.set_a(gp700, 1, 20)
@@ -101,10 +103,5 @@ print("M type module channel select: " + gp700_wrapper.get_m(gp700, 1))
 #gp700_wrapper.set_m(gp700, 1, 2)
 #time.sleep(2)
 
-<<<<<<< HEAD
 #print("Setting Matrix channel select to 5...")
 #gp700_wrapper.set_i(gp700, 2, 10)
-=======
-print("Setting Matrix channel select to 5...")
-gp700_wrapper.set_i(gp700, 2, 10)
->>>>>>> 97aae59bdecc9d052de7186c33854a371f15a2c0

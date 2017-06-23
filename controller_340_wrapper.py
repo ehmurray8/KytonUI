@@ -3,11 +3,11 @@ import visa
 
 def get_temp_c(res):
     """Return temperature reading in degrees C."""
-    ret = res.query('CRDG?')
-    ret2, b, c = ret.partition('E')
-    ret3 = ret2[1:len(ret2)]
-    ret3 = float(ret3)
-    return ret3
+    ret = res.query('CRDG? B')
+    #ret2, b, c = ret.partition('E')
+    #ret3 = ret2[1:len(ret2)]
+    #ret3 = float(ret3)
+    return ret#ret3
 
 
 def get_heater_output(res):
@@ -17,10 +17,10 @@ def get_heater_output(res):
 
 def get_temp_k(res):
     """Return temperature reading in degrees Kelvin."""
-    ret = res.query('KRDG?')
+    ret = res.query('KRDG? B')
     ret2, b, c = ret.partition('E')
     ret3 = ret2[1:len(ret2)]
-    ret3 = float(ret3)
+    #ret3 = float(ret3)
     return ret3
 
 
