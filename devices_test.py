@@ -21,6 +21,7 @@ temperature_ranges =  "[[20, 20.0, 50], [50, 15.0, 50], [100, 20.0, 50], [1000, 
 
 # Create resource manager
 resource_manager = visa.ResourceManager()
+print(resource_manager.list_resources())
 
 # Create GPIB agents
 controller = resource_manager.open_resource(controller_location, read_termination=term_char)
