@@ -5,7 +5,6 @@ search_valleys = getattr(windll.peakdetect, '?searchForValleys@@YAXQANHNNNNNNHPA
 print(search_peaks)
 print(search_valleys)
 
-
 """
 def SM125_peak_detect:
 
@@ -43,8 +42,6 @@ def SM125_peak_detect:
         else:
             return True
 """
-
-
 
 """
 def _searchForPeaks(ByVal traceBuf() As Double, ByVal nPoints As Integer, _

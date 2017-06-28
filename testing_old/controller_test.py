@@ -1,5 +1,4 @@
 import visa
-import contoller_340_wrapper
 
 iRM = visa.ResourceManager()
 instr = iRM.list_resources()

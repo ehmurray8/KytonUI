@@ -1,9 +1,10 @@
-import numpy as np
 import tkinter as tk
 
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 matplotlib.use('TkAgg')
 
 
@@ -43,11 +44,11 @@ class Application(tk.Frame):
         return self.controller_text.get(), \
                self.oven_text.get(), \
                self.interrogator_ip_text.get(), \
-               self.interrogator_port_text.get(),\
-               self.drift_number_text.get(),\
-               self.wait_time_text.get(),\
-               self.set_point_list_text.get(),\
-               self.dwell_text.get(),\
+               self.interrogator_port_text.get(), \
+               self.drift_number_text.get(), \
+               self.wait_time_text.get(), \
+               self.set_point_list_text.get(), \
+               self.dwell_text.get(), \
                self.ranges_text.get()
 
     def string_entry(self, label_text, default_str, row):
@@ -87,6 +88,7 @@ class Application(tk.Frame):
         self.s = np.random.random_sample(len(self.t))
         plt.plot(self.t, self.s)
         self.fig.canvas.draw()
+
 
 if __name__ == '__main__':
     root = tk.Tk()

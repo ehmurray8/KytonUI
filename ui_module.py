@@ -1,12 +1,16 @@
 import tkinter as tk
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
-import config
+
 import matplotlib
+
+import config
+
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import main_run
+
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -47,11 +51,11 @@ class Application(tk.Frame):
         return self.controller_text.get(), \
                self.oven_text.get(), \
                self.interrogator_ip_text.get(), \
-               self.interrogator_port_text.get(),\
-               self.drift_number_text.get(),\
-               self.wait_time_text.get(),\
-               eval(self.set_point_list_text.get()),\
-               self.dwell_text.get(),\
+               self.interrogator_port_text.get(), \
+               self.drift_number_text.get(), \
+               self.wait_time_text.get(), \
+               eval(self.set_point_list_text.get()), \
+               self.dwell_text.get(), \
                eval(self.ranges_text.get())
 
     def string_entry(self, label_text, default_str, row):
@@ -79,15 +83,16 @@ class Application(tk.Frame):
         print(self.gather_settings())
         controller_, oven_, interrogator_socket_, ip_, num_temps_for_drift_, wait_time_between_points_, \
         list_of_sp_, temperature_ranges_, dwell_time_value_ = self.gather_settings()
-        main_run.main_control(self, controller_, oven_, interrogator_socket_, num_temps_for_drift_, wait_time_between_points_,
+        main_run.main_control(self, controller_, oven_, interrogator_socket_, num_temps_for_drift_,
+                              wait_time_between_points_,
                               list_of_sp_, temperature_ranges_, dwell_time_value_)
         return self.gather_settings()
 
-    def update_plot(self):#, x, y):
+    def update_plot(self):  # , x, y):
         self._build_tree()
         plt.gcf().clear()
-        #plt.plot(x, y)
-        #self.fig.canvas.draw()
+        # plt.plot(x, y)
+        # self.fig.canvas.draw()
 
     def _setup_table(self):
         container = ttk.Frame()

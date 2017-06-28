@@ -5,4 +5,4 @@ d = timedelta(milliseconds=-5)
 
 print(n)
 print(d)
-print(n+d)
+print(n + d)

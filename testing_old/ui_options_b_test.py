@@ -24,11 +24,11 @@ class Application(tk.Frame):
         return self.controller_text.get(), \
                self.oven_text.get(), \
                self.interrogator_ip_text.get(), \
-               self.interrogator_port_text.get(),\
-               self.drift_number_text.get(),\
-               self.wait_time_text.get(),\
-               self.set_point_list_text.get(),\
-               self.dwell_text.get(),\
+               self.interrogator_port_text.get(), \
+               self.drift_number_text.get(), \
+               self.wait_time_text.get(), \
+               self.set_point_list_text.get(), \
+               self.dwell_text.get(), \
                self.ranges_text.get()
 
     def string_entry(self, label_text, default_str, row):

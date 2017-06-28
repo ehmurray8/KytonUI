@@ -1,5 +1,6 @@
-import handle_stability as stability
 import time
+
+import handle_stability as stability
 
 
 def stab_test(dummy_temps, num_temps_for_drift, wait_time_between_points, list_of_sp,

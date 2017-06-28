@@ -1,12 +1,12 @@
-import visa
-
 def op_complete_query(res):
-    #return res.query("*OPC?") + "\n" + res.query("SYSTem:ERRor?")
-    #return "" 
+    # return res.query("*OPC?") + "\n" + res.query("SYSTem:ERRor?")
+    # return ""
     return res.query("SYSTem:ERRor?")
+
 
 def disp_off_cmd(res):
     res.query("DISP:OFF")
+
 
 def set_a(res, module, level):
     """Set attenuation level for specified module."""
@@ -15,8 +15,8 @@ def set_a(res, module, level):
 
 def get_a(res, module):
     """Return attenuation level for specified module."""
-    #return res.query('A?')
-    return res.query('A1? PROG:NEWL')#.format(module))
+    # return res.query('A?')
+    return res.query('A1? PROG:NEWL')  # .format(module))
 
 
 def set_i(res, in_channel, out_channel):

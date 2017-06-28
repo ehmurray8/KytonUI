@@ -1,11 +1,12 @@
-import numpy as np
 import tkinter as tk
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
 
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 matplotlib.use('TkAgg')
 
 
@@ -50,11 +51,11 @@ class Application(tk.Frame):
         return self.controller_text.get(), \
                self.oven_text.get(), \
                self.interrogator_ip_text.get(), \
-               self.interrogator_port_text.get(),\
-               self.drift_number_text.get(),\
-               self.wait_time_text.get(),\
-               self.set_point_list_text.get(),\
-               self.dwell_text.get(),\
+               self.interrogator_port_text.get(), \
+               self.drift_number_text.get(), \
+               self.wait_time_text.get(), \
+               self.set_point_list_text.get(), \
+               self.dwell_text.get(), \
                self.ranges_text.get()
 
     def string_entry(self, label_text, default_str, row):
@@ -137,6 +138,7 @@ def sortby(tree, _col, descending):
         tree.move(item[1], '', ix)
     # switch the heading so it will sort in the opposite direction
     tree.heading(_col, command=lambda col=_col: sortby(tree, _col, int(not descending)))
+
 
 if __name__ == '__main__':
     data_header = ['Temperature', 'Wavelengths', 'Amplitudes', 'Setpoint', 'Serial number', 'Time seconds',

@@ -7,8 +7,8 @@ class StabilityVars:
 
 
 def check_in_band(test_temp, target_temp, bandwidth):
-    upper_bound = target_temp + bandwidth/2
-    lower_bound = target_temp - bandwidth/2
+    upper_bound = target_temp + bandwidth / 2
+    lower_bound = target_temp - bandwidth / 2
     if (test_temp >= lower_bound) and (test_temp <= upper_bound):
         print("MEASUREMENT IN BOUND")
         return True
@@ -20,9 +20,9 @@ def average_running_stability(running_temps):
     delta_list = []
     if len(running_temps) > 1:
         for i, v in enumerate(running_temps[:-1]):
-            delta_list.append(running_temps[i+1] - running_temps[i])
-        delta_ave = sum(delta_list)/len(delta_list)
-        return 1000*abs(delta_ave)
+            delta_list.append(running_temps[i + 1] - running_temps[i])
+        delta_ave = sum(delta_list) / len(delta_list)
+        return 1000 * abs(delta_ave)
     else:
         return 999999
 

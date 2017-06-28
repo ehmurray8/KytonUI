@@ -1,6 +1,10 @@
-import testing_handle_data_dummied as data
-import sm125_wrapper as interrogator_wrapper
 import time
+
+import testing_handle_data_dummied as data
+
+import sm125_wrapper as interrogator_wrapper
+
+
 # from pprint import pprint
 
 
@@ -31,6 +35,7 @@ def data_test(interrogator_socket, wait_time_between_points):
         print({'Wavelengths': wlen,
                'Amplitudes': ampl,
                })
+
 
 if __name__ == '__main__':
     interrogator_socket_, wait_time_between_points_ = data_test_setup()

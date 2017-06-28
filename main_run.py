@@ -1,27 +1,31 @@
 import time
+import tkinter as tk
+
+import contoller_340_wrapper as controller_wrapper
+import matplotlib
 import visa
-import handle_stability as stability
+
+import config
+import delta_oven_wrapper as oven_wrapper
 # import testing_dummy_vars as data
 import handle_data as data
-import contoller_340_wrapper as controller_wrapper
+import handle_stability as stability
 import sm125_wrapper as interrogator_wrapper
-import delta_oven_wrapper as oven_wrapper
-import tkinter as tk
 import ui_module
-import config
 
-import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 """
 Uses UI to do basic setup.
 """
+
+
 def setup():
     # Collect settings from GUI
     term_char = '/n'
     (controller_location, oven_location, interrogator_location, interrogator_port, num_temps_for_drift,
-    wait_time_between_points, list_of_sp, dwell_time_value, temperature_ranges) = app.gather_settings
+     wait_time_between_points, list_of_sp, dwell_time_value, temperature_ranges) = app.gather_settings
 
     # Create resource manager
     resource_manager = visa.ResourceManager()
@@ -42,8 +46,8 @@ def setup():
 
     # root.mainloop()
 
-    return controller, oven, interrogator_socket, num_temps_for_drift, wait_time_between_points,\
-        list_of_sp, temperature_ranges, dwell_time_value
+    return controller, oven, interrogator_socket, num_temps_for_drift, wait_time_between_points, \
+           list_of_sp, temperature_ranges, dwell_time_value
 
 
 def main_control(app, controller, oven, interrogator_socket, num_temps_for_drift, wait_time_between_points,
@@ -85,10 +89,12 @@ def main_control(app, controller, oven, interrogator_socket, num_temps_for_drift
             if sp_flag:
                 config.set_points_only_data.append((temp, wlen, ampl, sp_flag, ser_num, t_st))
                 break
-            # return set_points_only_data, all_points_data
+                # return set_points_only_data, all_points_data
+
 
 if __name__ == '__main__':
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     config.root = tk.Tk()
@@ -100,6 +106,7 @@ if __name__ == '__main__':
     controller_, oven_, interrogator_socket_, num_temps_for_drift_, wait_time_between_points_, list_of_sp_, temperature_ranges_, dwell_time_value_ = setup()
 
     # Run main control loop
-    main_control(controller_, oven_, interrogator_socket_, num_temps_for_drift_, wait_time_between_points_, list_of_sp_, temperature_ranges_, dwell_time_value_)
+    main_control(controller_, oven_, interrogator_socket_, num_temps_for_drift_, wait_time_between_points_, list_of_sp_,
+                 temperature_ranges_, dwell_time_value_)
 
     # print(ret_values[0])

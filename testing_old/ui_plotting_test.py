@@ -1,9 +1,10 @@
-import numpy as np
 import tkinter as tk
 
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 matplotlib.use('TkAgg')
 
 

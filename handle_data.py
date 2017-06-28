@@ -1,4 +1,5 @@
 import contoller_340_wrapper as controller_wrapper
+
 import sm125_wrapper as interrogator_wrapper
 
 
@@ -10,7 +11,7 @@ def get_data_point(controller, lan_socket):
     # interrogator_data = interrogator_wrapper.process_raw(raw_data)
     # peak_list = peak_detection_wrapper(interrogator_data)
     final_temp = controller_wrapper.get_temp_k(controller)
-    ret_temp = (initial_temp + final_temp)/2
+    ret_temp = (initial_temp + final_temp) / 2
     return ret_temp, wavelength, amplitude, serial_number
 
 

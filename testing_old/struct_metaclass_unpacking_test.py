@@ -1,12 +1,12 @@
-import struct
 import io
-import sm125_wrapper as interrogator_wrapper
+import struct
 
 
 class StructField:
     '''
     Descriptor representing a simple structure field
     '''
+
     def __init__(self, format, offset):
         self.format = format
         self.offset = offset
@@ -15,7 +15,7 @@ class StructField:
         if instance is None:
             return self
         else:
-            r = struct.unpack_from(self.format,instance._buffer, self.offset)
+            r = struct.unpack_from(self.format, instance._buffer, self.offset)
             return r[0] if len(r) == 1 else r
 
 
@@ -23,12 +23,13 @@ class StructureMeta(type):
     '''
     Metaclass that automatically creates StructField descriptors
     '''
+
     def __init__(self, clsname, bases, clsdict):
         fields = getattr(self, '_fields_', [])
         byte_order = ''
         offset = 0
         for format, fieldname in fields:
-            if format.startswith(('<','>','!','@')):
+            if format.startswith(('<', '>', '!', '@')):
                 byte_order = format[0]
                 format = format[1:]
             format = byte_order + format
@@ -54,6 +55,7 @@ class MainHeader(Structure):
         ('I', 'reserved'),
         ('I', 'counter')
     ]
+
     def __str__(self):
         return
 
@@ -71,7 +73,8 @@ class SubHeader(Structure):
 class DataPoint(Structure):
     _fields_ = [
         ('<H', 'data_point')
-        ]
+    ]
+
 
 if __name__ == '__main__':
     # interrogator_socket = interrogator_wrapper.setup('10.0.0.122', 50000)

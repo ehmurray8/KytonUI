@@ -83,7 +83,6 @@ def sortby(tree, col, descending):
     def update_table(self):
         print("Updating table!")"""
 
-
 if __name__ == '__main__':
     # the test data ...
 

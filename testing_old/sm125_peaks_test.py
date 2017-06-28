@@ -1,4 +1,5 @@
 from socket import *
+
 import numpy
 
 soc = socket(AF_INET, SOCK_STREAM)
@@ -17,9 +18,9 @@ print(time_stamp_sec, time_stamp_msec, serial_number)
 
 total_peaks = ns1 + ns2 + ns3 + ns4
 
-print(str(total_peaks)+'int32')
+print(str(total_peaks) + 'int32')
 
-wavelengths = numpy.fromstring(response[32:32+4*total_peaks], dtype=(str(total_peaks)+'int32'))
-amplitudes = numpy.fromstring(response[32+4*total_peaks:32+6*total_peaks], dtype=(str(total_peaks)+'int16'))
+wavelengths = numpy.fromstring(response[32:32 + 4 * total_peaks], dtype=(str(total_peaks) + 'int32'))
+amplitudes = numpy.fromstring(response[32 + 4 * total_peaks:32 + 6 * total_peaks], dtype=(str(total_peaks) + 'int16'))
 
 print(wavelengths, amplitudes)

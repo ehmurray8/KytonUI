@@ -1,13 +1,10 @@
 import socket
-import numpy
 
+import numpy
 
 UDPSock_send = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-
 mess = bytes.fromhex('aa 55 e0 0e 00 00 04 02 00 05 03 02 00 20 08 02 00 00 09 02 81 90 01 01 02 00 00 ff')
-
-
 
 address = '10.0.0.150'
 UDPSock_send.sendto(mess, (address, 30070))

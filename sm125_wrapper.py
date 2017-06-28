@@ -1,5 +1,6 @@
 import struct
 from socket import *
+
 import numpy
 
 
@@ -33,9 +34,9 @@ def get_data_built_in(soc):
     wavelengths = numpy.fromstring(response[32:32 + 4 * total_peaks], dtype=(str(total_peaks) + 'int32'))
     amplitudes = numpy.fromstring(response[32 + 4 * total_peaks:32 + 6 * total_peaks],
                                   dtype=(str(total_peaks) + 'int16'))
-    wavelengths_list = [en/wavelength_scale_factor for en in wavelengths]
-    amplitudes_list = [en/amplitude_scale_factor for en in amplitudes]
-    return wavelengths_list, amplitudes_list, time_stamp, serial_number
+    wavelengths_list = [en / wavelength_scale_factor for en in wavelengths]
+    amplitudes_list = [en / amplitude_scale_factor for en in amplitudes]
+    return wavelengths_list, amplitudes_list, time_stamp  # , serial_number
 
 
 # IMPLEMENT to use numpy instead of struct library
@@ -43,5 +44,5 @@ def process_raw(raw_data):
     """Process raw_data binary data. Return it as a structure."""
     sub_header = raw_data[160:320]
     size, min_wl, wl_inc, num_points, dut_num = struct.unpack('<IIIII', sub_header)
-    sub_data = raw_data[320:16*num_points]
+    sub_data = raw_data[320:16 * num_points]
     return struct.unpack('<i', sub_data)

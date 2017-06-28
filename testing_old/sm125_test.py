@@ -1,4 +1,5 @@
 from socket import *
+
 import numpy
 
 soc = socket(AF_INET, SOCK_STREAM)
@@ -16,7 +17,7 @@ response = soc.recv(int(pre_response))
  min_wavelength, wavelength_increment, number_of_data_points, \
  dut_number = numpy.fromstring(response[:40], dtype=numpy.uint32, count=10)"""
 print(len(response))
-data_output = numpy.fromstring(response[:40], dtype='<5u4, <5u4')   # , count=1 APPEND?
+data_output = numpy.fromstring(response[:40], dtype='<5u4, <5u4')  # , count=1 APPEND?
 data_output2 = numpy.fromstring(response[40:], dtype='<u2')
 
 print(len(response[40:]))

@@ -1,6 +1,3 @@
-import visa
-
-
 def mp_execute(res, slot):
     """Executes mini program in slot PROG<slot>."""
     res.write("PROG{0}:EXEC".format(slot))

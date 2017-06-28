@@ -1,6 +1,3 @@
-import visa
-
-
 def set_temp(res, temp):
     """Sets set point of delta oven."""
     res.query('S {}'.format(temp))
