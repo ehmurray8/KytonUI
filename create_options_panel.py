@@ -1,108 +1,181 @@
+"""Class sets up the tkinter UI code for the options panel."""
+
 import tkinter as tk
 
 def create_options_grid(app, app_master):
+    """Creates the grid for the user to configure options."""
 
     app_master.title("Kyton Baking")
     app.menu = tk.Menu(app_master, tearoff=0)
     app_master.config(menu=app.menu)
-    app.sm125_state = tk.IntVar()
-    app.gp700_state = tk.IntVar()
-    app.delta_oven_state = tk.IntVar()
-    app.temp340_state = tk.IntVar()
     app.pack(side="top", fill="both", expand=True)
 
     #Options Grid Init
-    options_grid = tk.Frame(app)
-    options_grid.pack()
-    options_grid.grid_columnconfigure(1, minsize=50)
-    options_grid.grid_columnconfigure(3, minsize=50)
+    app.options_grid.grid_columnconfigure(1, minsize=50)
+    app.options_grid.grid_columnconfigure(3, minsize=50)
+    row_num = 0
 
 
     #Instruments Checkkboxes
-    sm125_lbl = tk.Label(options_grid)
-    sm125_lbl["text"] = "Micron Optics SM125"
-    sm125_lbl.grid(row=0, sticky="w")
-    sm125_select = tk.Checkbutton(options_grid, variable=app.sm125_state)
-    sm125_select.grid(row=0, column=2)
+    tk.Label(app.options_grid, text="Micron Optics SM125") \
+        .grid(row=row_num, sticky="w")
+    tk.Checkbutton(app.options_grid, variable=app.sm125_state) \
+        .grid(row=row_num, column=2)
+    row_num += 1
 
-    gp700_lbl = tk.Label(options_grid)
-    gp700_lbl["text"] = "Dicon GP700"
-    gp700_lbl.grid(row=1, sticky="w")
-    gp700_select = tk.Checkbutton(options_grid, variable=app.gp700_state)
-    gp700_select.grid(row=1, column=2)
+    tk.Label(app.options_grid, text="Dicon GP700") \
+        .grid(row=row_num, sticky="w")
+    tk.Checkbutton(app.options_grid, variable=app.gp700_state) \
+        .grid(row=row_num, column=2)
+    row_num += 1
 
-    temp340_lbl = tk.Label(options_grid)
-    temp340_lbl["text"] = "340 Controller"
-    temp340_lbl.grid(row=2, sticky="w")
-    temp340_select = tk.Checkbutton(options_grid, variable=app.temp340_state)
-    temp340_select.grid(row=2, column=2)
+    tk.Label(app.options_grid, text="340 Controller") \
+        .grid(row=row_num, sticky="w")
+    tk.Checkbutton(app.options_grid, variable=app.temp340_state) \
+        .grid(row=row_num, column=2)
+    row_num += 1
 
-    delta_oven_lbl = tk.Label(options_grid)
-    delta_oven_lbl["text"] = "Delta Oven"
-    delta_oven_lbl.grid(row=3, sticky="w")
-    delta_oven_select = tk.Checkbutton(options_grid, variable=app.delta_oven_state)
-    delta_oven_select.grid(row=3, column=2)
+    tk.Label(app.options_grid, text="Delta Oven") \
+        .grid(row=row_num, sticky="w")
+    tk.Checkbutton(app.options_grid, variable=app.delta_oven_state) \
+        .grid(row=row_num, column=2)
+    row_num += 1
 
 
     #Number of points to average entry
-    num_pts_lbl = tk.Label(options_grid, text="Num points to average: ")
-    num_pts_lbl.grid(row=4, sticky="w")
-    app.num_pts_entry = tk.Entry(options_grid, width=10)
-    app.num_pts_entry.grid(row=4, column=2)
+    tk.Label(app.options_grid, text="Num points to average: ") \
+        .grid(row=row_num, sticky="w")
+    app.num_pts_entry.grid(row=row_num, column=2)
+    row_num += 1
 
 
     #Time intervals entry
-    prim_time_lbl = tk.Label(options_grid, text="Primary time interval: ")
-    prim_time_lbl.grid(row=5, sticky="w")
-    app.prim_time_entry = tk.Entry(options_grid, width=10)
-    app.prim_time_entry.grid(row=5, column=2)
-    prim_time_post_lbl = tk.Label(options_grid, text="hours")
-    prim_time_post_lbl.grid(row=5, column=3)
+    tk.Label(app.options_grid, text="Primary time interval: ") \
+        .grid(row=row_num, sticky="w")
+    app.prim_time_entry.grid(row=row_num, column=2)
+    tk.Label(app.options_grid, text="hours") \
+        .grid(row=row_num, column=3)
+    row_num += 1
 
-    sec_time_lbl = tk.Label(options_grid, text="Secondary time interval: ")
-    sec_time_lbl.grid(row=6, sticky="w")
-    app.sec_time_entry = tk.Entry(options_grid, width=10)
-    app.sec_time_entry.grid(row=6, column=2)
-    sec_time_post_lbl = tk.Label(options_grid, text="seconds")
-    sec_time_post_lbl.grid(row=6, column=3)
+    tk.Label(app.options_grid, text="Secondary time interval: ") \
+        .grid(row=row_num, sticky="w")
+    app.sec_time_entry.grid(row=row_num, column=2)
+    tk.Label(app.options_grid, text="seconds") \
+        .grid(row=row_num, column=3)
+    row_num += 1
 
 
     #File name entry
-    file_lbl = tk.Label(options_grid, text="File name: ")
-    file_lbl.grid(row=7, sticky="w")
-    app.file_entry = tk.Entry(options_grid, width=25)
-    app.file_entry.grid(row=7, column=2)
+    tk.Label(app.options_grid, text="File name: ") \
+        .grid(row=row_num, sticky="w")
+    app.file_entry.grid(row=row_num, column=2)
+    row_num += 1
 
 
     #Baking setpoint entry
-    baking_temp_lbl = tk.Label(options_grid, text="Baking temp: ")
-    baking_temp_lbl.grid(row=8, sticky="w")
-    app.baking_temp_entry = tk.Entry(options_grid, width=10)
-    app.baking_temp_entry.grid(row=8, column=2)
+    tk.Label(app.options_grid, text="Baking temp: ") \
+        .grid(row=row_num, sticky="w")
+    app.baking_temp_entry.grid(row=row_num, column=2)
+    row_num += 1
 
 
-    #Start button
-    app.confirm_button = tk.Button(app)
-    app.confirm_button["text"] = "Start"
-    self.confirm_button["command"] = app.start
-    app.confirm_button.pack()
+    #Number of Fibers
+    tk.Label(app.options_grid, text="Number of fibers for baking: ") \
+        .grid(row=row_num, sticky="w")
+    app.num_fibers_ent.grid(row=row_num, column=2)
+    app.num_fibers_ent.bind("<Return>", app.update_fiber_ents)
+    row_num += 1
+
 
 if __name__ == "__main__":
     class Application(tk.Frame):
+        """Main Tkinter window class."""
         def __init__(self, master):
             super().__init__(master)
 
-            master.title("Kyton Baking")
-            self.menu = tk.Menu(master, tearoff=0)
-            master.config(menu=self.menu)
+            #Init member vars
             self.sm125_state = tk.IntVar()
             self.gp700_state = tk.IntVar()
             self.delta_oven_state = tk.IntVar()
             self.temp340_state = tk.IntVar()
+            self.fibers_sn_arr = []
+            self.row_num_sn = 0
+
+
+            #Init member widgets
+            self.options_grid = tk.Frame(self)
+            self.options_grid.pack()
+
+            self.num_fibers_ent = tk.Entry(self.options_grid, width=10)
+            self.baking_temp_entry = tk.Entry(self.options_grid, width=10)
+            self.file_entry = tk.Entry(self.options_grid, width=25)
+            self.sec_time_entry = tk.Entry(self.options_grid, width=10)
+            self.prim_time_entry = tk.Entry(self.options_grid, width=10)
+            self.num_pts_entry = tk.Entry(self.options_grid, width=10)
+
+            #Window setup
+            master.title("Kyton Baking")
+            self.menu = tk.Menu(master, tearoff=0)
+            master.config(menu=self.menu)
             self.pack(side="top", fill="both", expand=True)
-            create_options_grid(self)
+            create_options_grid(self, master)
+            self.create_fibers_sn_grid()
+            self.create_start_btn()
+
+        def update_fiber_ents(self, event):
+            """Callback for a change in number of fiber entries."""
+            num_str = self.num_fibers_ent.get()
+            if is_int(num_str):
+                num = int(num_str)
+                if num >= 0 and num <= 20:
+                    self.config_fiber_ents(num)
+                else:
+                    self.num_fibers_ent.config(text="1")
+                    self.config_fiber_ents(1)
+            else:
+                self.num_fibers_ent.config(text="1")
+                self.config_fiber_ents(1)
 
 
-    root = tk.Tk()
-    application = Application(master=root)
-    application.mainloop()
+        def config_fiber_ents(self, num):
+            """Update entries to enter fiber serial numbers."""
+            self.start_button.destroy()
+            while len(self.fibers_sn_arr) > num:
+                print("First...")
+                self.fibers_sn_arr.pop().destroy()
+                self.row_num_sn -= 1
+
+            while len(self.fibers_sn_arr) < num:
+                ent = tk.Entry(self.fibers_sn_grid, width=20)
+                ent.grid(row=self.row_num_sn)
+                self.row_num_sn += 1
+
+            self.create_start_btn()
+
+        def create_fibers_sn_grid(self):
+            """Create the grid for entering fiber serial numbers."""
+            self.fibers_sn_grid = tk.Frame(self)
+            self.fibers_sn_grid.pack()
+            self.fibers_sn_grid.grid_columnconfigure(1, minsize=50)
+            self.fibers_sn_grid.grid_columnconfigure(3, minsize=50)
+
+
+        def create_start_btn(self):
+            """Creates the start button in the app."""
+            #Start button
+            self.start_button = tk.Button(self)
+            self.start_button["text"] = "Start"
+            #self.confirm_button["command"] = app.start
+            self.start_button.pack()
+
+
+    def is_int(num_str):
+        """Checks whether the number is an integer."""
+        try:
+            int(num_str)
+            return True
+        except ValueError:
+            return False
+
+    ROOT = tk.Tk()
+    Application(master=ROOT).mainloop()

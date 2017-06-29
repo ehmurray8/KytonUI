@@ -16,7 +16,7 @@ class Application(tk.Frame):
 
         self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
         options_panel.create_options_grid(self, master)
-        
+
 
     def start(self):
         stable = False

@@ -1,43 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f5b4f49c-06ea-4167-b62f-9ffb293e9fb5" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/create_options_panel.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/KytonUI.iml" afterPath="$PROJECT_DIR$/.idea/KytonUI.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/baking_user_inputs_test.py" afterPath="$PROJECT_DIR$/baking_user_inputs_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.py" afterPath="$PROJECT_DIR$/config.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controller_340_wrapper.py" afterPath="$PROJECT_DIR$/controller_340_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/delta_oven_wrapper.py" afterPath="$PROJECT_DIR$/delta_oven_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/devices_test.py" afterPath="$PROJECT_DIR$/devices_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gp700_miniprogram_wrapper.py" afterPath="$PROJECT_DIR$/gp700_miniprogram_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gp700_wrapper.py" afterPath="$PROJECT_DIR$/gp700_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/handle_data.py" afterPath="$PROJECT_DIR$/handle_data.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/handle_stability.py" afterPath="$PROJECT_DIR$/handle_stability.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/init_instruments.py" afterPath="$PROJECT_DIR$/init_instruments.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main_run.py" afterPath="$PROJECT_DIR$/main_run.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sm125_wrapper.py" afterPath="$PROJECT_DIR$/sm125_wrapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/SF_test.py" afterPath="$PROJECT_DIR$/testing_old/SF_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/controller_test.py" afterPath="$PROJECT_DIR$/testing_old/controller_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/data_test.py" afterPath="$PROJECT_DIR$/testing_old/data_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/dummy_vars_test.py" afterPath="$PROJECT_DIR$/testing_old/dummy_vars_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/pseudocode_SM125_channel_test.py" afterPath="$PROJECT_DIR$/testing_old/pseudocode_SM125_channel_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/pseudocode_SM125_peak_detect_test.py" afterPath="$PROJECT_DIR$/testing_old/pseudocode_SM125_peak_detect_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/sm125_peaks_test.py" afterPath="$PROJECT_DIR$/testing_old/sm125_peaks_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/sm125_test.py" afterPath="$PROJECT_DIR$/testing_old/sm125_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/socket_test.py" afterPath="$PROJECT_DIR$/testing_old/socket_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/stability_test.py" afterPath="$PROJECT_DIR$/testing_old/stability_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/struct_metaclass_unpacking_test.py" afterPath="$PROJECT_DIR$/testing_old/struct_metaclass_unpacking_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/time_test.py" afterPath="$PROJECT_DIR$/testing_old/time_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_app_b_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_app_b_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_app_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_app_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_options_b_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_options_b_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_options_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_options_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_plotting_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_plotting_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testing_old/ui_table_test.py" afterPath="$PROJECT_DIR$/testing_old/ui_table_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ui_module.py" afterPath="$PROJECT_DIR$/ui_module.py" />
-    </list>
+    <list default="true" id="f5b4f49c-06ea-4167-b62f-9ffb293e9fb5" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +26,7 @@
         <entry file="file://$PROJECT_DIR$/baking_user_inputs_test.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-408">
-              <caret line="18" column="8" lean-forward="false" selection-start-line="18" selection-start-column="8" selection-end-line="18" selection-end-column="8" />
+              <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -446,7 +410,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18020834" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -762,7 +725,7 @@
     <entry file="file://$PROJECT_DIR$/baking_user_inputs_test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-408">
-          <caret line="18" column="8" lean-forward="false" selection-start-line="18" selection-start-column="8" selection-end-line="18" selection-end-column="8" />
+          <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
