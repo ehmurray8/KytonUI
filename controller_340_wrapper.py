@@ -1,9 +1,9 @@
 def get_temp_c(res):
     """Return temperature reading in degrees C."""
     ret = res.query('CRDG? B')
-    # ret2, b, c = ret.partition('E')
-    # ret3 = ret2[1:len(ret2)]
-    # ret3 = float(ret3)
+    ret2, b, c = ret.partition('E')
+    ret3 = ret2[1:len(ret2)]
+    #ret3 = float(ret3)
     return ret  # ret3
 
 

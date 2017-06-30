@@ -83,7 +83,29 @@ def create_options_grid(app, app_master):
     tk.Label(app.options_grid, text="Number of fibers for baking: ") \
         .grid(row=row_num, sticky="w")
     app.num_fibers_ent.grid(row=row_num, column=2)
-    app.num_fibers_ent.bind("<Return>", app.update_fiber_ents)
+    #app.num_fibers_ent.bind("<Return>", app.update_fiber_ents)
+    row_num += 1
+
+
+    #(TEMP) Fiber SN Inputs
+    tk.Label(app.options_grid, text="Serial Number 1: ") \
+        .grid(row=row_num, sticky="w")
+    app.sn_1_ent.grid(row=row_num, column=2)
+    row_num += 1
+
+    tk.Label(app.options_grid, text="Serial Number 2: ")\
+    	.grid(row=row_num, sticky="w")
+    app.sn_2_ent.grid(row=row_num, column=2)
+    row_num += 1
+
+    tk.Label(app.options_grid, text="Serial Number 3: ")\
+    	.grid(row=row_num, sticky="w")
+    app.sn_3_ent.grid(row=row_num, column=2)
+    row_num += 1
+
+    tk.Label(app.options_grid, text="Serial Number 4: ")\
+    	.grid(row=row_num, sticky="w")
+    app.sn_4_ent.grid(row=row_num, column=2)
     row_num += 1
 
 
@@ -101,7 +123,6 @@ if __name__ == "__main__":
             self.fibers_sn_arr = []
             self.row_num_sn = 0
 
-
             #Init member widgets
             self.options_grid = tk.Frame(self)
             self.options_grid.pack()
@@ -112,6 +133,10 @@ if __name__ == "__main__":
             self.sec_time_entry = tk.Entry(self.options_grid, width=10)
             self.prim_time_entry = tk.Entry(self.options_grid, width=10)
             self.num_pts_entry = tk.Entry(self.options_grid, width=10)
+            self.sn_1_ent = tk.Entry(self.options_grid, width=10)
+            self.sn_2_ent = tk.Entry(self.options_grid, width=10)	    
+            self.sn_3_ent = tk.Entry(self.options_grid, width=10)
+            self.sn_4_ent = tk.Entry(self.options_grid, width=10)
 
             #Window setup
             master.title("Kyton Baking")
@@ -121,6 +146,7 @@ if __name__ == "__main__":
             create_options_grid(self, master)
             self.create_fibers_sn_grid()
             self.create_start_btn()
+
 
         def update_fiber_ents(self, event):
             """Callback for a change in number of fiber entries."""
@@ -152,6 +178,7 @@ if __name__ == "__main__":
 
             self.create_start_btn()
 
+
         def create_fibers_sn_grid(self):
             """Create the grid for entering fiber serial numbers."""
             self.fibers_sn_grid = tk.Frame(self)
@@ -176,6 +203,7 @@ if __name__ == "__main__":
             return True
         except ValueError:
             return False
+
 
     ROOT = tk.Tk()
     Application(master=ROOT).mainloop()

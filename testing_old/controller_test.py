@@ -1,10 +1,13 @@
 import visa
+import controller_340_wrapper
 
 iRM = visa.ResourceManager()
 instr = iRM.list_resources()
 print(instr)
 iTC = iRM.open_resource('GPIB0::12::INSTR', read_termination='\n')
-iTC.get_temp_k()
+#iTC.get_temp_c()
+#print(controller_340_wrapper.get_temp_c(iTC))
+print(iTC.query("CRDG?\n"))
 
 # iGP = iRM.open_resource('GPIB0::3::INSTR', read_termination='\n')
 
