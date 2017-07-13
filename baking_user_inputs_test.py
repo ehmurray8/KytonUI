@@ -10,9 +10,9 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
-#import controller_340_wrapper as temp_controller
-#import init_instruments as init
-#import sm125_wrapper
+import controller_340_wrapper as temp_controller
+import init_instruments as init
+import sm125_wrapper
 import create_options_panel as options_panel
 import ui_helper
 
@@ -27,7 +27,7 @@ class Application(tk.Frame):
         """Constructs the app."""
         super().__init__(master)
 
-        #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+        self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
         #Init member vars
         self.sm125_state = tk.IntVar()
@@ -83,8 +83,8 @@ class Application(tk.Frame):
 
     def start(self):
         """Starts the recording process."""
-        #self.baking_loop()
-        ui_helper.print_options(self.options)
+        self.baking_loop()
+        #ui_helper.print_options(self.options)
         #stable = False
 
         #timer = threading.Timer(int(self.sec_time_entry.get()), self.baking_loop)
@@ -99,55 +99,55 @@ class Application(tk.Frame):
         #threading.Timer(int(self.prim_time_entry.get()) * 60,  self.baking_loop()).start()
 
 
-#    def baking_loop(self):
-#        #Runs the baking process.
-#        temperature = temp_controller.get_temp_c(self.controller)
-#        temperature = float(temperature[:-3])
-#
-#        amplitudes_avg = []
-#        wavelengths_avg = []
-#        count = 0
-#
-#        need_init = False
-#
-#        while count < int(self.num_pts.get()):
-#            wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
-#
-#            if not need_init:
-#                wavelengths_avg = [0] * len(wavelengths[0])
-#                amplitudes_avg = [0] * len(amplitudes[0])
-#                need_init = True
-#
-#            i = 0
-#            for wavelength_list in wavelengths:
-#                for wavelength in wavelength_list:
-#                    wavelengths_avg[i] += wavelength
-#                    i += 1
-#
-#            i = 0
-#            for ampl in amplitudes:
-#                for amp in ampl:
-#                    amplitudes_avg[i] += amp
-#                    i += 1
-#
-#            count += 1
-#
-#        i = 0
-#        while i < len(wavelengths_avg):
-#            wavelengths_avg[i] /= (count)
-#            amplitudes_avg[i] /= (count)
-#            i += 1
-#
-#        temp2 = temp_controller.get_temp_c(self.controller)
-#        temperature += float(temp2[:-3])
-#        temperature /= 2.0
-#
-#        serial_nums = ["SN#01", "SN#02", "SN#03", "SN#04", "SN#05", "SN#06", "SN#07",\
-#                        "SN#08", "SN#09", "SN#10", "SN#11", "SN#12"]
-#
-#        self.write_csv_file(self.options.file_name.get(), serial_nums, \
-#                    time.time(), temperature,\
-#                    wavelengths_avg, amplitudes_avg)
+    def baking_loop(self):
+        """Runs the baking process."""
+        temperature = temp_controller.get_temp_c(self.controller)
+        temperature = float(temperature[:-3])
+
+        amplitudes_avg = []
+        wavelengths_avg = []
+        count = 0
+
+        need_init = False
+
+        while count < int(self.num_pts.get()):
+            wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+
+            if not need_init:
+                wavelengths_avg = [0] * len(wavelengths[0])
+                amplitudes_avg = [0] * len(amplitudes[0])
+                need_init = True
+
+            i = 0
+            for wavelength_list in wavelengths:
+                for wavelength in wavelength_list:
+                    wavelengths_avg[i] += wavelength
+                    i += 1
+
+            i = 0
+            for ampl in amplitudes:
+                for amp in ampl:
+                    amplitudes_avg[i] += amp
+                    i += 1
+
+            count += 1
+
+        i = 0
+        while i < len(wavelengths_avg):
+            wavelengths_avg[i] /= (count)
+            amplitudes_avg[i] /= (count)
+            i += 1
+
+        temp2 = temp_controller.get_temp_c(self.controller)
+        temperature += float(temp2[:-3])
+        temperature /= 2.0
+
+        serial_nums = ["SN#01", "SN#02", "SN#03", "SN#04", "SN#05", "SN#06", "SN#07",\
+                        "SN#08", "SN#09", "SN#10", "SN#11", "SN#12"]
+
+        write_csv_file(self.options.file_name.get(), serial_nums, \
+                    time.time(), temperature,\
+                    wavelengths_avg, amplitudes_avg)
 
 
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
