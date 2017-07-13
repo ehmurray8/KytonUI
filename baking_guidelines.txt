@@ -3,35 +3,35 @@
 BAKING
   -Instruments
     -LS 340 (331)
-	-Reads the temperature of the oven using the platinum RTD thermometer
+	    -Reads the temperature of the oven using the platinum RTD thermometer
     -Dicon Optical (GP 700)
-	-Rotates the fibers to a specified channel
+	    -Rotates the fibers to a specified channel
     -Delta Oven 
-	-Temperature set manually
+        -Temperature set manually
     -Micron Optics Laser (SM 125)
-	-Scans all 4 of its channels continuously
-	-Change rate of scanning from the UI
-	-Use peak wavelength(WL) and power from laser
+        -Scans all 4 of its channels continuously
+        -Change rate of scanning from the UI
+        -Use peak wavelength(WL) and power from laser
 
   -User Inputs (No dwell time or drift detection/triggering in bake)
     -Instruments needed (CheckBoxes) 
     -Serial #'s in order on each fiber, whether or not hooked through dicon (EditTexts)
-	-20 alphanumeric characters 
+        -20 alphanumeric characters 
     -The number of data points to average (1-25) (EditText)
     -Time interval for data taking (EditTexts)
 	-Need initial(frequent, hrs) and secondary(infrequent,mins) intervals
-	-Intervals auto switch after user is confident in data 
+        -Intervals auto switch after user is confident in data 
     -File name to save text (EditText)
   
   -Execution (Laser scanning continuously at set rate, and set interval)
     1. Take a temperature(T) from 340
     2. Take set number of readings from the laser 
-	-Average the readings programatically
+        -Average the readings programatically
     3. Take a second T
     4. Average the 2 T values and associate it with the peak value between the 2 Ts
-	-For FBGs on the same fiber, the 2nd T can be taken after they are all reported and 
-		the average T can be associated with each of them
-	-If the switch must be activated, another "first" T should be taken, then all the FBGs
-		on that switch channel, then a second T, etc.
+        -For FBGs on the same fiber, the 2nd T can be taken after they are all reported and 
+            the average T can be associated with each of them
+        -If the switch must be activated, another "first" T should be taken, then all the FBGs
+            on that switch channel, then a second T, etc.
     5. Save timestamp, interval in hours since 1st data pt, WL, peak power, and T data and wait for next interval
-	-Need CSV text file for each serial number, with auto-saving feature
+        -Need CSV text file for each serial number, with auto-saving feature
