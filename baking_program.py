@@ -1,13 +1,14 @@
 """Main entry point for the UI."""
 import os.path
+import os
 import tkinter as tk
 import time
+import re
 
-#import threading
-#import xlsxwriter
+import xlsxwriter
 
 import matplotlib
-#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
 import controller_340_wrapper as temp_controller
@@ -52,13 +53,13 @@ class Application(tk.Frame):
         self.options.create_start_btn(self.start)
         self.options.grid(row=0, column=0, sticky='ew')
 
-	
+
         #Wavelength and Power storage
         self.wavelengths = [0]
-        self.powers = [0]
+        self.times = [0]
         self.start_wavelength = 0
-        self.start_power = 0
-	
+        self.start_time = 0
+
         self.stable_count = 0
 
         #self.create_graph()
@@ -89,12 +90,14 @@ class Application(tk.Frame):
         self.program_loop()
 
     def check_stable(self):
+        """Check if the program is ready to move to primary interval."""
         if self.stable_count < 10:
             self.stable_count += 1
             return False
         return True
- 
+
     def program_loop(self):
+        """Infinite program loop."""
         if not self.check_stable():
             self.baking_loop()
             self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
@@ -103,7 +106,7 @@ class Application(tk.Frame):
             self.baking_loop()
             self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
             print("prim loop")
-        
+
     def baking_loop(self):
         """Runs the baking process."""
         ui_helper.print_options(self.options)
@@ -149,21 +152,21 @@ class Application(tk.Frame):
 
         wave_total = 0
         for wavelength in wavelengths_avg:
-            wave_total += wavelength    
-        wave_total /= 4 
+            wave_total += wavelength
+        wave_total /= 4
         if self.start_wavelength == 0:
             self.start_wavelength = wave_total
         else:
             self.wavelengths.append((wave_total - self.start_wavelength) * 10)
 
-        power_total = 0
+        time_total = 0
         for power in amplitudes_avg:
-            power_total += power
-        power_total /= 4
-        if self.start_power == 0:
-            self.start_power = power_total
+            time_total += power
+        time_total /= 4
+        if self.start_time == 0:
+            self.start_time = time_total
         else:
-            self.powers.append((power_total - self.start_power) * 10)        
+            self.times.append((time_total - self.start_time) * 10)
 
         temp2 = temp_controller.get_temp_c(self.controller)
         temperature += float(temp2[:-3])
@@ -173,8 +176,8 @@ class Application(tk.Frame):
 
         i = 0
         while i < 4:
-                serial_nums[i] = self.options.sn_ents[i].get()
-                i += 1
+            serial_nums[i] = self.options.sn_ents[i].get()
+            i += 1
 
         write_csv_file(self.options.file_name.get(), serial_nums, \
                     time.time(), temperature,\
@@ -197,13 +200,49 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
     print(str(wavelengths))
     print(str(powers))
     while i < len(serial_nums):
-        file_obj.write(str(serial_nums[i]) + ": " + str(timestamp) + ", " + str(temp) + ", " +\
+        file_obj.write(str(serial_nums[i]) + ", " + str(timestamp) + ", " + str(temp) + ", " +\
                     str(wavelengths[i]) + ", " + str(powers[i]) + "\n")
         i += 1
 
     file_obj.write("\n\n")
     file_obj.close()
-	
+
+
+def create_excel_file(csv_file):
+    """Creates an excel file from the correspoding csv file."""
+    xcel_file = csv_file[:-3] + "xlsx"
+    if os.path.isfile(xcel_file):
+        os.remove(xcel_file)
+
+    if os.path.isfile(csv_file):
+        with open(csv_file) as f_obj:
+            lines = f_obj.readlines()
+            f_obj.close()
+
+        lines = lines[2:]
+        words_list = []
+        for line in lines:
+            words_list.append(re.findall(r"[\w']+", line))
+
+        workbook = xlsxwriter.Workbook(xcel_file)
+        worksheet = workbook.add_worksheet()
+        headers = ["Serial Number", "Timestamp (s)", "Temperature (C)", "Wavelength (nm)",\
+                    "Power (dBm)"]
+
+        col = 0
+        for header in headers:
+            worksheet.write(0, col, header)
+            col += 1
+
+        row = 1
+        for words in words_list:
+            col = 0
+            for word in words:
+                worksheet.write(row, col, word)
+                col += 1
+
+        workbook.close()
+
 
 if __name__ == "__main__":
     ROOT = tk.Tk()
