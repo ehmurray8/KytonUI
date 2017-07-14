@@ -7,7 +7,7 @@ import time
 #import xlsxwriter
 
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
 import controller_340_wrapper as temp_controller
@@ -40,12 +40,6 @@ class Application(tk.Frame):
         self.options_grid = tk.Frame(self)
         self.options_grid.pack()
 
-        self.baking_temp = tk.DoubleVar()
-        self.file_name = tk.StringVar()
-        self.sec_time = tk.DoubleVar()
-        self.prim_time = tk.DoubleVar()
-        self.num_pts = tk.IntVar()
-
         #Window setup
         master.title("Kyton Baking")
         self.menu = tk.Menu(master, tearoff=0)
@@ -58,7 +52,16 @@ class Application(tk.Frame):
         self.options.create_start_btn(self.start)
         self.options.grid(row=0, column=0, sticky='ew')
 
-        self.create_graph()
+	
+        #Wavelength and Power storage
+        self.wavelengths = [0]
+        self.powers = [0]
+        self.start_wavelength = 0
+        self.start_power = 0
+	
+        self.stable_count = 0
+
+        #self.create_graph()
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
 
@@ -83,24 +86,28 @@ class Application(tk.Frame):
 
     def start(self):
         """Starts the recording process."""
-        self.baking_loop()
-        #ui_helper.print_options(self.options)
-        #stable = False
+        self.program_loop()
 
-        #timer = threading.Timer(int(self.sec_time_entry.get()), self.baking_loop)
-        #timer.start()
-
-        #while stable:
-        #    i = 0
-            #print("Stable")
-
-        #timer.cancel()
-
-        #threading.Timer(int(self.prim_time_entry.get()) * 60,  self.baking_loop()).start()
-
-
+    def check_stable(self):
+        if self.stable_count < 10:
+            self.stable_count += 1
+            return False
+        return True
+ 
+    def program_loop(self):
+        if not self.check_stable():
+            self.baking_loop()
+            self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
+            print("init loop")
+        else:
+            self.baking_loop()
+            self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
+            print("prim loop")
+        
     def baking_loop(self):
         """Runs the baking process."""
+        ui_helper.print_options(self.options)
+
         temperature = temp_controller.get_temp_c(self.controller)
         temperature = float(temperature[:-3])
 
@@ -110,8 +117,10 @@ class Application(tk.Frame):
 
         need_init = False
 
-        while count < int(self.num_pts.get()):
+        while count < int(self.options.num_pts.get()):
             wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+            print("Wavelengths: " + str(wavelengths))
+            print("Amplitudes: " + str(amplitudes))
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -138,12 +147,34 @@ class Application(tk.Frame):
             amplitudes_avg[i] /= (count)
             i += 1
 
+        wave_total = 0
+        for wavelength in wavelengths_avg:
+            wave_total += wavelength    
+        wave_total /= 4 
+        if self.start_wavelength == 0:
+            self.start_wavelength = wave_total
+        else:
+            self.wavelengths.append((wave_total - self.start_wavelength) * 10)
+
+        power_total = 0
+        for power in amplitudes_avg:
+            power_total += power
+        power_total /= 4
+        if self.start_power == 0:
+            self.start_power = power_total
+        else:
+            self.powers.append((power_total - self.start_power) * 10)        
+
         temp2 = temp_controller.get_temp_c(self.controller)
         temperature += float(temp2[:-3])
         temperature /= 2.0
 
-        serial_nums = ["SN#01", "SN#02", "SN#03", "SN#04", "SN#05", "SN#06", "SN#07",\
-                        "SN#08", "SN#09", "SN#10", "SN#11", "SN#12"]
+        serial_nums = ["SN#01", "SN#02", "SN#03", "SN#04"]
+
+        i = 0
+        while i < 4:
+                serial_nums[i] = self.options.sn_ents[i].get()
+                i += 1
 
         write_csv_file(self.options.file_name.get(), serial_nums, \
                     time.time(), temperature,\
@@ -152,17 +183,19 @@ class Application(tk.Frame):
 
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
     """Write the output csv file."""
-    if os.path.isfile(file_name.get()):
-        file_obj = open(file_name.get(), "a")
+    if os.path.isfile(file_name):
+        file_obj = open(file_name, "a")
     else:
-        file_obj = open(file_name.get(), "w")
-
-    file_obj.write("Serial Num, Timestamp(s), Temperature (C), "\
-            + "Wavelength (pm), Power (db)\n")
-    file_obj.write("----------------------------------------------"\
-            +"------------------------\n")
+        file_obj = open(file_name, "w")
+        file_obj.write("Serial Num, Timestamp(s), Temperature (C), "\
+                + "Wavelength (nm), Power (dBm)\n")
+        file_obj.write("----------------------------------------------"\
+                +"------------------------\n")
 
     i = 0
+    print(str(serial_nums))
+    print(str(wavelengths))
+    print(str(powers))
     while i < len(serial_nums):
         file_obj.write(str(serial_nums[i]) + ": " + str(timestamp) + ", " + str(temp) + ", " +\
                     str(wavelengths[i]) + ", " + str(powers[i]) + "\n")
@@ -170,9 +203,9 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
 
     file_obj.write("\n\n")
     file_obj.close()
+	
 
-
-
-ROOT = tk.Tk()
-APP = Application(master=ROOT)
-APP.mainloop()
+if __name__ == "__main__":
+    ROOT = tk.Tk()
+    APP = Application(master=ROOT)
+    APP.mainloop()

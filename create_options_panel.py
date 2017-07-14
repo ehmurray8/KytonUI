@@ -23,7 +23,7 @@ class OptionsPanel(tk.Frame):
 
         self.baking_temp = tk.DoubleVar()
         self.file_name = tk.StringVar()
-        self.sec_time = tk.DoubleVar()
+        self.init_time = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
 
@@ -62,18 +62,19 @@ class OptionsPanel(tk.Frame):
 
         #Number of points to average entry
         self.num_pts = ui_helper.int_entry(self.options_grid, "Num points to average: ",\
-                    row_num, 10, 1)
+                    row_num, 10, 5)
         row_num += 1
 
 
         #Time intervals entry
-        self.prim_time = ui_helper.double_entry(self.options_grid, "Primary time interval: ",\
-                    row_num, 10, 1.0)
-        row_num += 1
-        self.sec_time = ui_helper.double_entry(self.options_grid, "Secondary time interval: ",\
-                    row_num, 10, 1.0)
+        self.init_time = ui_helper.time_entry(self.options_grid, " Initial time interval: ",\
+                    row_num, 10, "seconds", 15.0)
         row_num += 1
 
+        self.prim_time = ui_helper.time_entry(self.options_grid, "Primary time interval: ",\
+                    row_num, 10, "minutes", 1.0)
+        row_num += 1
+        
 
         #File name entry
         self.file_name = ui_helper.string_entry(self.options_grid, "File name: ",\
@@ -89,9 +90,10 @@ class OptionsPanel(tk.Frame):
 
         #(TEMP) Fiber SN Inputs
         index = 1
-        while index <= 20:
+        while index <= 4:
             self.sn_ents.append(ui_helper.string_entry(self.options_grid, \
-                    "Serial Number " + str(index) + ": ", row_num, 20))
+                    "Serial Number " + str(index) + ": ", row_num, 20, \
+		    "Fiber " + str(index)))
             index += 1
             row_num += 1
 

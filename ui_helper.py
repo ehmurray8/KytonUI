@@ -1,6 +1,5 @@
 """UI Helper methods."""
 import tkinter as tk
-import os.path
 
 def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
@@ -29,6 +28,11 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     text_var.set(default_double)
     return text_var
 
+def time_entry(container, label_text, row, width, unit, default_double=0.0):
+    text_var = double_entry(container, label_text, row, width, default_double)
+    tk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
+    return text_var
+
 def checkbox_entry(container, label_text, row):
     """Creates a checkbox entry, and returns a reference to the entry var."""
     int_var = tk.IntVar()
@@ -45,21 +49,12 @@ def print_options(app):
     print("Baking Temp: " + str(app.baking_temp.get()))
     print("File Name: " + str(app.file_name.get()))
     print("Primary Time: " + str(app.prim_time.get()))
-    print("Secondary Time: " + str(app.sec_time.get()))
+    print("Initial Time: " + str(app.init_time.get()))
     print("Num Points: " + str(app.num_pts.get()))
     index = 0
-    while index < 20:
+    while index < 4:
         print("SN#" + str(index+1) + ": " + str(app.sn_ents[index].get()))
         index += 1
-
-    if os.path.isfile(app.file_name.get()):
-        file_obj = open(app.file_name.get(), "a")
-        file_obj.write("Testing appending...\n")
-        file_obj.close()
-    else:
-        file_obj = open(app.file_name.get(), "w")
-        file_obj.write("Testing writing!!!\n")
-        file_obj.close()
 
 def format_selected(flag):
     """Format binary as on/off."""
