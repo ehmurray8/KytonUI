@@ -24,6 +24,7 @@ class OptionsPanel(tk.Frame):
         self.baking_temp = tk.DoubleVar()
         self.file_name = tk.StringVar()
         self.init_time = tk.DoubleVar()
+        self.init_duration = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
 
@@ -43,12 +44,12 @@ class OptionsPanel(tk.Frame):
 
 
         #Instruments Checkboxes
-        self.sm125 = ui_helper.checkbox_entry(self.options_grid,\
+        self.sm125_state = ui_helper.checkbox_entry(self.options_grid,\
                     "Micron Optics SM125", row_num)
         row_num += 1
 
         self.gp700_state = ui_helper.checkbox_entry(self.options_grid,\
-                    "Dicon GP700", row_num)
+                    "Dicon GP700", row_num, False)
         row_num += 1
 
         self.temp340_state = ui_helper.checkbox_entry(self.options_grid,\
@@ -67,14 +68,18 @@ class OptionsPanel(tk.Frame):
 
 
         #Time intervals entry
-        self.init_time = ui_helper.time_entry(self.options_grid, " Initial time interval: ",\
+        self.init_time = ui_helper.time_entry(self.options_grid, "Initial time interval: ",\
                     row_num, 10, "seconds", 15.0)
+        row_num += 1
+
+        self.init_duration = ui_helper.time_entry(self.options_grid, "Initial interval duration: ",\
+                    row_num, 10, "minutes", 5.0)
         row_num += 1
 
         self.prim_time = ui_helper.time_entry(self.options_grid, "Primary time interval: ",\
                     row_num, 10, "minutes", 1.0)
         row_num += 1
-        
+
 
         #File name entry
         self.file_name = ui_helper.string_entry(self.options_grid, "File name: ",\

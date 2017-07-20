@@ -12,6 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 import controller_340_wrapper as temp_controller
+import delta_oven_wrapper as oven_wrapper
 import init_instruments as init
 import sm125_wrapper
 import create_options_panel as options_panel
@@ -28,7 +29,7 @@ class Application(tk.Frame):
         """Constructs the app."""
         super().__init__(master)
 
-        self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+        #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
         #Init member vars
         self.sm125_state = tk.IntVar()
@@ -53,6 +54,10 @@ class Application(tk.Frame):
         self.options.create_start_btn(self.start)
         self.options.grid(row=0, column=0, sticky='ew')
 
+        init_time = self.options.init_time.get()
+        init_dur = self.options.init_duration.get() * 60
+        self.num_stable = int(init_dur/init_time + .5)
+
 
         #Wavelength and Power storage
         self.wavelengths = [0]
@@ -62,7 +67,7 @@ class Application(tk.Frame):
 
         self.stable_count = 0
 
-        #self.create_graph()
+        self.create_graph()
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
 
@@ -87,11 +92,14 @@ class Application(tk.Frame):
 
     def start(self):
         """Starts the recording process."""
-        self.program_loop()
+        if self.options.delta_oven_state.get():
+            print("Set oven to " + str(self.options.baking_temp.get()))
+            #oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+        #self.program_loop()
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
-        if self.stable_count < 10:
+        if self.stable_count < self.num_stable:
             self.stable_count += 1
             return False
         return True
@@ -222,10 +230,11 @@ def create_excel_file(csv_file):
         lines = lines[2:]
         words_list = []
         for line in lines:
-            words_list.append(re.findall(r"[\w']+", line))
+            words_list.append(line.split(","))
 
         workbook = xlsxwriter.Workbook(xcel_file)
         worksheet = workbook.add_worksheet()
+        worksheet.set_column(0, 4, 18)
         headers = ["Serial Number", "Timestamp (s)", "Temperature (C)", "Wavelength (nm)",\
                     "Power (dBm)"]
 
@@ -240,7 +249,7 @@ def create_excel_file(csv_file):
             for word in words:
                 worksheet.write(row, col, word)
                 col += 1
-
+            row += 1
         workbook.close()
 
 

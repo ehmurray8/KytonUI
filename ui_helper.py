@@ -33,11 +33,14 @@ def time_entry(container, label_text, row, width, unit, default_double=0.0):
     tk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
     return text_var
 
-def checkbox_entry(container, label_text, row):
+def checkbox_entry(container, label_text, row, checked=True):
     """Creates a checkbox entry, and returns a reference to the entry var."""
     int_var = tk.IntVar()
     tk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    tk.Checkbutton(container, variable=int_var).grid(row=row, column=2, sticky='ew')
+    checkbox = tk.Checkbutton(container, variable=int_var)
+    checkbox.grid(row=row, column=2, sticky='ew')
+    if checked:
+        checkbox.select()
     return int_var
 
 def print_options(app):
