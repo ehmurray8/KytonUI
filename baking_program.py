@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
+#DEV_DISCONNECT
 #import controller_340_wrapper as temp_controller
 #import delta_oven_wrapper as oven_wrapper
 #import init_instruments as init
@@ -17,7 +18,7 @@ matplotlib.use("TkAgg")
 
 NUM_SNS = 4
 
-class Application(tk.Frame):
+class Application(tk.Frame): # pylint: disable=too-many-ancestors
     """Class containing the main tkinter application."""
 
     graph_num = 0
@@ -35,16 +36,10 @@ class Application(tk.Frame):
         self.menu.add_command(label="Create Excel", command=self.create_excel)
 
         self.pack(side="top", fill="both", expand=True)
-
         self.main_frame = tk.Frame(self)
-
         self.options = options_panel.OptionsPanel(self.main_frame)
         self.options.create_start_btn(self.start)
         self.options.grid(row=0, column=0, sticky='ew')
-
-        self.start_wavelength = 0
-        self.start_time = 0
-        self.start_temp = 0
 
         self.stable_count = 0
 
@@ -140,29 +135,16 @@ class Application(tk.Frame):
 
         wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
 
-        if self.start_wavelength == 0:
-            wave_total = 0
-            for wavelength in wavelengths_avg:
-                wave_total += wavelength
-            wave_total /= NUM_SNS
-            self.start_wavelength = wave_total
-
         #DEV_DISCONNECT
         #temp2 = temp_controller.get_temp_c(self.controller)
         #temperature += float(temp2[:-3])
         temperature /= 2.0
-
-        if self.start_temp == 0:
-            self.start_temp = temperature
 
         serial_nums = []
         for sn_ent in self.options.sn_ents:
             serial_nums.append(sn_ent.get())
 
         curr_time = time.time()
-        if self.start_time == 0:
-            self.start_time = curr_time
-
         file_helper.write_csv_file(self.options.file_name.get(), serial_nums, \
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
 

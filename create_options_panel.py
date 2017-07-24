@@ -4,7 +4,8 @@ import tkinter as tk
 import ui_helper
 
 
-class OptionsPanel(tk.Frame):
+class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
+                              # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
     def __init__(self, master):
         super().__init__(master)
