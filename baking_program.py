@@ -1,51 +1,39 @@
 """Main entry point for the UI."""
-import os.path
-import os
 import tkinter as tk
 import time
-import re
-
-import xlsxwriter
 
 import matplotlib
+import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
-import controller_340_wrapper as temp_controller
-import delta_oven_wrapper as oven_wrapper
-import init_instruments as init
-import sm125_wrapper
+#import controller_340_wrapper as temp_controller
+#import delta_oven_wrapper as oven_wrapper
+#import init_instruments as init
+#import sm125_wrapper
 import create_options_panel as options_panel
-import ui_helper
+import file_helper
+matplotlib.use("TkAgg")
 
-from numpy import arange, sin, pi
-
-matplotlib.use('TkAgg')
-
+NUM_SNS = 4
 
 class Application(tk.Frame):
     """Class containing the main tkinter application."""
+
+    graph_num = 0
+
     def __init__(self, master):
         """Constructs the app."""
         super().__init__(master)
 
         #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
-        #Init member vars
-        self.sm125_state = tk.IntVar()
-        self.gp700_state = tk.IntVar()
-        self.delta_oven_state = tk.IntVar()
-        self.temp340_state = tk.IntVar()
-        self.sn_ents = []
-
-        #Init member widgets
-        self.options_grid = tk.Frame(self)
-        self.options_grid.pack()
-
         #Window setup
         master.title("Kyton Baking")
         self.menu = tk.Menu(master, tearoff=0)
         master.config(menu=self.menu)
+        self.menu.add_command(label="Create Excel", command=self.create_excel)
+
         self.pack(side="top", fill="both", expand=True)
 
         self.main_frame = tk.Frame(self)
@@ -54,16 +42,9 @@ class Application(tk.Frame):
         self.options.create_start_btn(self.start)
         self.options.grid(row=0, column=0, sticky='ew')
 
-        init_time = self.options.init_time.get()
-        init_dur = self.options.init_duration.get() * 60
-        self.num_stable = int(init_dur/init_time + .5)
-
-
-        #Wavelength and Power storage
-        self.wavelengths = [0]
-        self.times = [0]
         self.start_wavelength = 0
         self.start_time = 0
+        self.start_temp = 0
 
         self.stable_count = 0
 
@@ -73,33 +54,32 @@ class Application(tk.Frame):
 
     def create_graph(self):
         """Creates the graph."""
-        fig = Figure(figsize=(5, 4), dpi=100)
-        sub = fig.add_subplot(111)
-        rng = arange(0.0, 3.0, 0.01)
-        y_vals = sin(2*pi*rng)
-
-        sub.plot(rng, y_vals)
-
-
-        # a tk.DrawingArea
-        canvas = FigureCanvasTkAgg(fig, self.main_frame)
+        canvas = FigureCanvasTkAgg(FIG, self.main_frame)
         canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=1)
-
+        canvas.get_tk_widget().grid(column=1, row=0)
         toolbar = NavigationToolbar2TkAgg(canvas, ROOT)
         toolbar.update()
+        animation.FuncAnimation(FIG, animate, interval=1000)
 
+    def create_excel(self):
+        """Creates excel file."""
+        file_helper.create_excel_file(self.options.file_name.get())
 
     def start(self):
         """Starts the recording process."""
         if self.options.delta_oven_state.get():
-            print("Set oven to " + str(self.options.baking_temp.get()))
+            #DEV_DISCONNECT
+            pass
             #oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
         #self.program_loop()
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
-        if self.stable_count < self.num_stable:
+        init_time = self.options.init_time.get()
+        init_dur = self.options.init_duration.get() * 60
+        num_stable = int(init_dur/init_time + .5)
+
+        if self.stable_count < num_stable:
             self.stable_count += 1
             return False
         return True
@@ -109,29 +89,20 @@ class Application(tk.Frame):
         if not self.check_stable():
             self.baking_loop()
             self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
-            print("init loop")
         else:
             self.baking_loop()
             self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
-            print("prim loop")
 
-    def baking_loop(self):
-        """Runs the baking process."""
-        ui_helper.print_options(self.options)
-
-        temperature = temp_controller.get_temp_c(self.controller)
-        temperature = float(temperature[:-3])
-
+    def __avg_waves_amps(self):
         amplitudes_avg = []
         wavelengths_avg = []
         count = 0
-
         need_init = False
-
         while count < int(self.options.num_pts.get()):
-            wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
-            print("Wavelengths: " + str(wavelengths))
-            print("Amplitudes: " + str(amplitudes))
+            #DEV_DISCONNECT
+            #wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+            wavelengths = []
+            amplitudes = []
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -157,103 +128,59 @@ class Application(tk.Frame):
             wavelengths_avg[i] /= (count)
             amplitudes_avg[i] /= (count)
             i += 1
+        return wavelengths_avg, amplitudes_avg
 
-        wave_total = 0
-        for wavelength in wavelengths_avg:
-            wave_total += wavelength
-        wave_total /= 4
+
+    def baking_loop(self):
+        """Runs the baking process."""
+        #DEV_DISCONNECT
+        #temperature = temp_controller.get_temp_c(self.controller)
+        #temperature = float(temperature[:-3])
+        temperature = 0
+
+        wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
+
         if self.start_wavelength == 0:
+            wave_total = 0
+            for wavelength in wavelengths_avg:
+                wave_total += wavelength
+            wave_total /= NUM_SNS
             self.start_wavelength = wave_total
-        else:
-            self.wavelengths.append((wave_total - self.start_wavelength) * 10)
 
-        time_total = 0
-        for power in amplitudes_avg:
-            time_total += power
-        time_total /= 4
-        if self.start_time == 0:
-            self.start_time = time_total
-        else:
-            self.times.append((time_total - self.start_time) * 10)
-
-        temp2 = temp_controller.get_temp_c(self.controller)
-        temperature += float(temp2[:-3])
+        #DEV_DISCONNECT
+        #temp2 = temp_controller.get_temp_c(self.controller)
+        #temperature += float(temp2[:-3])
         temperature /= 2.0
 
-        serial_nums = ["SN#01", "SN#02", "SN#03", "SN#04"]
+        if self.start_temp == 0:
+            self.start_temp = temperature
 
-        i = 0
-        while i < 4:
-            serial_nums[i] = self.options.sn_ents[i].get()
-            i += 1
+        serial_nums = []
+        for sn_ent in self.options.sn_ents:
+            serial_nums.append(sn_ent.get())
 
-        write_csv_file(self.options.file_name.get(), serial_nums, \
-                    time.time(), temperature,\
-                    wavelengths_avg, amplitudes_avg)
+        curr_time = time.time()
+        if self.start_time == 0:
+            self.start_time = curr_time
 
-
-def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
-    """Write the output csv file."""
-    if os.path.isfile(file_name):
-        file_obj = open(file_name, "a")
-    else:
-        file_obj = open(file_name, "w")
-        file_obj.write("Serial Num, Timestamp(s), Temperature (C), "\
-                + "Wavelength (nm), Power (dBm)\n")
-        file_obj.write("----------------------------------------------"\
-                +"------------------------\n")
-
-    i = 0
-    print(str(serial_nums))
-    print(str(wavelengths))
-    print(str(powers))
-    while i < len(serial_nums):
-        file_obj.write(str(serial_nums[i]) + ", " + str(timestamp) + ", " + str(temp) + ", " +\
-                    str(wavelengths[i]) + ", " + str(powers[i]) + "\n")
-        i += 1
-
-    file_obj.write("\n\n")
-    file_obj.close()
+        file_helper.write_csv_file(self.options.file_name.get(), serial_nums, \
+                    curr_time, temperature, wavelengths_avg, amplitudes_avg)
 
 
-def create_excel_file(csv_file):
-    """Creates an excel file from the correspoding csv file."""
-    xcel_file = csv_file[:-3] + "xlsx"
-    if os.path.isfile(xcel_file):
-        os.remove(xcel_file)
-
-    if os.path.isfile(csv_file):
-        with open(csv_file) as f_obj:
-            lines = f_obj.readlines()
-            f_obj.close()
-
-        lines = lines[2:]
-        words_list = []
-        for line in lines:
-            words_list.append(line.split(","))
-
-        workbook = xlsxwriter.Workbook(xcel_file)
-        worksheet = workbook.add_worksheet()
-        worksheet.set_column(0, 4, 18)
-        headers = ["Serial Number", "Timestamp (s)", "Temperature (C)", "Wavelength (nm)",\
-                    "Power (dBm)"]
-
-        col = 0
-        for header in headers:
-            worksheet.write(0, col, header)
-            col += 1
-
-        row = 1
-        for words in words_list:
-            col = 0
-            for word in words:
-                worksheet.write(row, col, word)
-                col += 1
-            row += 1
-        workbook.close()
-
+def animate(i):
+    """Updates the graph."""
+    print("Animate " + str(i))
+    X_VALS.append(Application.graph_num)
+    Y_VALS.append(Application.graph_num)
+    SUB.clear()
+    SUB.plot(X_VALS, Y_VALS)
+    Application.graph_num += 1
 
 if __name__ == "__main__":
+    FIG = Figure(figsize=(5, 4), dpi=100)
+    SUB = FIG.add_subplot(111)
+    X_VALS = []
+    Y_VALS = []
     ROOT = tk.Tk()
     APP = Application(master=ROOT)
     APP.mainloop()

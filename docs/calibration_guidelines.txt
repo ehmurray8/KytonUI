@@ -54,5 +54,3 @@ CALIBRATION
 		on that switch channel, then a second T, etc.
     6. Save timestamp, interval in hours since 1st data pt, WL, peak power, and T data and wait for next interval
 	-Need CSV text file for each serial number, with auto-saving feature
-
-    

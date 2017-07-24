@@ -1,10 +1,8 @@
-Serial Num, Timestamp(s), Temperature (C), Wavelength (pm), Power (db)
+Metadata
+Fiber 1, Fiber 2, Fiber 3, Fiber 4
+1499992153.1634235, 1553.12045, 248.925
 
-Fiber 1, 1499986738.5064952, 248.925, 1553.743, -10.44
-Fiber 2, 1499986738.5064952, 248.925, 1556.3053, -9.38
-Fiber 3, 1499986738.5064952, 248.925, 1551.8347, -15.35
-Fiber 4, 1499986738.5064952, 248.925, 1550.5988, -19.28
-
+Serial Num, Timestamp(s), Temperature (C), Wavelength (nm), Power (db)
 
 Fiber 1, 1499992153.1634235, 248.94, 1553.7429, -10.462
 Fiber 2, 1499992153.1634235, 248.94, 1556.3051, -9.362
