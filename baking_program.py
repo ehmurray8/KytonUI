@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from matplotlib import pyplot as plt
 
 #DEV_DISCONNECT
 #import controller_340_wrapper as temp_controller
@@ -20,9 +21,6 @@ NUM_SNS = 4
 
 class Application(tk.Frame): # pylint: disable=too-many-ancestors
     """Class containing the main tkinter application."""
-
-    graph_num = 0
-
     def __init__(self, master):
         """Constructs the app."""
         super().__init__(master)
@@ -43,18 +41,41 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
 
         self.stable_count = 0
 
-        self.create_graph()
         self.main_frame.pack(expand=1, fill=tk.BOTH)
+
+        self.x_vals = []
+        self.y_vals = []
+        self.num_pt = 0
+
+        self.fig = plt.Figure()
+        sub = self.fig.add_subplot(111)
+        sub.set_title('Baking: ' + u'\u0394\u03BB' + " (pm) vs. Time (hr) from start")
+        sub.set_ylabel(u'\u0394\u03BB' + " average (pm)")
+        sub.set_xlabel('Elapsed Time from start (hr)')
+        self.line = sub.plot(self.x_vals, self.y_vals)
+        self.create_graph()
 
 
     def create_graph(self):
         """Creates the graph."""
-        canvas = FigureCanvasTkAgg(FIG, self.main_frame)
+        canvas = FigureCanvasTkAgg(self.fig, self.main_frame)
         canvas.show()
         canvas.get_tk_widget().grid(column=1, row=0)
         toolbar = NavigationToolbar2TkAgg(canvas, ROOT)
         toolbar.update()
-        animation.FuncAnimation(FIG, animate, interval=1000)
+
+        animation.FuncAnimation(self.fig, self.animate, frames=[self.num_pt]\
+                , interval=5000, blit=False)
+        #plt.show()
+
+    def animate(self, i):
+        """Updates the graph."""
+        print("Animate " + str(i) + " " + str(self.num_pt))
+        self.x_vals.append(self.num_pt)
+        self.y_vals.append(self.num_pt)
+        self.num_pt += 1
+        self.line.set_data(self.x_vals, self.y_vals)
+        return self.line,
 
     def create_excel(self):
         """Creates excel file."""
@@ -148,21 +169,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
         file_helper.write_csv_file(self.options.file_name.get(), serial_nums, \
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
 
-
-def animate(i):
-    """Updates the graph."""
-    print("Animate " + str(i))
-    X_VALS.append(Application.graph_num)
-    Y_VALS.append(Application.graph_num)
-    SUB.clear()
-    SUB.plot(X_VALS, Y_VALS)
-    Application.graph_num += 1
-
 if __name__ == "__main__":
-    FIG = Figure(figsize=(5, 4), dpi=100)
-    SUB = FIG.add_subplot(111)
-    X_VALS = []
-    Y_VALS = []
     ROOT = tk.Tk()
     APP = Application(master=ROOT)
     APP.mainloop()
