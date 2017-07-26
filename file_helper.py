@@ -21,16 +21,22 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
         need_comma = False
         for snum in serial_nums:
             if need_comma:
-                file_obj.write(", ")
+                file_obj.write(",")
             else:
                 need_comma = True
             file_obj.write(snum)
-        file_obj.write("\n" + str(timestamp) + ", ")
-        total_wave = 0
+        file_obj.write("\n" + str(timestamp) + ",")
+        need_comma = False
+        wave_total = 0
         for wave in wavelengths:
-            total_wave += wave
-        total_wave /= len(serial_nums)
-        file_obj.write(str(total_wave) + ", " + str(temp) + "\n")
+            if need_comma:
+                file_obj.write(",")
+            else:
+                need_comma = True
+            wave_total += float(wave)
+            file_obj.write(str(wave))
+        wave_total /= len(serial_nums)
+        file_obj.write(str(wave_total) + "," + str(temp) + "\n")
         file_obj.write("Serial Num, Timestamp(s), Temperature (C), "\
                 + "Wavelength (nm), Power (dBm)\n")
 
@@ -55,15 +61,16 @@ def __parse_csv_file(csv_file):
         lines = f_obj.readlines()
         f_obj.close()
 
-    metadata = lines[1:3]
+    metadata = lines[1:4]
     serial_nums = metadata[0].split(",")
     time_wave_temp = metadata[1].split(",")
+    waves = metadata[2].split(",")
 
     start_time = float(time_wave_temp[0])
     start_wave = float(time_wave_temp[1])
     start_temp = float(time_wave_temp[2]) + 273.15
 
-    lines = lines[6:]
+    lines = lines[7:]
 
     words_list = []
     for line in lines:
@@ -73,7 +80,7 @@ def __parse_csv_file(csv_file):
     while len(words_list) > len(serial_nums):
         entries.append(words_list[:len(serial_nums)])
         words_list = words_list[len(serial_nums)+2:]
-    return serial_nums, start_time, start_wave, start_temp, entries
+    return serial_nums, start_time, start_wave, waves, start_temp, entries
 
 def __create_headers(serial_nums, worksheet, num_cols):
     worksheet.set_column(0, num_cols, 25)
@@ -88,7 +95,7 @@ def __create_headers(serial_nums, worksheet, num_cols):
     headers.append("Mean raw " + u'\u0394\u03BB' + ", from start (pm.)")
     return headers
 
-def __create_row_strs(entries, start_temp, start_time, start_wave, serial_nums):
+def __create_row_strs(entries, start_temp, start_time, start_wave, waves, serial_nums):
     row_strs = [[]]
     row_num = 0
     for entry in entries:
@@ -107,8 +114,8 @@ def __create_row_strs(entries, start_temp, start_time, start_wave, serial_nums):
             row_strs[row_num].append(data_pt[4])
         row_strs[row_num].append(curr_entry_temp)
         wave_total = 0
-        for wave in wavelengths:
-            row_strs[row_num].append(float(float(wave) - float(start_wave)))
+        for wave, begin_wave in zip(wavelengths, waves):
+            row_strs[row_num].append(float(float(wave) - float(begin_wave)))
             wave_total += float(wave)
         row_strs[row_num].append(float(curr_entry_temp) - float(start_temp))
         wave_total /= len(serial_nums)
@@ -205,7 +212,8 @@ def create_excel_file(csv_file):
     xcel_file = __init_excel_file(csv_file)
 
     if os.path.isfile(csv_file):
-        serial_nums, start_time, start_wave, start_temp, entries = __parse_csv_file(csv_file)
+        serial_nums, start_time, start_wave, waves, start_temp, entries \
+                    = __parse_csv_file(csv_file)
         num_cols = len(serial_nums) * 3 + 5
 
         workbook = xlsxwriter.Workbook(xcel_file)
@@ -213,7 +221,8 @@ def create_excel_file(csv_file):
 
         headers = __create_headers(serial_nums, worksheet, num_cols)
 
-        row_strs = __create_row_strs(entries, start_temp, start_time, start_wave, serial_nums)
+        row_strs = __create_row_strs(entries, start_temp, start_time, \
+                    start_wave, waves, serial_nums)
 
         row_format, row_header_format, bold_format = __create_formats(serial_nums, workbook)
 
