@@ -3,6 +3,7 @@
 import tkinter as tk
 import ui_helper
 
+NUM_SNS = None
 
 class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                               # pylint: disable=too-many-instance-attributes
@@ -16,6 +17,8 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         self.delta_oven_state = tk.IntVar()
         self.temp340_state = tk.IntVar()
         self.sn_ents = []
+        self.chan_nums = []
+        self.switch_pos = []
 
         #Init member widgets
         self.baking_temp = tk.DoubleVar()
@@ -92,10 +95,16 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
         #(TEMP) Fiber SN Inputs
         index = 1
-        while index <= 4:
-            self.sn_ents.append(ui_helper.string_entry(options_grid, \
-                    "Serial Number " + str(index) + ": ", row_num, 20, \
-		    "Fiber " + str(index)))
+        while index <= NUM_SNS:
+            #self.sn_ents.append(ui_helper.string_entry(options_grid, \
+            #        "Serial Number " + str(index) + ": ", row_num, 20, \
+	    #        "Fiber " + str(index)))
+            serial_num, chan_num, switch_pos = ui_helper.serial_num_entry(options_grid, \
+                    "Serial Number " + str(index) + ": ", row_num, 5, "Fiber " + str(index))
+            self.sn_ents.append(serial_num)
+            self.chan_nums.append(chan_num)
+            self.switch_pos.append(switch_pos)
+
             index += 1
             row_num += 1
 

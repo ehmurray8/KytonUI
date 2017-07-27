@@ -5,7 +5,7 @@ import time
 import matplotlib
 import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
+#from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 
 #DEV_DISCONNECT
@@ -17,9 +17,7 @@ import create_options_panel as options_panel
 import file_helper
 matplotlib.use("TkAgg")
 
-NUM_SNS = 4
-
-class Application(tk.Frame): # pylint: disable=too-many-ancestors
+class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
     def __init__(self, master):
         """Constructs the app."""
@@ -169,7 +167,31 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
         file_helper.write_csv_file(self.options.file_name.get(), serial_nums, \
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
 
+def start_bake():
+    """Starts the baking program."""
+    #pylint:disable=global-statement
+    global INPT, NUM_SNS_ROOT, ROOT
+    number = INPT.get()
+    try:
+        options_panel.NUM_SNS = int(number)
+        NUM_SNS_ROOT.destroy()
+        ROOT = tk.Tk()
+        app = Application(master=ROOT)
+        app.mainloop()
+    except ValueError:
+        pass
+
+
 if __name__ == "__main__":
-    ROOT = tk.Tk()
-    APP = Application(master=ROOT)
-    APP.mainloop()
+    NUM_SNS_ROOT = tk.Tk()
+    NUM_SNS_ROOT.geometry("500x100-0+0")
+    tk.Label(NUM_SNS_ROOT, text="How many fibers will be used for baking? ", \
+            height=1, width=75).grid(row=0)
+    INPT = tk.Entry(NUM_SNS_ROOT, width=25)
+    INPT.grid(row=1, column=0)
+    #INFO = tk.Label(NUM_SNS_ROOT, text="", height=1)
+    #INFO.grid(row=3, column=1)
+    START_BAKE = tk.Button(NUM_SNS_ROOT, text="Start Baking", command=start_bake)
+    START_BAKE.grid(row=2, column=0)
+    ROOT = None
+    NUM_SNS_ROOT.mainloop()

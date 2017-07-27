@@ -10,6 +10,25 @@ def string_entry(container, label_text, row, width, default_str=""):
     text_var.set(default_str)
     return text_var
 
+def serial_num_entry(container, label_text, row, width, \
+            default_str="", def_switch=0, def_channel=1):
+    #pylint:disable=too-many-arguments
+    """Creates a serial number entry with channel number and switch position."""
+    serial_num_ent = string_entry(container, label_text, row, width, default_str)
+    tk.Label(container, text="Channel number:").grid(row=row, column=3, sticky='ew')
+    chan_num_ent = tk.IntVar()
+    tk.Entry(container, textvariable=chan_num_ent, width=width)\
+            .grid(row=row, column=4, sticky='ew')
+    tk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
+    switch_pos_ent = tk.IntVar()
+    tk.Entry(container, textvariable=switch_pos_ent, width=width)\
+            .grid(row=row, column=6, sticky='ew')
+    chan_num_ent.set(def_channel)
+    switch_pos_ent.set(def_switch)
+    tk.Label(container, width=3).grid(row=row, column=7)
+    return  serial_num_ent, chan_num_ent, switch_pos_ent
+
+
 def int_entry(container, label_text, row, width, default_int=0):
     """Creates an int entry, and returns a reference to the entry var."""
     text_var = tk.IntVar()
@@ -29,6 +48,8 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     return text_var
 
 def time_entry(container, label_text, row, width, unit, default_double=0.0):
+    #pylint:disable=too-many-arguments
+    """Creates a time entry."""
     text_var = double_entry(container, label_text, row, width, default_double)
     tk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
     return text_var
