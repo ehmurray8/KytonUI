@@ -2,20 +2,28 @@
 import tkinter as tk
 import time
 
+<<<<<<< HEAD
 import matplotlib
 import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 #from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
+=======
+#import matplotlib
+#import matplotlib.animation as animation
+#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+#from matplotlib.figure import Figure
+#from matplotlib import pyplot as plt
+>>>>>>> 7066057262ee0eecdaf7b20c7f898fede4110b0a
 
 #DEV_DISCONNECT
-#import controller_340_wrapper as temp_controller
-#import delta_oven_wrapper as oven_wrapper
-#import init_instruments as init
-#import sm125_wrapper
+import controller_340_wrapper as temp_controller
+import delta_oven_wrapper as oven_wrapper
+import init_instruments as init
+import sm125_wrapper
 import create_options_panel as options_panel
 import file_helper
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
 
 class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
@@ -23,7 +31,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         """Constructs the app."""
         super().__init__(master)
 
-        #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+        self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
         #Window setup
         master.title("Kyton Baking")
@@ -41,39 +49,39 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
-        self.x_vals = []
-        self.y_vals = []
-        self.num_pt = 0
+        #self.x_vals = []
+        #self.y_vals = []
+        #self.num_pt = 0
 
-        self.fig = plt.Figure()
-        sub = self.fig.add_subplot(111)
-        sub.set_title('Baking: ' + u'\u0394\u03BB' + " (pm) vs. Time (hr) from start")
-        sub.set_ylabel(u'\u0394\u03BB' + " average (pm)")
-        sub.set_xlabel('Elapsed Time from start (hr)')
-        self.line = sub.plot(self.x_vals, self.y_vals)
-        self.create_graph()
+        #self.fig = plt.Figure()
+        #sub = self.fig.add_subplot(111)
+        #sub.set_title('Baking: ' + u'\u0394\u03BB' + " (pm) vs. Time (hr) from start")
+        #sub.set_ylabel(u'\u0394\u03BB' + " average (pm)")
+        #sub.set_xlabel('Elapsed Time from start (hr)')
+        #self.line = sub.plot(self.x_vals, self.y_vals)
+        #self.create_graph()
 
 
-    def create_graph(self):
+    #def create_graph(self):
         """Creates the graph."""
-        canvas = FigureCanvasTkAgg(self.fig, self.main_frame)
-        canvas.show()
-        canvas.get_tk_widget().grid(column=1, row=0)
-        toolbar = NavigationToolbar2TkAgg(canvas, ROOT)
-        toolbar.update()
+        #canvas = FigureCanvasTkAgg(self.fig, self.main_frame)
+        #canvas.show()
+        #canvas.get_tk_widget().grid(column=1, row=0)
+        #toolbar = NavigationToolbar2TkAgg(canvas, ROOT)
+        #toolbar.update()
 
-        animation.FuncAnimation(self.fig, self.animate, frames=[self.num_pt]\
-                , interval=5000, blit=False)
+        #animation.FuncAnimation(self.fig, self.animate, frames=[self.num_pt]\
+        #        , interval=5000, blit=False)
         #plt.show()
 
-    def animate(self, i):
-        """Updates the graph."""
-        print("Animate " + str(i) + " " + str(self.num_pt))
-        self.x_vals.append(self.num_pt)
-        self.y_vals.append(self.num_pt)
-        self.num_pt += 1
-        self.line.set_data(self.x_vals, self.y_vals)
-        return self.line,
+    #def animate(self, i):
+    #    """Updates the graph."""
+    #    print("Animate " + str(i) + " " + str(self.num_pt))
+    #    self.x_vals.append(self.num_pt)
+    #    self.y_vals.append(self.num_pt)
+    #    self.num_pt += 1
+    #    self.line.set_data(self.x_vals, self.y_vals)
+    #    return self.line,
 
     def create_excel(self):
         """Creates excel file."""
@@ -83,9 +91,9 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         """Starts the recording process."""
         if self.options.delta_oven_state.get():
             #DEV_DISCONNECT
-            pass
-            #oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
-        #self.program_loop()
+            #pass
+            oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+        self.program_loop()
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
@@ -100,6 +108,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
     def program_loop(self):
         """Infinite program loop."""
+        print("Started program loop...")
         if not self.check_stable():
             self.baking_loop()
             self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
@@ -114,6 +123,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         need_init = False
         while count < int(self.options.num_pts.get()):
             #DEV_DISCONNECT
+<<<<<<< HEAD
             #wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
 
             wavelengths, amplitudes = sm125_wrapper.get_data_channels(self.options.chan_nums)
@@ -122,6 +132,11 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
             wavelengths = []
             amplitudes = []
+=======
+            wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+            #wavelengths = []
+            #amplitudes = []
+>>>>>>> 7066057262ee0eecdaf7b20c7f898fede4110b0a
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -152,16 +167,17 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
     def baking_loop(self):
         """Runs the baking process."""
+        print("Started baking loop...")
         #DEV_DISCONNECT
-        #temperature = temp_controller.get_temp_c(self.controller)
-        #temperature = float(temperature[:-3])
-        temperature = 0
+        temperature = temp_controller.get_temp_c(self.controller)
+        temperature = float(temperature[:-3])
+        #temperature = 0
 
         wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
 
         #DEV_DISCONNECT
-        #temp2 = temp_controller.get_temp_c(self.controller)
-        #temperature += float(temp2[:-3])
+        temp2 = temp_controller.get_temp_c(self.controller)
+        temperature += float(temp2[:-3])
         temperature /= 2.0
 
         serial_nums = []

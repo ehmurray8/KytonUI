@@ -15,7 +15,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
     """Write the output csv file."""
     if os.path.isfile(file_name):
         file_obj = open(file_name, "a")
-    else:
+    else:   
         file_obj = open(file_name, "w")
         file_obj.write("Metadata\n")
         need_comma = False
@@ -25,7 +25,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
             else:
                 need_comma = True
             file_obj.write(snum)
-        file_obj.write("\n" + str(timestamp) + ",")
+        file_obj.write("\n")
         need_comma = False
         wave_total = 0
         for wave in wavelengths:
@@ -36,9 +36,10 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
             wave_total += float(wave)
             file_obj.write(str(wave))
         wave_total /= len(serial_nums)
-        file_obj.write(str(wave_total) + "," + str(temp) + "\n")
+        file_obj.write("\n" + str(timestamp) + ",")
+        file_obj.write(str(wave_total) + "," + str(temp) + "\n\n")
         file_obj.write("Serial Num, Timestamp(s), Temperature (C), "\
-                + "Wavelength (nm), Power (dBm)\n")
+                + "Wavelength (nm), Power (dBm)\n\n")
 
     i = 0
     while i < len(serial_nums):
@@ -63,8 +64,8 @@ def __parse_csv_file(csv_file):
 
     metadata = lines[1:4]
     serial_nums = metadata[0].split(",")
-    time_wave_temp = metadata[1].split(",")
-    waves = metadata[2].split(",")
+    waves = metadata[1].split(",")
+    time_wave_temp = metadata[2].split(",")
 
     start_time = float(time_wave_temp[0])
     start_wave = float(time_wave_temp[1])
