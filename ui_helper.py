@@ -1,11 +1,12 @@
 """UI Helper methods."""
 import tkinter as tk
+from tkinter import ttk
 
 def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
     text_var = tk.StringVar()
-    tk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    tk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width)\
                 .grid(row=row, column=2, sticky='ew')
     text_var.set(default_str)
     return text_var
@@ -13,8 +14,8 @@ def string_entry(container, label_text, row, width, default_str=""):
 def int_entry(container, label_text, row, width, default_int=0):
     """Creates an int entry, and returns a reference to the entry var."""
     text_var = tk.IntVar()
-    tk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    tk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width)\
                 .grid(row=row, column=2, sticky='ew')
     text_var.set(default_int)
     return text_var
@@ -22,25 +23,27 @@ def int_entry(container, label_text, row, width, default_int=0):
 def double_entry(container, label_text, row, width, default_double=0.0):
     """Creates an double entry, and returns a reference to the entry var."""
     text_var = tk.DoubleVar()
-    tk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    tk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width)\
                 .grid(row=row, column=2, sticky='ew')
     text_var.set(default_double)
     return text_var
 
 def time_entry(container, label_text, row, width, unit, default_double=0.0):
+    #pylint:disable=missing-docstring
+    """Creates a time entry, and returns a reference to the entry var."""
     text_var = double_entry(container, label_text, row, width, default_double)
-    tk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
+    ttk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
     return text_var
 
 def checkbox_entry(container, label_text, row, checked=True):
     """Creates a checkbox entry, and returns a reference to the entry var."""
     int_var = tk.IntVar()
-    tk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    checkbox = tk.Checkbutton(container, variable=int_var)
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    checkbox = ttk.Checkbutton(container, variable=int_var)
     checkbox.grid(row=row, column=2, sticky='ew')
     if checked:
-        checkbox.select()
+        checkbox.invoke()
     return int_var
 
 def print_options(app):
