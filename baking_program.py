@@ -1,13 +1,15 @@
-#pylint:disable=unused-import
+#pylint:disable=unused-import, wrong-import-position
 """Main entry point for the UI."""
 import tkinter as tk
 import time
 
-#import matplotlib
-#import matplotlib.animation as animation
-#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-#from matplotlib.figure import Figure
-#from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.animation as animation
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+from matplotlib import pyplot as plt
+from matplotlib import style
 
 #DEV_DISCONNECT
 import controller_340_wrapper as temp_controller
@@ -16,7 +18,8 @@ import init_instruments as init
 import sm125_wrapper
 import create_options_panel as options_panel
 import file_helper
-#matplotlib.use("TkAgg")
+
+style.use("ggplot")
 
 NUM_SNS = 4
 
