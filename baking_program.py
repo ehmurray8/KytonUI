@@ -115,6 +115,11 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         while count < int(self.options.num_pts.get()):
             #DEV_DISCONNECT
             #wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+
+            wavelengths, amplitudes = sm125_wrapper.get_data_channels(self.options.chan_nums)
+            #TODO
+            #Need to associate proper amplitudes/powers with correct serial number
+
             wavelengths = []
             amplitudes = []
 
