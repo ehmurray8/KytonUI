@@ -2,6 +2,7 @@
 """Main entry point for the UI."""
 import tkinter as tk
 import time
+import sys
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -23,13 +24,14 @@ style.use("ggplot")
 
 NUM_SNS = 4
 
-class Application(tk.Frame): # pylint: disable=too-many-ancestors
+class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
     def __init__(self, master):
         """Constructs the app."""
         super().__init__(master)
 
-        #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
+        if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
 
         #Window setup
         master.title("Kyton Baking")
@@ -88,9 +90,10 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
     def start(self):
         """Starts the recording process."""
         if self.options.delta_oven_state.get():
-            #DEV_DISCONNECT
-            pass
-            #oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+            if len(sys.argv) > 1 and sys.argv[1] == "-k":
+                oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+            else:
+                pass
         self.program_loop()
 
     def check_stable(self):
@@ -120,10 +123,11 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
         count = 0
         need_init = False
         while count < int(self.options.num_pts.get()):
-            #DEV_DISCONNECT
-            #wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
-            wavelengths = []
-            amplitudes = []
+            if len(sys.argv) > 1 and sys.argv[1] == "-k":
+                wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+            else:
+                wavelengths = []
+                amplitudes = []
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -155,16 +159,17 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors
     def baking_loop(self):
         """Runs the baking process."""
         print("Started baking loop...")
-        #DEV_DISCONNECT
-        #temperature = temp_controller.get_temp_c(self.controller)
-        #temperature = float(temperature[:-3])
-        temperature = 0
+        if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            temperature = temp_controller.get_temp_c(self.controller)
+            temperature = float(temperature[:-3])
+        else:
+            temperature = 0
 
         wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
 
-        #DEV_DISCONNECT
-        #temp2 = temp_controller.get_temp_c(self.controller)
-        #temperature += float(temp2[:-3])
+        if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            temp2 = temp_controller.get_temp_c(self.controller)
+            temperature += float(temp2[:-3])
         temperature /= 2.0
 
         serial_nums = []
