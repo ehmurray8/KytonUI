@@ -49,13 +49,8 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     return text_var
 
 def time_entry(container, label_text, row, width, unit, default_double=0.0):
-<<<<<<< HEAD
     #pylint:disable=too-many-arguments
-    """Creates a time entry."""
-=======
-    #pylint:disable=missing-docstring
     """Creates a time entry, and returns a reference to the entry var."""
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
     text_var = double_entry(container, label_text, row, width, default_double)
     ttk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
     return text_var
