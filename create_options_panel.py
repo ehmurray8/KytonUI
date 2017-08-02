@@ -1,6 +1,7 @@
 """Class sets up the tkinter UI code for the options panel."""
 
 import tkinter as tk
+from tkinter import ttk
 import ui_helper
 
 NUM_SNS = None
@@ -111,7 +112,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
     def create_start_btn(self, start):
         """Creates the start button in the app."""
         #Start button
-        start_button = tk.Button(self)
+        start_button = ttk.Button(self)
         start_button["text"] = "Start"
         start_button["command"] = start
         start_button.pack()
