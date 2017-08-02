@@ -1,28 +1,16 @@
-<<<<<<< HEAD
-#pylint:disable=unused-import
-=======
 #pylint:disable=unused-import, wrong-import-position
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 """Main entry point for the UI."""
 import tkinter as tk
 import time
 import sys
 
 import matplotlib
-<<<<<<< HEAD
+matplotlib.use("TkAgg")
 import matplotlib.animation as animation
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-=======
-matplotlib.use("TkAgg")
-import matplotlib.animation as animation
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
-from matplotlib import style
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 
 #DEV_DISCONNECT
 import controller_340_wrapper as temp_controller
@@ -31,29 +19,20 @@ import init_instruments as init
 import sm125_wrapper
 import create_options_panel as options_panel
 import file_helper
-<<<<<<< HEAD
 #matplotlib.use("TkAgg")
 style.use('ggplot')
 
-=======
-
-style.use("ggplot")
 
 NUM_SNS = 4
 
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
     def __init__(self, master):
         """Constructs the app."""
         super().__init__(master)
 
-<<<<<<< HEAD
-        #self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
-=======
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             self.controller, self.oven, self.gp700, self.sm125 = init.setup_instruments()
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 
         #Window setup
         master.title("Kyton Baking")
@@ -84,7 +63,6 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         self.create_graph()
 
 
-<<<<<<< HEAD
     def create_graph(self):
         """Creates the graph."""
         canvas = FigureCanvasTkAgg(self.fig, self.main_frame)
@@ -105,28 +83,6 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         self.num_pt += 1
         self.line.set_data(self.x_vals, self.y_vals)
         return self.line,
-=======
-    #def create_graph(self):
-        #"""Creates the graph."""
-        #canvas = FigureCanvasTkAgg(self.fig, self.main_frame)
-        #canvas.show()
-        #canvas.get_tk_widget().grid(column=1, row=0)
-        #toolbar = NavigationToolbar2TkAgg(canvas, ROOT)
-        #toolbar.update()
-
-        #animation.FuncAnimation(self.fig, self.animate, frames=[self.num_pt]\
-        #        , interval=5000, blit=False)
-        #plt.show()
-
-    #def animate(self, i):
-    #    """Updates the graph."""
-    #    print("Animate " + str(i) + " " + str(self.num_pt))
-    #    self.x_vals.append(self.num_pt)
-    #    self.y_vals.append(self.num_pt)
-    #    self.num_pt += 1
-    #    self.line.set_data(self.x_vals, self.y_vals)
-    #    return self.line,
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 
     def create_excel(self):
         """Creates excel file."""
@@ -135,16 +91,8 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
     def start(self):
         """Starts the recording process."""
         if self.options.delta_oven_state.get():
-<<<<<<< HEAD
-            #DEV_DISCONNECT
-            pass
-            #oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
-=======
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
-            else:
-                pass
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
         self.program_loop()
 
     def check_stable(self):
@@ -174,23 +122,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         count = 0
         need_init = False
         while count < int(self.options.num_pts.get()):
-<<<<<<< HEAD
-            #DEV_DISCONNECT
-            #wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
-
             #wavelengths, amplitudes = sm125_wrapper.get_data_channels(self.options.chan_nums)
             #TODO
             #Need to associate proper amplitudes/powers with correct serial number
-
-            wavelengths = []
-            amplitudes = []
-=======
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
             else:
                 wavelengths = []
                 amplitudes = []
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -222,18 +161,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
     def baking_loop(self):
         """Runs the baking process."""
         print("Started baking loop...")
-<<<<<<< HEAD
-        #DEV_DISCONNECT
-        #temperature = temp_controller.get_temp_c(self.controller)
-        #temperature = float(temperature[:-3])
-        temperature = 0
 
-        wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
-
-        #DEV_DISCONNECT
-        #temp2 = temp_controller.get_temp_c(self.controller)
-        #temperature += float(temp2[:-3])
-=======
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             temperature = temp_controller.get_temp_c(self.controller)
             temperature = float(temperature[:-3])
@@ -245,7 +173,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             temp2 = temp_controller.get_temp_c(self.controller)
             temperature += float(temp2[:-3])
->>>>>>> 7071fa3c76f9efee35f4c1da8c2ba389da7b19e4
+
         temperature /= 2.0
 
         serial_nums = []
