@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 import ui_helper
+import baking_program
 
 NUM_SNS = None
 
@@ -115,7 +116,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         start_button = ttk.Button(self)
         start_button["text"] = "Start"
         start_button["command"] = start
-        start_button.pack()
+        start_button.pack(pady=10)
 
 
 if __name__ == "__main__":
