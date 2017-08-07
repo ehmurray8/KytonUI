@@ -64,7 +64,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
 
         #Number of points to average entry
-        self.num_pts = ui_helper.int_entry(options_grid, "Num points to average: ",\
+        self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ",\
                     row_num, 10, 5)
         row_num += 1
 
@@ -98,9 +98,6 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         #(TEMP) Fiber SN Inputs
         index = 1
         while index <= NUM_SNS:
-            #self.sn_ents.append(ui_helper.string_entry(options_grid, \
-            #        "Serial Number " + str(index) + ": ", row_num, 20, \
-	    #        "Fiber " + str(index)))
             serial_num, chan_num, switch_pos = ui_helper.serial_num_entry(options_grid, \
                     "Serial Number " + str(index) + ": ", row_num, 5, "Fiber " + str(index))
             self.sn_ents.append(serial_num)

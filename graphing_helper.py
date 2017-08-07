@@ -9,7 +9,7 @@ import file_helper
 
 style.use("ggplot")
 
-def create_mean_wave_time_graph(f_name):
+def create_mean_wave_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
     fig = plt.figure(0)
     ax1 = fig.add_subplot(1, 1, 1)
@@ -18,8 +18,12 @@ def create_mean_wave_time_graph(f_name):
     plt.ylabel('Wavelength (nm)')
     fig.suptitle('Baking: {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
-    ani = animation.FuncAnimation(fig, animate_mvt_graph, interval=1000, fargs=(f_name, ax1,))
-    fig.show()
+    if animate:
+        ani = animation.FuncAnimation(fig, animate_mvt_graph, interval=1000, fargs=(f_name, ax1,))
+        fig.show()
+    else:
+        animate_mvt_graph(0, f_name, ax1)
+        plt.show()
 
 
 def animate_mvt_graph(i, f_name, axis):
@@ -43,10 +47,8 @@ def animate_wp_graph(i, f_name, axis):
         idx += 1
 
     legend = axis.legend(axes, snums, bbox_to_anchor=(1.10, 1.10), loc='upper right', borderaxespad=0.,\
-                    #bbox_to_anchor=(0, 1.05, 1, .105),
                     ncol=int(len(snums) / 2 + 0.5), fontsize=8)
                     
-
 
 def get_wave_power_graph(f_name):
     mdata, entries_df = file_helper.parse_csv_file(f_name)
@@ -55,17 +57,18 @@ def get_wave_power_graph(f_name):
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
 
-def create_wave_power_graph(f_name):
+def create_wave_power_graph(f_name, animate):
     fig = plt.figure(1)
     ax1 = fig.add_subplot(1, 1, 1)
-    fig.suptitle('Baking Current Status')
+    fig.suptitle('Baking: Power (dBm) vs. Wavelength (nm)')
 
-    ani = animation.FuncAnimation(fig, animate_wp_graph, interval=1000, fargs=(f_name, ax1,))
-    fig.show()
+    if animate:
+        ani = animation.FuncAnimation(fig, animate_wp_graph, interval=1000, fargs=(f_name, ax1,))
+        fig.show()
+    else:
+        animate_wp_graph(0, f_name, ax1)
+        plt.show()
 
-def __update_line(num, data, line):
-    line.set_data(data[..., :num])
-    return line,
 
 def __mean_wave_diff_v_time_data(f_name):
     mdata, entries_df = file_helper.parse_csv_file(f_name)
@@ -75,4 +78,4 @@ def __mean_wave_diff_v_time_data(f_name):
 
     
 if __name__ == "__main__":
-    create_mean_wave_time_graph("kyton_out.csv")
+    create_mean_wave_time_graph("kyton_out.csv", False)

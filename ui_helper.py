@@ -16,17 +16,17 @@ def serial_num_entry(container, label_text, row, width, \
     #pylint:disable=too-many-arguments
     """Creates a serial number entry with channel number and switch position."""
     serial_num_ent = string_entry(container, label_text, row, width, default_str)
-    tk.Label(container, text="Channel number:").grid(row=row, column=3, sticky='ew')
+    ttk.Label(container, text="Channel number:").grid(row=row, column=3, sticky='ew')
     chan_num_ent = tk.IntVar()
-    tk.Entry(container, textvariable=chan_num_ent, width=width)\
+    tk.Spinbox(container, from_=1, to=4, textvariable=chan_num_ent, width=width, state="readonly") \
             .grid(row=row, column=4, sticky='ew')
-    tk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
+    ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
     switch_pos_ent = tk.IntVar()
-    tk.Entry(container, textvariable=switch_pos_ent, width=width)\
+    tk.Spinbox(container, from_=1, to=4, textvariable=switch_pos_ent, width=width, state="readonly") \
             .grid(row=row, column=6, sticky='ew')
     chan_num_ent.set(def_channel)
     switch_pos_ent.set(def_switch)
-    tk.Label(container, width=3).grid(row=row, column=7)
+    ttk.Label(container, width=3).grid(row=row, column=7)
     return  serial_num_ent, chan_num_ent, switch_pos_ent
 
 

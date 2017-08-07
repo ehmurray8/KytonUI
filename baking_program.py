@@ -40,17 +40,35 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         self.gp700 = None
         self.sm125 = None
 
+        self.channels = [[], [], [], []]
+        self.switches = []
+
         #Window setup
         master.title("Kyton Baking")
         self.menu = tk.Menu(master, tearoff=0)
-        master.config(menu=self.menu)
         self.menu.add_command(label="Create Excel", command=lambda: \
                 file_helper.create_excel_file(self.options.file_name.get()))
-        self.menu.add_command(label="Show Graph", command=lambda: \
-                graphing_helper.create_mean_wave_time_graph(self.options.file_name.get()))
-        self.menu.add_command(label="Show Graph 1", command=lambda: \
-                graphing_helper.create_wave_power_graph(self.options.file_name.get()))
         self.menu.add_command(label="Config", command=update_config)
+
+        graphmenu = tk.Menu(self.menu, tearoff=0)
+        animenu = tk.Menu(graphmenu, tearoff=0)
+        staticmenu = tk.Menu(graphmenu, tearoff=0)
+        animenu.add_command(label="Wavelength v. Time", command=lambda: \
+                graphing_helper.create_mean_wave_time_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Wavelength v. Power", command=lambda: \
+                graphing_helper.create_wave_power_graph(self.options.file_name.get(), True))
+        staticmenu.add_command(label="Wavelength v. Time", command=lambda: \
+                graphing_helper.create_mean_wave_time_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Wavelength v. Power", command=lambda: \
+                graphing_helper.create_wave_power_graph(self.options.file_name.get(), False))
+
+        graphmenu.add_cascade(label="Animated", menu=animenu)
+        graphmenu.add_cascade(label="Static", menu=staticmenu)
+        self.menu.add_cascade(label="Graph", menu=graphmenu)
+
+
+        master.config(menu=self.menu)
+
 
         self.pack(side="top", fill="both", expand=True)
         self.main_frame = tk.Frame(self)
@@ -109,6 +127,9 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             CPARSER.write(conf)
         print(CPARSER.get("Devices", "sm125_address"))
 
+        for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
+            self.channels[chan.get() - 1] = snum.get()
+
         self.program_loop()
 
     def check_stable(self):
@@ -142,10 +163,21 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             #TODO
             #Need to associate proper amplitudes/powers with correct serial number
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                wavelengths, amplitudes = sm125_wrapper.get_data_actual(self.sm125)
+                wavelengths, amplitudes, lens = sm125_wrapper.get_data_actual(self.sm125)
             else:
                 wavelengths = [[]]
                 amplitudes = [[]]
+                lens = [0, 0, 0, 0]
+
+            #TODO need to make sure wavelengths and amplitudes are 2d lists with one list per channel
+            for len, wavelens in zip(lens, wavelengths):
+                if len(wavelens) > len:
+                    #Curr channel more wavelengths are expected than received
+                    pass
+                elif len(wavelens) < len:
+                    #Curr channel more wavelengths were received than expected
+                    pass
+                    
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -213,8 +245,10 @@ def start_bake(popup, inpt):
         options_panel.NUM_SNS = int(number)
         popup.destroy()
         ROOT = tk.Tk()
+        width = 300 + (NUM_SNS * 10) 
+        width += int(NUM_SNS / 3) * 30
+        open_center(600, width, ROOT)
         app = Application(master=ROOT)
-        #open_center(750, 600, ROOT)
         app.mainloop()
     except ValueError:
         messagebox.showwarning("Invalid Input", "Please input an integer.")
@@ -227,13 +261,14 @@ def update_config():
     sm125_addr = CPARSER.get("Devices", "sm125_address")
     sm125_port = CPARSER.get("Devices", "sm125_port")
 
+    old_conf = [cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port]
 
     popup = tk.Toplevel()
     popup.wm_title("Device Configuration")
     frame = tk.Frame(popup)
     frame.pack()
     config_grid = tk.Frame(frame)
-    config_grid.pack(side="top", fill="both", expand=True)
+    config_grid.pack(side="top", fill="both", expand=True, padx=10)
 
     ttk.Label(config_grid, text="340 Controller GPIB0 Port:").grid(row=0, padx=5)
     cont_ent = ttk.Entry(config_grid)
@@ -260,18 +295,30 @@ def update_config():
     sm125_port_ent.grid(row=4, column=1, padx=5)
     sm125_port_ent.insert(0, str(sm125_port))
 
+
+    conf_widgets = [cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent]
+
     ttk.Button(frame, text="Save", command=lambda: save_config(cont_ent, oven_ent, \
             gp700_ent, sm125_addr_ent, sm125_port_ent, popup)). \
             pack(side="top", fill="both", expand=True, pady=10)
 
     open_center(350, 150, popup)
-    popup.protocol("WM_DELETE_WINDOW", lambda: __on_closing(popup))
+    popup.protocol("WM_DELETE_WINDOW", lambda: __on_closing(popup, old_conf, conf_widgets))
 
-def __on_closing(root):
-    if messagebox.askokcancel("Quit", "Changes won't be save. Are you sure you want to quit?"):
-        root.destroy()
+def __on_closing(root, old_conf, widgets):
+    unsaved = False
+    for old_c, widg in zip(old_conf, widgets):
+        if old_c != widg.get():
+            unsaved = True
+            break
+
+    if unsaved:
+        if messagebox.askokcancel("Quit", "Changes won't be save. Are you sure you want to quit?"):
+            root.destroy()
+        else:
+            root.tkraise()
     else:
-        root.tkraise()
+        root.destroy()
 
 
 def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window):

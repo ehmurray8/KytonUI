@@ -50,7 +50,14 @@ def get_data_actual(soc):
     wavelengths_list = [en / wavelength_scale_factor for en in wavelengths]
     amplitudes_list = [en / amplitude_scale_factor for en in amplitudes]
 
-    return wavelengths_list, amplitudes_list
+    #wavelens_by_chan = [[], [], [], []]
+    #wavelens_by_chan[0] = wavelengths_list[:ns1]
+    #wavelens_by_chan[1] = wavelengths_list[ns1:ns1+ns2]
+    #wavelens_by_chan[2] = wavelengths_list[ns1+ns2:ns1+ns2+ns3]
+    #wavelens_by_chan[3] = wavelengths_list[ns1+ns2+ns3:]
+    chan_lens = [ns1, ns2, ns3, ns4]
+
+    return wavelengths_list, amplitudes_list, chan_lens 
 
 
 def get_data_built_in(soc):
