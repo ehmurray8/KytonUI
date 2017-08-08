@@ -3,7 +3,6 @@
 import tkinter as tk
 from tkinter import ttk
 import ui_helper
-import baking_program
 
 NUM_SNS = None
 
