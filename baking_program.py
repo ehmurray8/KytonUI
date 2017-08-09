@@ -40,6 +40,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         self.gp700 = None
         self.sm125 = None
 
+        self.snums = []
         self.channels = [[], [], [], []]
         self.switches = []
 
@@ -81,15 +82,6 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
 
-    def animate(self, i):
-        """Updates the graph."""
-        print("Animate " + str(i) + " " + str(self.num_pt))
-        self.x_vals.append(self.num_pt)
-        self.y_vals.append(self.num_pt)
-        self.num_pt += 1
-        self.line.set_data(self.x_vals, self.y_vals)
-        return self.line,
-
     def create_excel(self):
         """Creates excel file."""
         file_helper.create_excel_file(self.options.file_name.get())
@@ -120,15 +112,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 self.sm125 = sm125_wrapper.setup(sm125_address, sm125_port)
         sm125_address = CPARSER.get("Devices", "sm125_address")
         sm125_port = CPARSER.get("Devices", "sm125_port")
-        print(sm125_address)
-        print(sm125_port)
         CPARSER.set("Devices", "sm125_address", "69")
         with open("devices.cfg", "w+") as conf:
             CPARSER.write(conf)
-        print(CPARSER.get("Devices", "sm125_address"))
 
         for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
-            self.channels[chan.get() - 1] = snum.get()
+            if snum.get() != "":
+                self.snums.append(snum.get())
+                self.channels[chan.get() - 1] = snum.get()
 
         self.program_loop()
 
@@ -154,14 +145,15 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
 
     def __avg_waves_amps(self):
+        #pylint:disable=too-many-locals, too-many-branches
         amplitudes_avg = []
         wavelengths_avg = []
         count = 0
         need_init = False
         while count < int(self.options.num_pts.get()):
             #wavelengths, amplitudes = sm125_wrapper.get_data_channels(self.options.chan_nums)
-            #TODO
-            #Need to associate proper amplitudes/powers with correct serial number
+            #TODO Need to associate proper amplitudes/powers with correct serial number
+            #
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 wavelengths, amplitudes, lens = sm125_wrapper.get_data_actual(self.sm125)
             else:
@@ -169,15 +161,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 amplitudes = [[]]
                 lens = [0, 0, 0, 0]
 
-            #TODO need to make sure wavelengths and amplitudes are 2d lists with one list per channel
-            for len, wavelens in zip(lens, wavelengths):
+            #TODO make sure wavelengths and amplitudes are 2d lists with one list per channel
+            enough_readings = False
+            for length, wavelens in zip(lens, wavelengths):
                 if len(wavelens) > len:
                     #Curr channel more wavelengths are expected than received
                     pass
-                elif len(wavelens) < len:
-                    #Curr channel more wavelengths were received than expected
-                    pass
-                    
+                else:
+                    enough_readings = True
 
             if not need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
@@ -203,7 +194,27 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             wavelengths_avg[i] /= (count)
             amplitudes_avg[i] /= (count)
             i += 1
-        return wavelengths_avg, amplitudes_avg
+
+        chan_num = 1
+        data_pts = {}
+        for chan in self.channels:
+            max_pts = lens[chan_num-1]
+            temp = chan_num
+            start_index = 0
+            while temp > 1:
+                start_index += lens[temp-2]
+            count = 0
+            for snum in chan:
+                if count > max_pts:
+                    data_pts.update(snum, (wavelengths_avg[start_index], \
+                                           amplitudes_avg[start_index]))
+                    start_index += 1
+                else:
+                    data_pts.update(snum, (None, None))
+            chan_num += 1
+
+        return data_pts
+        #return wavelengths_avg, amplitudes_avg
 
 
     def baking_loop(self):
@@ -216,7 +227,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         else:
             temperature = 0
 
-        wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
+        #wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
+        wavelengths_avg = []
+        amplitudes_avg = []
+        data_pts = self.__avg_waves_amps()
+        for snum in self.snums:#self.options.sn_ents:
+            wavelengths_avg.append(data_pts[snum.get()][0])
+            amplitudes_avg.append(data_pts[snum.get()][1])
+
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             temp2 = temp_controller.get_temp_c(self.controller)
@@ -224,14 +242,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
         temperature /= 2.0
 
-        serial_nums = []
-        for sn_ent in self.options.sn_ents:
-            serial_nums.append(sn_ent.get())
+        #serial_nums = []
+        #for sn_ent in self.options.sn_ents:
+        #    serial_nums.append(sn_ent.get())
 
         curr_time = time.time()
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            file_helper.write_csv_file(self.options.file_name.get(), serial_nums, \
+            file_helper.write_csv_file(self.options.file_name.get(), self.snums, \
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
 
 
@@ -245,7 +263,7 @@ def start_bake(popup, inpt):
         options_panel.NUM_SNS = int(number)
         popup.destroy()
         ROOT = tk.Tk()
-        width = 300 + (NUM_SNS * 10) 
+        width = 300 + (NUM_SNS * 10)
         width += int(NUM_SNS / 3) * 30
         open_center(600, width, ROOT)
         app = Application(master=ROOT)
