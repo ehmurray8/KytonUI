@@ -27,7 +27,7 @@ NUM_SNS = 4
 TERM_CHAR = '/n'
 
 CPARSER = configparser.SafeConfigParser()
-CPARSER.read("devices.cfg")
+CPARSER.read("devices.cfg") 
 
 class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
@@ -107,19 +107,17 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 self.gp700 = resource_manager.open_resource(gp700_location,\
                         read_termination=TERM_CHAR)
             if self.options.sm125_state.get():
-                sm125_address = CPARSER.get("Devices", "sm125_sm125_address")
+                sm125_address =CPARSER.get("Devices", "sm125_address")
                 sm125_port = CPARSER.get("Devices", "sm125_port")
-                self.sm125 = sm125_wrapper.setup(sm125_address, sm125_port)
+                self.sm125 = sm125_wrapper.setup(sm125_address, int(sm125_port))
         sm125_address = CPARSER.get("Devices", "sm125_address")
         sm125_port = CPARSER.get("Devices", "sm125_port")
-        CPARSER.set("Devices", "sm125_address", "69")
-        with open("devices.cfg", "w+") as conf:
-            CPARSER.write(conf)
 
         for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
             if snum.get() != "":
+                #print("Channel: {}, SNUM: {}".format(chan.get(), snum.get()))
                 self.snums.append(snum.get())
-                self.channels[chan.get() - 1] = snum.get()
+                self.channels[chan.get() - 1].append(snum.get())
 
         self.program_loop()
 
@@ -164,7 +162,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             #TODO make sure wavelengths and amplitudes are 2d lists with one list per channel
             enough_readings = False
             for length, wavelens in zip(lens, wavelengths):
-                if len(wavelens) > len:
+                if len(wavelens) > length:
                     #Curr channel more wavelengths are expected than received
                     pass
                 else:
@@ -197,20 +195,24 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
         chan_num = 1
         data_pts = {}
+        #print(str(self.channels))
         for chan in self.channels:
             max_pts = lens[chan_num-1]
             temp = chan_num
             start_index = 0
             while temp > 1:
                 start_index += lens[temp-2]
+                temp -= 1
             count = 0
+            #print(str(chan))
             for snum in chan:
-                if count > max_pts:
-                    data_pts.update(snum, (wavelengths_avg[start_index], \
-                                           amplitudes_avg[start_index]))
+                if count < max_pts:
+                    data_pts[snum] = (wavelengths_avg[start_index], \
+                                           amplitudes_avg[start_index])
                     start_index += 1
                 else:
-                    data_pts.update(snum, (None, None))
+                    data_pts[snum] = (None, None)
+                count += 1
             chan_num += 1
 
         return data_pts
@@ -232,8 +234,8 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
         amplitudes_avg = []
         data_pts = self.__avg_waves_amps()
         for snum in self.snums:#self.options.sn_ents:
-            wavelengths_avg.append(data_pts[snum.get()][0])
-            amplitudes_avg.append(data_pts[snum.get()][1])
+            wavelengths_avg.append(data_pts[snum][0])
+            amplitudes_avg.append(data_pts[snum][1])
 
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
