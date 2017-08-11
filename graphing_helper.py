@@ -14,20 +14,20 @@ def create_mean_wave_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
     fig = plt.figure(0)
     ax1 = fig.add_subplot(1, 1, 1)
-    
+
     plt.xlabel('Time (hr)')
     plt.ylabel('Wavelength (nm)')
     fig.suptitle('Baking: Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
     if animate:
-        ani = animation.FuncAnimation(fig, __animate_mvt_graph, interval=1000, fargs=(f_name, ax1,))
+        ani = animation.FuncAnimation(fig, __animate_mwt_graph, interval=1000, fargs=(f_name, ax1,))
         fig.show()
     else:
-        __animate_mvt_graph(0, f_name, ax1)
+        __animate_mwt_graph(0, f_name, ax1)
         plt.show()
 
 
-def __animate_mvt_graph(i, f_name, axis):
+def __animate_mwt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_wave_diff_v_time_data(f_name)
     axis.clear()
     plt.xlabel('Time (hr)')
@@ -75,15 +75,13 @@ def __get_wave_power_graph(f_name):
     mdata, entries_df = file_helper.parse_csv_file(f_name)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
 
-    #print(str(data_coll))
-    
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
 
 def create_temp_time_graph(f_name, animate):
     fig = plt.figure(2)
     ax1 = fig.add_subplot(1, 1, 1)
-    fig.subtitle('Baking: {} Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
+    fig.suptitle('Baking: {} Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1,))
@@ -96,13 +94,52 @@ def create_temp_time_graph(f_name, animate):
 def __animate_temp_graph(i, f_name, axis):
     times, temps = __get_temp_time_graph(f_name)
     axis.clear()
-    plt.xlablel('Time (hr)')
-    plt.ylablel('Temperature (K)') 
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Temperature (K)') 
+    axis.plot(times, temps)
 
-    idx = 0
-    axes = []
-    #for waves, powers, color in zip(
+
+def __get_temp_time_graph(f_name):
+    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    data_coll = file_helper.create_data_coll(mdata, entries_df)
+    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+    return times, data_coll.temp_diffs
+
+
+def create_mean_power_time_graph(f_name, animate):
+    """Create a mpl graph in a separate window."""
+    fig = plt.figure(3)
+    ax1 = fig.add_subplot(1, 1, 1)
     
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Power (dBm)')
+    fig.suptitle('Baking: Average Power (dBm) vs. Time (hr) from start')
+
+    if animate:
+        ani = animation.FuncAnimation(fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
+        fig.show()
+    else:
+        __animate_mpt_graph(0, f_name, ax1)
+        plt.show()
+
+
+def __animate_mpt_graph(i, f_name, axis):
+    times, wavelen_diffs = __get_mean_power_diff_v_time_data(f_name)
+    axis.clear()
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Power (dBm)')
+    axis.plot(times, wavelen_diffs)
+
+
+def __get_mean_power_diff_v_time_data(f_name):
+    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    data_coll = file_helper.create_data_coll(mdata, entries_df)
+    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+    return times, data_coll.mean_power_diffs
+
+
 if __name__ == "__main__":
     #create_mean_wave_time_graph("kyton_out.csv", False)
-    create_wave_power_graph("kyton_out.csv", False)
+    #create_wave_power_graph("kyton_out.csv", False)
+    #create_temp_time_graph("kyton_out.csv", False)
+    create_mean_power_time_graph("kyton_out.csv", False)

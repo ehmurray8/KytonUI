@@ -113,7 +113,8 @@ def create_data_coll(mdata, entries_df):
     temps = entries_df['Temperature(K)'].values.tolist()
     for idx, temp in enumerate(temps):
         if idx % len(mdata.serial_nums) == 0:
-            data_coll.temps.append(temp)
+            data_coll.temps.append(temp + 273.15)
+            data_coll.temp_diffs.append(float(temp) + 273.15 - float(mdata.start_temp))
 
     wavelens = entries_df['Wavelength(nm)'].values.tolist()
     data_coll.wavelens = [[] for i in range(len(mdata.serial_nums))]
@@ -124,23 +125,34 @@ def create_data_coll(mdata, entries_df):
     data_coll.powers = [[] for i in range(len(mdata.serial_nums))]
     for idx, power in enumerate(powers):
         data_coll.powers[int(idx % len(mdata.serial_nums))].append(power)
+    start_powers = []
+    for power in data_coll.powers:
+        start_powers.append(power[0])
 
     row_num = 0
     data_coll.wavelen_diffs = [[] for i in range(len(mdata.serial_nums))]
+    data_coll.power_diffs = [[] for i in range(len(mdata.serial_nums))]
     for time in data_coll.times:
-        total_diff = 0
+        total_diff_w = 0
+        total_diff_p = 0
         idx = 0
-        for wavelen in data_coll.wavelens:
-            diff = round(float(wavelen[row_num]), 5) - float(mdata.start_wavelens[idx])
-            total_diff += diff
-            data_coll.wavelen_diffs[idx].append(diff)
+        for wavelen, power in zip(data_coll.wavelens, data_coll.powers):
+            diff_w = round(float(wavelen[row_num]), 5) - float(mdata.start_wavelens[idx])
+            diff_p = round(float(power[row_num]), 5) - float(start_powers[idx])
+            total_diff_w += diff_w
+            total_diff_p += diff_p
+            data_coll.wavelen_diffs[idx].append(diff_w)
+            data_coll.power_diffs[idx].append(diff_p)
             idx += 1
 
-        total_diff /= len(mdata.serial_nums)
-        data_coll.mean_wavelen_diffs.append(total_diff * 1000)
+        total_diff_w /= len(mdata.serial_nums)
+        total_diff_p /= len(mdata.serial_nums)
+
+        data_coll.mean_wavelen_diffs.append(total_diff_w * 1000)
+        data_coll.mean_power_diffs.append(total_diff_p)
         row_num += 1
     return data_coll
-        
+
 
 def __create_row_strs(mdata, entries_df):
 
