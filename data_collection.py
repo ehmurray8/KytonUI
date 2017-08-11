@@ -1,7 +1,7 @@
 class DataCollection:
 
     def __init__(self):
-        self.times = [] #times in seconds, removed repeat data 
+        self.times = [] #times in seconds, removed repeat data
         self.temps = [] #temps in K, removed repeat data
         self.wavelens = [[]] #wavelengths broken into lists by Serial Numbers
         self.powers = [[]] #powers broken into lists by Serial Numbers
