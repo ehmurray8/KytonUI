@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.animation as animation
 from matplotlib import style
 import matplotlib.pyplot as plt
+import pprint
 import file_helper
 
 style.use("ggplot")
@@ -16,7 +17,7 @@ def create_mean_wave_time_graph(f_name, animate):
     
     plt.xlabel('Time (hr)')
     plt.ylabel('Wavelength (nm)')
-    fig.suptitle('Baking: {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
+    fig.suptitle('Baking: Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_mvt_graph, interval=1000, fargs=(f_name, ax1,))
@@ -30,7 +31,7 @@ def __animate_mvt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_wave_diff_v_time_data(f_name)
     axis.clear()
     plt.xlabel('Time (hr)')
-    plt.ylabel('Wavelength (nm)')
+    plt.ylabel('Wavelength (pm)')
     axis.plot(times, wavelen_diffs)
 
 
@@ -73,6 +74,8 @@ def __animate_wp_graph(i, f_name, axis):
 def __get_wave_power_graph(f_name):
     mdata, entries_df = file_helper.parse_csv_file(f_name)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
+
+    #print(str(data_coll))
     
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
@@ -101,4 +104,5 @@ def __animate_temp_graph(i, f_name, axis):
     #for waves, powers, color in zip(
     
 if __name__ == "__main__":
-    create_mean_wave_time_graph("kyton_out.csv", False)
+    #create_mean_wave_time_graph("kyton_out.csv", False)
+    create_wave_power_graph("kyton_out.csv", False)
