@@ -12,12 +12,12 @@ style.use("ggplot")
 
 def create_mean_wave_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
-    fig = plt.figure(0)
+    fig = plt.figure(0, figsize=(8,6))
     ax1 = fig.add_subplot(1, 1, 1)
 
     plt.xlabel('Time (hr)')
-    plt.ylabel('Wavelength (nm)')
-    fig.suptitle('Baking: Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
+    plt.ylabel('Wavelength (pm)'.format(u'\u0394'))
+    fig.suptitle('Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_mwt_graph, interval=1000, fargs=(f_name, ax1,))
@@ -31,7 +31,7 @@ def __animate_mwt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_wave_diff_v_time_data(f_name)
     axis.clear()
     plt.xlabel('Time (hr)')
-    plt.ylabel('Wavelength (pm)')
+    plt.ylabel('Average {} Wavelength (pm)'.format(u'\u0394'))
     axis.plot(times, wavelen_diffs)
 
 
@@ -43,9 +43,9 @@ def __get_mean_wave_diff_v_time_data(f_name):
 
 
 def create_wave_power_graph(f_name, animate):
-    fig = plt.figure(1)
+    fig = plt.figure(1, figsize=(8,6))
     ax1 = fig.add_subplot(1, 1, 1)
-    fig.suptitle('Baking: Power (dBm) vs. Wavelength (nm)')
+    fig.suptitle('Power (dBm) vs. Wavelength (nm)')
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_wp_graph, interval=1000, fargs=(f_name, ax1,))
@@ -79,9 +79,9 @@ def __get_wave_power_graph(f_name):
 
 
 def create_temp_time_graph(f_name, animate):
-    fig = plt.figure(2)
+    fig = plt.figure(2, figsize=(8,6))
     ax1 = fig.add_subplot(1, 1, 1)
-    fig.suptitle('Baking: {} Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
+    fig.suptitle('{} Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1,))
@@ -95,7 +95,7 @@ def __animate_temp_graph(i, f_name, axis):
     times, temps = __get_temp_time_graph(f_name)
     axis.clear()
     plt.xlabel('Time (hr)')
-    plt.ylabel('Temperature (K)') 
+    plt.ylabel('Temperature (K)'.format(u'\u0394')) 
     axis.plot(times, temps)
 
 
@@ -108,12 +108,12 @@ def __get_temp_time_graph(f_name):
 
 def create_mean_power_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
-    fig = plt.figure(3)
+    fig = plt.figure(3, figsize=(8,6))
     ax1 = fig.add_subplot(1, 1, 1)
     
     plt.xlabel('Time (hr)')
     plt.ylabel('Power (dBm)')
-    fig.suptitle('Baking: Average Power (dBm) vs. Time (hr) from start')
+    fig.suptitle('Average Power (dBm) vs. Time (hr) from start')
 
     if animate:
         ani = animation.FuncAnimation(fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
@@ -136,6 +136,46 @@ def __get_mean_power_diff_v_time_data(f_name):
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_power_diffs
+
+
+def create_indiv_waves(f_name, animate):
+    """Create individual wavelengths graph."""
+    fig = plt.figure(4, figsize=(8,6))
+    ax1 = fig.add_subplot(1, 1, 1)
+
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Wavelength (nm)')
+    fig.suptitle('Wavelengths (nm) vs. Time (hr)')
+
+    if animate:
+        ani = animation.FuncAnimation(fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1,))
+        fig.show()
+    else:
+        __animate_indiv_waves(0, f_name, ax1)
+        plt.show()
+
+
+def __animate_indiv_waves(f_name):
+    times, wavelens, snums = __get_indiv_waves_data(f_name)
+    axis.clear()
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Wavelength (nm)')
+
+    idx = 0
+    axes = []
+    for waves, powers, color in zip(wavelens, powers, file_helper.HEX_COLORS):
+        axes.append(axis.scatter(waves, powers, color=color, s=75))
+        idx += 1
+
+    legend = axis.legend(axes, snums, bbox_to_anchor=(1.10, 1.10), loc='upper right', borderaxespad=0.,\
+                    ncol=int(len(snums) / 2 + 0.5), fontsize=8)
+
+
+def __get_indiv_waves_diffs_data(f_name):
+    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    data_coll = file_helper.create_data_coll(mdata, entries_df)
+    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+    return times, data_coll.wavelen_diffs
 
 
 if __name__ == "__main__":

@@ -58,10 +58,20 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 graphing_helper.create_mean_wave_time_graph(self.options.file_name.get(), True))
         animenu.add_command(label="Wavelength v. Power", command=lambda: \
                 graphing_helper.create_wave_power_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Power v. Time", command=lambda: \
+                graphing_helper.create_mean_power_time_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Temperature v. Time", command=lambda: \
+                graphing_helper.create_temp_time_graph(self.options.file_name.get(), True))
+
+
         staticmenu.add_command(label="Wavelength v. Time", command=lambda: \
                 graphing_helper.create_mean_wave_time_graph(self.options.file_name.get(), False))
         staticmenu.add_command(label="Wavelength v. Power", command=lambda: \
                 graphing_helper.create_wave_power_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Power v. Time", command=lambda: \
+                graphing_helper.create_mean_power_time_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Temperature v. Time", command=lambda: \
+                graphing_helper.create_temp_time_graph(self.options.file_name.get(), False))
 
         graphmenu.add_cascade(label="Animated", menu=animenu)
         graphmenu.add_cascade(label="Static", menu=staticmenu)
@@ -265,9 +275,9 @@ def start_bake(popup, inpt):
         options_panel.NUM_SNS = int(number)
         popup.destroy()
         ROOT = tk.Tk()
-        width = 300 + (NUM_SNS * 10)
-        width += int(NUM_SNS / 3) * 30
-        open_center(600, width, ROOT)
+        height = 300 + (NUM_SNS * 10)
+        height += int(NUM_SNS / 3) * 30
+        open_center(475, height, ROOT)
         app = Application(master=ROOT)
         app.mainloop()
     except ValueError:

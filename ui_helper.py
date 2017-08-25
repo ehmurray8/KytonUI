@@ -20,12 +20,12 @@ def serial_num_entry(container, label_text, row, width, \
     chan_num_ent = tk.IntVar()
     tk.Spinbox(container, from_=1, to=4, textvariable=chan_num_ent, width=width, state="readonly") \
             .grid(row=row, column=4, sticky='ew')
-    ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
+    #ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
     switch_pos_ent = tk.IntVar()
-    tk.Spinbox(container, from_=1, to=4, textvariable=switch_pos_ent, width=width, state="readonly") \
-            .grid(row=row, column=6, sticky='ew')
+    #tk.Spinbox(container, from_=1, to=4, textvariable=switch_pos_ent, width=width, state="readonly") \
+    #        .grid(row=row, column=6, sticky='ew')
     chan_num_ent.set(def_channel)
-    switch_pos_ent.set(def_switch)
+    #switch_pos_ent.set(def_switch)
     ttk.Label(container, width=3).grid(row=row, column=7)
     return  serial_num_ent, chan_num_ent, switch_pos_ent
 
