@@ -1,6 +1,7 @@
 """Module used for helping with creating output files."""
 import os
 import time
+import ctypes
 from decimal import Decimal
 import xlsxwriter
 import pandas as pd
@@ -13,14 +14,18 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
               "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
 
+FILE_ATTRIBUTE_HIDDEN = 0x02
 
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
     #pylint: disable-msg=too-many-arguments
     """Write the output csv file."""
     if os.path.isfile(file_name):
+        os.chmod(file_name, '777')
         file_obj = open(file_name, "a")
+        os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     else:
         file_obj = open(file_name, "w")
+        
         file_obj.write("Metadata\n")
         need_comma = False
         for snum in serial_nums:
@@ -53,6 +58,11 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
 
     file_obj.write("\n\n")
     file_obj.close()
+    os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    if os.name == 'nt':
+        ret = ctypes.windll.kernel32.SetFileAttributesW(file_name,
+                                                        FILE_ATTRIBUTE_HIDDEN)
+
 
 
 def __init_excel_file(csv_file):

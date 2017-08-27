@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import font
 import configparser
 import time
 import sys
@@ -20,6 +21,7 @@ import sm125_wrapper
 import create_options_panel as options_panel
 import file_helper
 import graphing_helper
+import ui_helper 
 
 style.use('ggplot')
 
@@ -29,18 +31,19 @@ TERM_CHAR = '/n'
 CPARSER = configparser.SafeConfigParser()
 CPARSER.read("devices.cfg") 
 
-class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
+LARGE_FONT = ("Verdana", 13)
+
+class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
-    def __init__(self, master):
+
+    def __init__(self, parent, master):
         """Constructs the app."""
-        super().__init__(master)
+        tk.Frame.__init__(self, parent)
 
         self.controller = None
         self.oven = None
         self.gp700 = None
         self.sm125 = None
-
-        self.snums = []
         self.channels = [[], [], [], []]
         self.switches = []
 
@@ -62,6 +65,10 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 graphing_helper.create_mean_power_time_graph(self.options.file_name.get(), True))
         animenu.add_command(label="Temperature v. Time", command=lambda: \
                 graphing_helper.create_temp_time_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Indiv. Wavelengths", command=lambda: \
+                graphing_helper.create_indiv_waves_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Indiv. Powers", command=lambda: \
+                graphing_helper.create_indiv_powers_graph(self.options.file_name.get(), True))
 
 
         staticmenu.add_command(label="Wavelength v. Time", command=lambda: \
@@ -72,25 +79,37 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
                 graphing_helper.create_mean_power_time_graph(self.options.file_name.get(), False))
         staticmenu.add_command(label="Temperature v. Time", command=lambda: \
                 graphing_helper.create_temp_time_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Indiv. Wavelengths", command=lambda: \
+                graphing_helper.create_indiv_waves_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Indiv. Powers", command=lambda: \
+                graphing_helper.create_indiv_powers_graph(self.options.file_name.get(), False))
+
 
         graphmenu.add_cascade(label="Animated", menu=animenu)
         graphmenu.add_cascade(label="Static", menu=staticmenu)
         self.menu.add_cascade(label="Graph", menu=graphmenu)
 
-
         master.config(menu=self.menu)
 
-
         self.pack(side="top", fill="both", expand=True)
+
         self.main_frame = tk.Frame(self)
-        self.options = options_panel.OptionsPanel(self.main_frame)
-        self.options.create_start_btn(self.start)
-        self.options.grid(row=0, column=0, sticky='ew')
+        self.header = ttk.Label(self, text="Configure Baking", font=LARGE_FONT)
+        self.header.pack(pady=10)
+        
 
         self.stable_count = 0
 
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
+        self.running = False
+        self.cancel_bake = False
+
+
+    def create_options(self, num_sns):
+        self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
+        self.start_btn = self.options.create_start_btn(self.start)
+        self.options.grid(row=0, column=0, sticky='ew')
 
     def create_excel(self):
         """Creates excel file."""
@@ -98,38 +117,73 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
     def start(self):
         """Starts the recording process."""
-        if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            resource_manager = visa.ResourceManager()
-            if self.options.temp340_state.get():
-                controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
-                                                                "controller_location"))
-                self.controller = resource_manager.open_resource(controller_location, \
-                        read_termination=TERM_CHAR)
-            if self.options.delta_oven_state.get():
-                oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
-                                                          "oven_location"))
-                self.oven = resource_manager.open_resource(oven_location, \
-                        read_termination=TERM_CHAR)
-                oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
-            if self.options.gp700_state.get():
-                gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
-                                                           "gp700_location"))
-                self.gp700 = resource_manager.open_resource(gp700_location,\
-                        read_termination=TERM_CHAR)
-            if self.options.sm125_state.get():
-                sm125_address =CPARSER.get("Devices", "sm125_address")
-                sm125_port = CPARSER.get("Devices", "sm125_port")
-                self.sm125 = sm125_wrapper.setup(sm125_address, int(sm125_port))
-        sm125_address = CPARSER.get("Devices", "sm125_address")
-        sm125_port = CPARSER.get("Devices", "sm125_port")
+        if not self.running:
+            
+            connection_fails = []
+            if len(sys.argv) > 1 and sys.argv[1] == "-k":
+                resource_manager = visa.ResourceManager()
+                if self.options.temp340_state.get():
+                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                                                                    "controller_location"))
+                    try:
+                        self.controller = resource_manager.open_resource(controller_location, \
+                            read_termination=TERM_CHAR)
+                    except visa.VisaIOError:
+                        conn_fails.append("LSC 340")
+                if self.options.delta_oven_state.get():
+                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                                                            "oven_location"))
+                    self.oven = resource_manager.open_resource(oven_location, \
+                            read_termination=TERM_CHAR)
+                    try:
+                        oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+                    except visa.VisaIOError:
+                        conn_fails.append("Dicon Oven")
+                if self.options.gp700_state.get():
+                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                                                            "gp700_location"))
+                    try:
+                        self.gp700 = resource_manager.open_resource(gp700_location,\
+                            read_termination=TERM_CHAR)
+                    except visa.VisaIOError:
+                        conn_fails.append("Optical Switch")
+                if self.options.sm125_state.get():
+                    sm125_address =CPARSER.get("Devices", "sm125_address")
+                    sm125_port = CPARSER.get("Devices", "sm125_port")
+                    try:
+                        self.sm125 = sm125_wrapper.setup(sm125_address, int(sm125_port))
+                    except visa.VisaIOError:
+                        conn_fails.append("Micron Optics SM125")
+            sm125_address = CPARSER.get("Devices", "sm125_address")
+            sm125_port = CPARSER.get("Devices", "sm125_port")
 
-        for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
-            if snum.get() != "":
-                #print("Channel: {}, SNUM: {}".format(chan.get(), snum.get()))
-                self.snums.append(snum.get())
-                self.channels[chan.get() - 1].append(snum.get())
+            for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
+                if snum.get() != "":
+                    #print("Channel: {}, SNUM: {}".format(chan.get(), snum.get()))
+                    self.snums.append(snum.get())
+                    self.channels[chan.get() - 1].append(snum.get())
 
-        self.program_loop()
+            if len(connection_fails) == 0: 
+                self.running = True
+                self.start_btn.configure(text="Pause")
+                self.header.configure(text="Baking...")
+                self.program_loop()
+            else:
+                need_comma = False
+                conn_str = "Failed to connect to: "
+                for dev in connection_fails:
+                    if need_comma:
+                        conn_str += ", "
+                    conn_str += dev
+                conn_str += "."
+                messagebox.warning("Device Connection Failure", conn_str)
+
+        else:
+            self.start_btn.configure(text="Start")
+            self.header.configure(text="Configure Baking")
+            self.running = False
+            self.cancel_bake = True
+            self.stable_count = 0
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
@@ -144,13 +198,14 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
     def program_loop(self):
         """Infinite program loop."""
-        print("Started program loop...")
-        if not self.check_stable():
-            self.baking_loop()
-            self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
-        else:
-            self.baking_loop()
-            self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
+        #print("Started program loop...")
+        if not self.cancel_bake:
+            if not self.check_stable():
+                self.baking_loop()
+                self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
+            else:
+                self.baking_loop()
+                self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
 
     def __avg_waves_amps(self):
         #pylint:disable=too-many-locals, too-many-branches
@@ -163,7 +218,15 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
             #TODO Need to associate proper amplitudes/powers with correct serial number
             #
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                wavelengths, amplitudes, lens = sm125_wrapper.get_data_actual(self.sm125)
+                can_connect = False
+
+                while not can_connect:
+                    try:
+                        wavelengths, amplitudes, lens = sm125_wrapper.get_data_actual(self.sm125)
+                        can_connect = True
+                    except visa.VisaIOError:
+                        self.header.configure(text="SM125 Connection Error...Trying Again")
+                self.header.configure(text="Baking...")
             else:
                 wavelengths = [[]]
                 amplitudes = [[]]
@@ -231,7 +294,7 @@ class Application(tk.Frame): # pylint: disable=too-many-ancestors, too-many-inst
 
     def baking_loop(self):
         """Runs the baking process."""
-        print("Started baking loop...")
+        #print("Started baking loop...")
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             temperature = temp_controller.get_temp_c(self.controller)
@@ -275,10 +338,11 @@ def start_bake(popup, inpt):
         options_panel.NUM_SNS = int(number)
         popup.destroy()
         ROOT = tk.Tk()
-        height = 300 + (NUM_SNS * 10)
+        height = 330 + (NUM_SNS * 10)
         height += int(NUM_SNS / 3) * 30
-        open_center(475, height, ROOT)
-        app = Application(master=ROOT)
+        ui_helper.open_center(475, height, ROOT)
+        app = BakingPage(None, master=ROOT)
+        app.create_options(int(number))
         app.mainloop()
     except ValueError:
         messagebox.showwarning("Invalid Input", "Please input an integer.")
@@ -332,7 +396,7 @@ def update_config():
             gp700_ent, sm125_addr_ent, sm125_port_ent, popup)). \
             pack(side="top", fill="both", expand=True, pady=10)
 
-    open_center(350, 150, popup)
+    ui_helper.open_center(350, 150, popup)
     popup.protocol("WM_DELETE_WINDOW", lambda: __on_closing(popup, old_conf, conf_widgets))
 
 def __on_closing(root, old_conf, widgets):
@@ -379,18 +443,6 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
     window.destroy()
 
 
-def open_center(width, height, root):
-    #pylint:disable=global-statement
-    """Open num fiber dialog in center of the screen."""
-    width_screen = root.winfo_screenwidth()
-    height_screen = root.winfo_screenheight()
-
-    x_cord = (width_screen/2) - (width/2)
-    y_cord = (height_screen/2) - (height/2)
-
-    root.geometry("{}x{}-{}+{}".format(int(width), int(height),\
-                             int(x_cord), int(y_cord)))
-
 def launch():
     """Launches Dialog box to input number of fibers."""
     num_sns_root = tk.Tk()
@@ -398,10 +450,12 @@ def launch():
              pack(side="top", expand=True, padx=10, pady=5)
     inpt = ttk.Entry(num_sns_root, width=10, justify="center")
     inpt.pack(side="top", padx=10, pady=5, expand=True)
+    inpt.focus()
     ttk.Button(num_sns_root, text="Start Baking", command=lambda: start_bake(num_sns_root, inpt))\
             .pack(side="top", expand=True, padx=10, pady=5)
     num_sns_root.title("Baking Settings")
-    open_center(275, 125, num_sns_root)
+    num_sns_root.bind('<Return>', lambda x: start_bake(num_sns_root, inpt))
+    ui_helper.open_center(275, 125, num_sns_root)
     num_sns_root.mainloop()
 
 

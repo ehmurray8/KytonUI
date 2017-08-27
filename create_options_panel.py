@@ -9,7 +9,7 @@ NUM_SNS = None
 class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                               # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
-    def __init__(self, master):
+    def __init__(self, master, num_sns):
         super().__init__(master)
 
         #Init member vars
@@ -28,6 +28,8 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         self.init_duration = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
+
+        self.num_sns = num_sns
 
         self.create_options_grid()
 
@@ -96,7 +98,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
         #(TEMP) Fiber SN Inputs
         index = 1
-        while index <= NUM_SNS:
+        while index <= self.num_sns:
             serial_num, chan_num, switch_pos = ui_helper.serial_num_entry(options_grid, \
                     "Serial Number " + str(index) + ": ", row_num, 5, "Fiber " + str(index))
             self.sn_ents.append(serial_num)
@@ -113,6 +115,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         start_button["text"] = "Start"
         start_button["command"] = start
         start_button.pack(pady=10)
+        return start_button
 
 
 if __name__ == "__main__":

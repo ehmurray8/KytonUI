@@ -86,3 +86,16 @@ def format_selected(flag):
     if flag == 1:
         return "On"
     return "Off"
+
+def open_center(width, height, root):
+    #pylint:disable=global-statement
+    """Open num fiber dialog in center of the screen."""
+    width_screen = root.winfo_screenwidth()
+    height_screen = root.winfo_screenheight()
+
+    x_cord = (width_screen/2) - (width/2)
+    y_cord = (height_screen/2) - (height/2)
+
+    root.geometry("{}x{}-{}+{}".format(int(width), int(height),\
+                             int(x_cord), int(y_cord)))
+
