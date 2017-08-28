@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
+from PIL import ImageTk
 import configparser
 import time
 import sys
@@ -22,7 +23,7 @@ import create_options_panel as options_panel
 import file_helper
 import graphing_helper
 import ui_helper 
-
+from main_program import *
 style.use('ggplot')
 
 NUM_SNS = 4
@@ -36,7 +37,7 @@ LARGE_FONT = ("Verdana", 13)
 class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
 
-    def __init__(self, parent, master):
+    def __init__(self, parent, master, start_page):
         """Constructs the app."""
         tk.Frame.__init__(self, parent)
 
@@ -46,10 +47,36 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.sm125 = None
         self.channels = [[], [], [], []]
         self.switches = []
+        self.snums = []
 
-        #Window setup
-        master.title("Kyton Baking")
+        self.main_frame = tk.Frame(self)
+
+        self.header = ttk.Label(self.main_frame, text="Configure Baking", font=LARGE_FONT)
+        self.header.pack(pady=10)
+        
+        self.stable_count = 0
+
+
         self.menu = tk.Menu(master, tearoff=0)
+
+        self.running = False
+        self.cancel_bake = False
+        self.start_page = start_page
+
+
+    def clear_frame(self):
+        self.main_frame.destroy()
+        self.main_frame = tk.Frame(self)
+        self.main_frame.pack(expand=1, fill=tk.BOTH)
+
+    def home(self, master):
+        self.menu = tk.Menu(master, tearoff=0)
+        master.config(menu=self.menu)
+        master.show_frame(self.start_page, 300, 300)
+
+
+    def create_menu(self, master):
+        self.menu.add_command(label="Home", command=lambda: self.home(master))
         self.menu.add_command(label="Create Excel", command=lambda: \
                 file_helper.create_excel_file(self.options.file_name.get()))
         self.menu.add_command(label="Config", command=update_config)
@@ -91,25 +118,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         master.config(menu=self.menu)
 
-        self.pack(side="top", fill="both", expand=True)
-
-        self.main_frame = tk.Frame(self)
-        self.header = ttk.Label(self, text="Configure Baking", font=LARGE_FONT)
-        self.header.pack(pady=10)
-        
-
-        self.stable_count = 0
-
-        self.main_frame.pack(expand=1, fill=tk.BOTH)
-
-        self.running = False
-        self.cancel_bake = False
-
 
     def create_options(self, num_sns):
         self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
         self.start_btn = self.options.create_start_btn(self.start)
-        self.options.grid(row=0, column=0, sticky='ew')
+        #self.options.grid(row=0, column=0, sticky='ew')
+        self.options.pack()
 
     def create_excel(self):
         """Creates excel file."""
@@ -119,31 +133,31 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         """Starts the recording process."""
         if not self.running:
             
-            connection_fails = []
+            conn_fails = []
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 resource_manager = visa.ResourceManager()
                 if self.options.temp340_state.get():
-                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
                                                                     "controller_location"))
                     try:
-                        self.controller = resource_manager.open_resource(controller_location, \
+                        self.controller = resource_manager.open_resource(controller_location,
                             read_termination=TERM_CHAR)
                     except visa.VisaIOError:
                         conn_fails.append("LSC 340")
                 if self.options.delta_oven_state.get():
-                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
                                                             "oven_location"))
-                    self.oven = resource_manager.open_resource(oven_location, \
+                    self.oven = resource_manager.open_resource(oven_location,
                             read_termination=TERM_CHAR)
                     try:
                         oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
                     except visa.VisaIOError:
                         conn_fails.append("Dicon Oven")
                 if self.options.gp700_state.get():
-                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices", \
+                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
                                                             "gp700_location"))
                     try:
-                        self.gp700 = resource_manager.open_resource(gp700_location,\
+                        self.gp700 = resource_manager.open_resource(gp700_location,
                             read_termination=TERM_CHAR)
                     except visa.VisaIOError:
                         conn_fails.append("Optical Switch")
@@ -159,11 +173,10 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
                 if snum.get() != "":
-                    #print("Channel: {}, SNUM: {}".format(chan.get(), snum.get()))
                     self.snums.append(snum.get())
                     self.channels[chan.get() - 1].append(snum.get())
 
-            if len(connection_fails) == 0: 
+            if len(conn_fails) == 0:
                 self.running = True
                 self.start_btn.configure(text="Pause")
                 self.header.configure(text="Baking...")
@@ -171,12 +184,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             else:
                 need_comma = False
                 conn_str = "Failed to connect to: "
-                for dev in connection_fails:
+                for dev in conn_fails:
                     if need_comma:
                         conn_str += ", "
                     conn_str += dev
                 conn_str += "."
-                messagebox.warning("Device Connection Failure", conn_str)
+                messagebox.showwarning("Device Connection Failure", conn_str)
 
         else:
             self.start_btn.configure(text="Start")
@@ -280,7 +293,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             #print(str(chan))
             for snum in chan:
                 if count < max_pts:
-                    data_pts[snum] = (wavelengths_avg[start_index], \
+                    data_pts[snum] = (wavelengths_avg[start_index],
                                            amplitudes_avg[start_index])
                     start_index += 1
                 else:
@@ -324,28 +337,9 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         curr_time = time.time()
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            file_helper.write_csv_file(self.options.file_name.get(), self.snums, \
+            file_helper.write_csv_file(self.options.file_name.get(), self.snums,
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
 
-
-def start_bake(popup, inpt):
-    """Starts the baking program."""
-    #pylint:disable=global-statement
-    global ROOT, NUM_SNS
-    number = inpt.get()
-    try:
-        NUM_SNS = int(number)
-        options_panel.NUM_SNS = int(number)
-        popup.destroy()
-        ROOT = tk.Tk()
-        height = 330 + (NUM_SNS * 10)
-        height += int(NUM_SNS / 3) * 30
-        ui_helper.open_center(475, height, ROOT)
-        app = BakingPage(None, master=ROOT)
-        app.create_options(int(number))
-        app.mainloop()
-    except ValueError:
-        messagebox.showwarning("Invalid Input", "Please input an integer.")
 
 def update_config():
     """Updates devices configuration."""
@@ -399,6 +393,7 @@ def update_config():
     ui_helper.open_center(350, 150, popup)
     popup.protocol("WM_DELETE_WINDOW", lambda: __on_closing(popup, old_conf, conf_widgets))
 
+
 def __on_closing(root, old_conf, widgets):
     unsaved = False
     for old_c, widg in zip(old_conf, widgets):
@@ -420,6 +415,7 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
     """Save configuration data to config file."""
     addr_str = sm125_addr_ent.get()
     addrs = addr_str.split(".")
+    valid = True
     try:
         cont_loc = int(cont_ent.get())
         oven_loc = int(oven_ent.get())
@@ -428,36 +424,20 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
         for addr in addrs:
             int(addr)
     except ValueError:
+        valid = False
         messagebox.showwarning("Invalid Input", "GPIB0 port entries require integers. \
                                                     \nIP port requires an integer. \
                                                     \nIP address requires #.#.#.#")
 
-
-    CPARSER.set("Devices", "controller_location", str(cont_loc))
-    CPARSER.set("Devices", "oven_location", str(oven_loc))
-    CPARSER.set("Devices", "gp700_location", str(gp700_loc))
-    CPARSER.set("Devices", "sm125_address", str(addr_str))
-    CPARSER.set("Devices", "sm125_port", str(port))
-    with open("devices.cfg", "w+") as conf:
-        CPARSER.write(conf)
-    window.destroy()
-
-
-def launch():
-    """Launches Dialog box to input number of fibers."""
-    num_sns_root = tk.Tk()
-    tk.Label(num_sns_root, text="How many fibers will be used for baking? ").\
-             pack(side="top", expand=True, padx=10, pady=5)
-    inpt = ttk.Entry(num_sns_root, width=10, justify="center")
-    inpt.pack(side="top", padx=10, pady=5, expand=True)
-    inpt.focus()
-    ttk.Button(num_sns_root, text="Start Baking", command=lambda: start_bake(num_sns_root, inpt))\
-            .pack(side="top", expand=True, padx=10, pady=5)
-    num_sns_root.title("Baking Settings")
-    num_sns_root.bind('<Return>', lambda x: start_bake(num_sns_root, inpt))
-    ui_helper.open_center(275, 125, num_sns_root)
-    num_sns_root.mainloop()
-
+    if valid:
+        CPARSER.set("Devices", "controller_location", str(cont_loc))
+        CPARSER.set("Devices", "oven_location", str(oven_loc))
+        CPARSER.set("Devices", "gp700_location", str(gp700_loc))
+        CPARSER.set("Devices", "sm125_address", str(addr_str))
+        CPARSER.set("Devices", "sm125_port", str(port))
+        with open("devices.cfg", "w+") as conf:
+            CPARSER.write(conf)
+        window.destroy()
 
 if __name__ == "__main__":
     ROOT = None
