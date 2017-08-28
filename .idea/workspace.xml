@@ -65,6 +65,14 @@
               <caret line="33" column="17" lean-forward="false" selection-start-line="33" selection-start-column="17" selection-end-line="33" selection-end-column="17" />
               <folding>
                 <element signature="e#62#82#0" expanded="true" />
+                <marker date="1503894663575" expanded="true" signature="2433:2884" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="3390:3928" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="3435:3928" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="3968:4793" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="4013:4793" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="4825:5612" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="4874:5612" ph="..." />
+                <marker date="1503894663575" expanded="true" signature="5641:5684" ph="..." />
               </folding>
             </state>
           </provider>
@@ -444,7 +452,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1924" height="1048" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18153201" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -694,6 +701,14 @@
           <caret line="33" column="17" lean-forward="false" selection-start-line="33" selection-start-column="17" selection-end-line="33" selection-end-column="17" />
           <folding>
             <element signature="e#62#82#0" expanded="true" />
+            <marker date="1503894663575" expanded="true" signature="2433:2884" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="3390:3928" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="3435:3928" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="3968:4793" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="4013:4793" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="4825:5612" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="4874:5612" ph="..." />
+            <marker date="1503894663575" expanded="true" signature="5641:5684" ph="..." />
           </folding>
         </state>
       </provider>
