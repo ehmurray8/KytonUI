@@ -92,9 +92,9 @@ class Application(tk.Tk):
         
         height = 330 + (self.num_cal_sns * 10)
         height += int(self.num_cal_sns / 3) * 30
-        #cal_page.clear_frame()
-        #cal_page.create_options(self.num_cal_sns)
-        #cal_page.create_menu(self)
+        cal_page.clear_frame()
+        cal_page.create_options(self.num_cal_sns)
+        cal_page.create_menu(self)
         self.title("Kyton Calibration")
         self.show_frame(cal_program.CalPage, 475, height)
 
@@ -104,7 +104,7 @@ class Application(tk.Tk):
             self.title("Calibration Settings")
             self.show_frame(CalSNSConfig, 275, 125)
         else:
-            self.start_bake(None, self.frames[cal_program.CalPage])
+            self.start_cal(None, self.frames[cal_program.CalPage])
 
 
 class StartPage(tk.Frame):
