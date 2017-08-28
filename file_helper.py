@@ -1,12 +1,14 @@
 """Module used for helping with creating output files."""
+import configparser
 import os
 import time
 import ctypes
-from decimal import Decimal
 import xlsxwriter
 import pandas as pd
 import metadata
 import data_collection as datac
+from tkinter import messagebox
+
 
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#40E0D0", "#FFA500", "#00FF00", "#468499",
@@ -16,13 +18,16 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
 
 FILE_ATTRIBUTE_HIDDEN = 0x02
 
+CPARSER = configparser.ConfigParser()
+CPARSER.read("devices.cfg")
+
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
     #pylint: disable-msg=too-many-arguments
     """Write the output csv file."""
     if os.path.isfile(file_name):
         os.chmod(file_name, '777')
         file_obj = open(file_name, "a")
-        os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+        os.chmod(file_name, os.stat.S_IRUSR | os.stat.S_IRGRP | os.stat.S_IROTH)
     else:
         file_obj = open(file_name, "w")
         
@@ -336,6 +341,51 @@ def num_to_excel_col(num):
         num -= 26
         curr_overflow_index += 1
     return letters[curr_overflow_index] + letters[num]
+
+def on_closing(root, old_conf, widgets):
+    unsaved = False
+    for old_c, widg in zip(old_conf, widgets):
+        if old_c != widg.get():
+            unsaved = True
+            break
+
+    if unsaved:
+        if messagebox.askyesno("Quit", "Changes won't be save. Are you sure you want to quit?"):
+            root.destroy()
+        else:
+            root.tkraise()
+    else:
+        root.destroy()
+
+
+def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window):
+    #pylint:disable=too-many-arguments
+    """Save configuration data to config file."""
+    addr_str = sm125_addr_ent.get()
+    addrs = addr_str.split(".")
+    valid = True
+    try:
+        cont_loc = int(cont_ent.get())
+        oven_loc = int(oven_ent.get())
+        gp700_loc = int(gp700_ent.get())
+        port = int(sm125_port_ent.get())
+        for addr in addrs:
+            int(addr)
+    except ValueError:
+        valid = False
+        messagebox.showwarning("Invalid Input", "GPIB0 port entries require integers. \
+                                                    \nIP port requires an integer. \
+                                                    \nIP address requires #.#.#.#")
+
+    if valid:
+        CPARSER.set("Calibration", "controller_location", str(cont_loc))
+        CPARSER.set("Calibration", "oven_location", str(oven_loc))
+        CPARSER.set("Calibration", "gp700_location", str(gp700_loc))
+        CPARSER.set("Calibration", "sm125_address", str(addr_str))
+        CPARSER.set("Calibration", "sm125_port", str(port))
+        with open("devices.cfg", "w+") as conf:
+            CPARSER.write(conf)
+        window.destroy()
 
 
 if __name__ == "__main__":

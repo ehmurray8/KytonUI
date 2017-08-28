@@ -4,17 +4,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
-from PIL import ImageTk
-import configparser
 import time
 import sys
 import pyvisa as visa
-
-import matplotlib
-import matplotlib.animation as animation
-from matplotlib import style
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 
 import controller_340_wrapper as temp_controller
 import delta_oven_wrapper as oven_wrapper
@@ -24,13 +16,10 @@ import file_helper
 import graphing_helper
 import ui_helper 
 from main_program import *
-style.use('ggplot')
+
 
 NUM_SNS = 4
 TERM_CHAR = '/n'
-
-CPARSER = configparser.SafeConfigParser()
-CPARSER.read("devices.cfg") 
 
 LARGE_FONT = ("Verdana", 13)
 
@@ -55,7 +44,6 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.header.pack(pady=10)
         
         self.stable_count = 0
-
 
         self.menu = tk.Menu(master, tearoff=0)
 
@@ -137,7 +125,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 resource_manager = visa.ResourceManager()
                 if self.options.temp340_state.get():
-                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
+                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
                                                                     "controller_location"))
                     try:
                         self.controller = resource_manager.open_resource(controller_location,
@@ -145,7 +133,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                     except visa.VisaIOError:
                         conn_fails.append("LSC 340")
                 if self.options.delta_oven_state.get():
-                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
+                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
                                                             "oven_location"))
                     self.oven = resource_manager.open_resource(oven_location,
                             read_termination=TERM_CHAR)
@@ -154,7 +142,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                     except visa.VisaIOError:
                         conn_fails.append("Dicon Oven")
                 if self.options.gp700_state.get():
-                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Devices",
+                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
                                                             "gp700_location"))
                     try:
                         self.gp700 = resource_manager.open_resource(gp700_location,
@@ -162,14 +150,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                     except visa.VisaIOError:
                         conn_fails.append("Optical Switch")
                 if self.options.sm125_state.get():
-                    sm125_address =CPARSER.get("Devices", "sm125_address")
-                    sm125_port = CPARSER.get("Devices", "sm125_port")
+                    sm125_address =CPARSER.get("Calibration", "sm125_address")
+                    sm125_port = CPARSER.get("Calibration", "sm125_port")
                     try:
                         self.sm125 = sm125_wrapper.setup(sm125_address, int(sm125_port))
                     except visa.VisaIOError:
                         conn_fails.append("Micron Optics SM125")
-            sm125_address = CPARSER.get("Devices", "sm125_address")
-            sm125_port = CPARSER.get("Devices", "sm125_port")
 
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
                 if snum.get() != "":
@@ -386,58 +372,13 @@ def update_config():
 
     conf_widgets = [cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent]
 
-    ttk.Button(frame, text="Save", command=lambda: save_config(cont_ent, oven_ent, \
+    ttk.Button(frame, text="Save", command=lambda: file_helper.save_config(cont_ent, oven_ent, \
             gp700_ent, sm125_addr_ent, sm125_port_ent, popup)). \
             pack(side="top", fill="both", expand=True, pady=10)
 
     ui_helper.open_center(350, 150, popup)
-    popup.protocol("WM_DELETE_WINDOW", lambda: __on_closing(popup, old_conf, conf_widgets))
+    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(popup, old_conf, conf_widgets))
 
-
-def __on_closing(root, old_conf, widgets):
-    unsaved = False
-    for old_c, widg in zip(old_conf, widgets):
-        if old_c != widg.get():
-            unsaved = True
-            break
-
-    if unsaved:
-        if messagebox.askokcancel("Quit", "Changes won't be save. Are you sure you want to quit?"):
-            root.destroy()
-        else:
-            root.tkraise()
-    else:
-        root.destroy()
-
-
-def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window):
-    #pylint:disable=too-many-arguments
-    """Save configuration data to config file."""
-    addr_str = sm125_addr_ent.get()
-    addrs = addr_str.split(".")
-    valid = True
-    try:
-        cont_loc = int(cont_ent.get())
-        oven_loc = int(oven_ent.get())
-        gp700_loc = int(gp700_ent.get())
-        port = int(sm125_port_ent.get())
-        for addr in addrs:
-            int(addr)
-    except ValueError:
-        valid = False
-        messagebox.showwarning("Invalid Input", "GPIB0 port entries require integers. \
-                                                    \nIP port requires an integer. \
-                                                    \nIP address requires #.#.#.#")
-
-    if valid:
-        CPARSER.set("Devices", "controller_location", str(cont_loc))
-        CPARSER.set("Devices", "oven_location", str(oven_loc))
-        CPARSER.set("Devices", "gp700_location", str(gp700_loc))
-        CPARSER.set("Devices", "sm125_address", str(addr_str))
-        CPARSER.set("Devices", "sm125_port", str(port))
-        with open("devices.cfg", "w+") as conf:
-            CPARSER.write(conf)
-        window.destroy()
 
 if __name__ == "__main__":
     ROOT = None
