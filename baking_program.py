@@ -3,7 +3,6 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from tkinter import font
 import time
 import sys
 import pyvisa as visa
@@ -17,9 +16,9 @@ import graphing_helper
 import ui_helper 
 from main_program import *
 
-
 NUM_SNS = 4
 TERM_CHAR = '/n'
+
 
 LARGE_FONT = ("Verdana", 13)
 
@@ -57,6 +56,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
+
     def home(self, master):
         self.menu = tk.Menu(master, tearoff=0)
         master.config(menu=self.menu)
@@ -67,7 +67,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.menu.add_command(label="Home", command=lambda: self.home(master))
         self.menu.add_command(label="Create Excel", command=lambda: \
                 file_helper.create_excel_file(self.options.file_name.get()))
-        self.menu.add_command(label="Config", command=update_config)
+        self.menu.add_command(label="Config", command=lambda: ui_helper.update_config("Baking"))
 
         graphmenu = tk.Menu(self.menu, tearoff=0)
         animenu = tk.Menu(graphmenu, tearoff=0)
@@ -110,50 +110,40 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
     def create_options(self, num_sns):
         self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
         self.start_btn = self.options.create_start_btn(self.start)
-        #self.options.grid(row=0, column=0, sticky='ew')
         self.options.pack()
+
 
     def create_excel(self):
         """Creates excel file."""
         file_helper.create_excel_file(self.options.file_name.get())
 
+
     def start(self):
         """Starts the recording process."""
         if not self.running:
-            
             conn_fails = []
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
+                cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config("Baking")
                 resource_manager = visa.ResourceManager()
                 if self.options.temp340_state.get():
-                    controller_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
-                                                                    "controller_location"))
                     try:
-                        self.controller = resource_manager.open_resource(controller_location,
-                            read_termination=TERM_CHAR)
+                        self.controller = resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
                     except visa.VisaIOError:
                         conn_fails.append("LSC 340")
                 if self.options.delta_oven_state.get():
-                    oven_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
-                                                            "oven_location"))
-                    self.oven = resource_manager.open_resource(oven_location,
-                            read_termination=TERM_CHAR)
                     try:
+                        self.oven = resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
                         oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
                     except visa.VisaIOError:
                         conn_fails.append("Dicon Oven")
                 if self.options.gp700_state.get():
-                    gp700_location = "GPIB0::{}::INSTR".format(CPARSER.get("Calibration",
-                                                            "gp700_location"))
                     try:
-                        self.gp700 = resource_manager.open_resource(gp700_location,
-                            read_termination=TERM_CHAR)
+                        self.gp700 = resource_manager.open_resource(gp700_loc, read_termination=TERM_CHAR)
                     except visa.VisaIOError:
                         conn_fails.append("Optical Switch")
                 if self.options.sm125_state.get():
-                    sm125_address =CPARSER.get("Calibration", "sm125_address")
-                    sm125_port = CPARSER.get("Calibration", "sm125_port")
                     try:
-                        self.sm125 = sm125_wrapper.setup(sm125_address, int(sm125_port))
+                        self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
                     except visa.VisaIOError:
                         conn_fails.append("Micron Optics SM125")
 
@@ -184,6 +174,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             self.cancel_bake = True
             self.stable_count = 0
 
+
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
         init_time = self.options.init_time.get()
@@ -195,6 +186,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             return False
         return True
 
+
     def program_loop(self):
         """Infinite program loop."""
         #print("Started program loop...")
@@ -205,6 +197,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             else:
                 self.baking_loop()
                 self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
+
 
     def __avg_waves_amps(self):
         #pylint:disable=too-many-locals, too-many-branches
@@ -325,59 +318,6 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
                     curr_time, temperature, wavelengths_avg, amplitudes_avg)
-
-
-def update_config():
-    """Updates devices configuration."""
-    cont_loc = CPARSER.get("Devices", "controller_location")
-    oven_loc = CPARSER.get("Devices", "oven_location")
-    gp700_loc = CPARSER.get("Devices", "gp700_location")
-    sm125_addr = CPARSER.get("Devices", "sm125_address")
-    sm125_port = CPARSER.get("Devices", "sm125_port")
-
-    old_conf = [cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port]
-
-    popup = tk.Toplevel()
-    popup.wm_title("Device Configuration")
-    frame = tk.Frame(popup)
-    frame.pack()
-    config_grid = tk.Frame(frame)
-    config_grid.pack(side="top", fill="both", expand=True, padx=10)
-
-    ttk.Label(config_grid, text="340 Controller GPIB0 Port:").grid(row=0, padx=5)
-    cont_ent = ttk.Entry(config_grid)
-    cont_ent.grid(row=0, column=1, padx=5)
-    cont_ent.insert(0, str(cont_loc))
-
-    ttk.Label(config_grid, text="Dicon Oven GPIB0 Port:").grid(row=1, padx=5)
-    oven_ent = ttk.Entry(config_grid)
-    oven_ent.grid(row=1, column=1, padx=5)
-    oven_ent.insert(0, str(oven_loc))
-
-    ttk.Label(config_grid, text="GP700 Switch GPIB0 Port:").grid(row=2, padx=5)
-    gp700_ent = ttk.Entry(config_grid)
-    gp700_ent.grid(row=2, column=1, padx=5)
-    gp700_ent.insert(0, str(gp700_loc))
-
-    ttk.Label(config_grid, text="SM125 IP Address:").grid(row=3, padx=5)
-    sm125_addr_ent = ttk.Entry(config_grid)
-    sm125_addr_ent.grid(row=3, column=1, padx=5)
-    sm125_addr_ent.insert(0, str(sm125_addr))
-
-    ttk.Label(config_grid, text="SM125 IP Port:").grid(row=4, padx=5)
-    sm125_port_ent = ttk.Entry(config_grid)
-    sm125_port_ent.grid(row=4, column=1, padx=5)
-    sm125_port_ent.insert(0, str(sm125_port))
-
-
-    conf_widgets = [cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent]
-
-    ttk.Button(frame, text="Save", command=lambda: file_helper.save_config(cont_ent, oven_ent, \
-            gp700_ent, sm125_addr_ent, sm125_port_ent, popup)). \
-            pack(side="top", fill="both", expand=True, pady=10)
-
-    ui_helper.open_center(350, 150, popup)
-    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(popup, old_conf, conf_widgets))
 
 
 if __name__ == "__main__":

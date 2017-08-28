@@ -1,6 +1,8 @@
 """UI Helper methods."""
 import tkinter as tk
 from tkinter import ttk
+import file_helper
+import ui_helper
 
 def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
@@ -98,4 +100,53 @@ def open_center(width, height, root):
 
     root.geometry("{}x{}-{}+{}".format(int(width), int(height),\
                              int(x_cord), int(y_cord)))
+
+
+def update_config(prog):
+    """Updates devices configuration."""
+    cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config(prog)
+
+    old_conf = [cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port]
+
+    popup = tk.Toplevel()
+    popup.wm_title("Device Configuration")
+    frame = tk.Frame(popup)
+    frame.pack()
+    config_grid = tk.Frame(frame)
+    config_grid.pack(side="top", fill="both", expand=True, padx=10)
+
+    ttk.Label(config_grid, text="340 Controller GPIB0 Port:").grid(row=0, padx=5)
+    cont_ent = ttk.Entry(config_grid)
+    cont_ent.grid(row=0, column=1, padx=5)
+    cont_ent.insert(0, str(cont_loc))
+
+    ttk.Label(config_grid, text="Dicon Oven GPIB0 Port:").grid(row=1, padx=5)
+    oven_ent = ttk.Entry(config_grid)
+    oven_ent.grid(row=1, column=1, padx=5)
+    oven_ent.insert(0, str(oven_loc))
+
+    ttk.Label(config_grid, text="GP700 Switch GPIB0 Port:").grid(row=2, padx=5)
+    gp700_ent = ttk.Entry(config_grid)
+    gp700_ent.grid(row=2, column=1, padx=5)
+    gp700_ent.insert(0, str(gp700_loc))
+
+    ttk.Label(config_grid, text="SM125 IP Address:").grid(row=3, padx=5)
+    sm125_addr_ent = ttk.Entry(config_grid)
+    sm125_addr_ent.grid(row=3, column=1, padx=5)
+    sm125_addr_ent.insert(0, str(sm125_addr))
+
+    ttk.Label(config_grid, text="SM125 IP Port:").grid(row=4, padx=5)
+    sm125_port_ent = ttk.Entry(config_grid)
+    sm125_port_ent.grid(row=4, column=1, padx=5)
+    sm125_port_ent.insert(0, str(sm125_port))
+
+
+    conf_widgets = [cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent]
+
+    ttk.Button(frame, text="Save", command=lambda: file_helper.save_config(cont_ent, oven_ent, 
+            gp700_ent, sm125_addr_ent, sm125_port_ent, popup, prog)). \
+            pack(side="top", fill="both", expand=True, pady=10)
+
+    ui_helper.open_center(350, 150, popup)
+    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(popup, old_conf, conf_widgets))
 

@@ -342,6 +342,7 @@ def num_to_excel_col(num):
         curr_overflow_index += 1
     return letters[curr_overflow_index] + letters[num]
 
+
 def on_closing(root, old_conf, widgets):
     unsaved = False
     for old_c, widg in zip(old_conf, widgets):
@@ -358,12 +359,13 @@ def on_closing(root, old_conf, widgets):
         root.destroy()
 
 
-def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window):
+def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window, prog):
     #pylint:disable=too-many-arguments
     """Save configuration data to config file."""
     addr_str = sm125_addr_ent.get()
     addrs = addr_str.split(".")
     valid = True
+
     try:
         cont_loc = int(cont_ent.get())
         oven_loc = int(oven_ent.get())
@@ -378,14 +380,24 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
                                                     \nIP address requires #.#.#.#")
 
     if valid:
-        CPARSER.set("Calibration", "controller_location", str(cont_loc))
-        CPARSER.set("Calibration", "oven_location", str(oven_loc))
-        CPARSER.set("Calibration", "gp700_location", str(gp700_loc))
-        CPARSER.set("Calibration", "sm125_address", str(addr_str))
-        CPARSER.set("Calibration", "sm125_port", str(port))
+        CPARSER.set(prog, "controller_location", str(cont_loc))
+        CPARSER.set(prog, "oven_location", str(oven_loc))
+        CPARSER.set(prog, "gp700_location", str(gp700_loc))
+        CPARSER.set(prog, "sm125_address", str(addr_str))
+        CPARSER.set(prog, "sm125_port", str(port))
         with open("devices.cfg", "w+") as conf:
             CPARSER.write(conf)
         window.destroy()
+
+
+def get_config(prog):
+    cont_loc = CPARSER.get(prog, "controller_location")
+    oven_loc = CPARSER.get(prog, "oven_location")
+    gp700_loc = CPARSER.get(prog, "gp700_location")
+    sm125_addr = CPARSER.get(prog, "sm125_address")
+    sm125_port = CPARSER.get(prog, "sm125_port")
+
+    return cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port
 
 
 if __name__ == "__main__":
