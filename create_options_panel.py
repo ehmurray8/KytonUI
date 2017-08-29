@@ -110,7 +110,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
             row_num += 1
 
             self.target_temps_entry = ui_helper.array_entry(options_grid, "Target temps (C) [Comma Separated]", \
-                                                            row_num, 10, 7, "200, 500")
+                                                            row_num, 10, 7, "200, 250")
             row_num += 1
             
 
