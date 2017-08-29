@@ -102,7 +102,7 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
 
         
     def create_options(self, num_sns):
-        self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
+        self.options = options_panel.OptionsPanel(self.main_frame, num_sns, options_panel.CAL)
         self.start_btn = self.options.create_start_btn(self.start)
         self.options.pack()
 

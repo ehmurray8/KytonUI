@@ -114,7 +114,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
-        self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
+        self.options = options_panel.OptionsPanel(self.main_frame, num_sns, options_panel.BAKING)
         self.start_btn = self.options.create_start_btn(self.start)
         self.options.pack()
 

@@ -21,14 +21,14 @@ CALIBRATION
     -Number of laser scans to be average as a data point (1-25) (EditText)
     -Number of T reading from 340 to be averaged for a T data point (Single digit) 
     -Time interval between T readings for data point. (1-5 mins) (EditText)
-	-Diff btween 1st/last T data point divided by elapsed time to establish drift rate
-	-Need to prevent the code from timing out
-	-Questionable data point preferred to program timing out, flag questionable points
+        -Diff btween 1st/last T data point divided by elapsed time to establish drift rate
+        -Need to prevent the code from timing out
+        -Questionable data point preferred to program timing out, flag questionable points
     -Drift rate allowed to trigger the WL data (mK/min) (EditText)
-	-Typically few mk/min for LS sensors 10s mK to 1/10s mK
+        -Typically few mk/min for LS sensors 10s mK to 1/10s mK
     -Number of calibration cycles in each run (EditText)
-	-Each cycle is a separate calibration taken in sequence
-	-Cycles compared for repeatibility and short term stability
+        -Each cycle is a separate calibration taken in sequence
+        -Cycles compared for repeatibility and short term stability
     -Target temps in C (5-20 targets between 40 and 300C) (EditTexts)
     -Temp to which oven has to cool after highest T data point is taken, 
             before next cycle starts

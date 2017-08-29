@@ -5,11 +5,14 @@ from tkinter import ttk
 import ui_helper
 
 NUM_SNS = None
+BAKING = "Baking"
+CAL = "Cal"
+
 
 class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                               # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
-    def __init__(self, master, num_sns):
+    def __init__(self, master, num_sns, program):
         super().__init__(master)
 
         #Init member vars
@@ -31,10 +34,10 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
         self.num_sns = num_sns
 
-        self.create_options_grid()
+        self.create_options_grid(program)
 
 
-    def create_options_grid(self):
+    def create_options_grid(self, program):
         """Creates the grid for the user to configure options."""
         self.pack(side="top", fill="both", expand=True)
 
@@ -65,23 +68,46 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
 
         #Number of points to average entry
-        self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ",\
-                    row_num, 10, 5)
+        self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ", \
+                                           row_num, 10, 5)
         row_num += 1
 
 
-        #Time intervals entry
-        self.init_time = ui_helper.time_entry(options_grid, "Initial time interval: ",\
-                    row_num, 10, "seconds", 15.0)
-        row_num += 1
+        if program == CAL:
+            self.num_temp_readings = ui_helper.int_entry(options_grid, "Num temperature readings to average: ", \
+                                                        row_num, 10, 5)
+            row_num += 1
 
-        self.init_duration = ui_helper.time_entry(options_grid, "Initial interval duration: ",\
-                    row_num, 10, "minutes", 5.0)
-        row_num += 1
+            self.temp_interval = ui_helper.time_entry(options_grid, "Time between temp readings: ", \
+                                                      row_num, 10, "seconds",  60.0)
+            row_num += 1
 
-        self.prim_time = ui_helper.time_entry(options_grid, "Primary time interval: ",\
-                    row_num, 10, "minutes", 1.0)
-        row_num += 1
+            self.drift_rate = ui_helper.double_entry(options_grid, "Drift rate (mK/min): ", row_num, 10, 1.0)
+            row_num += 1
+
+            self.num_cal_cycles = ui_helper.int_entry(options_grid, "Num cal cycles: ", row_num, 10, 1)
+            row_num += 1
+
+            #self.target_temps = ui.helper.array_entry(options_grid, "Target temps (C) [Comma Separated]", row_num, 50, (200, 500))
+            #row_num += 1
+
+            self.cooling = ui_helper.checkbox_entry(options_grid, "Use oven cooling function? ", row_num)
+            row_num += 1
+
+
+        if program == BAKING:
+            #Time intervals entry
+            self.init_time = ui_helper.time_entry(options_grid, "Initial time interval: ", \
+                        row_num, 10, "seconds", 15.0)
+            row_num += 1
+
+            self.init_duration = ui_helper.time_entry(options_grid, "Initial interval duration: ", \
+                        row_num, 10, "minutes", 5.0)
+            row_num += 1
+
+            self.prim_time = ui_helper.time_entry(options_grid, "Primary time interval: ",\
+                        row_num, 10, "minutes", 1.0)
+            row_num += 1
 
 
         #File name entry
@@ -90,10 +116,11 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         row_num += 1
 
 
-        #Baking setpoint entry
-        self.baking_temp = ui_helper.double_entry(options_grid, "Baking temp: ",\
-                    row_num, 10, 250.0)
-        row_num += 1
+        if program == BAKING:
+                #Baking setpoint entry
+            self.baking_temp = ui_helper.double_entry(options_grid, "Baking temp: ",\
+                        row_num, 10, 250.0)
+            row_num += 1
 
 
         #(TEMP) Fiber SN Inputs
@@ -107,6 +134,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
             index += 1
             row_num += 1
+
 
     def create_start_btn(self, start):
         """Creates the start button in the app."""
