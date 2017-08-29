@@ -1,26 +1,24 @@
-#pylint:disable=unused-import, wrong-import-position
 """Main entry point for the UI."""
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+
 import time
 import sys
+import _thread
+from tkinter import ttk, messagebox
+import tkinter as tk
 import pyvisa as visa
 
 import controller_340_wrapper as temp_controller
 import delta_oven_wrapper as oven_wrapper
-import sm125_wrapper
+import sm125_wrapper as sm125_wrapper
 import create_options_panel as options_panel
-import file_helper
-import graphing_helper
-import ui_helper 
-from main_program import *
+import file_helper as file_helper
+import graphing_helper as graphing_helper
+import ui_helper as ui_helper
 
-NUM_SNS = 4
+
 TERM_CHAR = '/n'
-
-
 LARGE_FONT = ("Verdana", 13)
+
 
 class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
@@ -41,7 +39,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         self.header = ttk.Label(self.main_frame, text="Configure Baking", font=LARGE_FONT)
         self.header.pack(pady=10)
-        
+
         self.stable_count = 0
 
         self.menu = tk.Menu(master, tearoff=0)
@@ -49,21 +47,28 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.running = False
         self.cancel_bake = False
         self.start_page = start_page
+        self.chan_error_been_warned = False
+
+        self.options = None
+        self.start_btn = None
 
 
     def clear_frame(self):
+        """Clears the main frame."""
         self.main_frame.destroy()
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
 
     def home(self, master):
+        """Returns the program to the main page."""
         self.menu = tk.Menu(master, tearoff=0)
         master.config(menu=self.menu)
         master.show_frame(self.start_page, 300, 300)
 
 
     def create_menu(self, master):
+        """Creates the baking menu."""
         self.menu.add_command(label="Home", command=lambda: self.home(master))
         self.menu.add_command(label="Create Excel", command=lambda: \
                 file_helper.create_excel_file(self.options.file_name.get()))
@@ -108,6 +113,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
 
     def create_options(self, num_sns):
+        """Creates the options panel for the main frame."""
         self.options = options_panel.OptionsPanel(self.main_frame, num_sns)
         self.start_btn = self.options.create_start_btn(self.start)
         self.options.pack()
@@ -118,34 +124,43 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         file_helper.create_excel_file(self.options.file_name.get())
 
 
+    def load_devices(self, conn_fails):
+        """Creates the neccessary connections to the devices for the program."""
+        cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = \
+                        file_helper.get_config("Baking")
+        resource_manager = visa.ResourceManager()
+        if self.options.temp340_state.get():
+            try:
+                self.controller = \
+                    resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
+            except visa.VisaIOError:
+                conn_fails.append("LSC 340")
+        if self.options.delta_oven_state.get():
+            try:
+                self.oven = \
+                        resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
+                oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+            except visa.VisaIOError:
+                conn_fails.append("Dicon Oven")
+        if self.options.gp700_state.get():
+            try:
+                self.gp700 = resource_manager \
+                        .open_resource(gp700_loc, read_termination=TERM_CHAR)
+            except visa.VisaIOError:
+                conn_fails.append("Optical Switch")
+        if self.options.sm125_state.get():
+            try:
+                self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
+            except visa.VisaIOError:
+                conn_fails.append("Micron Optics SM125")
+
+
     def start(self):
         """Starts the recording process."""
         if not self.running:
             conn_fails = []
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config("Baking")
-                resource_manager = visa.ResourceManager()
-                if self.options.temp340_state.get():
-                    try:
-                        self.controller = resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
-                    except visa.VisaIOError:
-                        conn_fails.append("LSC 340")
-                if self.options.delta_oven_state.get():
-                    try:
-                        self.oven = resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
-                        oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
-                    except visa.VisaIOError:
-                        conn_fails.append("Dicon Oven")
-                if self.options.gp700_state.get():
-                    try:
-                        self.gp700 = resource_manager.open_resource(gp700_loc, read_termination=TERM_CHAR)
-                    except visa.VisaIOError:
-                        conn_fails.append("Optical Switch")
-                if self.options.sm125_state.get():
-                    try:
-                        self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
-                    except visa.VisaIOError:
-                        conn_fails.append("Micron Optics SM125")
+                self.load_devices(conn_fails)
 
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
                 if snum.get() != "":
@@ -200,15 +215,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
 
     def __avg_waves_amps(self):
-        #pylint:disable=too-many-locals, too-many-branches
+        #pylint:disable=too-many-locals, too-many-branches, too-many-statements
         amplitudes_avg = []
         wavelengths_avg = []
         count = 0
-        need_init = False
+        need_init = True
         while count < int(self.options.num_pts.get()):
-            #wavelengths, amplitudes = sm125_wrapper.get_data_channels(self.options.chan_nums)
-            #TODO Need to associate proper amplitudes/powers with correct serial number
-            #
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 can_connect = False
 
@@ -224,21 +236,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 amplitudes = [[]]
                 lens = [0, 0, 0, 0]
 
-            #TODO make sure wavelengths and amplitudes are 2d lists with one list per channel
-            enough_readings = False
-            for length, wavelens in zip(lens, wavelengths):
-                if len(wavelens) > length:
-                    #Curr channel more wavelengths are expected than received
-                    pass
-                else:
-                    enough_readings = True
-
-            if not need_init:
+            if need_init:
                 wavelengths_avg = [0] * len(wavelengths[0])
                 amplitudes_avg = [0] * len(amplitudes[0])
-                need_init = True
+                need_init = False
+                i = 0
 
-            i = 0
             for wavelength_list in wavelengths:
                 for wavelength in wavelength_list:
                     wavelengths_avg[i] += wavelength
@@ -260,7 +263,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         chan_num = 1
         data_pts = {}
-        #print(str(self.channels))
+        chan_errs = []
         for chan in self.channels:
             max_pts = lens[chan_num-1]
             temp = chan_num
@@ -269,19 +272,35 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 start_index += lens[temp-2]
                 temp -= 1
             count = 0
-            #print(str(chan))
             for snum in chan:
                 if count < max_pts:
                     data_pts[snum] = (wavelengths_avg[start_index],
-                                           amplitudes_avg[start_index])
+                                      amplitudes_avg[start_index])
                     start_index += 1
                 else:
-                    data_pts[snum] = (None, None)
+                    chan_errs.append(snum)
+                    data_pts[snum] = (0, 0)
                 count += 1
             chan_num += 1
 
+        if len(chan_errs) > 0:
+            self.chan_error(chan_errs)
         return data_pts
-        #return wavelengths_avg, amplitudes_avg
+
+
+    def chan_error(self, snums):
+        """Creates the error messsage to alert the user not enough fbgs are being scanned."""
+        if not self.chan_error_been_warned:
+            self.chan_error_been_warned = True
+            errs_str = ""
+            need_comma = False
+            for snum in snums:
+                if need_comma:
+                    errs_str += ", "
+                errs_str += str(snum)
+                need_comma = True
+
+            _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str))
 
 
     def baking_loop(self):
@@ -292,7 +311,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             temperature = temp_controller.get_temp_c(self.controller)
             temperature = float(temperature[:-3])
         else:
-            temperature = 0
+            temperature = 0.0
 
         #wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
         wavelengths_avg = []
@@ -317,9 +336,4 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                    curr_time, temperature, wavelengths_avg, amplitudes_avg)
-
-
-if __name__ == "__main__":
-    ROOT = None
-    launch()
+                                       curr_time, temperature, wavelengths_avg, amplitudes_avg)

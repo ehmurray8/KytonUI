@@ -16,12 +16,12 @@ CALIBRATION
   -User Input
     -Instruments needed (CheckBoxes)
     -Optical Switch Channels (EditTexts)
-    -Serial #'s in order on each fiber, whether they are hooked to Dicon or not (EditTexts)
+    -Serial #'s in order on each fiber, whether they are hooked to Dicon or not 
         -20 digit alphanumeric characters
     -Number of laser scans to be average as a data point (1-25) (EditText)
-    -Number of T reading from 340 to be averaged for a T data point (Single digit) (EditText)
+    -Number of T reading from 340 to be averaged for a T data point (Single digit) 
     -Time interval between T readings for data point. (1-5 mins) (EditText)
-	-Diff between 1st and last T data point divided by elapsed time to establish drift rate
+	-Diff btween 1st/last T data point divided by elapsed time to establish drift rate
 	-Need to prevent the code from timing out
 	-Questionable data point preferred to program timing out, flag questionable points
     -Drift rate allowed to trigger the WL data (mK/min) (EditText)
@@ -30,27 +30,33 @@ CALIBRATION
 	-Each cycle is a separate calibration taken in sequence
 	-Cycles compared for repeatibility and short term stability
     -Target temps in C (5-20 targets between 40 and 300C) (EditTexts)
-    -Temp to which oven has to cool after highest T data point is taken, before next cycle starts
+    -Temp to which oven has to cool after highest T data point is taken, 
+            before next cycle starts
 	-Cool command choice on UI
     -File name to save (EditText)
 
   -Execution (Laser scanning continuously at set rate, and at set interval)
     1. Set next setpoint for the oven
         -Always starts at 45C
-        -Allow user to take a base temp point "manually" before starting automatic, and save to all files
-    2. Take temperatures (T) from the 340 and calculate drift rate until specified criterion is met
+        -Allow user to take a base temp point "manually" before starting automatic, 
+                and save to all files
+    2. Take temperatures (T) from the 340 and calculate drift rate until 
+                specified criterion is met
         -T data vs time realtime plotting
         -Only necessary to save T data associated with the WL data
     3. Take the set number of readings from the laser
         -Average the readings in the code
-    4. Take a 2nd T and average the before and after values to establish the change (drift) rate
+    4. Take a 2nd T and average the before and after values to establish the 
+            change (drift) rate
         -Don't start averaging process until T is within 1K of target
         -Oven will overshoot/undershoot so sign will change
         -Drift rate will be 0 at each extreme, code can't call for this data at extremes
     5. Average the 2 T values and associate it with the peak value between the 2 Ts
-        -For FBGs on the same fiber, the 2nd T can be taken after they are all reported and 
+        -For FBGs on the same fiber, the 2nd T can be taken after they are 
+                all reported and 
             the average T can be associated with each of them
-        -If the switch must be activated, another "first" T should be taken, then all the FBGs
-            on that switch channel, then a second T, etc.
-    6. Save timestamp, interval in hours since 1st data pt, WL, peak power, and T data and wait for next interval
+        -If the switch must be activated, another "first" T should be taken, 
+                then all the FBGs on that switch channel, then a second T, etc.
+    6. Save timestamp, interval in hours since 1st data pt, WL, peak power, 
+            and T data and wait for next interval
         -Need CSV text file for each serial number, with auto-saving feature
