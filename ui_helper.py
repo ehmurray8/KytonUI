@@ -67,6 +67,17 @@ def checkbox_entry(container, label_text, row, checked=True):
         checkbox.invoke()
     return int_var
 
+def array_entry(container, label_text, row, width, height, default_arr=None):
+    string_var = tk.StringVar()
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    text = tk.Text(container, width=width, height=height)
+    text.grid(row=row, column=2, sticky='ew')
+
+    text.delete(1.0, tk.END)
+    if default_arr is not None:
+        text.insert(1.0, str(default_arr))
+    return text
+
 def print_options(app):
     """Prints the selectable options to the screen."""
     print("SM125: " + format_selected(app.sm125_state.get()))

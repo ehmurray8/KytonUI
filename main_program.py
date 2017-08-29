@@ -78,6 +78,7 @@ class Application(tk.Tk):
             self.title("Baking Settings")
             self.bind('<Return>', lambda x: self.start_bake(BakingSNSConfig.inpt, self.frames[baking_program.BakingPage]))
             self.show_frame(BakingSNSConfig, 300, 125)
+            BakingSNSConfig.inpt.focus()
         else:
             self.start_bake(None, self.frames[baking_program.BakingPage])
 
@@ -96,14 +97,14 @@ class Application(tk.Tk):
 
         
         if valid:
-            height = 330 + (self.num_cal_sns * 10)
+            height = 370 + (self.num_cal_sns * 10)
             height += int(self.num_cal_sns / 3) * 30
             cal_page.clear_frame()
             cal_page.create_options(self.num_cal_sns)
             cal_page.create_menu(self)
             self.title("Kyton Calibration")
             self.unbind("<Return>")
-            self.show_frame(cal_program.CalPage, 525, height)
+            self.show_frame(cal_program.CalPage, 600, height)
 
 
     def start_cal_program(self):
@@ -111,6 +112,7 @@ class Application(tk.Tk):
             self.title("Calibration Settings")
             self.bind("<Return>", lambda x: self.start_cal(CalSNSConfig.inpt, self.frames[cal_program.CalPage]))
             self.show_frame(CalSNSConfig, 300, 125)
+            CalSNSConfig.inpt.focus()
         else:
             self.start_cal(None, self.frames[cal_program.CalPage])
 
@@ -143,7 +145,6 @@ class BakingSNSConfig(tk.Frame):
                 pack(side="top", expand=True, padx=10, pady=5)
         BakingSNSConfig.inpt = ttk.Entry(self, width=10, justify="center")
         BakingSNSConfig.inpt.pack(side="top", padx=10, pady=5, expand=True)
-        BakingSNSConfig.inpt.focus()
         ttk.Button(self, text="Start Baking", command=lambda: controller.start_bake(BakingSNSConfig.inpt,
                         controller.frames[baking_program.BakingPage])).pack(side="top", expand=True, \
                         padx=10, pady=5)
@@ -159,7 +160,6 @@ class CalSNSConfig(tk.Frame):
                 pack(side="top", expand=True, padx=10, pady=5)
         CalSNSConfig.inpt = ttk.Entry(self, width=10, justify="center")
         CalSNSConfig.inpt.pack(side="top", padx=10, pady=5, expand=True)
-        CalSNSConfig.inpt.focus()
         ttk.Button(self, text="Start Calibration", command=lambda: controller.start_cal(CalSNSConfig.inpt,
             controller.frames[cal_program.CalPage])).pack(side="top", expand=True, padx=10, pady=5)
 

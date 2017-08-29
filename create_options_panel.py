@@ -31,13 +31,29 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         self.init_duration = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
+        self.num_temp_readings = tk.IntVar()
+        self.temp_interval = tk.IntVar()
+        self.drift_rate = tk.DoubleVar()
+        self.num_cal_cycles = tk.IntVar()
+        self.cooling = tk.IntVar()
+        self.target_temps_entry = None
 
-        self.num_sns = num_sns
-
-        self.create_options_grid(program)
+        self.create_options_grid(program, num_sns)
 
 
-    def create_options_grid(self, program):
+    def get_target_temps(self):
+        """Returns the target temps as an array, returns None if formatting of Text widget is wrong."""
+        target_temps_str = self.target_temps_entry.get(1.0, tk.END)
+        target_temps_arr = target_temps_str.split(",")
+        try:
+            target_temps_arr = list(map(int, target_temps_arr))
+        except ValueError: 
+            return None
+
+        return target_temps_arr
+
+
+    def create_options_grid(self, program, num_sns):
         """Creates the grid for the user to configure options."""
         self.pack(side="top", fill="both", expand=True)
 
@@ -66,6 +82,11 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                     "Delta Oven", row_num)
         row_num += 1
 
+        if program == CAL:
+            self.cooling = ui_helper.checkbox_entry(options_grid, "Use oven cooling function? ", row_num)
+            row_num += 1
+
+
 
         #Number of points to average entry
         self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ", \
@@ -88,12 +109,10 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
             self.num_cal_cycles = ui_helper.int_entry(options_grid, "Num cal cycles: ", row_num, 10, 1)
             row_num += 1
 
-            #self.target_temps = ui.helper.array_entry(options_grid, "Target temps (C) [Comma Separated]", row_num, 50, (200, 500))
-            #row_num += 1
-
-            self.cooling = ui_helper.checkbox_entry(options_grid, "Use oven cooling function? ", row_num)
+            self.target_temps_entry = ui_helper.array_entry(options_grid, "Target temps (C) [Comma Separated]", \
+                                                            row_num, 10, 7, "200, 500")
             row_num += 1
-
+            
 
         if program == BAKING:
             #Time intervals entry
@@ -125,7 +144,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
         #(TEMP) Fiber SN Inputs
         index = 1
-        while index <= self.num_sns:
+        while index <= num_sns:
             serial_num, chan_num, switch_pos = ui_helper.serial_num_entry(options_grid, \
                     "Serial Number " + str(index) + ": ", row_num, 5, "Fiber " + str(index))
             self.sn_ents.append(serial_num)
