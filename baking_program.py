@@ -40,6 +40,8 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         self.header = ttk.Label(self.main_frame, text="Configure Baking", font=LARGE_FONT)
         self.header.pack(pady=10)
 
+        self.main_frame.pack()      
+
         self.stable_count = 0
 
         self.menu = tk.Menu(master, tearoff=0)
@@ -131,18 +133,21 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         resource_manager = visa.ResourceManager()
         if self.options.temp340_state.get():
             try:
+                cont_loc = "GPIB0::{}::INSTR".format(cont_loc)
                 self.controller = \
                     resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
             except visa.VisaIOError:
                 conn_fails.append("LSC 340")
         if self.options.delta_oven_state.get():
             try:
+                oven_loc = "GPIB0::{}::INSTR".format(oven_loc)
                 self.oven = \
                         resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
                 oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
             except visa.VisaIOError:
-                conn_fails.append("Dicon Oven")
+                conn_fails.append("Delta Oven")
         if self.options.gp700_state.get():
+            gp700_loc = "GPIB0::{}::INSTR".format(gp700_loc)
             try:
                 self.gp700 = resource_manager \
                         .open_resource(gp700_loc, read_termination=TERM_CHAR)
@@ -179,6 +184,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                     if need_comma:
                         conn_str += ", "
                     conn_str += dev
+                    need_comma = True
                 conn_str += "."
                 messagebox.showwarning("Device Connection Failure", conn_str)
 
@@ -242,6 +248,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 need_init = False
                 i = 0
 
+            i = 0
             for wavelength_list in wavelengths:
                 for wavelength in wavelength_list:
                     wavelengths_avg[i] += wavelength
@@ -292,7 +299,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         """Creates the error messsage to alert the user not enough fbgs are being scanned."""
         if not self.chan_error_been_warned:
             self.chan_error_been_warned = True
-            errs_str = ""
+            errs_str = "Micron Optics didn't report any data for the serial numbers: "
             need_comma = False
             for snum in snums:
                 if need_comma:
@@ -300,7 +307,9 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 errs_str += str(snum)
                 need_comma = True
 
-            _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str))
+            #TODO make this threaded
+            # _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str))
+            tk.messagebox.showwarning("Scanning error", errs_str)
 
 
     def baking_loop(self):

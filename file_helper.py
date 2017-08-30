@@ -24,10 +24,11 @@ CPARSER.read("devices.cfg")
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
     #pylint: disable-msg=too-many-arguments
     """Write the output csv file."""
+    #TODO write test program for hiding files, and making readonly
     if os.path.isfile(file_name):
-        os.chmod(file_name, '777')
+        #os.chmod(file_name, '777')
         file_obj = open(file_name, "a")
-        os.chmod(file_name, os.stat.S_IRUSR | os.stat.S_IRGRP | os.stat.S_IROTH)
+        #os.chmod(file_name, os.stat.S_IRUSR | os.stat.S_IRGRP | os.stat.S_IROTH)
     else:
         file_obj = open(file_name, "w")
         
@@ -63,10 +64,10 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
 
     file_obj.write("\n\n")
     file_obj.close()
-    os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-    if os.name == 'nt':
-        ret = ctypes.windll.kernel32.SetFileAttributesW(file_name,
-                                                        FILE_ATTRIBUTE_HIDDEN)
+    #os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    #if os.name == 'nt':
+    #    ret = ctypes.windll.kernel32.SetFileAttributesW(file_name,
+    #                                                    FILE_ATTRIBUTE_HIDDEN)
 
 
 
@@ -293,8 +294,10 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
     chart.set_x_axis({'name': 'Elapsed Time from start (hr)'})
 
     chart.set_style(10)
-    col_name = num_to_excel_col(num_cols + 1) + "3"
-    worksheet.insert_chart(col_name, chart)
+    #col_name = num_to_excel_col(num_cols + 1) + "3"
+    col_name = num_to_excel_col(num_cols + 2)
+    print(col_name)
+    worksheet.insert_chart("${}$3".format(col_name), chart)
 
 
 def create_excel_file(csv_file):

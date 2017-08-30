@@ -65,8 +65,13 @@ class Application(tk.Tk):
         if valid:
             height = 330 + (self.num_baking_sns * 10)
             height += int(self.num_baking_sns / 3) * 30
-            baking_page.clear_frame()
-            baking_page.create_options(self.num_baking_sns)
+            if inpt is not None:
+                baking_page.clear_frame()
+                baking_page.header = ttk.Label(baking_page.main_frame,
+                                               text="Configure Baking",
+                                               font=LARGE_FONT)
+                baking_page.header.pack(pady=10)
+                baking_page.create_options(self.num_baking_sns)
             baking_page.create_menu(self)
             self.title("Kyton Baking")
             self.unbind("<Return>")
@@ -97,10 +102,15 @@ class Application(tk.Tk):
 
         
         if valid:
-            height = 370 + (self.num_cal_sns * 10)
+            height = 470 + (self.num_cal_sns * 10)
             height += int(self.num_cal_sns / 3) * 30
-            cal_page.clear_frame()
-            cal_page.create_options(self.num_cal_sns)
+            if inpt is not None:
+                cal_page.clear_frame()
+                cal_page.header = ttk.Label(cal_page.main_frame,
+                                               text="Configure Baking",
+                                               font=LARGE_FONT)
+                cal_page.header.pack(pady=10)
+                cal_page.create_options(self.num_cal_sns)
             cal_page.create_menu(self)
             self.title("Kyton Calibration")
             self.unbind("<Return>")
