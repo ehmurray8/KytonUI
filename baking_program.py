@@ -168,7 +168,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 self.load_devices(conn_fails)
 
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
-                if snum.get() != "":
+                if snum.get() != "" and snum.get() not in self.snums:
                     self.snums.append(snum.get())
                     self.channels[chan.get() - 1].append(snum.get())
 
@@ -192,7 +192,6 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             self.start_btn.configure(text="Start")
             self.header.configure(text="Configure Baking")
             self.running = False
-            self.cancel_bake = True
             self.stable_count = 0
 
 
@@ -211,13 +210,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
     def program_loop(self):
         """Infinite program loop."""
         #print("Started program loop...")
-        if not self.cancel_bake:
-            if not self.check_stable():
-                self.baking_loop()
-                self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
-            else:
-                self.baking_loop()
-                self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
+        if not self.check_stable():
+            self.baking_loop()
+            self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
+        else:
+            self.baking_loop()
+            self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
 
 
     def __avg_waves_amps(self):
@@ -292,6 +290,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         if len(chan_errs) > 0:
             self.chan_error(chan_errs)
+        print(str(data_pts))
         return data_pts
 
 

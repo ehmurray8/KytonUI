@@ -146,7 +146,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         index = 1
         while index <= num_sns:
             serial_num, chan_num, switch_pos = ui_helper.serial_num_entry(options_grid, \
-                    "Serial Number " + str(index) + ": ", row_num, 5, "Fiber " + str(index))
+                    "Serial Number " + str(index) + ": ", row_num, 5, "FBG " + str(index))
             self.sn_ents.append(serial_num)
             self.chan_nums.append(chan_num)
             self.switch_pos.append(switch_pos)
