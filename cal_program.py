@@ -1,6 +1,7 @@
 """Calibratin Program for Kyton UI."""
 
-import sys
+import sys 
+import time 
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -10,6 +11,9 @@ import ui_helper
 import graphing_helper
 import pyvisa as visa
 import create_options_panel as options_panel
+import delta_oven_wrapper as oven_wrapper
+import controller_340_wrapper.py as controller_wrapper
+import device_helper
 
 LARGE_FONT = ("Verdana", 13)
 TERM_CHAR = "\n"
@@ -17,10 +21,9 @@ TERM_CHAR = "\n"
 class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter application."""
 
-    def __init__(self, parent, master, start_page):
-        """Constructs the app."""
-        tk.Frame.__init__(self, parent)
-
+    def __init__(self, parent, master, start_page): 
+        """Constructs the app.""" 
+        tk.Frame.__init__(self, parent) 
         self.controller = None
         self.oven = None
         self.gp700 = None
@@ -28,6 +31,7 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         self.channels = [[], [], [], []]
         self.switches = []
         self.snums = []
+
 
         self.main_frame = tk.Frame(self)
 
@@ -41,6 +45,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         self.running = False
         self.cancel_bake = False
         self.start_page = start_page
+
+        self.options = None
 
 
     def clear_frame(self):
@@ -111,36 +117,39 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         """Creates excel file."""
         file_helper.create_excel_file(self.options.file_name.get())
 
+
+    def load_devices(self, conn_fails):
+        if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            resource_manager = visa.ResourceManager()
+            cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config("Calibration")
+            if self.options.temp340_state.get():
+                try:
+                    self.controller = resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
+                except visa.VisaIOError:
+                    conn_fails.append("LSC 340")
+            if self.options.delta_oven_state.get():
+                try:
+                    self.oven = resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
+                except visa.VisaIOError:
+                    conn_fails.append("Dicon Oven")
+            if self.options.gp700_state.get():
+                try:
+                    self.gp700 = resource_manager.open_resource(gp700_loc, read_termination=TERM_CHAR)
+                except visa.VisaIOError:
+                    conn_fails.append("Optical Switch")
+            if self.options.sm125_state.get():
+                try:
+                    self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
+                except visa.VisaIOError:
+                    conn_fails.append("Micron Optics SM125")
+
     
     def start(self):
         """Starts the recording process."""
         if not self.running:
             
             conn_fails = []
-            if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                resource_manager = visa.ResourceManager()
-                cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config("Calibration")
-                if self.options.temp340_state.get():
-                    try:
-                        self.controller = resource_manager.open_resource(cont_loc, read_termination=TERM_CHAR)
-                    except visa.VisaIOError:
-                        conn_fails.append("LSC 340")
-                if self.options.delta_oven_state.get():
-                    try:
-                        self.oven = resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
-                    except visa.VisaIOError:
-                        conn_fails.append("Dicon Oven")
-                if self.options.gp700_state.get():
-                    try:
-                        self.gp700 = resource_manager.open_resource(gp700_loc, read_termination=TERM_CHAR)
-                    except visa.VisaIOError:
-                        conn_fails.append("Optical Switch")
-                if self.options.sm125_state.get():
-                    try:
-                        self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
-                    except visa.VisaIOError:
-                        conn_fails.append("Micron Optics SM125")
-
+            
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
                 if snum.get() != "":
                     self.snums.append(snum.get())
@@ -160,6 +169,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 conn_str += "."
                 messagebox.showwarning("Device Connection Failure", conn_str)
 
+            self.run_cal_loop()
+
         else:
             self.start_btn.configure(text="Start")
             self.header.configure(text="Configure Calibration")
@@ -167,3 +178,71 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
             self.cancel_bake = True
             self.stable_count = 0
 
+
+    def run_cal_loop(self):
+        """Runs the calibration."""
+        temps_str = self.options.target_temps_entry.get()
+        temps_arr = temps_str.split(",");
+        temps_arr = list(map(int, temps_arr))
+
+        cycle_num = 0
+        while cycle_num < self.options.num_cal_cycles:
+            for temp in temps_arr:
+                oven_wrapper.set_temp(self.oven, temp)
+
+                start_temp = controller_wrapper.get_temp_k(self.controller)
+                start_temp = float(start_temp[:-3])
+
+                data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
+
+                wavelengths_avg = []
+                amplitudes_avg = []
+                data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
+                for snum in self.snums:
+                    wavelengths_avg.append(data_pts[snum][0])
+                    amplitudes_avg.append(data_pts[snum][1])
+
+                start_temp += float(controller_wrapper.get_temp_k(self.controller)[:-3])
+
+                start_temp /= 2
+
+                start_time = time.time()
+
+                #Need to write csv file init code
+                file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL)
+
+                self.after(60000, lambda: __check_drift_rate(start_time, start_temp))
+
+            #Need to add cooling logic
+
+            cycle_num += 1
+
+
+    def __check_drift_rate(self, last_time, last_temp):
+        curr_temp = float(controller_wrapper.get_temp_k(self.controller)[:-3])
+
+        data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
+
+        curr_temp += float(controller_wrapper.get_temp_k(self.controller)[:-3])
+
+        curr_temp /= 2
+
+        curr_time = time.time()
+
+        time_diff = float(curr_time - last_time)
+        temp_diff = float(curr_temp - last_temp)
+
+        time_ratio_min = curr_time / last_time / 60
+        temp_ratio_mk = curr_temp / last_temp / 1000
+
+        drift_rate = temp_ratio_mk / time_ratio_min
+
+        if drift_rate <= self.options.drift_rate:
+            #record actual point
+            file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, True)
+        else:
+            file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL)
+            self.after(60000, lambda: __check_drift_rate(curr_time, curr_temp))

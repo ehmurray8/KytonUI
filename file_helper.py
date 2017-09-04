@@ -2,6 +2,7 @@
 import configparser
 import os
 import time
+import stat
 import ctypes
 import xlsxwriter
 import pandas as pd
@@ -21,18 +22,21 @@ FILE_ATTRIBUTE_HIDDEN = 0x02
 CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
 
-def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers):
+def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers, function, real_cal_pt=False):
     #pylint: disable-msg=too-many-arguments
     """Write the output csv file."""
-    #TODO write test program for hiding files, and making readonly
     if os.path.isfile(file_name):
-        #os.chmod(file_name, '777')
+        os.chmod(file_name, stat.S_IWRITE)
         file_obj = open(file_name, "a")
-        #os.chmod(file_name, os.stat.S_IRUSR | os.stat.S_IRGRP | os.stat.S_IROTH)
     else:
         file_obj = open(file_name, "w")
         
-        file_obj.write("Metadata\n")
+        if function == options_panel.BAKING:
+            header = "Metadata\n"
+        else:
+            header = "Caldata\n"
+
+        file_obj.write(header)
         need_comma = False
         for snum in serial_nums:
             if need_comma:
@@ -64,10 +68,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers)
 
     file_obj.write("\n\n")
     file_obj.close()
-    #os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-    #if os.name == 'nt':
-    #    ret = ctypes.windll.kernel32.SetFileAttributesW(file_name,
-    #                                                    FILE_ATTRIBUTE_HIDDEN)
+    os.chmod(file_name, stat.S_IREAD)
 
 
 

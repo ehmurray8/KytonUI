@@ -18,7 +18,7 @@ def get_temp_k(res):
     ret2, b, c = ret.partition('E')
     ret3 = ret2[1:len(ret2)]
     # ret3 = float(ret3)
-    return ret3
+    return ret #ret3
 
 
 def get_pid(res):
