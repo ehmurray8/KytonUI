@@ -14,6 +14,7 @@ import create_options_panel as options_panel
 import file_helper as file_helper
 import graphing_helper as graphing_helper
 import ui_helper as ui_helper
+import device_helper
 
 
 TERM_CHAR = '/n'
@@ -218,23 +219,6 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
 
 
-    def chan_error(self, snums):
-        """Creates the error messsage to alert the user not enough fbgs are being scanned."""
-        if not self.chan_error_been_warned:
-            self.chan_error_been_warned = True
-            errs_str = "Micron Optics didn't report any data for the serial numbers: "
-            need_comma = False
-            for snum in snums:
-                if need_comma:
-                    errs_str += ", "
-                errs_str += str(snum)
-                need_comma = True
-
-            #TODO make this threaded
-            _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str))
-            #tk.messagebox.showwarning("Scanning error", errs_str)
-
-
     def baking_loop(self):
         """Runs the baking process."""
         #print("Started baking loop...")
@@ -248,7 +232,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         #wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
         wavelengths_avg = []
         amplitudes_avg = []
-        data_pts = self.__avg_waves_amps()
+        data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
         for snum in self.snums:#self.options.sn_ents:
             wavelengths_avg.append(data_pts[snum][0])
             amplitudes_avg.append(data_pts[snum][1])
@@ -268,4 +252,4 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                                       curr_time, temperature, wavelengths_avg, amplitudes_avg)
+                                       curr_time, temperature, wavelengths_avg, amplitudes_avg, options_panel.BAKING)

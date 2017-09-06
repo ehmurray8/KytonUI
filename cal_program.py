@@ -189,6 +189,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         while cycle_num < self.options.num_cal_cycles:
             for temp in temps_arr:
                 oven_wrapper.set_temp(self.oven, temp)
+                oven_wrapper.heater_on(self.oven)
+                oven_wrapper.cooling_off(self.oven)
 
                 start_temp = controller_wrapper.get_temp_k(self.controller)
                 start_temp = float(start_temp[:-3])
@@ -210,11 +212,14 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
 
                 #Need to write csv file init code
                 file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
-                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL)
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, False, 0.0)
 
                 self.after(60000, lambda: __check_drift_rate(start_time, start_temp))
 
-            #Need to add cooling logic
+            self.heater_off(self.oven)
+
+            if self.options.cooling.get():
+                self.cooling_on(self.oven)
 
             cycle_num += 1
 
@@ -241,8 +246,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         if drift_rate <= self.options.drift_rate:
             #record actual point
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
-                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, True)
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, True, drift_rate)
         else:
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
-                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL)
+                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, False, drift_rate)
             self.after(60000, lambda: __check_drift_rate(curr_time, curr_temp))
