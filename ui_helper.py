@@ -161,3 +161,17 @@ def update_config(prog):
     ui_helper.open_center(350, 150, popup)
     popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(popup, old_conf, conf_widgets))
 
+
+def lock_widgets(parent):
+    for child in parent.children.values():
+        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() and "Frame" not in child.winfo_class():
+            child.config(state=tk.DISABLED)
+        elif child.winfo_class() == "Frame": 
+            lock_widgets(child)
+
+def unlock_widgets(parent):
+    for child in parent.children.values():
+        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() and "Frame" not in child.winfo_class():
+            child.config(state=tk.NORMAL)
+        elif child.winfo_class() == "Frame":
+            unlock_widgets(child)

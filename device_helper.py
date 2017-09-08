@@ -1,6 +1,9 @@
+import sys
+import _thread
+import tkinter as tk
 import sm125_wrapper
 
-def avg_waves_amps(sm125, channels, header, options):
+def avg_waves_amps(sm125, channels, header, options, warned):
         """Gets the average wavelengths and powers, returns dictionary SNUM:(wave,power)"""
         #pylint:disable=too-many-locals, too-many-branches, too-many-statements
         amplitudes_avg = []
@@ -72,15 +75,15 @@ def avg_waves_amps(sm125, channels, header, options):
             chan_num += 1
 
         if len(chan_errs) > 0:
-            self.chan_error(chan_errs)
+            chan_error(chan_errs, warned)
+            warned = True
         print(str(data_pts))
-        return data_pts
+        return data_pts, warned
 
 
-def chan_error(self, snums):
+def chan_error(snums, warned):
         """Creates the error messsage to alert the user not enough fbgs are being scanned."""
-        if not self.chan_error_been_warned:
-            self.chan_error_been_warned = True
+        if not warned:
             errs_str = "Micron Optics didn't report any data for the serial numbers: "
             need_comma = False
             for snum in snums:
@@ -90,6 +93,6 @@ def chan_error(self, snums):
                 need_comma = True
 
             #TODO make this threaded
-            _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str))
+            _thread.start_new_thread(lambda: tk.messagebox.showwarning("Scanning error", errs_str), ())
             #tk.messagebox.showwarning("Scanning error", errs_str)
 

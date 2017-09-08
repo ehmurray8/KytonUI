@@ -151,7 +151,6 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
     def start(self):
         """Starts the recording process."""
         if not self.running:
-            
             conn_fails = []
             
             for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
@@ -163,6 +162,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 self.running = True
                 self.start_btn.configure(text="Pause")
                 self.header.configure(text="Calibrating...")
+                ui_helper.lock_widgets(self.options)
+                self.run_cal_loop()
             else:
                 need_comma = False
                 conn_str = "Failed to connect to: "
@@ -173,11 +174,10 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 conn_str += "."
                 messagebox.showwarning("Device Connection Failure", conn_str)
 
-            self.run_cal_loop()
-
         else:
             self.start_btn.configure(text="Start")
             self.header.configure(text="Configure Calibration")
+            ui_helper.unlock_widgets(self.options)
             self.running = False
             self.cancel_bake = True
             self.stable_count = 0
@@ -199,7 +199,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 start_temp = controller_wrapper.get_temp_k(self.controller)
                 start_temp = float(start_temp[:-3])
 
-                data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
+                data_pts, self.chan_error_has_been_warned = \
+                        device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_has_been_warned)
 
                 wavelengths_avg = []
                 amplitudes_avg = []

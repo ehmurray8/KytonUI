@@ -13,7 +13,7 @@ import sm125_wrapper as sm125_wrapper
 import create_options_panel as options_panel
 import file_helper as file_helper
 import graphing_helper as graphing_helper
-import ui_helper as ui_helper
+import ui_helper
 import device_helper
 
 
@@ -177,6 +177,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 self.running = True
                 self.start_btn.configure(text="Pause")
                 self.header.configure(text="Baking...")
+                ui_helper.lock_widgets(self.options)
                 self.program_loop()
             else:
                 need_comma = False
@@ -192,6 +193,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         else:
             self.start_btn.configure(text="Start")
             self.header.configure(text="Configure Baking")
+            ui_helper.unlock_widgets(self.options)
             self.running = False
             self.stable_count = 0
 
@@ -232,7 +234,8 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         #wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
         wavelengths_avg = []
         amplitudes_avg = []
-        data_pts = device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options)
+        data_pts, self.chan_error_been_warned = \
+            device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_been_warned)
         for snum in self.snums:#self.options.sn_ents:
             wavelengths_avg.append(data_pts[snum][0])
             amplitudes_avg.append(data_pts[snum][1])
