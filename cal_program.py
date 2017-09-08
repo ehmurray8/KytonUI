@@ -12,7 +12,7 @@ import graphing_helper
 import pyvisa as visa
 import create_options_panel as options_panel
 import delta_oven_wrapper as oven_wrapper
-import controller_340_wrapper.py as controller_wrapper
+import controller_340_wrapper as controller_wrapper
 import device_helper
 
 LARGE_FONT = ("Verdana", 13)
@@ -84,6 +84,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 graphing_helper.create_indiv_waves_graph(self.options.file_name.get(), True))
         animenu.add_command(label="Indiv. Powers", command=lambda: \
                 graphing_helper.create_indiv_powers_graph(self.options.file_name.get(), True))
+        animenu.add_command(label="Drift Rate", command=lambda: \
+                graphing_helper.create_drift_rates_graph(self.options.file_name.get(), True))
 
 
         staticmenu.add_command(label="Wavelength v. Time", command=lambda: \
@@ -98,6 +100,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 graphing_helper.create_indiv_waves_graph(self.options.file_name.get(), False))
         staticmenu.add_command(label="Indiv. Powers", command=lambda: \
                 graphing_helper.create_indiv_powers_graph(self.options.file_name.get(), False))
+        staticmenu.add_command(label="Drift Rate", command=lambda: \
+                graping_helper.create_drift_rates_graph(self.options.file_name.get(), False))
 
 
         graphmenu.add_cascade(label="Animated", menu=animenu)

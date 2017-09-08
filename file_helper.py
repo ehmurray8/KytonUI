@@ -14,9 +14,7 @@ from tkinter import messagebox
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#40E0D0", "#FFA500", "#00FF00", "#468499",
               "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
-              "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
-              "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
-
+              "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF", "#E6E6FA", "#008000", "#FF00FF", "#0099CC"] 
 CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
 
@@ -325,10 +323,28 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
     chart.set_x_axis({'name': 'Elapsed Time from start (hr)'})
 
     chart.set_style(10)
-    #col_name = num_to_excel_col(num_cols + 1) + "3"
     col_name = num_to_excel_col(num_cols + 2)
-    print(col_name)
     worksheet.insert_chart("${}$3".format(col_name), chart)
+    return num_cols + 12
+
+
+def __create_chart_dr(data_coll, worksheet, workbook, col_start):
+    chart = workbook.add_chart({'type': 'scatter', 'subtype': 'smooth_with_markers'})
+
+    times_real = []
+    drates_real = []
+    for time, drate in zip(data_coll.times, data_coll.drift_rates):
+        times_real.append(time)
+        drates_real.append(drate)
+    
+    chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real, \
+            'values': data_coll.drates_real})
+    chart.set_title({'name': 'Average Drift Rate (mK/min) vs. Time(hr)'})
+    chart.set_y_axis({'name': 'Average Drift Rate (mK/min)'})
+    chart.set_x_axis({'name': 'Time (hr)'})
+
+    chart.set_style(10)
+    worksheet.insert_chart("${}$3".format(num_to_excel_col(col_start)), chart)
 
 
 def create_excel_file(csv_file, is_cal=False):
@@ -355,7 +371,10 @@ def create_excel_file(csv_file, is_cal=False):
 
         __write_rows(row_strs, row_format, worksheet, bold_format, data_coll, is_cal)
 
-        __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
+        col_end = __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
+
+        if is_cal:
+            __create_chart_dr(data_coll, worksheet, workbook, col_end)
 
         workbook.close()
         os.system("start " + xcel_file)

@@ -15,19 +15,23 @@ style.use("ggplot")
 def create_mean_wave_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name):
-        fig = plt.figure(0, figsize=(8,6))
-        ax1 = fig.add_subplot(1, 1, 1)
+        try:
+            fig = plt.figure(0, figsize=(8,6))
+            ax1 = fig.add_subplot(1, 1, 1)
 
-        plt.xlabel('Time (hr)')
-        plt.ylabel('Wavelength (pm)')
-        fig.suptitle('Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
+            plt.xlabel('Time (hr)')
+            plt.ylabel('Wavelength (pm)')
+            fig.suptitle('Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_mwt_graph, interval=1000, fargs=(f_name, ax1,))
-            fig.show()
-        else:
-            __animate_mwt_graph(0, f_name, ax1)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_mwt_graph, interval=1000, fargs=(f_name, ax1,))
+                fig.show()
+            else:
+                __animate_mwt_graph(0, f_name, ax1)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
 
 
 def __animate_mwt_graph(i, f_name, axis):
@@ -47,16 +51,21 @@ def __get_mean_wave_diff_v_time_data(f_name):
 
 def create_wave_power_graph(f_name, animate):
     if check_valid_file(f_name):
-        fig = plt.figure(1, figsize=(8,6))
-        ax1 = fig.add_subplot(1, 1, 1)
-        fig.suptitle('Power (dBm) vs. Wavelength (nm)')
+        try: 
+            fig = plt.figure(1, figsize=(8,6))
+            ax1 = fig.add_subplot(1, 1, 1)
+            fig.suptitle('Power (dBm) vs. Wavelength (nm)')
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_wp_graph, interval=1000, fargs=(f_name, ax1,))
-            fig.show()
-        else:
-            __animate_wp_graph(0, f_name, ax1)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_wp_graph, interval=1000, fargs=(f_name, ax1,))
+                fig.show()
+            else:
+                __animate_wp_graph(0, f_name, ax1)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
 
 
 def __animate_wp_graph(i, f_name, axis):
@@ -84,24 +93,29 @@ def __get_wave_power_graph(f_name):
 
 def create_temp_time_graph(f_name, animate):
     if check_valid_file(f_name):
-        fig = plt.figure(2, figsize=(8,6))
+        try:
+            fig = plt.figure(2, figsize=(8,6))
 
-        ax1 = plt.subplot2grid((10,1), (1,0), rowspan=5, colspan=1)
-        plt.ylabel('Temperature (K)')
-        ax2 = plt.subplot2grid((10,1), (6,0), rowspan=4, colspan=1, \
-                sharex=ax1)
+            ax1 = plt.subplot2grid((10,1), (1,0), rowspan=5, colspan=1)
+            plt.ylabel('Temperature (K)')
+            ax2 = plt.subplot2grid((10,1), (6,0), rowspan=4, colspan=1, \
+                    sharex=ax1)
 
-        #ax1 = fig.add_subplot(1, 1, 1)
-        fig.suptitle('Raw Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
-        plt.ylabel('{} Temperature (K)'.format(u'\u0394'))
-        plt.xlabel('Time (hr)')
+            #ax1 = fig.add_subplot(1, 1, 1)
+            fig.suptitle('Raw Temperature (K) vs. Time (hr) from start.'.format(u'\u0394'))
+            plt.ylabel('{} Temperature (K)'.format(u'\u0394'))
+            plt.xlabel('Time (hr)')
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1, ax2, ))
-            fig.show()
-        else:
-            __animate_temp_graph(0, f_name, ax1, ax2)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1, ax2, ))
+                fig.show()
+            else:
+                __animate_temp_graph(0, f_name, ax1, ax2)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
 
 
 def __animate_temp_graph(i, f_name, ax1, ax2):
@@ -130,19 +144,24 @@ def __get_temp_time_graph(f_name):
 def create_mean_power_time_graph(f_name, animate):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name):
-        fig = plt.figure(3, figsize=(8,6))
-        ax1 = fig.add_subplot(1, 1, 1)
-        
-        plt.xlabel('Time (hr)')
-        plt.ylabel('Power (dBm)')
-        fig.suptitle('Average Power (dBm) vs. Time (hr) from start')
+        try:
+            fig = plt.figure(3, figsize=(8,6))
+            ax1 = fig.add_subplot(1, 1, 1)
+            
+            plt.xlabel('Time (hr)')
+            plt.ylabel('Power (dBm)')
+            fig.suptitle('Average Power (dBm) vs. Time (hr) from start')
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
-            fig.show()
-        else:
-            __animate_mpt_graph(0, f_name, ax1)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
+                fig.show()
+            else:
+                __animate_mpt_graph(0, f_name, ax1)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
 
 
 def __animate_mpt_graph(i, f_name, axis):
@@ -163,23 +182,28 @@ def __get_mean_power_diff_v_time_data(f_name):
 def create_indiv_waves_graph(f_name, animate):
     """Create individual wavelengths graph."""
     if check_valid_file(f_name):
-        fig = plt.figure(4, figsize=(8,6))
+        try:
+            fig = plt.figure(4, figsize=(8,6))
 
-        ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
-        plt.ylabel('Wavelength (nm)')
-        ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
-                sharex=ax1)
+            ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
+            plt.ylabel('Wavelength (nm)')
+            ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
+                    sharex=ax1)
 
-        plt.xlabel('Time (hr)')
-        plt.ylabel('Wavelength (pm)')
-        fig.suptitle('Raw Wavelengths vs. Time (hr)')
+            plt.xlabel('Time (hr)')
+            plt.ylabel('Wavelength (pm)')
+            fig.suptitle('Raw Wavelengths vs. Time (hr)')
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1, ax2,) )
-            fig.show()
-        else:
-            __animate_indiv_waves(0, f_name, ax1, ax2)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1, ax2,) )
+                fig.show()
+            else:
+                __animate_indiv_waves(0, f_name, ax1, ax2)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
 
 
 def __animate_indiv_waves(i, f_name, ax1, ax2):
@@ -217,23 +241,28 @@ def __get_indiv_waves_data(f_name):
 def create_indiv_powers_graph(f_name, animate):
     """Create individual wavelengths graph."""
     if check_valid_file(f_name):
-        fig = plt.figure(4, figsize=(8,6))
+        try:
+            fig = plt.figure(5, figsize=(8,6))
 
-        ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
-        plt.ylabel('Power (dBm)')
-        ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
-                sharex=ax1)
+            ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
+            plt.ylabel('Power (dBm)')
+            ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
+                    sharex=ax1)
 
-        plt.xlabel('Time (hr)')
-        plt.ylabel('Power (dBm)')
-        fig.suptitle('Raw Powers (dBm) vs. Time (hr)')
+            plt.xlabel('Time (hr)')
+            plt.ylabel('{} Power (dBm)'.format(u'\u0394'))
+            fig.suptitle('Raw Powers (dBm) vs. Time (hr)')
 
-        if animate:
-            ani = animation.FuncAnimation(fig, __animate_indiv_powers, interval=1000, fargs=(f_name, ax1, ax2,) )
-            fig.show()
-        else:
-            __animate_indiv_powers(0, f_name, ax1, ax2)
-            plt.show()
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_indiv_powers, interval=1000, fargs=(f_name, ax1, ax2,) )
+                fig.show()
+            else:
+                __animate_indiv_powers(0, f_name, ax1, ax2)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
 
 
 def __animate_indiv_powers(i, f_name, ax1, ax2):
@@ -268,6 +297,66 @@ def __get_indiv_powers_data(f_name):
     return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
 
 
+def create_drift_rates_graph(f_name, animate):
+    """Create drift rates graph."""
+    if check_valid_file(f_name):
+        try:
+            fig = plt.figure(6, figsize=(8,6))
+
+            ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
+            plt.ylabel('Average Drift Rate (mK/min)')
+            ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
+                    sharex=ax1)
+
+            plt.xlabel('Time (hr)')
+            plt.ylabel('Average Drift Rate (mK/min)')
+            fig.suptitle('Average Drift Rates (mK/min) vs. Time (hr)')
+
+            if animate:
+                ani = animation.FuncAnimation(fig, __animate_drift_rates, interval=1000, fargs=(f_name, ax1, ax2,) )
+                fig.show()
+            else:
+                __animate_indiv_powers(0, f_name, ax1, ax2)
+                plt.show()
+        except IndexError:
+            messagebox.showwarning("File Error", "Inconsistency in file {}, a different amount of readings are being stored." \
+                                   .format(f_name))
+
+
+
+def __animate_indiv_powers(i, f_name, ax1, ax2):
+    times, times_real, drates, drates_real = __get_drift_rates(f_name)
+    ax1.clear()
+    ax2.clear()
+
+    ax1 = plt.subplot2grid((10,1), (1,0), rowspan=7, colspan=1)
+    plt.ylabel('Average Drift Rate (mK/min)')
+    ax2 = plt.subplot2grid((10,1), (8,0), rowspan=2, colspan=1, \
+            sharex=ax1)
+
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Average Drift Rate (mK/min)'.format(u'\u0394'))
+
+    ax1.plot(times_real, drates)
+    ax2.plot(times_real, drates_real)
+
+
+def __get_drift_rates(f_name):
+    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    data_coll = file_helper.create_data_coll(mdata, entries_df)
+    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+    drates = data_coll.drift_rates
+
+    drates_real = []
+    times_real = []
+    for time, drate, real_point in zip(times, drates, data_coll.drift_rates):
+        if real_point:
+            drates_real.append(drate)
+            times_real.append(time)
+
+    return times, times_real, drates, drates_real
+
+
 def check_valid_file(f_name):
     if os.path.isfile(f_name):
         with open(f_name, "r") as check_file:
@@ -285,7 +374,8 @@ def check_valid_file(f_name):
 if __name__ == "__main__":
     #create_mean_wave_time_graph("kyton_out.csv", False)
     #create_wave_power_graph("kyton_out.csv", False)
-    create_temp_time_graph("kyton_out.csv", False)
+    #create_temp_time_graph("kyton_out.csv", False)
     #create_mean_power_time_graph("kyton_out.csv", False)
     #create_indiv_waves_graph("kyton_out.csv", False)
     #create_indiv_powers_graph("kyton_out.csv", False)
+    create_drift_rates_graph("kyton_out.csv", False)
