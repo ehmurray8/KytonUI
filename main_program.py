@@ -107,7 +107,7 @@ class Application(tk.Tk):
             if inpt is not None:
                 cal_page.clear_frame()
                 cal_page.header = ttk.Label(cal_page.main_frame,
-                                               text="Configure Baking",
+                                               text="Configure Calibration",
                                                font=LARGE_FONT)
                 cal_page.header.pack(pady=10)
                 cal_page.create_options(self.num_cal_sns)

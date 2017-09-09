@@ -110,7 +110,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
             row_num += 1
 
             self.target_temps_entry = ui_helper.array_entry(options_grid, "Target temps (C) [Comma Separated]", \
-                                                            row_num, 10, 7, "200, 250")
+                                                            row_num, 10, 7, "130, 135")
             row_num += 1
             
 
@@ -130,8 +130,11 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
 
         #File name entry
+        def_file = "kyton_out.csv"
+        if program == CAL:
+            def_file = "kyton_out_cal.csv"
         self.file_name = ui_helper.string_entry(options_grid, "File name: ",\
-                    row_num, 15, "kyton_out.csv")
+                    row_num, 15, def_file)
         row_num += 1
 
 

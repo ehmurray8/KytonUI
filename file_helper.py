@@ -9,6 +9,7 @@ import pandas as pd
 import metadata
 import data_collection as datac
 from tkinter import messagebox
+import create_options_panel as options_panel
 
 
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
@@ -55,9 +56,9 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
 
         
-        line = "Serial Num, Timestamp(s), Temperature(K)," + "Wavelength(nm), Power(dBm)"
+        line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
         if function == options_panel.CAL:
-            line += ", Drift Rate(mK/min), Real Point"
+            line += ",Drift Rate(mK/min),Real Point"
         line += "\n\n"
 
         file_obj.write(line)
@@ -89,6 +90,7 @@ def __init_excel_file(csv_file):
 
 def parse_csv_file(csv_file):
     """Parses defined csv file."""
+    os.chmod(csv_file, stat.S_IWRITE)
     entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
 
     mdata = metadata.Metadata()
@@ -109,7 +111,7 @@ def parse_csv_file(csv_file):
     mdata.start_time = float(start_time_wavelen_temp[0])
     mdata.start_wavelen_avg = float(start_time_wavelen_temp[1])
     mdata.start_temp = float(start_time_wavelen_temp[2])
-
+    os.chmod(csv_file, stat.S_IWRITE)
     return mdata, entries_df
 
 

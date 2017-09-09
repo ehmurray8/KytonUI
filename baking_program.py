@@ -185,8 +185,8 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 for dev in conn_fails:
                     if need_comma:
                         conn_str += ", "
+                        need_comma = True
                     conn_str += dev
-                    need_comma = True
                 conn_str += "."
                 messagebox.showwarning("Device Connection Failure", conn_str)
 
