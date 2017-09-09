@@ -244,16 +244,16 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 oven_wrapper.cooling_on(self.oven)
 
             _thread.start_new_thread(lambda: self.check_temp(temps_arr), ())
+            self.temp_is_good = False
             while(not self.temp_is_good):
                 pass
 
             cycle_num += 1
 
     def check_temp(self, temps_arr):
-        temp = float(controller_wrapper.get_temp_k(self.controller)[:-4])
-        self.temp_is_good = False
+        temp = float(controller_wrapper.get_temp_c(self.controller)[:-4])
         while temp > float(temps_arr[0]):
-            temp = float(controller_wrapper.get_temp_k(self.controller)[:-4])
+            temp = float(controller_wrapper.get_temp_c(self.controller)[:-4])
         self.temp_is_good = True
 
 
