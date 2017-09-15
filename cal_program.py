@@ -20,7 +20,7 @@ LARGE_FONT = ("Verdana", 13)
 TERM_CHAR = "\n"
 
 class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
-    """Class containing the main tkinter application."""
+    """Class containing the main tkinter pplication."""
 
     def __init__(self, parent, master, start_page): 
         """Constructs the app.""" 
@@ -201,10 +201,9 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         cycle_num = 0
         while cycle_num < self.options.num_cal_cycles.get():
             for temp in temps_arr:
-                print(str(self.oven))
                 oven_wrapper.set_temp(self.oven, temp)
-                oven_wrapper.heater_on(self.oven)
                 oven_wrapper.cooling_off(self.oven)
+                oven_wrapper.heater_on(self.oven)
 
                 start_temp = controller_wrapper.get_temp_k(self.controller)
                 
