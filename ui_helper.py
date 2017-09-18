@@ -22,12 +22,12 @@ def serial_num_entry(container, label_text, row, width, \
     chan_num_ent = tk.IntVar()
     tk.Spinbox(container, from_=1, to=4, textvariable=chan_num_ent, width=width, state="readonly") \
             .grid(row=row, column=4, sticky='ew')
-    #ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
+    ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
     switch_pos_ent = tk.IntVar()
-    #tk.Spinbox(container, from_=1, to=4, textvariable=switch_pos_ent, width=width, state="readonly") \
-    #        .grid(row=row, column=6, sticky='ew')
+    tk.Spinbox(container, from_=1, to=4, textvariable=switch_pos_ent, width=width, state="readonly") \
+            .grid(row=row, column=6, sticky='ew')
     chan_num_ent.set(def_channel)
-    #switch_pos_ent.set(def_switch)
+    switch_pos_ent.set(def_switch)
     ttk.Label(container, width=3).grid(row=row, column=7)
     return  serial_num_ent, chan_num_ent, switch_pos_ent
 
@@ -81,7 +81,6 @@ def array_entry(container, label_text, row, width, height, default_arr=None):
 def print_options(app):
     """Prints the selectable options to the screen."""
     print("SM125: " + format_selected(app.sm125_state.get()))
-    print("GP700: " + format_selected(app.gp700_state.get()))
     print("Temp340: " + format_selected(app.temp340_state.get()))
     print("Delta Oven: " + format_selected(app.delta_oven_state.get()))
     print("Baking Temp: " + str(app.baking_temp.get()))
@@ -115,9 +114,10 @@ def open_center(width, height, root):
 
 def update_config(prog):
     """Updates devices configuration."""
-    cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config(prog)
+    cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
+            file_helper.get_config(prog)
 
-    old_conf = [cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port]
+    old_conf = [cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port]
 
     popup = tk.Toplevel()
     popup.wm_title("Device Configuration")
@@ -126,36 +126,50 @@ def update_config(prog):
     config_grid = tk.Frame(frame)
     config_grid.pack(side="top", fill="both", expand=True, padx=10)
 
-    ttk.Label(config_grid, text="340 Controller GPIB0 Port:").grid(row=0, padx=5)
+    row_num = 0
+
+    ttk.Label(config_grid, text="340 Controller GPIB0 Number:").grid(row=row_num, padx=5)
     cont_ent = ttk.Entry(config_grid)
-    cont_ent.grid(row=0, column=1, padx=5)
+    cont_ent.grid(row=row_num, column=1, padx=5)
     cont_ent.insert(0, str(cont_loc))
+    row_num += 1
 
-    ttk.Label(config_grid, text="Dicon Oven GPIB0 Port:").grid(row=1, padx=5)
+    ttk.Label(config_grid, text="Dicon Oven GPIB0 Number:").grid(row=row_num, padx=5)
     oven_ent = ttk.Entry(config_grid)
-    oven_ent.grid(row=1, column=1, padx=5)
+    oven_ent.grid(row=row_num, column=1, padx=5)
     oven_ent.insert(0, str(oven_loc))
+    row_num += 1
 
-    ttk.Label(config_grid, text="GP700 Switch GPIB0 Port:").grid(row=2, padx=5)
-    gp700_ent = ttk.Entry(config_grid)
-    gp700_ent.grid(row=2, column=1, padx=5)
-    gp700_ent.insert(0, str(gp700_loc))
+    ttk.Label(config_grid, text="Optical Switch IP Address").grid(row=row_num, padx=5)
+    op_switch_addr_ent = ttk.Entry(config_grid)
+    op_switch_addr_ent.grid(row=row_num, column=1, padx=5)
+    op_switch_addr_ent.insert(0, str(op_switch_addr))
+    row_num += 1
 
-    ttk.Label(config_grid, text="SM125 IP Address:").grid(row=3, padx=5)
+    ttk.Label(config_grid, text="Optical Switch IP Port").grid(row=row_num, padx=5)
+    op_switch_port_ent = ttk.Entry(config_grid)
+    op_switch_port_ent.grid(row=row_num, column=1, padx=5)
+    op_switch_port_ent.insert(0, str(op_switch_port))
+    row_num += 1
+
+    ttk.Label(config_grid, text="SM125 IP Address:").grid(row=row_num, padx=5)
     sm125_addr_ent = ttk.Entry(config_grid)
-    sm125_addr_ent.grid(row=3, column=1, padx=5)
+    sm125_addr_ent.grid(row=row_num, column=1, padx=5)
     sm125_addr_ent.insert(0, str(sm125_addr))
+    row_num += 1
 
-    ttk.Label(config_grid, text="SM125 IP Port:").grid(row=4, padx=5)
+    ttk.Label(config_grid, text="SM125 IP Port:").grid(row=row_num, padx=5)
     sm125_port_ent = ttk.Entry(config_grid)
-    sm125_port_ent.grid(row=4, column=1, padx=5)
+    sm125_port_ent.grid(row=row_num, column=1, padx=5)
     sm125_port_ent.insert(0, str(sm125_port))
+    row_num += 1
 
 
-    conf_widgets = [cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent]
+    conf_widgets = [cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent, \
+            sm125_addr_ent, sm125_port_ent]
 
     ttk.Button(frame, text="Save", command=lambda: file_helper.save_config(cont_ent, oven_ent, 
-            gp700_ent, sm125_addr_ent, sm125_port_ent, popup, prog)). \
+            op_switch_addr_ent, op_switch_port_ent, sm125_addr_ent, sm125_port_ent, popup, prog)). \
             pack(side="top", fill="both", expand=True, pady=10)
 
     ui_helper.open_center(350, 150, popup)
@@ -164,14 +178,16 @@ def update_config(prog):
 
 def lock_widgets(parent):
     for child in parent.children.values():
-        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() and "Frame" not in child.winfo_class():
+        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
+                and "Frame" not in child.winfo_class():
             child.config(state=tk.DISABLED)
         elif child.winfo_class() == "Frame": 
             lock_widgets(child)
 
 def unlock_widgets(parent):
     for child in parent.children.values():
-        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() and "Frame" not in child.winfo_class():
+        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
+                and "Frame" not in child.winfo_class():
             child.config(state=tk.NORMAL)
         elif child.winfo_class() == "Frame":
             unlock_widgets(child)

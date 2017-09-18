@@ -17,12 +17,12 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
         #Init member vars
         self.sm125_state = tk.IntVar()
-        self.gp700_state = tk.IntVar()
+        self.op_switch_state = tk.IntVar()
         self.delta_oven_state = tk.IntVar()
         self.temp340_state = tk.IntVar()
         self.sn_ents = []
         self.chan_nums = []
-        self.switch_pos = []
+        self.switch_postions = []
 
         #Init member widgets
         self.baking_temp = tk.DoubleVar()
@@ -70,8 +70,8 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                     "Micron Optics SM125", row_num)
         row_num += 1
 
-        self.gp700_state = ui_helper.checkbox_entry(options_grid,\
-                    "Dicon GP700", row_num, False)
+        self.op_switch_state = ui_helper.checkbox_entry(options_grid,\
+                    "Optical Switch", row_num)
         row_num += 1
 
         self.temp340_state = ui_helper.checkbox_entry(options_grid,\
@@ -95,9 +95,9 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
 
 
         if program == CAL:
-            self.num_temp_readings = ui_helper.int_entry(options_grid, "Num temperature readings to average: ", \
-                                                        row_num, 10, 5)
-            row_num += 1
+            #self.num_temp_readings = ui_helper.int_entry(options_grid, "Num temperature readings to average: ", \
+            #                                            row_num, 10, 5)
+            #row_num += 1
 
             self.temp_interval = ui_helper.time_entry(options_grid, "Time between temp readings: ", \
                                                       row_num, 10, "seconds",  60.0)
@@ -134,7 +134,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         if program == CAL:
             def_file = "kyton_out_cal.csv"
         self.file_name = ui_helper.string_entry(options_grid, "File name: ",\
-                    row_num, 15, def_file)
+                    row_num, 30, def_file)
         row_num += 1
 
 
@@ -152,7 +152,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
                     "Serial Number " + str(index) + ": ", row_num, 5, "FBG " + str(index))
             self.sn_ents.append(serial_num)
             self.chan_nums.append(chan_num)
-            self.switch_pos.append(switch_pos)
+            self.switch_positions.append(switch_pos)
 
             index += 1
             row_num += 1

@@ -3,7 +3,7 @@ import _thread
 import tkinter as tk
 import sm125_wrapper
 
-def avg_waves_amps(sm125, channels, header, options, warned):
+def avg_waves_amps(sm125, channels, switches, header, options, warned):
         """Gets the average wavelengths and powers, returns dictionary SNUM:(wave,power)"""
         #pylint:disable=too-many-locals, too-many-branches, too-many-statements
         amplitudes_avg = []
@@ -20,7 +20,7 @@ def avg_waves_amps(sm125, channels, header, options, warned):
                         can_connect = True
                     except visa.VisaIOError:
                         header.configure(text="SM125 Connection Error...Trying Again")
-                header.configure(text="Baking...")
+                #header.configure(text="Baking...")
             else:
                 wavelengths = [[]]
                 amplitudes = [[]]

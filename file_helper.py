@@ -19,7 +19,9 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
 CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
 
-def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers, function, drift_rate=None, real_cal_pt=False):
+def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers, \
+        function, drift_rate=None, real_cal_pt=False):
+
     #pylint: disable-msg=too-many-arguments
     """Write the output csv file."""
     if os.path.isfile(file_name):
@@ -58,7 +60,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         
         line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
         if function == options_panel.CAL:
-            line += ",Drift Rate(mK/min),Real Point"
+            line += ",Real Point,Drift Rate(mK/min)"
         line += "\n\n"
 
         file_obj.write(line)
@@ -414,20 +416,25 @@ def on_closing(root, old_conf, widgets):
         root.destroy()
 
 
-def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, window, prog):
+def save_config(cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent, \
+        sm125_addr_ent, sm125_port_ent, window, prog):
+
     #pylint:disable=too-many-arguments
     """Save configuration data to config file."""
-    addr_str = sm125_addr_ent.get()
-    addrs = addr_str.split(".")
+    s_addr_str = sm125_addr_ent.get()
+    o_addr_str = op_switch_addr_ent.get()
+    s_addrs = s_addr_str.split(".")
+    o_addrs = o_addr_str.split(".")
     valid = True
 
     try:
         cont_loc = int(cont_ent.get())
         oven_loc = int(oven_ent.get())
-        gp700_loc = int(gp700_ent.get())
-        port = int(sm125_port_ent.get())
-        for addr in addrs:
-            int(addr)
+        op_switch_port = int(op_switch_port_ent.get())
+        sm125_port = int(sm125_port_ent.get())
+        for (s_addr, o_addr) in zip(s_addrs, o_addrs):
+            int(s_addr)
+            int(o_addr)
     except ValueError:
         valid = False
         messagebox.showwarning("Invalid Input", "GPIB0 port entries require integers. \
@@ -437,9 +444,10 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
     if valid:
         CPARSER.set(prog, "controller_location", str(cont_loc))
         CPARSER.set(prog, "oven_location", str(oven_loc))
-        CPARSER.set(prog, "gp700_location", str(gp700_loc))
-        CPARSER.set(prog, "sm125_address", str(addr_str))
-        CPARSER.set(prog, "sm125_port", str(port))
+        CPARSER.set(prog, "op_switch_address", str(o_addr_str))
+        CPARSER.set(prog, "op_switch_port", str(op_switch_port))
+        CPARSER.set(prog, "sm125_address", str(s_addr_str))
+        CPARSER.set(prog, "sm125_port", str(sm125_port))
         with open("devices.cfg", "w+") as conf:
             CPARSER.write(conf)
         window.destroy()
@@ -448,11 +456,12 @@ def save_config(cont_ent, oven_ent, gp700_ent, sm125_addr_ent, sm125_port_ent, w
 def get_config(prog):
     cont_loc = CPARSER.get(prog, "controller_location")
     oven_loc = CPARSER.get(prog, "oven_location")
-    gp700_loc = CPARSER.get(prog, "gp700_location")
+    op_switch_addr = CPARSER.get(prog, "op_switch_address")
+    op_switch_port = CPARSER.get(prog, "op_switch_port")
     sm125_addr = CPARSER.get(prog, "sm125_address")
     sm125_port = CPARSER.get(prog, "sm125_port")
 
-    return cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port
+    return cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@ import file_helper as file_helper
 import graphing_helper as graphing_helper
 import ui_helper
 import device_helper
+import optical_switch_wrapper as op_switch_wrapper
 
 
 TERM_CHAR = '/n'
@@ -30,10 +31,10 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         self.controller = None
         self.oven = None
-        self.gp700 = None
+        self.op_switch = None
         self.sm125 = None
         self.channels = [[], [], [], []]
-        self.switches = []
+        self.switches = [[], [], [], []]
         self.snums = []
 
         self.main_frame = tk.Frame(self)
@@ -129,7 +130,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
     def load_devices(self, conn_fails):
         """Creates the neccessary connections to the devices for the program."""
-        cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = \
+        cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
                         file_helper.get_config("Baking")
         resource_manager = visa.ResourceManager()
         if self.options.temp340_state.get():
@@ -148,10 +149,8 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             except visa.VisaIOError:
                 conn_fails.append("Delta Oven")
         if self.options.gp700_state.get():
-            gp700_loc = "GPIB0::{}::INSTR".format(gp700_loc)
             try:
-                self.gp700 = resource_manager \
-                        .open_resource(gp700_loc, read_termination=TERM_CHAR)
+                self.op_switch = op_switch_wrapper.setup(sm125_addr, int(sm125_port))
             except visa.VisaIOError:
                 conn_fails.append("Optical Switch")
         if self.options.sm125_state.get():
@@ -172,6 +171,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 if snum.get() != "" and snum.get() not in self.snums:
                     self.snums.append(snum.get())
                     self.channels[chan.get() - 1].append(snum.get())
+                    self.switches[chan.get() - 1].append(pos.get())
 
             if len(conn_fails) == 0:
                 self.running = True
@@ -235,7 +235,9 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         wavelengths_avg = []
         amplitudes_avg = []
         data_pts, self.chan_error_been_warned = \
-            device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_been_warned)
+            device_helper.avg_waves_amps(self.sm125, self.channels, self.switches, self.header, 
+                    self.options, self.chan_error_been_warned)
+
         for snum in self.snums:#self.options.sn_ents:
             wavelengths_avg.append(data_pts[snum][0])
             amplitudes_avg.append(data_pts[snum][1])

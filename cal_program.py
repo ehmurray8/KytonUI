@@ -15,9 +15,12 @@ import create_options_panel as options_panel
 import delta_oven_wrapper as oven_wrapper
 import controller_340_wrapper as controller_wrapper
 import device_helper
+import optical_switch_wrapper as op_switch_wrapper
+
 
 LARGE_FONT = ("Verdana", 13)
 TERM_CHAR = "\n"
+
 
 class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Class containing the main tkinter pplication."""
@@ -27,10 +30,16 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         tk.Frame.__init__(self, parent) 
         self.controller = None
         self.oven = None
-        self.gp700 = None
+        self.op_switch = None
         self.sm125 = None
+        #Each outer array corresponds to an SM125 channel, each inner array contains 
+        #the snums that are located on that channel
         self.channels = [[], [], [], []]
-        self.switches = []
+
+        #Each outer array corresponds to an SM125 channel, each inner array contains
+        #the switch positions on that channel, this array is used with self.channels
+        #to associate channel, snum, and switch position
+        self.switches = [[], [], [], []]
         self.snums = []
 
 
@@ -129,7 +138,8 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
     def load_devices(self, conn_fails):
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             resource_manager = visa.ResourceManager()
-            cont_loc, oven_loc, gp700_loc, sm125_addr, sm125_port = file_helper.get_config("Calibration")
+            cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
+                    file_helper.get_config("Calibration")
             if self.options.temp340_state.get():
                 try:
                     cont_loc = "GPIB0::{}::INSTR".format(cont_loc)
@@ -144,8 +154,7 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                     conn_fails.append("Dicon Oven")
             if self.options.gp700_state.get():
                 try:
-                    gp700_loc = "GPIB0::{}::INSTR".format(gp700_loc)
-                    self.gp700 = resource_manager.open_resource(gp700_loc, read_termination=TERM_CHAR)
+                    self.op_switch = op_switch_wrapper.setup(op_switch_addr, int(op_switch_port))
                 except visa.VisaIOError:
                     conn_fails.append("Optical Switch")
             if self.options.sm125_state.get():
@@ -163,10 +172,12 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 self.load_devices(conn_fails)
             
-            for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
+            for chan, snum, pos in zip(self.options.chan_nums, self.options.sn_ents, \
+                    self.options.switch_positions):
                 if snum.get() != "":
                     self.snums.append(snum.get())
                     self.channels[chan.get() - 1].append(snum.get())
+                    self.switches[chan.get() - 1].append(pos.get())
 
             if len(conn_fails) == 0:
                 self.running = True
@@ -209,26 +220,28 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 
                 start_temp = float(start_temp[:-4])
 
-                data_pts, self.chan_error_been_warned = \
-                        device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_been_warned)
+                #data_pts, self.chan_error_been_warned = \
+                #        device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, \
+                #        self.chan_error_been_warned)
 
                 wavelengths_avg = []
                 amplitudes_avg = []
                 data_pts, self.chan_error_been_warned = \
-                          device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_been_warned)
+                          device_helper.avg_waves_amps(self.sm125, self.channels, self.switches, \
+                          self.header, self.options, self.chan_error_been_warned)
+
                 for snum in self.snums:
                     wavelengths_avg.append(data_pts[snum][0])
                     amplitudes_avg.append(data_pts[snum][1])
 
                 start_temp += float(controller_wrapper.get_temp_k(self.controller)[:-4])
-
                 start_temp /= 2
-
                 start_time = time.time()
 
                 #Need to write csv file init code
                 file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time, \
-                                           start_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, False, 0.0)
+                                           start_temp, wavelengths_avg, amplitudes_avg, \
+                                           options_panel.CAL, False, 0.0)
 
                 self.finished_point = False
                 self.after(60000, lambda: self.__check_drift_rate(start_time, start_temp))
@@ -236,7 +249,6 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                     pass
 
             oven_wrapper.heater_off(self.oven)
-
             oven_wrapper.set_temp(self.oven, temps_arr[0])
 
             if self.options.cooling.get():
@@ -253,6 +265,7 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         temp = float(controller_wrapper.get_temp_c(self.controller)[:-4])
         while temp > float(temps_arr[0]):
             temp = float(controller_wrapper.get_temp_c(self.controller)[:-4])
+            time.sleep(.1)
         self.temp_is_good = True
 
 
@@ -260,18 +273,19 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         curr_temp = float(controller_wrapper.get_temp_k(self.controller)[:-4])
 
         data_pts, self.chan_error_been_warned = \
-                  device_helper.avg_waves_amps(self.sm125, self.channels, self.header, self.options, self.chan_error_been_warned)
+                  device_helper.avg_waves_amps(self.sm125, self.channels, self.switches, \
+                  self.header, self.options, self.chan_error_been_warned)
 
         wavelengths_avg = []
         amplitudes_avg = []
         for snum in self.snums:
-            wavelengths_avg.append(data_pts[snum][0])
-            amplitudes_avg.append(data_pts[snum][1])
+            wlen = data_pts[snum][0]
+            amp = data_pts[snum][1]
+            wavelengths_avg.append(wlen)
+            amplitudes_avg.append(amp)
 
         curr_temp += float(controller_wrapper.get_temp_k(self.controller)[:-4])
-
         curr_temp /= 2
-
         curr_time = time.time()
 
         time_diff = float(curr_time - last_time)
@@ -285,9 +299,11 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
         if drift_rate <= self.options.drift_rate.get():
             #record actual point
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time, \
-                                           curr_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, True, drift_rate)
+                                           curr_temp, wavelengths_avg, amplitudes_avg, \
+                                           options_panel.CAL, True, drift_rate)
             self.finished_point = True
         else:
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time, \
-                                           curr_temp, wavelengths_avg, amplitudes_avg, options_panel.CAL, False, drift_rate)
+                                           curr_temp, wavelengths_avg, amplitudes_avg, \
+                                           options_panel.CAL, False, drift_rate)
             self.after(60000, lambda: self.__check_drift_rate(curr_time, curr_temp))
