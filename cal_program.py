@@ -227,7 +227,7 @@ class CalPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-instance
                 wavelengths_avg = []
                 amplitudes_avg = []
                 data_pts, self.chan_error_been_warned = \
-                          device_helper.avg_waves_amps(self.sm125, self.channels, self.switches, \
+                          device_helper.avg_waves_amps(self.sm125, self.op_switch, self.channels, self.switches, \
                           self.header, self.options, self.chan_error_been_warned)
 
                 for snum in self.snums:

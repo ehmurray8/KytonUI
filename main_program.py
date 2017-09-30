@@ -75,7 +75,7 @@ class Application(tk.Tk):
             baking_page.create_menu(self)
             self.title("Kyton Baking")
             self.unbind("<Return>")
-            self.show_frame(baking_program.BakingPage, 525, height)
+            self.show_frame(baking_program.BakingPage, 700, height)
 
 
     def start_baking_program(self):
@@ -114,7 +114,7 @@ class Application(tk.Tk):
             cal_page.create_menu(self)
             self.title("Kyton Calibration")
             self.unbind("<Return>")
-            self.show_frame(cal_program.CalPage, 600, height)
+            self.show_frame(cal_program.CalPage, 700, height)
 
 
     def start_cal_program(self):

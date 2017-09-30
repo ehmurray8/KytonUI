@@ -8,4 +8,5 @@ def setup(addr, port):
 
 def set_channel(op_switch, addr, chan):
     msg = "<OSW{}_OUT_{}>".format(format(int(addr), '02d'), format(int(chan), '02d'))
-    soc.send(msg.encode(msg))
+    #print(msg)
+    op_switch.send(msg.encode())

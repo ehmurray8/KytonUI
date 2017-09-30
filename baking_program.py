@@ -2,6 +2,8 @@
 
 import time
 import sys
+import threading
+from threading import Thread
 import _thread
 from tkinter import ttk, messagebox
 import tkinter as tk
@@ -55,6 +57,8 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
 
         self.options = None
         self.start_btn = None
+
+        self.data_pts = None
 
 
     def clear_frame(self):
@@ -133,7 +137,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
                         file_helper.get_config("Baking")
         resource_manager = visa.ResourceManager()
-        if self.options.temp340_state.get():
+        if self.options.temp340_state.get():    
             try:
                 cont_loc = "GPIB0::{}::INSTR".format(cont_loc)
                 self.controller = \
@@ -146,11 +150,12 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
                 self.oven = \
                         resource_manager.open_resource(oven_loc, read_termination=TERM_CHAR)
                 oven_wrapper.set_temp(self.oven, self.options.baking_temp.get())
+                oven_wrapper.heater_on(self.oven)
             except visa.VisaIOError:
                 conn_fails.append("Delta Oven")
-        if self.options.gp700_state.get():
+        if self.options.op_switch_state.get():
             try:
-                self.op_switch = op_switch_wrapper.setup(sm125_addr, int(sm125_port))
+                self.op_switch = op_switch_wrapper.setup(op_switch_addr, int(op_switch_port))
             except visa.VisaIOError:
                 conn_fails.append("Optical Switch")
         if self.options.sm125_state.get():
@@ -167,7 +172,7 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
                 self.load_devices(conn_fails)
 
-            for chan, snum in zip(self.options.chan_nums, self.options.sn_ents):
+            for chan, snum, pos in zip(self.options.chan_nums, self.options.sn_ents, self.options.switch_positions):
                 if snum.get() != "" and snum.get() not in self.snums:
                     self.snums.append(snum.get())
                     self.channels[chan.get() - 1].append(snum.get())
@@ -196,6 +201,13 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             ui_helper.unlock_widgets(self.options)
             self.running = False
             self.stable_count = 0
+            self.snums = []
+            self.channels = [[], [], [], []]
+            self.switches = [[], [], [], []]
+            self.oven = None
+            self.controller = None
+            self.sm125 = None
+            self.op_switch = None
 
 
     def check_stable(self):
@@ -213,13 +225,14 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
     def program_loop(self):
         """Infinite program loop."""
         #print("Started program loop...")
-        if not self.check_stable():
-            self.baking_loop()
-            self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
-        else:
-            self.baking_loop()
-            self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
-
+        if self.running:
+            if not self.check_stable():
+                self.baking_loop()
+                self.after(int(self.options.init_time.get()) * 1000, self.program_loop)
+            else:
+                self.baking_loop()
+                self.after(int(self.options.prim_time.get()) * 1000 * 60, self.program_loop)
+                
 
     def baking_loop(self):
         """Runs the baking process."""
@@ -234,13 +247,19 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
         #wavelengths_avg, amplitudes_avg = self.__avg_waves_amps()
         wavelengths_avg = []
         amplitudes_avg = []
-        data_pts, self.chan_error_been_warned = \
-            device_helper.avg_waves_amps(self.sm125, self.channels, self.switches, self.header, 
-                    self.options, self.chan_error_been_warned)
+        #self.data_pts, self.chan_error_been_warned = \
+        #    device_helper.avg_waves_amps(self.sm125, self.op_switch, self.channels, self.switches, self.header, 
+        #            self.options, self.chan_error_been_warned)
+    
+        #get_data_thread = Thread(target=device_helper.avg_waves_amps, args=(self,))
+        #get_data_thread.start()
+        #get_data_thread.join()
+
+        device_helper.avg_waves_amps(self)
 
         for snum in self.snums:#self.options.sn_ents:
-            wavelengths_avg.append(data_pts[snum][0])
-            amplitudes_avg.append(data_pts[snum][1])
+            wavelengths_avg.append(self.data_pts[snum][0])
+            amplitudes_avg.append(self.data_pts[snum][1])
 
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":

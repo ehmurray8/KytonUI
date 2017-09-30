@@ -22,7 +22,7 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
         self.temp340_state = tk.IntVar()
         self.sn_ents = []
         self.chan_nums = []
-        self.switch_postions = []
+        self.switch_positions = []
 
         #Init member widgets
         self.baking_temp = tk.DoubleVar()

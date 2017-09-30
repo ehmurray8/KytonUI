@@ -89,6 +89,9 @@ def __get_wave_power_graph(f_name):
     mdata, entries_df = file_helper.parse_csv_file(f_name)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
 
+    #print("Serial nums: {}".format(mdata.serial_nums))
+    #print("Wavelengths: {}".format(data_coll.wavelens))
+    #print("Powers: {}".format(data_coll.powers))
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
 
@@ -325,7 +328,7 @@ def create_drift_rates_graph(f_name, animate, is_cal=False):
 
 
 
-def __animate_indiv_powers(i, f_name, ax1, ax2):
+def __animate_drift_rates(i, f_name, ax1, ax2):
     times, times_real, drates, drates_real = __get_drift_rates(f_name)
     ax1.clear()
     ax2.clear()
