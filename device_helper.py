@@ -32,7 +32,8 @@ def avg_waves_amps(parent):
 
                 switch_index = 0
                 while keep_going:
-                    try:
+                    #try:
+                    if True:
                         if len(actual_switches) > switch_index:
                             op_switch_wrapper.set_channel(parent.op_switch, 1, actual_switches[switch_index])
                             switch_index += 1
@@ -44,8 +45,8 @@ def avg_waves_amps(parent):
                         wavelengths, amplitudes, lens = sm125_wrapper.get_data_actual(parent.sm125)
                         all_wavelengths.append(wavelengths[0])
                         all_amplitudes.append(amplitudes[0])
-                    except visa.VisaIOError:
-                        parent.header.configure(text="SM125 Connection Error...Trying Again")
+                    #except visa.VisaIOError:
+                    #    parent.header.configure(text="SM125 Connection Error...Trying Again")
                 parent.header.configure(text="Baking...")
             else:
                 wavelengths = [[]]

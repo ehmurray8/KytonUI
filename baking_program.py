@@ -204,9 +204,13 @@ class BakingPage(tk.Frame): # pylint: disable=too-many-ancestors, too-many-insta
             self.snums = []
             self.channels = [[], [], [], []]
             self.switches = [[], [], [], []]
+            self.oven.close()
             self.oven = None
+            self.controller.close()
             self.controller = None
+            self.sm125.close()
             self.sm125 = None
+            self.op_switch.close()
             self.op_switch = None
 
 
