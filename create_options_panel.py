@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import ttk
 import ui_helper
 
-NUM_SNS = None
 BAKING = "Baking"
 CAL = "Cal"
 
@@ -86,11 +85,9 @@ class OptionsPanel(tk.Frame): # pylint: disable=too-many-ancestors
             self.cooling = ui_helper.checkbox_entry(options_grid, "Use oven cooling function? ", row_num)
             row_num += 1
 
-
-
         #Number of points to average entry
-        self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ", \
-                                           row_num, 10, 5)
+        self.num_pts = ui_helper.int_entry(options_grid, "Num laser scans to average: ", row_num, 10, 5)
+                                           
         row_num += 1
 
 

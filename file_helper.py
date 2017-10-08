@@ -18,6 +18,8 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF", "#E6E6FA", "#008000", "#FF00FF", "#0099CC"] 
 CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
+BAKING_SECTION = "Baking"
+CAL_SECTION = "Calibration"
 
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers, \
         function, drift_rate=None, real_cal_pt=False):
