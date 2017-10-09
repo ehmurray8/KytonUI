@@ -1,4 +1,5 @@
 from program import Page, ProgramType, BAKING_ID
+import sys
 
 class BakingPage(Page):
     def __init__(self, parent, master):
@@ -30,7 +31,7 @@ class BakingPage(Page):
     def baking_loop(self):
         """Runs the baking process."""
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temperature = temp_controller.get_temp_c(self.controller)
+            temperature = self.get_temp_c(self.controller)
             temperature = float(temperature[:-3])
         else:
             temperature = 0.0

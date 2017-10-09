@@ -1,7 +1,8 @@
 """Class sets up the tkinter UI code for the options panel."""
 
-import tkinter as tk
+# pylint: disable=import-error, relative-import, missing-super-argument
 from tkinter import ttk
+import tkinter as tk
 import ui_helper as uh
 
 BAKING = "Baking"
@@ -11,6 +12,7 @@ CAL = "Cal"
 class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
                                 # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
+
     def __init__(self, master, num_sns, program):
         super().__init__(master)
 
@@ -47,7 +49,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
         target_temps_str = self.target_temps_entry.get(1.0, tk.END)
         target_temps_arr = target_temps_str.split(",")
         try:
-            target_temps_arr = list(map(int, target_temps_arr))
+            target_temps_arr = [int(x) for x in target_temps_arr]
         except ValueError:
             return None
 
@@ -99,10 +101,11 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             #                      "Num temperature readings to average: ", \
             #                                            row_num, 10, 5)
             # row_num += 1
+            def_file = "kyton_out_cal.csv"
 
             self.temp_interval = uh.time_entry(options_grid,
                                                "Time between temp readings: ",
-                                               row_num, 10, "seconds",  60.0)
+                                               row_num, 10, "seconds", 60.0)
             row_num += 1
 
             self.drift_rate = uh.double_entry(options_grid,
@@ -120,44 +123,39 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
                                "Target temps (C) [Comma Separated]", row_num,
                                10, 7, "130, 135")
             row_num += 1
-
-
-        if program == BAKING:
+        else:
             # Time intervals entry
-            self.init_time = uh.time_entry(options_grid, "Initial time interval: ", \
-                        row_num, 10, "seconds", 15.0)
+            self.init_time = uh.time_entry(options_grid, "Initial time interval: ",
+                                           row_num, 10, "seconds", 15.0)
             row_num += 1
 
-            self.init_duration = uh.time_entry(options_grid, "Initial interval duration: ", \
-                        row_num, 10, "minutes", 5.0)
+            self.init_duration = uh.time_entry(options_grid, "Initial interval duration: ",
+                                               row_num, 10, "minutes", 5.0)
             row_num += 1
 
-            self.prim_time = uh.time_entry(options_grid, "Primary time interval: ",\
-                        row_num, 10, "minutes", 1.0)
+            self.prim_time = uh.time_entry(options_grid, "Primary time interval: ",
+                                           row_num, 10, "minutes", 1.0)
             row_num += 1
 
+            def_file = "kyton_out.csv"
 
-        #File name entry
-        def_file = "kyton_out.csv"
-        if program == CAL:
-            def_file = "kyton_out_cal.csv"
-        self.file_name = uh.string_entry(options_grid, "File name: ",\
-                    row_num, 30, def_file)
+        self.file_name = uh.string_entry(options_grid, "File name: ",
+                                         row_num, 30, def_file)
         row_num += 1
 
-
         if program == BAKING:
-                #Baking setpoint entry
-            self.baking_temp = uh.double_entry(options_grid, "Baking temp: ",\
-                        row_num, 10, 250.0)
+                # Baking setpoint entry
+            self.baking_temp = uh.double_entry(options_grid, "Baking temp: ",
+                                               row_num, 10, 250.0)
             row_num += 1
 
-
-        #(TEMP) Fiber SN Inputs
+        # (TEMP) Fiber SN Inputs
         index = 1
         while index <= num_sns:
-            serial_num, chan_num, switch_pos = uh.serial_num_entry(options_grid, \
-                    "Serial Number " + str(index) + ": ", row_num, 5, "FBG " + str(index))
+            serial_num, chan_num, switch_pos = \
+                uh.serial_num_entry(options_grid,
+                                    "Serial Number " + str(index) + ": ",
+                                    row_num, 5, "FBG " + str(index))
             self.sn_ents.append(serial_num)
             self.chan_nums.append(chan_num)
             self.switch_positions.append(switch_pos)
@@ -165,17 +163,11 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             index += 1
             row_num += 1
 
-
     def create_start_btn(self, start):
         """Creates the start button in the app."""
-        #Start button
+        # Start button
         start_button = ttk.Button(self)
         start_button["text"] = "Start"
         start_button["command"] = start
         start_button.pack(pady=10)
         return start_button
-
-
-if __name__ == "__main__":
-    ROOT = tk.Tk()
-    OptionsPanel(ROOT).mainloop()

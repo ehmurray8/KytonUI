@@ -11,16 +11,12 @@ import tkinter as tk
 import pyvisa as visa
 import _thread
 
-import delta_oven_wrapper as oven_wrapper
-import sm125_wrapper as sm125_wrapper
 import create_options_panel as options_panel
 import file_helper as fh
 import graphing_helper as gh
 import ui_helper
-import optical_switch_wrapper as op_switch_wrapper
+import devices
 
-
-TERM_CHAR = '/n'
 LARGE_FONT = ("Verdana", 13)
 
 BAKING_ID = "Baking"
@@ -49,7 +45,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         super().__init__(parent)  # pylint: disable=missing-super-argument
 
         self.program_type = program_type
-        self.controller = None
+        self.temp_controller = None
         self.oven = None
         self.op_switch = None
         self.sm125 = None
@@ -137,35 +133,27 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         """
         cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, \
             sm125_port = fh.get_config(self.config_id)
-        resource_manager = visa.ResourceManager()
+        manager = visa.ResourceManager()
         if self.options.temp340_state.get():
             try:
-                cont_loc = "GPIB0::{}::INSTR".format(cont_loc)
-                self.controller = \
-                    resource_manager.open_resource(cont_loc,
-                                                   read_termination=TERM_CHAR)
+                self.temp_controller = devices.TempController(cont_loc, manager)
             except visa.VisaIOError:
                 conn_fails.append("LSC 340")
         if self.options.delta_oven_state.get():
             try:
-                oven_loc = "GPIB0::{}::INSTR".format(oven_loc)
-                self.oven = \
-                    resource_manager.open_resource(oven_loc,
-                                                   read_termination=TERM_CHAR)
-                oven_wrapper.set_temp(self.oven,
-                                      self.options.baking_temp.get())
-                oven_wrapper.heater_on(self.oven)
+                self.oven = devices.Oven(oven_loc, manager)
+                self.oven.set_temp(self.options.baking_temp.get())
+                self.oven.heater_on()
             except visa.VisaIOError:
                 conn_fails.append("Delta Oven")
         if self.options.op_switch_state.get():
             try:
-                self.op_switch = op_switch_wrapper.setup(op_switch_addr,
-                                                         int(op_switch_port))
+                self.op_switch = devices.OpSwitch(op_switch_addr, int(op_switch_port))
             except socket.error:
                 conn_fails.append("Optical Switch")
         if self.options.sm125_state.get():
             try:
-                self.sm125 = sm125_wrapper.setup(sm125_addr, int(sm125_port))
+                self.sm125 = devices.SM125(sm125_addr, int(sm125_port))
             except socket.error:
                 conn_fails.append("Micron Optics SM125")
 
@@ -212,8 +200,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             self.switches = [[], [], [], []]
             self.oven.close()
             self.oven = None
-            self.controller.close()
-            self.controller = None
+            self.temp_controller.close()
+            self.temp_controller = None
             self.sm125.close()
             self.sm125 = None
             self.op_switch.close()

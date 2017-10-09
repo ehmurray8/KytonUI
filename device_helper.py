@@ -8,8 +8,6 @@ import time
 import socket
 import _thread
 import tkinter as tk
-import sm125_wrapper
-import optical_switch_wrapper as op_switch_wrapper
 
 
 def avg_waves_amps(parent):
@@ -47,13 +45,12 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
     while keep_going:
         try:
             if len(actual_switches) > switch_index:
-                op_switch_wrapper.set_channel(op_switch, 1,
-                                              actual_switches[switch_index])
+                op_switch.set_channel(actual_switches[switch_index])
                 switch_index += 1
                 time.sleep(1.25)
             else:
                 keep_going = False
-            wavelens, amps, lens = sm125_wrapper.get_data_actual(sm125)
+            wavelens, amps, lens = sm125.get_data_actual()
             all_waves.append(wavelens[0])
             all_amps.append(amps[0])
         except socket.error:

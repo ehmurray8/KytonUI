@@ -1,12 +1,13 @@
 import socket
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import AF_INET, SOCK_STREAM
 
-def setup(addr, port):
-    soc = socket(AF_INET, SOCK_STREAM)
-    soc.connect((addr, port))
-    return soc
 
-def set_channel(op_switch, addr, chan):
-    msg = "<OSW{}_OUT_{}>".format(format(int(addr), '02d'), format(int(chan), '02d'))
-    #print(msg)
-    op_switch.send(msg.encode())
+class OpSwitch(socket.socket):
+
+    def __init__(self, addr, port):
+        super().__init__(AF_INET, SOCK_STREAM)
+        self.connect((addr, port))
+
+    def set_channel(self, addr, chan):
+        msg = "<OSW{}_OUT_{}>".format(format(int(addr), '02d'), format(int(chan), '02d'))
+        self.send(msg.encode())
