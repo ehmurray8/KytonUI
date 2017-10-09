@@ -1,8 +1,16 @@
 """UI Helper methods."""
 # pylint: disable=import-error, relative-import
-from tkinter import ttk
+from tkinter import ttk, filedialog
 import tkinter as tk
 import file_helper
+
+
+#TODO Add file dialog entry
+def file_entry(container, label_text, row, width):
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename()
 
 
 def string_entry(container, label_text, row, width, default_str=""):
