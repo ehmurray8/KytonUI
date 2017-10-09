@@ -6,7 +6,7 @@ and the Optical Switch.
 import sys
 import time
 import socket
-import _thread
+import threading
 import tkinter as tk
 
 
@@ -50,9 +50,9 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
                 time.sleep(1.25)
             else:
                 keep_going = False
-            wavelens, amps, lens = sm125.get_data_actual()
-            all_waves.append(wavelens[0])
-            all_amps.append(amps[0])
+            wavelens, amps, lens = sm125.get_data()
+            all_waves.append(wavelens)
+            all_amps.append(amps)
         except socket.error:
             header.configure(text="SM125 Connection Error...Trying Again")
     header.configure(text=in_prog_msg)
@@ -76,9 +76,9 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
             lens = [0, 0, 0, 0]
 
         if need_init:
-            wavelengths_avg = [0] * (len(wavelengths[0]) +
+            wavelengths_avg = [0] * (len(wavelengths) +
                                      len(actual_switches) - 1)
-            amplitudes_avg = [0] * (len(amplitudes[0]) +
+            amplitudes_avg = [0] * (len(amplitudes) +
                                     len(actual_switches) - 1)
             need_init = False
 
@@ -87,7 +87,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
             switch_chan_starting_index += lens[i]
 
         offset = 0
-        for i, wavelength in enumerate(wavelengths[0]):
+        for i, wavelength in enumerate(wavelengths):
             if i == switch_chan_starting_index:
                 for waves in all_waves:
                     wavelengths_avg[i + offset] += \
@@ -96,10 +96,11 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
                 if offset != 0:
                     offset -= 1
             else:
-                wavelengths_avg[i + offset] += wavelength
+                if i + offset < len(wavelengths_avg):
+                    wavelengths_avg[i + offset] += wavelength
 
         offset = 0
-        for i, amp in enumerate(amplitudes[0]):
+        for i, amp in enumerate(amplitudes):
             if i == switch_chan_starting_index:
                 for amps in all_amps:
                     amplitudes_avg[i + offset] += \
@@ -108,7 +109,8 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
                 if offset != 0:
                     offset -= 1
             else:
-                amplitudes_avg[i + offset] += amp
+                if i + offset < len(amplitudes_avg):
+                    amplitudes_avg[i + offset] += amp
 
     wavelengths_avg = [x / num_snums for x in wavelengths_avg]
     amplitudes_avg = [x / num_snums for x in amplitudes_avg]
@@ -161,5 +163,6 @@ def chan_error(snums, warned):
             errs_str += str(snum)
             need_comma = True
 
-        _thread.start_new_thread(lambda: tk.messagebox.showwarning(
-            "Scanning error", errs_str), ())
+        threading.Thread(target=tk.messagebox.showwarning, args=("Scanning error", errs_str)).start()
+        # _thread.start_new_thread(lambda: tk.messagebox.showwarning(
+        #    "Scanning error", errs_str), ())

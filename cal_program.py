@@ -2,21 +2,20 @@
 
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
-import _thread
+import threading
 from program import Page, ProgramType, CAL_ID
 import device_helper
 import file_helper
-import create_options_panel as options_panel
+import options_frame
 
 
 class CalPage(Page):
     """Object representation of the Calibration Program page."""
-    def __init__(self, parent, master):
+    def __init__(self, parent, master, start_page):
         cal_type = ProgramType(CAL_ID)
-        super().__init__(parent, master, cal_type)
+        super().__init__(parent, master, start_page, cal_type)
         self.finished_point = False
         self.temp_is_good = False
-        self.data_pts = {}
 
     def run_cal_loop(self):
         """Runs the calibration."""
@@ -46,7 +45,7 @@ class CalPage(Page):
                 # Need to write csv file init code
                 file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time,
                                            start_temp, wavelengths_avg, amplitudes_avg,
-                                           options_panel.CAL, False, 0.0)
+                                           options_frame.CAL, False, 0.0)
 
                 self.finished_point = False
                 # pylint: disable=cell-var-from-loop
@@ -61,7 +60,7 @@ class CalPage(Page):
             if self.options.cooling.get():
                 self.oven.cooling_on()
 
-            _thread.start_new_thread(lambda: self.check_temp(temps_arr), ())
+            threading.Thread(target=self.check_temp, args=(temps_arr, ))
             self.temp_is_good = False
             while not self.temp_is_good:
                 pass
@@ -102,11 +101,11 @@ class CalPage(Page):
             # record actual point
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
                                        curr_temp, wavelengths_avg, amplitudes_avg,
-                                       options_panel.CAL, True, drift_rate)
+                                       options_frame.CAL, True, drift_rate)
             self.finished_point = True
         else:
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
                                        curr_temp, wavelengths_avg, amplitudes_avg,
-                                       options_panel.CAL, False, drift_rate)
+                                       options_frame.CAL, False, drift_rate)
             self.after(60000, lambda: self.__check_drift_rate(
                 curr_time, curr_temp))

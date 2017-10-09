@@ -1,10 +1,17 @@
-from program import Page, ProgramType, BAKING_ID
+"""Module for baking program specific logic."""
+# pylint:disable=import-error, relative-import, missing-super-argument
 import sys
+import time
+from program import Page, ProgramType, BAKING_ID
+import device_helper
+import file_helper
+import options_frame
+
 
 class BakingPage(Page):
-    def __init__(self, parent, master):
+    def __init__(self, parent, master, start_page):
         baking_type = ProgramType(BAKING_ID)
-        super().__init__(parent, master, baking_type)
+        super().__init__(parent, master, start_page, baking_type)
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
@@ -31,7 +38,7 @@ class BakingPage(Page):
     def baking_loop(self):
         """Runs the baking process."""
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temperature = self.get_temp_c(self.controller)
+            temperature = self.temp_controller.get_temp_c()
             temperature = float(temperature[:-3])
         else:
             temperature = 0.0
@@ -46,7 +53,7 @@ class BakingPage(Page):
             amplitudes_avg.append(self.data_pts[snum][1])
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temp2 = temp_controller.get_temp_c(self.controller)
+            temp2 = self.temp_controller.get_temp_c()
             temperature += float(temp2[:-3])
 
         temperature /= 2.0
@@ -54,4 +61,5 @@ class BakingPage(Page):
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                                       curr_time, temperature, wavelengths_avg, amplitudes_avg, options_panel.BAKING)
+                                       curr_time, temperature, wavelengths_avg, 
+				       amplitudes_avg, options_frame.BAKING)
