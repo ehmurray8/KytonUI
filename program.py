@@ -59,7 +59,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.chan_error_been_warned = False
         self.options = None
         self.start_btn = None
-        self.data_pts = None
+        self.data_pts = {}
 
         self.main_frame = tk.Frame(self)
         self.header = ttk.Label(self.main_frame, text=self.program_type.title,

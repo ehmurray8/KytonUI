@@ -16,7 +16,6 @@ class CalPage(Page):
         super().__init__(parent, master, cal_type)
         self.finished_point = False
         self.temp_is_good = False
-        self.data_pts = {}
 
     def run_cal_loop(self):
         """Runs the calibration."""
