@@ -1,13 +1,13 @@
 """Module used for helping with creating output files."""
-import configparser
+# pylint: disable=import-error, relative-import
+
 import os
 import time
 import stat
-import ctypes
+import configparser
 import xlsxwriter
 import pandas as pd
-import metadata
-import data_collection as datac
+import data_container as datac
 from tkinter import messagebox
 import create_options_panel as options_panel
 
@@ -15,23 +15,25 @@ import create_options_panel as options_panel
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#40E0D0", "#FFA500", "#00FF00", "#468499",
               "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
-              "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF", "#E6E6FA", "#008000", "#FF00FF", "#0099CC"] 
+              "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
+              "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
 CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
 BAKING_SECTION = "Baking"
 CAL_SECTION = "Calibration"
 
-def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers, \
-        function, drift_rate=None, real_cal_pt=False):
 
-    #pylint: disable-msg=too-many-arguments
-    """Write the output csv file."""
+# pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
+def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
+                   function, drift_rate=None, real_cal_pt=False):
+    """Writes the output csv file."""
+
     if os.path.isfile(file_name):
         os.chmod(file_name, stat.S_IWRITE)
         file_obj = open(file_name, "a")
     else:
         file_obj = open(file_name, "w")
-        
+
         if function == options_panel.BAKING:
             header = "Metadata\n"
         else:
@@ -59,7 +61,6 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write("\n" + str(round(timestamp, 5)) + ",")
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
 
-        
         line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
         if function == options_panel.CAL:
             line += ",Real Point,Drift Rate(mK/min)"
@@ -70,7 +71,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     i = 0
     while i < len(serial_nums):
         line = str(serial_nums[i]) + "," + str(timestamp) + "," + str(temp) + "," +\
-                    str(wavelengths[i]) + "," + str(powers[i])
+            str(wavelengths[i]) + "," + str(powers[i])
 
         if function == options_panel.CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
@@ -97,19 +98,22 @@ def parse_csv_file(csv_file):
     os.chmod(csv_file, stat.S_IWRITE)
     entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
 
-    mdata = metadata.Metadata()
+    mdata = datac.Metadata()
 
-    #Read Metadata
+    # Read Metadata
     with open(csv_file) as csv:
         csv.readline()
         mdata.serial_nums = csv.readline().split(",")
-        mdata.serial_nums = [snum.replace('\n', '') for snum in mdata.serial_nums]
+        mdata.serial_nums = [snum.replace('\n', '')
+                             for snum in mdata.serial_nums]
 
         mdata.start_wavelens = csv.readline().split(",")
-        mdata.start_wavelens = [wave.replace('\n', '') for wave in mdata.start_wavelens]
+        mdata.start_wavelens = [wave.replace(
+            '\n', '') for wave in mdata.start_wavelens]
 
         start_time_wavelen_temp = csv.readline().split(",")
-        start_time_wavelen_temp = [num.replace('\n', '') for num in start_time_wavelen_temp]
+        start_time_wavelen_temp = [num.replace(
+            '\n', '') for num in start_time_wavelen_temp]
         csv.close()
 
     mdata.start_time = float(start_time_wavelen_temp[0])
@@ -127,7 +131,8 @@ def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
         headers.append(str(snum) + " Power (dBm.)")
     headers.append("Mean Temp (K)")
     for snum in serial_nums:
-        headers.append(str(snum) + " " + u'\u0394\u03BB' + ", from start (nm.)")
+        headers.append(str(snum) + " " + u'\u0394\u03BB' +
+                       ", from start (nm.)")
     headers.append(u'\u0394' + "T, from start (K)")
     headers.append("Mean raw " + u'\u0394\u03BB' + ", from start (pm.)")
     if is_cal:
@@ -136,6 +141,7 @@ def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
 
 
 def create_data_coll(mdata, entries_df, is_cal=False):
+    """Gathers the data from the csv file, and stores it in a DataCollection object."""
     data_coll = datac.DataCollection()
 
     times = entries_df['Timestamp(s)'].values.tolist()
@@ -147,15 +153,18 @@ def create_data_coll(mdata, entries_df, is_cal=False):
     for idx, temp in enumerate(temps):
         if idx % len(mdata.serial_nums) == 0:
             data_coll.temps.append(temp + 273.15)
-            data_coll.temp_diffs.append(float(temp) + 273.15 - float(mdata.start_temp))
-
+            data_coll.temp_diffs.append(
+                float(temp) + 273.15 - float(mdata.start_temp))
 
     if is_cal:
-        data_coll.drift_rates = entries_df['Drift Rate(mK/min)'].values.tolist()
-    
+        data_coll.drift_rates = entries_df['Drift Rate(mK/min)'].values.tolist(
+        )
+
         data_coll.real_points = entries_df['Real Point'].values.tolist()
 
     wavelens = entries_df['Wavelength(nm)'].values.tolist()
+
+    # pylint: disable=unused-variable
     data_coll.wavelens = [[] for i in range(len(mdata.serial_nums))]
     for idx, wavelen in enumerate(wavelens):
         data_coll.wavelens[int(idx % len(mdata.serial_nums))].append(wavelen)
@@ -171,12 +180,13 @@ def create_data_coll(mdata, entries_df, is_cal=False):
     row_num = 0
     data_coll.wavelen_diffs = [[] for i in range(len(mdata.serial_nums))]
     data_coll.power_diffs = [[] for i in range(len(mdata.serial_nums))]
-    for time in data_coll.times:
+    for time_num in data_coll.times:
         total_diff_w = 0
         total_diff_p = 0
         idx = 0
         for wavelen, power in zip(data_coll.wavelens, data_coll.powers):
-            diff_w = round(float(wavelen[row_num]), 5) - float(mdata.start_wavelens[idx])
+            diff_w = round(float(wavelen[row_num]), 5) - \
+                float(mdata.start_wavelens[idx])
             diff_p = round(float(power[row_num]), 5) - float(start_powers[idx])
             total_diff_w += diff_w
             total_diff_p += diff_p
@@ -194,8 +204,8 @@ def create_data_coll(mdata, entries_df, is_cal=False):
     return data_coll
 
 
+# pylint: disable=unused-argument
 def __create_row_strs(mdata, entries_df, is_cal=False):
-
     data_coll = create_data_coll(mdata, entries_df, is_cal)
 
     row_num = 0
@@ -204,8 +214,8 @@ def __create_row_strs(mdata, entries_df, is_cal=False):
         row_strs.append([])
         row_strs[row_num].append(
             time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(time_num)))
-        row_strs[row_num].append(round(time_num / 3600 - \
-            mdata.start_time / 3600, 5))
+        row_strs[row_num].append(round(time_num / 3600 -
+                                       mdata.start_time / 3600, 5))
 
         idx = 0
         for wavelen, power in zip(data_coll.wavelens, data_coll.powers):
@@ -217,7 +227,6 @@ def __create_row_strs(mdata, entries_df, is_cal=False):
 
         for wave_diff in data_coll.wavelen_diffs:
             row_strs[row_num].append(wave_diff[row_num])
-
 
         row_strs[row_num].append(temp - mdata.start_temp)
         row_strs[row_num].append(data_coll.mean_wavelen_diffs[row_num])
@@ -240,11 +249,11 @@ def __create_formats(serial_nums, workbook, is_cal=False):
         bold_format.set_bold()
         bold_color_formats.append(bold_format)
 
-    #Add time formats
+    # Add time formats
     row_format = [None, None]
     row_header_format = [None, None]
 
-    #Add color formats for wavelength and power data
+    # Add color formats for wavelength and power data
     sn_num = 0
     while sn_num < len(serial_nums):
         row_format.append(color_formats[sn_num])
@@ -259,18 +268,18 @@ def __create_formats(serial_nums, workbook, is_cal=False):
     format_b.set_font_color('red')
     format_b.set_bold()
 
-    #Add red text format for mean temperature
+    # Add red text format for mean temperature
     row_format.append(format_red)
     row_header_format.append(format_b)
 
-    #Add formats for delta wavelengths
+    # Add formats for delta wavelengths
     sn_num = 0
     while sn_num < len(serial_nums):
         row_format.append(None)
         row_header_format.append(None)
         sn_num += 1
 
-    #Add red text format for delta temperature, and format for mean delta wavelength 
+    # Add red text format for delta temperature, and format for mean delta wavelength
     row_format.append(format_red)
     row_format.append(None)
     row_header_format.append(format_b)
@@ -282,7 +291,7 @@ def __create_formats(serial_nums, workbook, is_cal=False):
 
 def __write_headers(headers, row_header_format, bold_format, worksheet):
     col = 0
-    
+
     for header, row_f in zip(headers, row_header_format):
         if row_f is None:
             worksheet.write(0, col, header, bold_format)
@@ -299,8 +308,9 @@ def __write_rows(row_strs, row_format, worksheet, data_coll, bold_format, is_cal
             try:
                 num = float(num)
                 num_str = "=VALUE({})".format(num)
-            except:
+            except ValueError:
                 num_str = num
+
             if row_f is None:
                 if is_cal and data_coll.real_points[row_num]:
                     worksheet.write(row_num, col, num_str, bold_format)
@@ -321,10 +331,12 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
                                 'subtype': 'smooth_with_markers'})
     cats = "=Sheet1!$B$2:$B$" + str(len(entries) + 1)
     val_col = num_to_excel_col((len(serial_nums) * 3) + 4)
-    vals = "=Sheet1!$" + val_col  + "$2:$" + val_col + "$" + str(len(entries) + 1)
+    vals = "=Sheet1!$" + val_col + "$2:$" + \
+        val_col + "$" + str(len(entries) + 1)
     line_name = "Raw " + u'\u0394\u03BB' + "pm"
-    chart.add_series({'name': line_name, 'categories':cats, 'values':vals})
-    chart.set_title({'name': 'Baking: ' + u'\u0394\u03BB' + " (pm) vs. Time (hr) from start"})
+    chart.add_series({'name': line_name, 'categories': cats, 'values': vals})
+    chart.set_title({'name': 'Baking: ' + u'\u0394\u03BB' +
+                             " (pm) vs. Time (hr) from start"})
     chart.set_y_axis({'name': u'\u0394\u03BB' + " average (pm)"})
     chart.set_x_axis({'name': 'Elapsed Time from start (hr)'})
 
@@ -335,16 +347,17 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
 
 
 def __create_chart_dr(data_coll, worksheet, workbook, col_start):
-    chart = workbook.add_chart({'type': 'scatter', 'subtype': 'smooth_with_markers'})
+    chart = workbook.add_chart(
+        {'type': 'scatter', 'subtype': 'smooth_with_markers'})
 
     times_real = []
     drates_real = []
-    for time, drate in zip(data_coll.times, data_coll.drift_rates):
-        times_real.append(time)
+    for time_num, drate in zip(data_coll.times, data_coll.drift_rates):
+        times_real.append(time_num)
         drates_real.append(drate)
-    
-    chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real, \
-            'values': data_coll.drates_real})
+
+    chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real,
+                      'values': data_coll.drates_real})
     chart.set_title({'name': 'Average Drift Rate (mK/min) vs. Time(hr)'})
     chart.set_y_axis({'name': 'Average Drift Rate (mK/min)'})
     chart.set_x_axis({'name': 'Time (hr)'})
@@ -364,20 +377,24 @@ def create_excel_file(csv_file, is_cal=False):
         workbook = xlsxwriter.Workbook(xcel_file)
         worksheet = workbook.add_worksheet()
 
-        headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
+        headers = __create_headers(
+            mdata.serial_nums, worksheet, num_cols, is_cal)
 
         row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
 
-        row_format, row_header_format = __create_formats(mdata.serial_nums, workbook, is_cal)
+        row_format, row_header_format = __create_formats(
+            mdata.serial_nums, workbook, is_cal)
 
         bold_format = workbook.add_format()
         bold_format.set_bold()
 
         __write_headers(headers, row_header_format, bold_format, worksheet)
 
-        __write_rows(row_strs, row_format, worksheet, bold_format, data_coll, is_cal)
+        __write_rows(row_strs, row_format, worksheet,
+                     bold_format, data_coll, is_cal)
 
-        col_end = __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
+        col_end = __create_chart(
+            entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
 
         if is_cal:
             __create_chart_dr(data_coll, worksheet, workbook, col_end)
@@ -403,6 +420,7 @@ def num_to_excel_col(num):
 
 
 def on_closing(root, old_conf, widgets):
+    """Stops the user from closing if they haven't saved."""
     unsaved = False
     for old_c, widg in zip(old_conf, widgets):
         if old_c != widg.get():
@@ -418,10 +436,10 @@ def on_closing(root, old_conf, widgets):
         root.destroy()
 
 
-def save_config(cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent, \
-        sm125_addr_ent, sm125_port_ent, window, prog):
+def save_config(cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent,
+                sm125_addr_ent, sm125_port_ent, window, prog):
 
-    #pylint:disable=too-many-arguments
+    # pylint:disable=too-many-arguments
     """Save configuration data to config file."""
     s_addr_str = sm125_addr_ent.get()
     o_addr_str = op_switch_addr_ent.get()
@@ -456,6 +474,7 @@ def save_config(cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent, \
 
 
 def get_config(prog):
+    """Gets the information stored in the config file."""
     cont_loc = CPARSER.get(prog, "controller_location")
     oven_loc = CPARSER.get(prog, "oven_location")
     op_switch_addr = CPARSER.get(prog, "op_switch_address")

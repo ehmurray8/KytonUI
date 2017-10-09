@@ -1,35 +1,40 @@
 """UI Helper methods."""
-import tkinter as tk
+# pylint: disable=import-error, relative-import
 from tkinter import ttk
+import tkinter as tk
 import file_helper
-import ui_helper
+
 
 def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width)\
-                .grid(row=row, column=2, sticky='ew')
+        .grid(row=row, column=2, sticky='ew')
     text_var.set(default_str)
     return text_var
 
-def serial_num_entry(container, label_text, row, width, \
-            default_str="", def_switch=0, def_channel=1):
-    #pylint:disable=too-many-arguments
+
+def serial_num_entry(container, label_text, row, width,
+                     default_str="", def_switch=0, def_channel=1):
+    # pylint:disable=too-many-arguments
     """Creates a serial number entry with channel number and switch position."""
-    serial_num_ent = string_entry(container, label_text, row, width, default_str)
-    ttk.Label(container, text="Channel number:").grid(row=row, column=3, sticky='ew')
+    serial_num_ent = string_entry(
+        container, label_text, row, width, default_str)
+    ttk.Label(container, text="Channel number:").grid(
+        row=row, column=3, sticky='ew')
     chan_num_ent = tk.IntVar()
     tk.Spinbox(container, from_=1, to=4, textvariable=chan_num_ent, width=width, state="readonly") \
-            .grid(row=row, column=4, sticky='ew')
-    ttk.Label(container, text="Switch position:").grid(row=row, column=5, sticky='ew')
+        .grid(row=row, column=4, sticky='ew')
+    ttk.Label(container, text="Switch position:").grid(
+        row=row, column=5, sticky='ew')
     switch_pos_ent = tk.IntVar()
-    tk.Spinbox(container, from_=0, to=16, textvariable=switch_pos_ent, width=width, state="readonly") \
-            .grid(row=row, column=6, sticky='ew')
+    tk.Spinbox(container, from_=0, to=16, textvariable=switch_pos_ent, width=width,
+               state="readonly").grid(row=row, column=6, sticky='ew')
     chan_num_ent.set(def_channel)
     switch_pos_ent.set(def_switch)
     ttk.Label(container, width=3).grid(row=row, column=7)
-    return  serial_num_ent, chan_num_ent, switch_pos_ent
+    return serial_num_ent, chan_num_ent, switch_pos_ent
 
 
 def int_entry(container, label_text, row, width, default_int=0):
@@ -37,25 +42,28 @@ def int_entry(container, label_text, row, width, default_int=0):
     text_var = tk.IntVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width)\
-                .grid(row=row, column=2, sticky='ew')
+        .grid(row=row, column=2, sticky='ew')
     text_var.set(default_int)
     return text_var
+
 
 def double_entry(container, label_text, row, width, default_double=0.0):
     """Creates an double entry, and returns a reference to the entry var."""
     text_var = tk.DoubleVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width)\
-                .grid(row=row, column=2, sticky='ew')
+        .grid(row=row, column=2, sticky='ew')
     text_var.set(default_double)
     return text_var
 
+
 def time_entry(container, label_text, row, width, unit, default_double=0.0):
-    #pylint:disable=too-many-arguments
+    # pylint:disable=too-many-arguments
     """Creates a time entry, and returns a reference to the entry var."""
     text_var = double_entry(container, label_text, row, width, default_double)
     ttk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
     return text_var
+
 
 def checkbox_entry(container, label_text, row, checked=True):
     """Creates a checkbox entry, and returns a reference to the entry var."""
@@ -67,8 +75,10 @@ def checkbox_entry(container, label_text, row, checked=True):
         checkbox.invoke()
     return int_var
 
+
+# pylint:disable=too-many-arguments
 def array_entry(container, label_text, row, width, height, default_arr=None):
-    string_var = tk.StringVar()
+    """Creates an entry to import multiline text."""
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     text = tk.Text(container, width=width, height=height)
     text.grid(row=row, column=2, sticky='ew')
@@ -78,20 +88,6 @@ def array_entry(container, label_text, row, width, height, default_arr=None):
         text.insert(1.0, str(default_arr))
     return text
 
-def print_options(app):
-    """Prints the selectable options to the screen."""
-    print("SM125: " + format_selected(app.sm125_state.get()))
-    print("Temp340: " + format_selected(app.temp340_state.get()))
-    print("Delta Oven: " + format_selected(app.delta_oven_state.get()))
-    print("Baking Temp: " + str(app.baking_temp.get()))
-    print("File Name: " + str(app.file_name.get()))
-    print("Primary Time: " + str(app.prim_time.get()))
-    print("Initial Time: " + str(app.init_time.get()))
-    print("Num Points: " + str(app.num_pts.get()))
-    index = 0
-    while index < 4:
-        print("SN#" + str(index+1) + ": " + str(app.sn_ents[index].get()))
-        index += 1
 
 def format_selected(flag):
     """Format binary as on/off."""
@@ -99,25 +95,28 @@ def format_selected(flag):
         return "On"
     return "Off"
 
+
 def open_center(width, height, root):
-    #pylint:disable=global-statement
+    # pylint:disable=global-statement
     """Open num fiber dialog in center of the screen."""
     width_screen = root.winfo_screenwidth()
     height_screen = root.winfo_screenheight()
 
-    x_cord = (width_screen/2) - (width/2)
-    y_cord = (height_screen/2) - (height/2)
+    x_cord = (width_screen / 2) - (width / 2)
+    y_cord = (height_screen / 2) - (height / 2)
 
-    root.geometry("{}x{}-{}+{}".format(int(width), int(height),\
-                             int(x_cord), int(y_cord)))
+    root.geometry("{}x{}-{}+{}".format(int(width), int(height),
+                                       int(x_cord), int(y_cord)))
 
 
+# pylint: disable=too-many-locals
 def update_config(prog):
     """Updates devices configuration."""
     cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
-            file_helper.get_config(prog)
+        file_helper.get_config(prog)
 
-    old_conf = [cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port]
+    old_conf = [cont_loc, oven_loc, op_switch_addr,
+                op_switch_port, sm125_addr, sm125_port]
 
     popup = tk.Toplevel()
     popup.wm_title("Device Configuration")
@@ -128,25 +127,29 @@ def update_config(prog):
 
     row_num = 0
 
-    ttk.Label(config_grid, text="340 Controller GPIB0 Number:").grid(row=row_num, padx=5)
+    ttk.Label(config_grid, text="340 Controller GPIB0 Number:").grid(
+        row=row_num, padx=5)
     cont_ent = ttk.Entry(config_grid)
     cont_ent.grid(row=row_num, column=1, padx=5)
     cont_ent.insert(0, str(cont_loc))
     row_num += 1
 
-    ttk.Label(config_grid, text="Dicon Oven GPIB0 Number:").grid(row=row_num, padx=5)
+    ttk.Label(config_grid, text="Dicon Oven GPIB0 Number:").grid(
+        row=row_num, padx=5)
     oven_ent = ttk.Entry(config_grid)
     oven_ent.grid(row=row_num, column=1, padx=5)
     oven_ent.insert(0, str(oven_loc))
     row_num += 1
 
-    ttk.Label(config_grid, text="Optical Switch IP Address").grid(row=row_num, padx=5)
+    ttk.Label(config_grid, text="Optical Switch IP Address").grid(
+        row=row_num, padx=5)
     op_switch_addr_ent = ttk.Entry(config_grid)
     op_switch_addr_ent.grid(row=row_num, column=1, padx=5)
     op_switch_addr_ent.insert(0, str(op_switch_addr))
     row_num += 1
 
-    ttk.Label(config_grid, text="Optical Switch IP Port").grid(row=row_num, padx=5)
+    ttk.Label(config_grid, text="Optical Switch IP Port").grid(
+        row=row_num, padx=5)
     op_switch_port_ent = ttk.Entry(config_grid)
     op_switch_port_ent.grid(row=row_num, column=1, padx=5)
     op_switch_port_ent.insert(0, str(op_switch_port))
@@ -164,27 +167,33 @@ def update_config(prog):
     sm125_port_ent.insert(0, str(sm125_port))
     row_num += 1
 
+    conf_widgets = [cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent,
+                    sm125_addr_ent, sm125_port_ent]
 
-    conf_widgets = [cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent, \
-            sm125_addr_ent, sm125_port_ent]
+    ttk.Button(frame, text="Save",
+               command=lambda: file_helper.save_config(cont_ent, oven_ent,
+                                                       op_switch_addr_ent, op_switch_port_ent,
+                                                       sm125_addr_ent, sm125_port_ent, popup,
+                                                       prog)).\
+        pack(side="top", fill="both", expand=True, pady=10)
 
-    ttk.Button(frame, text="Save", command=lambda: file_helper.save_config(cont_ent, oven_ent, 
-            op_switch_addr_ent, op_switch_port_ent, sm125_addr_ent, sm125_port_ent, popup, prog)). \
-            pack(side="top", fill="both", expand=True, pady=10)
-
-    ui_helper.open_center(350, 150, popup)
-    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(popup, old_conf, conf_widgets))
+    open_center(350, 150, popup)
+    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(
+        popup, old_conf, conf_widgets))
 
 
 def lock_widgets(parent):
+    """Locks the widgets to prevent the user from editing while the program is running."""
     for child in parent.children.values():
         if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
                 and "Frame" not in child.winfo_class():
             child.config(state=tk.DISABLED)
-        elif child.winfo_class() == "Frame": 
+        elif child.winfo_class() == "Frame":
             lock_widgets(child)
 
+
 def unlock_widgets(parent):
+    """Unlocks the widgets."""
     for child in parent.children.values():
         if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
                 and "Frame" not in child.winfo_class():

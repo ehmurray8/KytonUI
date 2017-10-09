@@ -11,7 +11,7 @@ import tkinter as tk
 import pyvisa as visa
 import _thread
 
-import create_options_panel as options_panel
+import options_frame
 import file_helper as fh
 import graphing_helper as gh
 import ui_helper
@@ -30,12 +30,12 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
         if self.prog_id == BAKING_ID:
             self.title = "Configure Baking"
             self.config_id = fh.BAKING_SECTION
-            self.options = options_panel.BAKING
+            self.options = options_frame.BAKING
             self.in_prog_msg = "Baking..."
         else:
             self.title = "Configre Calibration"
             self.config_id = fh.CAL_SECTION
-            self.options = options_panel.CAL
+            self.options = options_frame.CAL
             self.in_prog_msg = "Calibrating..."
 
 
@@ -118,7 +118,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
-        self.options = options_panel.OptionsPanel(self.main_frame, num_sns,
+        self.options = options_frame.OptionsPanel(self.main_frame, num_sns,
                                                   self.program_type.options)
         self.start_btn = self.options.create_start_btn(self.start)
         self.options.pack()
