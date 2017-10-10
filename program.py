@@ -124,16 +124,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.master.config(menu=self.menu)
 
     def __create_menu_item(self, menu, name, command, is_ani=False):
-        # csv_file = os.path.splitext(self.options.file_name.get())[0] + '.csv'
         menu.add_command(label=name,
-                         command=lambda: command(lambda: (self.options.file_name.get)[0] + '.csv', is_ani, True))
-                         # threading.Thread(target=command,
-                         #                                 args=(lambda: self.__menu_helper(is_ani))).start)
-
-    def __menu_helper(self, is_ani):
-        args = (os.path.splitext(lambda: self.options.file_name.get)[0] + '.csv', is_ani, True)
-        print(args)
-        return args
+                         command=lambda: command("".join((self.options.file_name.get())) + '.csv', is_ani, True))
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""

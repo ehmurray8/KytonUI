@@ -19,6 +19,7 @@ def __file_error(f_name):
 
 def create_mean_wave_time_graph(f_name, animate, is_cal=False):
     """Create a mpl graph in a separate window."""
+    print(f_name)
     if check_valid_file(f_name, is_cal):
         try:
             fig = plt.figure(0, figsize=(8, 6))
