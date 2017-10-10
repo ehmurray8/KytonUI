@@ -71,7 +71,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                                 font=LARGE_FONT)
         self.header.pack(pady=10)
         self.main_frame.pack()
-        self.menu = tk.Menu(master, tearoff=0)
+        self.menu = tk.Menu(self.master, tearoff=0)
+        
 
     def clear_frame(self):
         """Clears the main frame."""
@@ -86,9 +87,10 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                                       " ".join(["Cannot return to the home screen while the",
                                                 "program is running. Please pause the program",
                                                 "to continue."]))
-        self.menu = tk.Menu(self.master, tearoff=0)
-        self.master.config(menu=self.menu)
-        self.master.show_frame(self.start_page, 300, 300)
+        else:
+            self.menu = tk.Menu(self.master, tearoff=0)
+            self.master.config(menu=self.menu)
+            self.master.show_frame(self.start_page, 300, 300)
 
     def create_menu(self):
         """Creates the menu."""
@@ -119,12 +121,19 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         graphmenu.add_cascade(label="Animated", menu=animenu)
         graphmenu.add_cascade(label="Static", menu=staticmenu)
         self.menu.add_cascade(label="Graph", menu=graphmenu)
+        self.master.config(menu=self.menu)
 
     def __create_menu_item(self, menu, name, command, is_ani=False):
-        csv_file = os.path.splitext(self.options.file_name.get())[0] + '.csv'
+        # csv_file = os.path.splitext(self.options.file_name.get())[0] + '.csv'
         menu.add_command(label=name,
-                         command=lambda: threading.Thread(target=command,
-                                                          args=(csv_file, is_ani, True)).start)
+                         command=lambda: command(lambda: (self.options.file_name.get)[0] + '.csv', is_ani, True))
+                         # threading.Thread(target=command,
+                         #                                 args=(lambda: self.__menu_helper(is_ani))).start)
+
+    def __menu_helper(self, is_ani):
+        args = (os.path.splitext(lambda: self.options.file_name.get)[0] + '.csv', is_ani, True)
+        print(args)
+        return args
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
@@ -171,6 +180,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
+        self.after(int(self.options.delay.get() * 1000 * 60 * 60 + .5), self.start)
         if not self.running:
             conn_fails = []
             if len(sys.argv) > 1 and sys.argv[1] == "-k":

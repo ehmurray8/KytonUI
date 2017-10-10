@@ -1,5 +1,6 @@
 """UI Helper methods."""
 # pylint: disable=import-error, relative-import
+import os
 from tkinter import ttk, filedialog
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -28,7 +29,7 @@ def browse_file(file_label_var):
     file_path = filedialog.asksaveasfilename(
         initialdir="./", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
                                                                 ("all files", "*.*")))
-    file_label_var.set("".join([file_path, ".xlsx"]))
+    file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
 
 
 def string_entry(container, label_text, row, width, default_str=""):
@@ -203,7 +204,7 @@ def update_config(prog):
                                                        prog)).\
         pack(side="top", fill="both", expand=True, pady=10)
 
-    open_center(350, 150, popup)
+    open_center(325, 250, popup)
     popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(
         popup, old_conf, conf_widgets))
 

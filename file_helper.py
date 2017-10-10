@@ -28,6 +28,8 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
                    function, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
 
+    file_name = os.path.splitext(file_name)[0] + '.csv'
+
     if os.path.isfile(file_name):
         os.chmod(file_name, stat.S_IWRITE)
         file_obj = open(file_name, "a")
@@ -378,6 +380,8 @@ def create_excel_file(xcel_file, is_cal=False):
 
         __write_rows(row_strs, row_format, worksheet,
                      bold_format, data_coll, is_cal)
+
+        worksheet.set_column(0, num_cols, 37)
 
         col_end = __create_chart(
             entries_df, mdata.serial_nums, num_cols, worksheet, workbook)

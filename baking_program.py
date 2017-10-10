@@ -3,6 +3,7 @@
 import sys
 import time
 from program import Page, ProgramType, BAKING_ID
+import tkinter as tk
 import device_helper
 import file_helper
 import options_frame
@@ -27,7 +28,6 @@ class BakingPage(Page):
 
     def program_loop(self):
         """Infinite program loop."""
-        self.after(int(self.options.delay.get() * 1000 * 60 * 60 + .5), self.program_loop)
         if self.running:
             if not self.check_stable():
                 self.baking_loop()
