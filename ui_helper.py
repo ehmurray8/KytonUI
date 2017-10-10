@@ -28,7 +28,7 @@ def browse_file(file_label_var):
     file_path = filedialog.asksaveasfilename(
         initialdir="./", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
                                                                 ("all files", "*.*")))
-    file_label_var.set(file_path)
+    file_label_var.set("".join([file_path, ".xlsx"]))
 
 
 def string_entry(container, label_text, row, width, default_str=""):

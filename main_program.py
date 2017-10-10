@@ -65,7 +65,7 @@ class Application(tk.Tk):
 
         if valid:
             height = 330 + (self.num_baking_sns * 10)
-            height += int(self.num_baking_sns / 3) * 30
+            height += int(self.num_baking_sns / 3) * 30 + 40
             if inpt is not None:
                 baking_page.clear_frame()
                 baking_page.header = ttk.Label(baking_page.main_frame,
