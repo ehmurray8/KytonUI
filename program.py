@@ -16,6 +16,7 @@ import file_helper as fh
 import graphing_helper as gh
 import ui_helper
 import devices
+import os
 
 LARGE_FONT = ("Verdana", 13)
 
@@ -84,8 +85,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         """Creates the menu."""
         self.menu.add_command(label="Home", command=lambda: self.home(master))
         self.menu.add_command(label="Create Excel", command=lambda:
-                              fh.create_excel_file(
-                                  self.options.file_name.get()))
+                              fh.create_excel_file(self.options.file_name.get())
         self.menu.add_command(label="Config",
                               command=lambda: ui_helper.update_config(
                                   self.program_type.config_id))
@@ -112,7 +112,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.menu.add_cascade(label="Graph", menu=graphmenu)
 
     def __create_menu_item(self, menu, name, command, is_ani=False):
-        fname = self.options.file_name.get()
+        csv_file = os.path.splitext(self.options.file_name.get())[0]+'.csv'
         menu.add_command(label=name,
                          command=lambda: threading.Thread(target=command,
                                                           args=(fname, is_ani, True)).start)

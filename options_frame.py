@@ -139,7 +139,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
 
             def_file = "kyton_out.csv"
 
-        self.file_name = uh.string_entry(options_grid, "File name: ",
+        self.file_name = uh.string_entry(options_grid, "Excel file name: ",
                                          row_num, 30, def_file)
         row_num += 1
 

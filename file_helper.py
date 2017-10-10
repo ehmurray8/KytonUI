@@ -86,13 +86,6 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     os.chmod(file_name, stat.S_IREAD)
 
 
-def __init_excel_file(csv_file):
-    xcel_file = csv_file[:-3] + "xlsx"
-    if os.path.isfile(xcel_file):
-        os.remove(xcel_file)
-    return xcel_file
-
-
 def parse_csv_file(csv_file):
     """Parses defined csv file."""
     os.chmod(csv_file, stat.S_IWRITE)
@@ -366,9 +359,10 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
     worksheet.insert_chart("${}$3".format(num_to_excel_col(col_start)), chart)
 
 
-def create_excel_file(csv_file, is_cal=False):
+def create_excel_file(xcel_file, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
-    xcel_file = __init_excel_file(csv_file)
+
+    csv_file = os.path.splitext(xcel_file)[0]+'.csv'
 
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)

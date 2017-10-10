@@ -3,14 +3,32 @@
 from tkinter import ttk, filedialog
 import tkinter as tk
 import file_helper
+from PIL import Image, ImageTk
+
+# TODO Add file dialog entry
 
 
-#TODO Add file dialog entry
 def file_entry(container, label_text, row, width):
-    root = tk.Tk()
-    root.withdraw()
+    """Creates an entry with a browse button for the excel file."""
+    text_var = tk.StringVar()
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width)\
+       .grid(row=row, column=2, sticky='ew')
+    button_image = Image.open('docs_icon.png')
+    button_photo = ImageTk.PhotoImage(button_image)
 
-    file_path = filedialog.askopenfilename()
+    # , padding='10 10 10 10')
+    browse_button = ttk.Button(container, image=button_photo, command=lambda: browse_file(text_var))
+    browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W))
+    browse_button.image = button_photo
+    text_var.set()
+    return text_var
+
+
+def browse_file(file_label_var):
+    """Updates the excel text entry for the selected file."""
+    file_path = filedialog.asksaveasfilename(initialdir="./",title="Save Excel File As",filetypes=(("excel files","*.xlsx"),("all files","*.*")))
+    file_label_var.set(file_path)
 
 
 def string_entry(container, label_text, row, width, default_str=""):
@@ -142,7 +160,7 @@ def update_config(prog):
     cont_ent.insert(0, str(cont_loc))
     row_num += 1
 
-    ttk.Label(config_grid, text="Dicon Oven GPIB0 Number:").grid(
+    ttk.Label(config_grid, text="Delta Oven GPIB0 Number:").grid(
         row=row_num, padx=5)
     oven_ent = ttk.Entry(config_grid)
     oven_ent.grid(row=row_num, column=1, padx=5)
