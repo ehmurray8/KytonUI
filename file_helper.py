@@ -150,8 +150,7 @@ def create_data_coll(mdata, entries_df, is_cal=False):
                 float(temp) + 273.15 - float(mdata.start_temp))
 
     if is_cal:
-        data_coll.drift_rates = entries_df['Drift Rate(mK/min)'].values.tolist(
-        )
+        data_coll.drift_rates = entries_df['Drift Rate(mK/min)'].values.tolist()
 
         data_coll.real_points = entries_df['Real Point'].values.tolist()
 
@@ -234,36 +233,30 @@ def __create_formats(serial_nums, workbook, is_cal=False):
     color_formats = []
     bold_color_formats = []
     for color in HEX_COLORS:
-        format_col = workbook.add_format()
-        format_col.set_bg_color(color)
+        format_col = workbook.add_format({'bg_color': color})
         color_formats.append(format_col)
-        bold_format = workbook.add_format()
-        bold_format.set_bg_color(color)
-        bold_format.set_bold()
+        bold_format = workbook.add_format({'bg_color': color, 'bold': True, 'font_size': 16})
         bold_color_formats.append(bold_format)
+
+    std_head_f = workbook.add_format({'bold': True, 'font_size': 16})
+    std_head_red_f = workbook.add_format({'bold': True, 'font_size': 16, 'font_color': 'red'})
 
     # Add time formats
     row_format = [None, None]
-    row_header_format = [None, None]
+    row_header_format = [std_head_f, std_head_f]
 
     # Add color formats for wavelength and power data
-    sn_num = 0
-    while sn_num < len(serial_nums):
-        row_format.append(color_formats[sn_num])
-        row_format.append(color_formats[sn_num])
-        row_header_format.append(bold_color_formats[sn_num])
-        row_header_format.append(bold_color_formats[sn_num])
-        sn_num += 1
+    for color_f, b_color_f in zip(color_formats, bold_color_formats):
+        row_format.append(color_f)
+        row_format.append(color_f)
+        row_header_format.append(b_color_f)
+        row_header_format.append(b_color_f)
 
-    format_red = workbook.add_format()
-    format_red.set_font_color('red')
-    format_b = workbook.add_format()
-    format_b.set_font_color('red')
-    format_b.set_bold()
+    format_red = workbook.add_format({'font_color': 'red'})
 
     # Add red text format for mean temperature
     row_format.append(format_red)
-    row_header_format.append(format_b)
+    row_header_format.append(std_head_red_f)
 
     # Add formats for delta wavelengths
     sn_num = 0
@@ -275,16 +268,15 @@ def __create_formats(serial_nums, workbook, is_cal=False):
     # Add red text format for delta temperature, and format for mean delta wavelength
     row_format.append(format_red)
     row_format.append(None)
-    row_header_format.append(format_b)
-    row_header_format.append(None)
-    row_header_format.append(None)
+    row_header_format.append(std_head_red_f)
+    row_header_format.append(std_head_red_f)
+    # row_header_format.append(None)
 
     return row_format, row_header_format
 
 
 def __write_headers(headers, row_header_format, bold_format, worksheet):
     col = 0
-
     for header, row_f in zip(headers, row_header_format):
         if row_f is None:
             worksheet.write(0, col, header, bold_format)

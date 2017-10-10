@@ -6,17 +6,17 @@ program and baking program.
 # pylint: disable=import-error, relative-import
 import sys
 import socket
+import threading
+import os
 from tkinter import ttk, messagebox
 import tkinter as tk
 import pyvisa as visa
-import threading
 
 import options_frame
 import file_helper as fh
 import graphing_helper as gh
 import ui_helper
 import devices
-import os
 
 LARGE_FONT = ("Verdana", 13)
 
@@ -85,7 +85,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         """Creates the menu."""
         self.menu.add_command(label="Home", command=lambda: self.home(master))
         self.menu.add_command(label="Create Excel", command=lambda:
-                              fh.create_excel_file(self.options.file_name.get())
+                              fh.create_excel_file(self.options.file_name.get()))
         self.menu.add_command(label="Config",
                               command=lambda: ui_helper.update_config(
                                   self.program_type.config_id))
@@ -115,7 +115,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         csv_file = os.path.splitext(self.options.file_name.get())[0]+'.csv'
         menu.add_command(label=name,
                          command=lambda: threading.Thread(target=command,
-                                                          args=(fname, is_ani, True)).start)
+                                                          args=(csv_file, is_ani, True)).start)
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
@@ -178,7 +178,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                 self.start_btn.configure(text="Pause")
                 self.header.configure(text=self.program_type.in_prog_msg)
                 ui_helper.lock_widgets(self.options)
-                # _thread.start_new_thread(self.program_loop())
                 threading.Thread(target=self.program_loop).start()
             else:
                 need_comma = False
