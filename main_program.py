@@ -5,7 +5,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import tkinter as tk 
 from baking_program import BakingPage
-from calibration_program import CalPage
+from cal_program import CalPage
 import ui_helper
 
 LARGE_FONT = ("Verdana", 16)

@@ -9,7 +9,7 @@ import xlsxwriter
 import pandas as pd
 import data_container as datac
 from tkinter import messagebox
-import create_options_panel as options_panel
+import options_frame
 
 
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
@@ -34,7 +34,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     else:
         file_obj = open(file_name, "w")
 
-        if function == options_panel.BAKING:
+        if function == options_frame.BAKING:
             header = "Metadata\n"
         else:
             header = "Caldata\n"
@@ -62,7 +62,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
 
         line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
-        if function == options_panel.CAL:
+        if function == options_frame.CAL:
             line += ",Real Point,Drift Rate(mK/min)"
         line += "\n\n"
 
@@ -73,7 +73,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         line = str(serial_nums[i]) + "," + str(timestamp) + "," + str(temp) + "," +\
             str(wavelengths[i]) + "," + str(powers[i])
 
-        if function == options_panel.CAL:
+        if function == options_frame.CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
 
         line += "\n"

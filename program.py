@@ -9,7 +9,7 @@ import socket
 from tkinter import ttk, messagebox
 import tkinter as tk
 import pyvisa as visa
-import _thread
+import threading
 
 import options_frame
 import file_helper as fh
@@ -103,7 +103,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         if self.program_type.prog_id == CAL_ID:
             menu_items["Drift Rate"] = gh.create_drift_rates_graph
 
-        for title, func in menu_items:
+        for title, func in menu_items.items():
             self.__create_menu_item(animenu, title, func, True)
             self.__create_menu_item(staticmenu, title, func, False)
 
@@ -114,7 +114,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
     def __create_menu_item(self, menu, name, command, is_ani=False):
         fname = self.options.file_name.get()
         menu.add_command(label=name,
-                         command=lambda: command(fname, is_ani, True))
+                         command=lambda: threading.Thread(target=command,
+                                                          args=(fname, is_ani, True)).start)
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
@@ -132,7 +133,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         Creates the neccessary connections to the devices for the program.
         """
         cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, \
-            sm125_port = fh.get_config(self.config_id)
+            sm125_port = fh.get_config(self.program_type.config_id)
         manager = visa.ResourceManager()
         if self.options.temp340_state.get():
             try:
@@ -177,7 +178,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                 self.start_btn.configure(text="Pause")
                 self.header.configure(text=self.program_type.in_prog_msg)
                 ui_helper.lock_widgets(self.options)
-                _thread.start_new_thread(self.program_loop())
+                # _thread.start_new_thread(self.program_loop())
+                threading.Thread(target=self.program_loop).start()
             else:
                 need_comma = False
                 conn_str = "Failed to connect to: "
@@ -198,11 +200,15 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             self.snums = []
             self.channels = [[], [], [], []]
             self.switches = [[], [], [], []]
-            self.oven.close()
-            self.oven = None
-            self.temp_controller.close()
-            self.temp_controller = None
-            self.sm125.close()
-            self.sm125 = None
-            self.op_switch.close()
-            self.op_switch = None
+            if self.oven is not None:
+                self.oven.close()
+                self.oven = None
+            if self.temp_controller is not None:
+                self.temp_controller.close()
+                self.temp_controller = None
+            if self.sm125 is not None:
+                self.sm125.close()
+                self.sm125 = None
+            if self.op_switch is not None:
+                self.op_switch.close()
+                self.op_switch = None
