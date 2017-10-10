@@ -28,6 +28,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
         # Init member widgets
         self.baking_temp = tk.DoubleVar()
         self.file_name = tk.StringVar()
+        self.delay = tk.DoubleVar()
         self.init_time = tk.DoubleVar()
         self.init_duration = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
@@ -101,8 +102,6 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             #                      "Num temperature readings to average: ", \
             #                                            row_num, 10, 5)
             # row_num += 1
-            def_file = "kyton_out_cal.csv"
-
             self.temp_interval = uh.time_entry(options_grid,
                                                "Time between temp readings: ",
                                                row_num, 10, "seconds", 60.0)
@@ -125,6 +124,10 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             row_num += 1
         else:
             # Time intervals entry
+            self.delay = uh.time_entry(options_grid, "Initial program delay: ",
+                                       row_num, 10, "hours", 1.0)
+            row_num += 1
+
             self.init_time = uh.time_entry(options_grid, "Initial time interval: ",
                                            row_num, 10, "seconds", 15.0)
             row_num += 1
@@ -137,10 +140,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
                                            row_num, 10, "minutes", 1.0)
             row_num += 1
 
-            def_file = "kyton_out.csv"
-
-        self.file_name = uh.string_entry(options_grid, "Excel file name: ",
-                                         row_num, 30, def_file)
+        self.file_name = uh.file_entry(options_grid, "Excel file name: ", row_num, 30)
         row_num += 1
 
         if program == BAKING:

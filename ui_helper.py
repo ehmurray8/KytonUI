@@ -2,10 +2,8 @@
 # pylint: disable=import-error, relative-import
 from tkinter import ttk, filedialog
 import tkinter as tk
-import file_helper
 from PIL import Image, ImageTk
-
-# TODO Add file dialog entry
+import file_helper
 
 
 def file_entry(container, label_text, row, width):
@@ -17,17 +15,19 @@ def file_entry(container, label_text, row, width):
     button_image = Image.open('docs_icon.png')
     button_photo = ImageTk.PhotoImage(button_image)
 
-    # , padding='10 10 10 10')
-    browse_button = ttk.Button(container, image=button_photo, command=lambda: browse_file(text_var))
-    browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W))
+    browse_button = ttk.Button(
+        container, image=button_photo, command=lambda: browse_file(text_var),
+        width=10)
+    browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo
-    text_var.set()
     return text_var
 
 
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
-    file_path = filedialog.asksaveasfilename(initialdir="./",title="Save Excel File As",filetypes=(("excel files","*.xlsx"),("all files","*.*")))
+    file_path = filedialog.asksaveasfilename(
+        initialdir="./", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
+                                                                ("all files", "*.*")))
     file_label_var.set(file_path)
 
 

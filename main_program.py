@@ -3,7 +3,7 @@
 # pylint: disable=import-error, relative-import
 from tkinter import ttk
 from tkinter import messagebox
-import tkinter as tk 
+import tkinter as tk
 from baking_program import BakingPage
 from cal_program import CalPage
 import ui_helper
@@ -17,6 +17,9 @@ class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
         # pylint: disable=missing-super-argument
         super().__init__(*args, **kwargs)
+        img = tk.PhotoImage(file=r'fiber.png')
+        self.tk.call('wm', 'iconphoto', self._w, img)
+
         container = tk.Frame(self)
 
         self.title("Kyton UI")
@@ -70,7 +73,7 @@ class Application(tk.Tk):
                                                font=LARGE_FONT)
                 baking_page.header.pack(pady=10)
                 baking_page.create_options(self.num_baking_sns)
-            baking_page.create_menu(self)
+            baking_page.create_menu()
             self.title("Kyton Baking")
             self.unbind("<Return>")
             self.show_frame(BakingPage, 700, height)

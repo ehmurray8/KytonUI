@@ -27,15 +27,14 @@ class BakingPage(Page):
 
     def program_loop(self):
         """Infinite program loop."""
+        self.after(int(self.options.delay.get() * 1000 * 60 * 60 + .5), self.program_loop)
         if self.running:
             if not self.check_stable():
                 self.baking_loop()
-                self.after(int(self.options.init_time.get())
-                           * 1000, self.program_loop)
+                self.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
             else:
                 self.baking_loop()
-                self.after(int(self.options.prim_time.get())
-                           * 1000 * 60, self.program_loop)
+                self.after(int(self.options.prim_time.get() * 1000 * 60 + .5), self.program_loop)
 
     def baking_loop(self):
         """Runs the baking process."""

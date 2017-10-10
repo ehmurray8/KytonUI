@@ -26,6 +26,7 @@ CAL_ID = "Cal"
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
     """Defines constants for each type of program."""
+
     def __init__(self, prog_id):
         self.prog_id = prog_id
         if self.prog_id == BAKING_ID:
@@ -42,9 +43,12 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 
 class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
+
     def __init__(self, parent, master, start_page, program_type):
         super().__init__(parent)  # pylint: disable=missing-super-argument
 
+        self.master = master
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.program_type = program_type
         self.temp_controller = None
         self.oven = None
@@ -75,15 +79,20 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(expand=1, fill=tk.BOTH)
 
-    def home(self, master):
+    def home(self):
         """Return to StartPage."""
-        self.menu = tk.Menu(master, tearoff=0)
-        master.config(menu=self.menu)
-        master.show_frame(self.start_page, 300, 300)
+        if self.running:
+            tk.messagebox.showwarning("Warning Program is Running",
+                                      " ".join(["Cannot return to the home screen while the",
+                                                "program is running. Please pause the program",
+                                                "to continue."]))
+        self.menu = tk.Menu(self.master, tearoff=0)
+        self.master.config(menu=self.menu)
+        self.master.show_frame(self.start_page, 300, 300)
 
-    def create_menu(self, master):
+    def create_menu(self):
         """Creates the menu."""
-        self.menu.add_command(label="Home", command=lambda: self.home(master))
+        self.menu.add_command(label="Home", command=self.home)
         self.menu.add_command(label="Create Excel", command=lambda:
                               fh.create_excel_file(self.options.file_name.get()))
         self.menu.add_command(label="Config",
@@ -112,7 +121,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.menu.add_cascade(label="Graph", menu=graphmenu)
 
     def __create_menu_item(self, menu, name, command, is_ani=False):
-        csv_file = os.path.splitext(self.options.file_name.get())[0]+'.csv'
+        csv_file = os.path.splitext(self.options.file_name.get())[0] + '.csv'
         menu.add_command(label=name,
                          command=lambda: threading.Thread(target=command,
                                                           args=(csv_file, is_ani, True)).start)
@@ -137,7 +146,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         manager = visa.ResourceManager()
         if self.options.temp340_state.get():
             try:
-                self.temp_controller = devices.TempController(cont_loc, manager)
+                self.temp_controller = devices.TempController(
+                    cont_loc, manager)
             except visa.VisaIOError:
                 conn_fails.append("LSC 340")
         if self.options.delta_oven_state.get():
@@ -149,7 +159,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                 conn_fails.append("Delta Oven")
         if self.options.op_switch_state.get():
             try:
-                self.op_switch = devices.OpSwitch(op_switch_addr, int(op_switch_port))
+                self.op_switch = devices.OpSwitch(
+                    op_switch_addr, int(op_switch_port))
             except socket.error:
                 conn_fails.append("Optical Switch")
         if self.options.sm125_state.get():
@@ -211,3 +222,14 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             if self.op_switch is not None:
                 self.op_switch.close()
                 self.op_switch = None
+
+    def on_closing(self):
+        """Stops the user from closing if the program is running."""
+        if self.running:
+            if messagebox.askyesno("Quit",
+                                   "Program is currently running. Are you sure you want to quit?"):
+                self.master.destroy()
+            else:
+                self.master.tkraise()
+        else:
+            self.master.destroy()
