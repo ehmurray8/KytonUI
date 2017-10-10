@@ -17,7 +17,7 @@ class CalPage(Page):
         self.finished_point = False
         self.temp_is_good = False
 
-    def run_cal_loop(self):
+    def program_loop(self):
         """Runs the calibration."""
         temps_arr = self.options.get_target_temps()
 
