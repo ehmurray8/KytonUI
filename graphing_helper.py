@@ -31,7 +31,7 @@ def create_mean_wave_time_graph(f_name, animate, is_cal=False):
                 'Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
             if animate:
-                animation.FuncAnimation(fig, __animate_mwt_graph,
+                ani = animation.FuncAnimation(fig, __animate_mwt_graph,
                                         interval=1000, fargs=(f_name, ax1,))
                 fig.show()
             else:
@@ -65,7 +65,7 @@ def create_wave_power_graph(f_name, animate, is_cal=False):
             fig.suptitle('Power (dBm) vs. Wavelength (nm)')
 
             if animate:
-                animation.FuncAnimation(fig, __animate_wp_graph,
+                ani = animation.FuncAnimation(fig, __animate_wp_graph,
                                         interval=1000, fargs=(f_name, ax1,))
                 fig.show()
             else:
@@ -364,6 +364,7 @@ def check_valid_file(f_name, is_cal):
     if os.path.isfile(f_name):
         os.chmod(f_name, stat.S_IWRITE)
         with open(f_name, "r") as check_file:
+            ret_val = True
             line = check_file.readline()
             if not is_cal and line != "Metadata\n":
                 messagebox.showwarning("Invalid File",
@@ -377,14 +378,14 @@ def check_valid_file(f_name, is_cal):
                                                 "this program or was altered. The specified csv ",
                                                 "file must be a valid file to view the graphs."]))
                 ret_val = False
-        ret_val = True
         os.chmod(f_name, stat.S_IREAD)
-    prog = "baking"
-    if is_cal:
-        prog = "calibration"
-    messagebox.showwarning("File doesn't exist.",
-                           "".join(["Specified csv file doesn't exist, start the {} process "
-                                    .format(prog), "to view the graphs."]))
+    if not ret_val:
+        prog = "baking"
+        if is_cal:
+            prog = "calibration"
+        messagebox.showwarning("File doesn't exist.",
+                            "".join(["Specified csv file doesn't exist, start the {} process "
+                                        .format(prog), "to view the graphs."]))
     return ret_val
 
 
