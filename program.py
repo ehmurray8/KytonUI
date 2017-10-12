@@ -72,7 +72,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.header.pack(pady=10)
         self.main_frame.pack()
         self.menu = tk.Menu(self.master, tearoff=0)
-        
 
     def clear_frame(self):
         """Clears the main frame."""
@@ -124,8 +123,13 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.master.config(menu=self.menu)
 
     def __create_menu_item(self, menu, name, command, is_ani=False):
+        is_cal = False
+        if self.program_type.prog_id == CAL_ID:
+            is_cal = True
         menu.add_command(label=name,
-                         command=lambda: command("".join((self.options.file_name.get())) + '.csv', is_ani, True))
+                         command=lambda: command((
+                             os.path.splitext(self.options.file_name.get())[0]) + '.csv',
+                                                 is_ani, is_cal))
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
@@ -172,7 +176,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
-        self.after(int(self.options.delay.get() * 1000 * 60 * 60 + .5), self.start)
+        self.after(int(self.options.delay.get() *
+                       1000 * 60 * 60 + .5), self.start)
         if not self.running:
             conn_fails = []
             if len(sys.argv) > 1 and sys.argv[1] == "-k":
