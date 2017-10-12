@@ -31,7 +31,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     file_name = os.path.splitext(file_name)[0] + '.csv'
 
     if os.path.isfile(file_name):
-        os.chmod(file_name, stat.S_IWRITE)
+        os.chmod(file_name, stat.S_IRWXU)
         file_obj = open(file_name, "a")
     else:
         file_obj = open(file_name, "w")
