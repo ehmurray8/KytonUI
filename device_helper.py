@@ -91,7 +91,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
             if i == switch_chan_starting_index:
                 for waves in all_waves:
                     wavelengths_avg[i + offset] += \
-                            waves[switch_chan_starting_index]
+                        waves[switch_chan_starting_index]
                     offset += 1
                 if offset != 0:
                     offset -= 1
@@ -104,7 +104,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
             if i == switch_chan_starting_index:
                 for amps in all_amps:
                     amplitudes_avg[i + offset] += \
-                            amps[switch_chan_starting_index]
+                        amps[switch_chan_starting_index]
                     offset += 1
                 if offset != 0:
                     offset -= 1
@@ -124,13 +124,13 @@ def __process_data(parent, lens, actual_switches, wavelengths_avg,
     chan_errs = []
     offset = 0
     for chan in parent.channels:
-        max_pts = lens[chan_num-1]
-        if chan_num-1 == switch_num:
+        max_pts = lens[chan_num - 1]
+        if chan_num - 1 == switch_num:
             max_pts += len(actual_switches)
         temp = chan_num
         start_index = 0
         while temp > 1:
-            start_index += lens[temp-2]
+            start_index += lens[temp - 2]
             temp -= 1
         start_index += offset
         num_snums = 0
@@ -143,7 +143,7 @@ def __process_data(parent, lens, actual_switches, wavelengths_avg,
                 chan_errs.append(snum)
                 parent.data_pts[snum] = (0, 0)
             num_snums += 1
-        if chan_num-1 == switch_num and len(actual_switches) > 1:
+        if chan_num - 1 == switch_num and len(actual_switches) > 1:
             offset = len(actual_switches) - 1
         chan_num += 1
     return chan_errs
@@ -163,6 +163,5 @@ def chan_error(snums, warned):
             errs_str += str(snum)
             need_comma = True
 
-        threading.Thread(target=tk.messagebox.showwarning, args=("Scanning error", errs_str)).start()
-        # _thread.start_new_thread(lambda: tk.messagebox.showwarning(
-        #    "Scanning error", errs_str), ())
+        threading.Thread(target=tk.messagebox.showwarning,
+                         args=("Scanning error", errs_str)).start()

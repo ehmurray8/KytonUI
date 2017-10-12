@@ -31,7 +31,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     file_name = os.path.splitext(file_name)[0] + '.csv'
 
     if os.path.isfile(file_name):
-        os.chmod(file_name, stat.S_IWRITE)
+        os.chmod(file_name, stat.S_IRWXU)
         file_obj = open(file_name, "a")
     else:
         file_obj = open(file_name, "w")
@@ -42,23 +42,10 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
             header = "Caldata\n"
 
         file_obj.write(header)
-        need_comma = False
-        for snum in serial_nums:
-            if need_comma:
-                file_obj.write(",")
-            else:
-                need_comma = True
-            file_obj.write(snum)
+        file_obj.write(",".join(serial_nums))
         file_obj.write("\n")
-        need_comma = False
-        wave_total = 0
-        for wave in wavelengths:
-            if need_comma:
-                file_obj.write(",")
-            else:
-                need_comma = True
-            wave_total += float(wave)
-            file_obj.write(str(wave))
+        wave_total = sum(wavelengths)
+        file_obj.write(",".join(wavelengths))
         wave_total /= len(serial_nums)
         file_obj.write("\n" + str(round(timestamp, 5)) + ",")
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
@@ -67,21 +54,14 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         if function == options_frame.CAL:
             line += ",Real Point,Drift Rate(mK/min)"
         line += "\n\n"
-
         file_obj.write(line)
 
-    i = 0
-    while i < len(serial_nums):
-        line = str(serial_nums[i]) + "," + str(timestamp) + "," + str(temp) + "," +\
-            str(wavelengths[i]) + "," + str(powers[i])
-
+    for snum, wave, power in zip(serial_nums, wavelengths, powers):
+        line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," +\
+            str(wave) + "," + str(power)
         if function == options_frame.CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
-
-        line += "\n"
-
-        file_obj.write(line)
-        i += 1
+        file_obj.write("".join([line, "\n"]))
 
     file_obj.write("\n\n")
     file_obj.close()
@@ -158,27 +138,24 @@ def create_data_coll(mdata, entries_df, is_cal=False):
 
     wavelens = entries_df['Wavelength(nm)'].values.tolist()
 
-    # pylint: disable=unused-variable
-    data_coll.wavelens = [[] for i in range(len(mdata.serial_nums))]
+    data_coll.wavelens = [[] for _ in range(len(mdata.serial_nums))]
     for idx, wavelen in enumerate(wavelens):
         data_coll.wavelens[int(idx % len(mdata.serial_nums))].append(wavelen)
 
     powers = entries_df['Power(dBm)'].values.tolist()
-    data_coll.powers = [[] for i in range(len(mdata.serial_nums))]
+    data_coll.powers = [[] for _ in range(len(mdata.serial_nums))]
     for idx, power in enumerate(powers):
         data_coll.powers[int(idx % len(mdata.serial_nums))].append(power)
     start_powers = []
     for power in data_coll.powers:
         start_powers.append(power[0])
 
-    row_num = 0
-    data_coll.wavelen_diffs = [[] for i in range(len(mdata.serial_nums))]
-    data_coll.power_diffs = [[] for i in range(len(mdata.serial_nums))]
-    for time_num in data_coll.times:
+    data_coll.wavelen_diffs = [[] for _ in range(len(mdata.serial_nums))]
+    data_coll.power_diffs = [[] for _ in range(len(mdata.serial_nums))]
+    for row_num, time_num in enumerate(data_coll.times):
         total_diff_w = 0
         total_diff_p = 0
-        idx = 0
-        for wavelen, power in zip(data_coll.wavelens, data_coll.powers):
+        for idx, (wavelen, power) in enumerate(zip(data_coll.wavelens, data_coll.powers)):
             diff_w = round(float(wavelen[row_num]), 5) - \
                 float(mdata.start_wavelens[idx])
             diff_p = round(float(power[row_num]), 5) - float(start_powers[idx])
@@ -186,14 +163,12 @@ def create_data_coll(mdata, entries_df, is_cal=False):
             total_diff_p += diff_p
             data_coll.wavelen_diffs[idx].append(diff_w)
             data_coll.power_diffs[idx].append(diff_p)
-            idx += 1
 
         total_diff_w /= len(mdata.serial_nums)
         total_diff_p /= len(mdata.serial_nums)
 
         data_coll.mean_wavelen_diffs.append(total_diff_w * 1000)
         data_coll.mean_power_diffs.append(total_diff_p)
-        row_num += 1
 
     return data_coll
 
