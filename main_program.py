@@ -1,7 +1,9 @@
 """Module contains the main entry point for the Kyton UI."""
 
 # pylint: disable=import-error, relative-import
+
 from tkinter import ttk
+import queue
 from tkinter import messagebox
 import tkinter as tk
 from baking_program import BakingPage
@@ -43,6 +45,18 @@ class Application(tk.Tk):
         self.num_baking_sns = 0
         self.num_cal_sns = 0
         self.show_frame(StartPage, 300, 300)
+        self.main_queue = queue.Queue()
+
+    def tkloop(self):
+        """Loop for threaded processes."""
+        try:
+            while True:
+                func, args, kwargs = self.main_queue.get_nowait()
+                func(*args, **kwargs)
+        except queue.Queue.Empty:
+            pass
+
+        self.after(100, self.tkloop)
 
     def show_frame(self, cont, width, height):
         """Display a frame on the app."""
@@ -187,4 +201,5 @@ class CalSNSConfig(tk.Frame):
 
 if __name__ == "__main__":
     APP = Application()
+    APP.tkloop()
     APP.mainloop()
