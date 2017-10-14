@@ -211,19 +211,15 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                     messagebox.showwarning(
                         "Device Connection Failure", conn_str)
 
-                delayed_prog = self.masterafter(int(self.options.delay.get() *
-                                                    1000 * 60 * 60 + .5), lambda: self.start(True))
+                delayed_prog = self.master.after(int(self.options.delay.get() *
+                                                     1000 * 60 * 60 + .5), lambda: self.start(True))
             else:
                 if delayed_prog is not None:
                     self.master.after_cancel(delayed_prog)
                     delayed_prog = None
                 self.pause_program()
         else:
-            if not self.running:
-                # threading.Thread(target=self.program_loop).start()
-                self.program_loop()
-            else:
-                self.pause_program()
+            self.program_loop()
 
     def pause_program(self):
         """Pauses the program."""

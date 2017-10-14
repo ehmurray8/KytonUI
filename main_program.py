@@ -53,7 +53,7 @@ class Application(tk.Tk):
             while True:
                 func, args, kwargs = self.main_queue.get_nowait()
                 func(*args, **kwargs)
-        except queue.Queue.Empty:
+        except queue.Empty:
             pass
 
         self.after(100, self.tkloop)

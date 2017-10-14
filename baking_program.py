@@ -72,7 +72,7 @@ class BakingPage(Page):
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             threading.Thread(target=file_helper, args=(self.options.file_name.get(), self.snums,
                                                        curr_time, temperature, wavelengths_avg,
-                                                       amplitudes_avg, options_frame.BAKING)).Start()
+                                                       amplitudes_avg, options_frame.BAKING)).start()
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
                                        curr_time, temperature, wavelengths_avg,
                                        amplitudes_avg, options_frame.BAKING)
