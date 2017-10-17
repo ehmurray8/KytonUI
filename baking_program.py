@@ -15,6 +15,7 @@ class BakingPage(Page):
     def __init__(self, parent, master, start_page):
         baking_type = ProgramType(BAKING_ID)
         super().__init__(parent, master, start_page, baking_type)
+        self.listen_for_data()
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
@@ -35,7 +36,7 @@ class BakingPage(Page):
                 self.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
             else:
                 self.baking_loop()
-                self.after(int(self.options.prim_time.get() * 1000 * 60 + .5), self.program_loop)
+                self.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
 
     def listen_for_data(self):
         """Listens for the data_pts."""
@@ -55,8 +56,10 @@ class BakingPage(Page):
         wavelengths_avg = []
         amplitudes_avg = []
 
-        device_helper.avg_waves_amps(self)
-        self.listen_for_data()
+        thread = threading.Thread(device_helper.avg_waves_amps(self))
+        thread.start()
+        thread.join()
+
 
         for snum in self.snums:
             wavelengths_avg.append(self.data_pts[snum][0])
@@ -70,9 +73,9 @@ class BakingPage(Page):
         curr_time = time.time()
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            threading.Thread(target=file_helper, args=(self.options.file_name.get(), self.snums,
+            threading.Thread(target=file_helper.write_csv_file, args=(self.options.file_name.get(), self.snums,
                                                        curr_time, temperature, wavelengths_avg,
                                                        amplitudes_avg, options_frame.BAKING)).start()
-            file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                                       curr_time, temperature, wavelengths_avg,
-                                       amplitudes_avg, options_frame.BAKING)
+            #file_helper.write_csv_file(self.options.file_name.get(), self.snums,
+            #                           curr_time, temperature, wavelengths_avg,
+            #                           amplitudes_avg, options_frame.BAKING)

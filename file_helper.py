@@ -4,6 +4,7 @@
 import os
 import time
 import stat
+import threading
 import configparser
 from tkinter import messagebox
 import xlsxwriter
@@ -22,6 +23,7 @@ CPARSER.read("devices.cfg")
 BAKING_SECTION = "Baking"
 CAL_SECTION = "Calibration"
 
+lock = threading.Lock()
 
 # pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
@@ -30,6 +32,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
     file_name = os.path.splitext(file_name)[0] + '.csv'
 
+    lock.acquire()
     if os.path.isfile(file_name):
         os.chmod(file_name, stat.S_IRWXU)
         file_obj = open(file_name, "a")
@@ -65,10 +68,11 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
     file_obj.write("\n\n")
     file_obj.close()
+    lock.release()
     os.chmod(file_name, stat.S_IREAD)
 
 
-def parse_csv_file(csv_file, data_queue=None):
+def parse_csv_file(csv_file):
     """Parses defined csv file."""
     os.chmod(csv_file, stat.S_IWRITE)
     entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
@@ -76,6 +80,7 @@ def parse_csv_file(csv_file, data_queue=None):
     mdata = datac.Metadata()
 
     # Read Metadata
+    lock.acquire()
     with open(csv_file) as csv:
         csv.readline()
         mdata.serial_nums = csv.readline().split(",")
@@ -95,12 +100,8 @@ def parse_csv_file(csv_file, data_queue=None):
     mdata.start_wavelen_avg = float(start_time_wavelen_temp[1])
     mdata.start_temp = float(start_time_wavelen_temp[2])
     os.chmod(csv_file, stat.S_IWRITE)
-    if data_queue != None:
-        data_queue.put((mdata, entries_df))
-        print("threaded")
-    else:
-        print("reg")
-        return mdata, entries_df
+    lock.release()
+    return mdata, entries_df
 
 
 def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):

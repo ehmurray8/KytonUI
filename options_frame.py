@@ -137,7 +137,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             row_num += 1
 
             self.prim_time = uh.time_entry(options_grid, "Primary time interval: ",
-                                           row_num, 10, "minutes", 1.0)
+                                           row_num, 10, "hours", 1.0)
             row_num += 1
 
         self.file_name = uh.file_entry(options_grid, "Excel file name: ", row_num, 30)

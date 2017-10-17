@@ -7,6 +7,7 @@ program and baking program.
 import sys
 import socket
 import os
+import threading
 from tkinter import ttk, messagebox
 import queue
 import tkinter as tk
@@ -109,7 +110,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                       "Wavelength v. Power": gh.create_wave_power_graph,
                       "Power v. Time": gh.create_mean_power_time_graph,
                       "Temperature v. Time": gh.create_temp_time_graph,
-                      "Indiv. Wavelengths": gh.create_indiv_waves_graph}
+                      "Indiv. Wavelengths": gh.create_indiv_waves_graph,
+                      "Indiv. Powers": gh.create_indiv_powers_graph}
 
         if self.program_type.prog_id == CAL_ID:
             menu_items["Drift Rate"] = gh.create_drift_rates_graph
@@ -129,8 +131,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             is_cal = True
         menu.add_command(label=name,
                          command=lambda: command((
-                             os.path.splitext(self.options.file_name.get())[0]) + '.csv', self.master,
-                                                 is_ani, is_cal))
+                             os.path.splitext(self.options.file_name.get())[0]) + '.csv', is_ani, is_cal))
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
@@ -141,7 +142,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
 
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_name.get())
+        fh.create_excel_file(self.options.file_nme.get())
 
     def load_devices(self, conn_fails):
         """
