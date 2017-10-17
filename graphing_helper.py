@@ -3,11 +3,14 @@
 
 import os
 import stat
+import asyncio
 from tkinter import messagebox
 import matplotlib.animation as animation
 from matplotlib import style
 import matplotlib.pyplot as plt
 import file_helper
+import threading
+import queue
 
 style.use("ggplot")
 
@@ -18,7 +21,7 @@ def __file_error(f_name):
                     .format(f_name))
 
 
-def create_mean_wave_time_graph(f_name, animate, is_cal=False):
+def create_mean_wave_time_graph(f_name, master, animate, is_cal=False):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name, is_cal):
         try:
@@ -32,31 +35,62 @@ def create_mean_wave_time_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(fig, __animate_mwt_graph,
-                                              interval=1000, fargs=(f_name, ax1,))
+                                              interval=5000, fargs=(f_name, master, ax1, is_cal,))
                 fig.show()
             else:
-                __animate_mwt_graph(0, f_name, ax1)
+                __animate_mwt_graph(0, f_name, master, ax1, is_cal)
                 plt.show()
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_mwt_graph(i, f_name, axis):
-    times, wavelen_diffs = __get_mean_wave_diff_time_data(f_name)
+def __animate_mwt_graph(interval, f_name, master, axis, is_cal):
+    times, wavelen_diffs = __get_mean_wave_diff_time_data(f_name, master, is_cal)
     axis.clear()
     plt.xlabel('Time (hr)')
     plt.ylabel('Wavelength (pm)')
     axis.plot(times, wavelen_diffs)
 
 
-def __get_mean_wave_diff_time_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
+def __get_mean_wave_diff_time_data(f_name, master, is_cal):
+    mdata, entries_df, data_coll = gen_data(f_name, master, is_cal)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_wavelen_diffs
 
 
-def create_wave_power_graph(f_name, animate, is_cal=False):
+def listen_for_data(master, q, results):
+    try:
+        while True:
+            ret = q.get_nowait()
+            [results.append(x) for x in ret]
+            break
+    except queue.Empty:
+        master.after(300, lambda: listen_for_data(master, q, results))
+
+def gen_data(f_name, master, is_cal):
+    dataq = queue.Queue()
+    threading.Thread(target=file_helper.parse_csv_file, args=(f_name, dataq)).start()
+    results = []
+    thread = threading.Thread(target=listen_for_data, args=(master, dataq, results))
+    thread.start()
+    thread.join()
+    mdata, entries_df = results
+    print(mdata)
+    print(entries_df)
+
+    dataq1 = queue.Queue()
+    threading.Thread(target=file_helper.create_data_coll, args=(mdata, entries_df, is_cal, dataq1))
+    results = []
+    #listen_for_data(master, dataq1, results)
+    thread = threading.Thread(target=listen_for_data, args=(master, dataq, results))
+    thread.start()
+    thread.join()
+    datacoll = results[0]
+    print(datacoll)
+    return mdata, entries_df, datacoll
+
+
+def create_wave_power_graph(f_name, master, animate, is_cal=False):
     """Creates the wavelength vs. power graph."""
     if check_valid_file(f_name, is_cal):
         try:
@@ -66,17 +100,17 @@ def create_wave_power_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(fig, __animate_wp_graph,
-                                              interval=1000, fargs=(f_name, ax1,))
+                                              interval=5000, fargs=(f_name, master, ax1, is_cal))
                 fig.show()
             else:
-                __animate_wp_graph(0, f_name, ax1)
+                __animate_wp_graph(0, f_name, master, ax1, is_cal)
                 plt.show()
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_wp_graph(i, f_name, axis):
-    wavelens, powers, snums = __get_wave_power_graph(f_name)
+def __animate_wp_graph(interval, f_name, master, axis, is_cal):
+    wavelens, powers, snums = __get_wave_power_graph(f_name, master, is_cal)
     axis.clear()
     plt.xlabel('Wavelength (nm)')
     plt.ylabel('Power (dBm)')
@@ -91,14 +125,19 @@ def __animate_wp_graph(i, f_name, axis):
                 ncol=int(len(snums) / 2 + 0.5), fontsize=8)
 
 
-def __get_wave_power_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
+def __get_wave_power_graph(f_name, master, is_cal):
+    dataq = queue.Queue()
+    threading.Thread(target=file_helper.parse_csv_file, args=(f_name, dataq)).start()
+    mdata, entries_df = listen_for_data(master, dataq)
+
+    dataq1 = queue.Queue()
+    threading.Thread(target=file_helper.create_data_coll, args=(mdata, entries_df, is_cal, dataq1))
+    data_coll = listen_for_data(master, dataq1)
 
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
 
-def create_temp_time_graph(f_name, animate, is_cal=False):
+def create_temp_time_graph(f_name, master, animate, is_cal=False):
     """Creates the temperature vs. time graph."""
     if check_valid_file(f_name, is_cal):
         try:
@@ -116,17 +155,17 @@ def create_temp_time_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(
-                    fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1, ax2, ))
+                    fig, __animate_temp_graph, interval=5000, fargs=(f_name, master, ax1, ax2, is_cal))
                 fig.show()
             else:
-                __animate_temp_graph(0, f_name, ax1, ax2)
+                __animate_temp_graph(0, f_name, master, ax1, ax2, is_cal)
                 plt.show()
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_temp_graph(i, f_name, ax1, ax2):
-    times, temp_diffs, temps = __get_temp_time_graph(f_name)
+def __animate_temp_graph(interval, f_name, master, ax1, ax2, is_cal):
+    times, temp_diffs, temps = __get_temp_time_graph(f_name, master, is_cal)
     ax1.clear()
     ax2.clear()
 
@@ -141,9 +180,8 @@ def __animate_temp_graph(i, f_name, ax1, ax2):
     ax2.plot(times, temp_diffs, color='b')
 
 
-def __get_temp_time_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
+def __get_temp_time_graph(f_name, master, is_cal):
+
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.temp_diffs, data_coll.temps
 
@@ -161,7 +199,7 @@ def create_mean_power_time_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(
-                    fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
+                    fig, __animate_mpt_graph, interval=5000, fargs=(f_name, ax1,))
                 fig.show()
             else:
                 __animate_mpt_graph(0, f_name, ax1)
@@ -170,7 +208,7 @@ def create_mean_power_time_graph(f_name, animate, is_cal=False):
             __file_error(f_name)
 
 
-def __animate_mpt_graph(i, f_name, axis):
+def __animate_mpt_graph(interval, f_name, axis):
     times, wavelen_diffs = __get_mean_power_diff_time_data(f_name)
     axis.clear()
     plt.xlabel('Time (hr)')
@@ -202,7 +240,7 @@ def create_indiv_waves_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(
-                    fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1, ax2,))
+                    fig, __animate_indiv_waves, interval=5000, fargs=(f_name, ax1, ax2,))
                 fig.show()
             else:
                 __animate_indiv_waves(0, f_name, ax1, ax2)
@@ -211,7 +249,7 @@ def create_indiv_waves_graph(f_name, animate, is_cal=False):
             __file_error(f_name)
 
 
-def __animate_indiv_waves(i, f_name, ax1, ax2):
+def __animate_indiv_waves(interval, f_name, ax1, ax2):
     times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
     ax1.clear()
     ax2.clear()
@@ -259,7 +297,7 @@ def create_indiv_powers_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(
-                    fig, __animate_indiv_powers, interval=1000, fargs=(f_name, ax1, ax2,))
+                    fig, __animate_indiv_powers, interval=5000, fargs=(f_name, ax1, ax2,))
                 fig.show()
             else:
                 __animate_indiv_powers(0, f_name, ax1, ax2)
@@ -268,7 +306,7 @@ def create_indiv_powers_graph(f_name, animate, is_cal=False):
             __file_error(f_name)
 
 
-def __animate_indiv_powers(i, f_name, ax1, ax2):
+def __animate_indiv_powers(interval, f_name, ax1, ax2):
     times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
     ax1.clear()
     ax2.clear()
@@ -316,7 +354,7 @@ def create_drift_rates_graph(f_name, animate, is_cal=False):
 
             if animate:
                 ani = animation.FuncAnimation(
-                    fig, __animate_drift_rates, interval=1000, fargs=(f_name, ax1, ax2,))
+                    fig, __animate_drift_rates, interval=5000, fargs=(f_name, ax1, ax2,))
                 fig.show()
             else:
                 __animate_indiv_powers(0, f_name, ax1, ax2)
@@ -325,7 +363,7 @@ def create_drift_rates_graph(f_name, animate, is_cal=False):
             __file_error(f_name)
 
 
-def __animate_drift_rates(i, f_name, ax1, ax2):
+def __animate_drift_rates(interval, f_name, ax1, ax2):
     times, times_real, drates, drates_real = __get_drift_rates(f_name)
     ax1.clear()
     ax2.clear()

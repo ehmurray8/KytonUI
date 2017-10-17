@@ -7,13 +7,11 @@ import sys
 import time
 import socket
 import threading
-import tkinter as tk
+from tkinter import messagebox
 
 
 def avg_waves_amps(parent):
     """Gets the average wavelengths and powers, updates data_pts."""
-    amplitudes_avg = []
-    wavelengths_avg = []
     actual_switches = []
     switch_num = 0
     for i, arr in enumerate(parent.switches):
@@ -27,7 +25,7 @@ def avg_waves_amps(parent):
         __get_average_data(num_snums, parent.header,
                            parent.program_type.in_prog_msg,
                            parent.sm125, parent.op_switch,
-                           switch_num, actual_switches)
+                           switch_num, actual_switches, parent.master)
 
     chan_errs, data_pts = __process_data(parent, lens, actual_switches,
                                          wavelengths_avg, amplitudes_avg,
@@ -41,9 +39,12 @@ def avg_waves_amps(parent):
 
 
 def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
-               actual_switches):
+               actual_switches, master):
     keep_going = True
     switch_index = 0
+    wavelens = []
+    amps = []
+    lens = []
     while keep_going:
         try:
             if len(actual_switches) > switch_index:
@@ -56,14 +57,21 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
             all_waves.append(wavelens)
             all_amps.append(amps)
         except socket.error:
-            header.configure(text="SM125 Connection Error...Trying Again")
-    header.configure(text=in_prog_msg)
+            func = header.configure
+            threading.Thread(target=add_to_queue, args=(master, func, {'text':"SM125 Connection Error...Trying Again"})).start()
+    func = header.configure
+    threading.Thread(target=add_to_queue, args=(master, func, {'text': in_prog_msg}))
     return wavelens, amps, lens
 
 
 def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
-                       switch_num, actual_switches):
+                       switch_num, actual_switches, master):
     need_init = True
+    all_waves = []
+    all_amps = []
+    wavelengths = [[]]
+    amplitudes = [[]]
+    lens = [0, 0, 0, 0]
     for i in range(num_snums):
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
             all_waves = []
@@ -72,10 +80,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
                                                        all_waves, all_amps,
                                                        sm125, op_switch,
                                                        actual_switches)
-        else:
-            wavelengths = [[]]
-            amplitudes = [[]]
-            lens = [0, 0, 0, 0]
+
 
         if need_init:
             wavelengths_avg = [0] * (len(wavelengths) +
@@ -151,10 +156,9 @@ def __process_data(parent, lens, actual_switches, wavelengths_avg,
     return chan_errs, data_pts
 
 
-def add_to_queue(master, errs_str):
+def add_to_queue(master, func, *args, **kwargs):
     """Adds the warning to the main_queue to properly handle threading."""
-    master.main_queue.put(
-        (tk.messagebox.showwarning, ("Scanning error", errs_str), {}))
+    master.main_queue.put((func, args, kwargs))
 
 
 def chan_error(snums, warned, master):
@@ -171,4 +175,5 @@ def chan_error(snums, warned, master):
             errs_str += str(snum)
             need_comma = True
 
-        threading.Thread(target=add_to_queue, args=(master, errs_str)).start()
+        func = messagebox.showwarning
+        threading.Thread(target=add_to_queue, args=(master, func, errs_str, "Scanning error")).start()

@@ -65,8 +65,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.options = None
         self.start_btn = None
         self.data_pts = {}
-        self.thread_queue = queue.Queue()
-        self.menu_queue = queue.Queue()
+        self.data_queue = queue.Queue()
 
         self.main_frame = tk.Frame(self)
         self.header = ttk.Label(self.main_frame, text=self.program_type.title,
@@ -130,7 +129,7 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             is_cal = True
         menu.add_command(label=name,
                          command=lambda: command((
-                             os.path.splitext(self.options.file_name.get())[0]) + '.csv',
+                             os.path.splitext(self.options.file_name.get())[0]) + '.csv', self.master,
                                                  is_ani, is_cal))
 
     def create_options(self, num_sns):

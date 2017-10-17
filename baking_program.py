@@ -40,9 +40,9 @@ class BakingPage(Page):
     def listen_for_data(self):
         """Listens for the data_pts."""
         try:
-            self.data_pts = self.thread_queue.get_nowait()
+            self.data_pts = self.data_queue.get_nowait()
         except queue.Empty:
-            self.after(100, self.listen_for_result)
+            self.after(300, self.listen_for_data)
 
     def baking_loop(self):
         """Runs the baking process."""

@@ -56,7 +56,7 @@ class Application(tk.Tk):
         except queue.Empty:
             pass
 
-        self.after(100, self.tkloop)
+        self.after(200, self.tkloop)
 
     def show_frame(self, cont, width, height):
         """Display a frame on the app."""

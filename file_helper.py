@@ -5,10 +5,10 @@ import os
 import time
 import stat
 import configparser
+from tkinter import messagebox
 import xlsxwriter
 import pandas as pd
 import data_container as datac
-from tkinter import messagebox
 import options_frame
 
 
@@ -68,7 +68,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     os.chmod(file_name, stat.S_IREAD)
 
 
-def parse_csv_file(csv_file):
+def parse_csv_file(csv_file, data_queue=None):
     """Parses defined csv file."""
     os.chmod(csv_file, stat.S_IWRITE)
     entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
@@ -95,7 +95,12 @@ def parse_csv_file(csv_file):
     mdata.start_wavelen_avg = float(start_time_wavelen_temp[1])
     mdata.start_temp = float(start_time_wavelen_temp[2])
     os.chmod(csv_file, stat.S_IWRITE)
-    return mdata, entries_df
+    if data_queue != None:
+        data_queue.put((mdata, entries_df))
+        print("threaded")
+    else:
+        print("reg")
+        return mdata, entries_df
 
 
 def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
@@ -115,7 +120,7 @@ def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
     return headers
 
 
-def create_data_coll(mdata, entries_df, is_cal=False):
+def create_data_coll(mdata, entries_df, is_cal=False, dataq=None):
     """Gathers the data from the csv file, and stores it in a DataCollection object."""
     data_coll = datac.DataCollection()
 
@@ -170,7 +175,10 @@ def create_data_coll(mdata, entries_df, is_cal=False):
         data_coll.mean_wavelen_diffs.append(total_diff_w * 1000)
         data_coll.mean_power_diffs.append(total_diff_p)
 
-    return data_coll
+    if dataq is not None:
+        dataq.put(data_coll)
+    else:
+        return data_coll
 
 
 # pylint: disable=unused-argument
