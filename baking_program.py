@@ -32,10 +32,10 @@ class BakingPage(Page):
         """Infinite program loop."""
         if self.running:
             if not self.check_stable():
-                self.baking_loop()
+                threading.Thread(self.baking_loop()).start()
                 self.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
             else:
-                self.baking_loop()
+                threading.Thread(self.baking_loop())
                 self.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
 
     def listen_for_data(self):
@@ -56,9 +56,7 @@ class BakingPage(Page):
         wavelengths_avg = []
         amplitudes_avg = []
 
-        thread = threading.Thread(device_helper.avg_waves_amps(self))
-        thread.start()
-        thread.join()
+        device_helper.avg_waves_amps(self)
 
 
         for snum in self.snums:
@@ -76,6 +74,3 @@ class BakingPage(Page):
             threading.Thread(target=file_helper.write_csv_file, args=(self.options.file_name.get(), self.snums,
                                                        curr_time, temperature, wavelengths_avg,
                                                        amplitudes_avg, options_frame.BAKING)).start()
-            #file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-            #                           curr_time, temperature, wavelengths_avg,
-            #                           amplitudes_avg, options_frame.BAKING)

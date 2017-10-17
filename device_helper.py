@@ -35,7 +35,8 @@ def avg_waves_amps(parent):
         chan_error(chan_errs, parent.chan_error_been_warned, parent.master)
         parent.chan_error_been_warned = True
 
-    parent.thread_queue.put(data_pts)
+    #parent.thread_queue.put(data_pts)
+    return data_pts
 
 
 def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
