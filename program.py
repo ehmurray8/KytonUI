@@ -6,9 +6,9 @@ program and baking program.
 # pylint: disable=import-error, relative-import
 import sys
 import socket
-import threading
 import os
 from tkinter import ttk, messagebox
+import queue
 import tkinter as tk
 import pyvisa as visa
 
@@ -65,6 +65,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.options = None
         self.start_btn = None
         self.data_pts = {}
+        self.thread_queue = queue.Queue()
+        self.menu_queue = queue.Queue()
 
         self.main_frame = tk.Frame(self)
         self.header = ttk.Label(self.main_frame, text=self.program_type.title,
@@ -174,61 +176,73 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             except socket.error:
                 conn_fails.append("Micron Optics SM125")
 
-    def start(self):
+    def start(self, can_start=False):
         """Starts the recording process."""
-        self.after(int(self.options.delay.get() *
-                       1000 * 60 * 60 + .5), self.start)
-        if not self.running:
-            conn_fails = []
-            if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                self.load_devices(conn_fails)
+        delayed_prog = None
 
-            for chan, snum, pos in zip(self.options.chan_nums,
-                                       self.options.sn_ents,
-                                       self.options.switch_positions):
-                if snum.get() != "" and snum.get() not in self.snums:
-                    self.snums.append(snum.get())
-                    self.channels[chan.get() - 1].append(snum.get())
-                    self.switches[chan.get() - 1].append(pos.get())
+        if not can_start:
+            if not self.running:
+                conn_fails = []
+                if len(sys.argv) > 1 and sys.argv[1] == "-k":
+                    self.load_devices(conn_fails)
 
-            if len(conn_fails) == 0:
-                self.running = True
-                self.start_btn.configure(text="Pause")
-                self.header.configure(text=self.program_type.in_prog_msg)
-                ui_helper.lock_widgets(self.options)
-                threading.Thread(target=self.program_loop).start()
+                for chan, snum, pos in zip(self.options.chan_nums,
+                                           self.options.sn_ents,
+                                           self.options.switch_positions):
+                    if snum.get() != "" and snum.get() not in self.snums:
+                        self.snums.append(snum.get())
+                        self.channels[chan.get() - 1].append(snum.get())
+                        self.switches[chan.get() - 1].append(pos.get())
+
+                if len(conn_fails) == 0:
+                    self.running = True
+                    self.start_btn.configure(text="Pause")
+                    self.header.configure(text=self.program_type.in_prog_msg)
+                    ui_helper.lock_widgets(self.options)
+                else:
+                    need_comma = False
+                    conn_str = "Failed to connect to: "
+                    for dev in conn_fails:
+                        if need_comma:
+                            conn_str += ", "
+                            need_comma = True
+                        conn_str += dev
+                    conn_str += "."
+                    messagebox.showwarning(
+                        "Device Connection Failure", conn_str)
+
+                delayed_prog = self.master.after(int(self.options.delay.get() *
+                                                     1000 * 60 * 60 + .5), lambda: self.start(True))
             else:
-                need_comma = False
-                conn_str = "Failed to connect to: "
-                for dev in conn_fails:
-                    if need_comma:
-                        conn_str += ", "
-                        need_comma = True
-                    conn_str += dev
-                conn_str += "."
-                messagebox.showwarning("Device Connection Failure", conn_str)
-
+                if delayed_prog is not None:
+                    self.master.after_cancel(delayed_prog)
+                    delayed_prog = None
+                self.pause_program()
         else:
-            self.start_btn.configure(text="Start")
-            self.header.configure(text=self.program_type.title)
-            ui_helper.unlock_widgets(self.options)
-            self.running = False
-            self.stable_count = 0
-            self.snums = []
-            self.channels = [[], [], [], []]
-            self.switches = [[], [], [], []]
-            if self.oven is not None:
-                self.oven.close()
-                self.oven = None
-            if self.temp_controller is not None:
-                self.temp_controller.close()
-                self.temp_controller = None
-            if self.sm125 is not None:
-                self.sm125.close()
-                self.sm125 = None
-            if self.op_switch is not None:
-                self.op_switch.close()
-                self.op_switch = None
+            self.program_loop()
+
+    def pause_program(self):
+        """Pauses the program."""
+        self.start_btn.configure(text="Start")
+        self.header.configure(text=self.program_type.title)
+        ui_helper.unlock_widgets(self.options)
+        self.running = False
+        self.stable_count = 0
+        self.snums = []
+        self.channels = [[], [], [], []]
+        self.switches = [[], [], [], []]
+        if self.oven is not None:
+            self.oven.close()
+            self.oven = None
+        if self.temp_controller is not None:
+            self.temp_controller.close()
+            self.temp_controller = None
+        if self.sm125 is not None:
+            self.sm125.close()
+            self.sm125 = None
+        if self.op_switch is not None:
+            self.op_switch.close()
+            self.op_switch = None
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""

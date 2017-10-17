@@ -11,7 +11,7 @@ import tkinter as tk
 
 
 def avg_waves_amps(parent):
-    """Gets the average wavelengths and powers, updates parent.data_pts."""
+    """Gets the average wavelengths and powers, updates data_pts."""
     amplitudes_avg = []
     wavelengths_avg = []
     actual_switches = []
@@ -29,13 +29,15 @@ def avg_waves_amps(parent):
                            parent.sm125, parent.op_switch,
                            switch_num, actual_switches)
 
-    chan_errs = __process_data(parent, lens, actual_switches,
-                               wavelengths_avg, amplitudes_avg,
-                               switch_num)
+    chan_errs, data_pts = __process_data(parent, lens, actual_switches,
+                                         wavelengths_avg, amplitudes_avg,
+                                         switch_num)
 
     if len(chan_errs) > 0:
-        chan_error(chan_errs, parent.chan_error_been_warned)
+        chan_error(chan_errs, parent.chan_error_been_warned, parent.master)
         parent.chan_error_been_warned = True
+
+    parent.thread_queue.put(data_pts)
 
 
 def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
@@ -120,7 +122,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
 def __process_data(parent, lens, actual_switches, wavelengths_avg,
                    amplitudes_avg, switch_num):
     chan_num = 1
-    parent.data_pts = {}
+    data_pts = {}
     chan_errs = []
     offset = 0
     for chan in parent.channels:
@@ -136,20 +138,26 @@ def __process_data(parent, lens, actual_switches, wavelengths_avg,
         num_snums = 0
         for snum in chan:
             if num_snums < max_pts:
-                parent.data_pts[snum] = (wavelengths_avg[start_index],
-                                         amplitudes_avg[start_index])
+                data_pts[snum] = (wavelengths_avg[start_index],
+                                  amplitudes_avg[start_index])
                 start_index += 1
             else:
                 chan_errs.append(snum)
-                parent.data_pts[snum] = (0, 0)
+                data_pts[snum] = (0, 0)
             num_snums += 1
         if chan_num - 1 == switch_num and len(actual_switches) > 1:
             offset = len(actual_switches) - 1
         chan_num += 1
-    return chan_errs
+    return chan_errs, data_pts
 
 
-def chan_error(snums, warned):
+def add_to_queue(master, errs_str):
+    """Adds the warning to the main_queue to properly handle threading."""
+    master.main_queue.put(
+        (tk.messagebox.showwarning, ("Scanning error", errs_str), {}))
+
+
+def chan_error(snums, warned, master):
     """
     Creates the error messsage to alert the user not enough fbgs
     are being scanned.
@@ -163,5 +171,4 @@ def chan_error(snums, warned):
             errs_str += str(snum)
             need_comma = True
 
-        threading.Thread(target=tk.messagebox.showwarning,
-                         args=("Scanning error", errs_str)).start()
+        threading.Thread(target=add_to_queue, args=(master, errs_str)).start()

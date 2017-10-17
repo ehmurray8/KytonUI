@@ -45,7 +45,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(",".join(serial_nums))
         file_obj.write("\n")
         wave_total = sum(wavelengths)
-        file_obj.write(",".join(wavelengths))
+        file_obj.write(",".join(str(x) for x in wavelengths))
         wave_total /= len(serial_nums)
         file_obj.write("\n" + str(round(timestamp, 5)) + ",")
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")

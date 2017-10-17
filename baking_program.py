@@ -2,8 +2,9 @@
 # pylint:disable=import-error, relative-import, missing-super-argument
 import sys
 import time
+import queue
+import threading
 from program import Page, ProgramType, BAKING_ID
-import tkinter as tk
 import device_helper
 import file_helper
 import options_frame
@@ -36,6 +37,13 @@ class BakingPage(Page):
                 self.baking_loop()
                 self.after(int(self.options.prim_time.get() * 1000 * 60 + .5), self.program_loop)
 
+    def listen_for_data(self):
+        """Listens for the data_pts."""
+        try:
+            self.data_pts = self.thread_queue.get_nowait()
+        except queue.Empty:
+            self.after(100, self.listen_for_result)
+
     def baking_loop(self):
         """Runs the baking process."""
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
@@ -48,6 +56,7 @@ class BakingPage(Page):
         amplitudes_avg = []
 
         device_helper.avg_waves_amps(self)
+        self.listen_for_data()
 
         for snum in self.snums:
             wavelengths_avg.append(self.data_pts[snum][0])
@@ -61,6 +70,9 @@ class BakingPage(Page):
         curr_time = time.time()
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            threading.Thread(target=file_helper, args=(self.options.file_name.get(), self.snums,
+                                                       curr_time, temperature, wavelengths_avg,
+                                                       amplitudes_avg, options_frame.BAKING)).start()
             file_helper.write_csv_file(self.options.file_name.get(), self.snums,
                                        curr_time, temperature, wavelengths_avg,
                                        amplitudes_avg, options_frame.BAKING)
