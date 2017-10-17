@@ -2,7 +2,6 @@
 # pylint:disable=import-error, relative-import, missing-super-argument
 import sys
 import time
-import queue
 import threading
 from program import Page, ProgramType, BAKING_ID
 import device_helper
@@ -37,13 +36,6 @@ class BakingPage(Page):
             else:
                 threading.Thread(self.baking_loop())
                 self.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
-
-    def listen_for_data(self):
-        """Listens for the data_pts."""
-        try:
-            self.data_pts = self.data_queue.get_nowait()
-        except queue.Empty:
-            self.after(300, self.listen_for_data)
 
     def baking_loop(self):
         """Runs the baking process."""
