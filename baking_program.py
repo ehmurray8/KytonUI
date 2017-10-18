@@ -14,7 +14,6 @@ class BakingPage(Page):
     def __init__(self, parent, master, start_page):
         baking_type = ProgramType(BAKING_ID)
         super().__init__(parent, master, start_page, baking_type)
-        self.listen_for_data()
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
