@@ -7,7 +7,6 @@ program and baking program.
 import sys
 import socket
 import os
-import threading
 from tkinter import ttk, messagebox
 import queue
 import tkinter as tk
@@ -66,7 +65,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.options = None
         self.start_btn = None
         self.data_pts = {}
-        self.data_queue = queue.Queue()
 
         self.main_frame = tk.Frame(self)
         self.header = ttk.Label(self.main_frame, text=self.program_type.title,
@@ -131,7 +129,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             is_cal = True
         menu.add_command(label=name,
                          command=lambda: command((
-                             os.path.splitext(self.options.file_name.get())[0]) + '.csv', is_ani, is_cal))
+                             os.path.splitext(self.options.file_name.get())[0]) + '.csv',
+                                                 is_ani, is_cal))
 
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""

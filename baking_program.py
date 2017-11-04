@@ -2,7 +2,6 @@
 # pylint:disable=import-error, relative-import, missing-super-argument
 import sys
 import time
-import threading
 from program import Page, ProgramType, BAKING_ID
 import device_helper
 import file_helper
@@ -11,6 +10,7 @@ import options_frame
 
 class BakingPage(Page):
     """Contains the baking_program specific logic, and gui elements."""
+
     def __init__(self, parent, master, start_page):
         baking_type = ProgramType(BAKING_ID)
         super().__init__(parent, master, start_page, baking_type)
@@ -30,11 +30,13 @@ class BakingPage(Page):
         """Infinite program loop."""
         if self.running:
             if not self.check_stable():
-                threading.Thread(self.baking_loop()).start()
-                self.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
+                self.baking_loop()
+                self.after(int(self.options.init_time.get()
+                               * 1000 + .5), self.program_loop)
             else:
-                threading.Thread(self.baking_loop())
-                self.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
+                self.baking_loop()
+                self.after(int(self.options.prim_time.get() *
+                               1000 * 60 * 60 + .5), self.program_loop)
 
     def baking_loop(self):
         """Runs the baking process."""
@@ -47,8 +49,10 @@ class BakingPage(Page):
         wavelengths_avg = []
         amplitudes_avg = []
 
-        device_helper.avg_waves_amps(self)
-
+        if len(sys.argv) > 1 and sys.argv[1] == "-k":
+            device_helper.avg_waves_amps(self)
+        else:
+            time.sleep(15)
 
         for snum in self.snums:
             wavelengths_avg.append(self.data_pts[snum][0])
@@ -62,6 +66,6 @@ class BakingPage(Page):
         curr_time = time.time()
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            threading.Thread(target=file_helper.write_csv_file, args=(self.options.file_name.get(), self.snums,
-                                                       curr_time, temperature, wavelengths_avg,
-                                                       amplitudes_avg, options_frame.BAKING)).start()
+            file_helper.write_csv_file(self.options.file_name.get(), self.snums,
+                                       curr_time, temperature, wavelengths_avg,
+                                       amplitudes_avg, options_frame.BAKING)

@@ -6,7 +6,6 @@ and the Optical Switch.
 import sys
 import time
 import socket
-import threading
 from tkinter import messagebox
 
 
@@ -35,7 +34,6 @@ def avg_waves_amps(parent):
         chan_error(chan_errs, parent.chan_error_been_warned, parent.master)
         parent.chan_error_been_warned = True
 
-    #parent.thread_queue.put(data_pts)
     return data_pts
 
 
@@ -59,10 +57,8 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
             all_amps.append(amps)
         except socket.error:
             func = header.configure
-            #threading.Thread(target=add_to_queue, args=(master, func, {'text':"SM125 Connection Error...Trying Again"})).start()
             add_to_queue(master, func, {'text': "SM125 Connection Error...Trying Again"})
     func = header.configure
-    #hreading.Thread(target=add_to_queue, args=(master, func, {'text': in_prog_msg}))
     add_to_queue(master, func, {'text': in_prog_msg})
     return wavelens, amps, lens
 
@@ -82,8 +78,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
             wavelengths, amplitudes, lens = __get_data(header, in_prog_msg,
                                                        all_waves, all_amps,
                                                        sm125, op_switch,
-                                                       actual_switches)
-
+                                                       actual_switches, master)
 
         if need_init:
             wavelengths_avg = [0] * (len(wavelengths) +
@@ -179,5 +174,4 @@ def chan_error(snums, warned, master):
             need_comma = True
 
         func = messagebox.showwarning
-        #threading.Thread(target=add_to_queue, args=(master, func, errs_str, "Scanning error")).start()
         add_to_queue(master, func, errs_str, "Scanning error")

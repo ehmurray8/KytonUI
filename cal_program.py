@@ -2,7 +2,6 @@
 
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
-import threading
 from program import Page, ProgramType, CAL_ID
 import device_helper
 import file_helper
@@ -60,7 +59,7 @@ class CalPage(Page):
             if self.options.cooling.get():
                 self.oven.cooling_on()
 
-            threading.Thread(target=self.check_temp, args=(temps_arr, ))
+            self.check_temp(temps_arr)
             self.temp_is_good = False
             while not self.temp_is_good:
                 pass
