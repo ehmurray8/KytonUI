@@ -7,10 +7,13 @@ program and baking program.
 import sys
 import socket
 import os
+import numpy as np
 from tkinter import ttk, messagebox
 import queue
 import tkinter as tk
-import pyvisa as visa
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+
 
 import options_frame
 import file_helper as fh
@@ -34,60 +37,107 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.config_id = fh.BAKING_SECTION
             self.options = options_frame.BAKING
             self.in_prog_msg = "Baking..."
+            self.plot_num = 230
+            self.num_graphs = 6
         else:
             self.title = "Configre Calibration"
             self.config_id = fh.CAL_SECTION
             self.options = options_frame.CAL
             self.in_prog_msg = "Calibrating..."
+            self.plot_num = 240
+            self.num_graphs = 7
 
 
-class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
+class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
 
-    def __init__(self, parent, master, start_page, program_type):
-        super().__init__(parent)  # pylint: disable=missing-super-argument
+    def __init__(self, master, id, program_type):
+        s = ttk.Style()
+        s.configure('InnerNB.TNotebook', tabposition='wn')
+
+        super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.program_type = program_type
-        self.oven = None
-        self.op_switch = None
-        self.sm125 = None
+        self.id = id
+        self.program_type = ProgramType(program_type)
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
         self.stable_count = 0
         self.running = False
         self.cancel_run = False
-        self.start_page = start_page
         self.chan_error_been_warned = False
         self.options = None
         self.start_btn = None
         self.data_pts = {}
+        
+        config_frame = ttk.Frame()
+        self.graph_frame = ttk.Frame()
 
-        #self.main_frame = tk.Frame(self)
-        #self.header = ttk.Label(self.main_frame, text=self.program_type.title,
-        #                        font=LARGE_FONT)
-        #self.header.pack(pady=10)
+        # Need images as instance variables to prevent garbage collection
+        self.img_config = tk.PhotoImage(file=r'config.png')
+        self.img_graph = tk.PhotoImage(file=r'graph.png')
 
-    def clear_frame(self):
-        """Clears the main frame."""
-        self.main_frame.destroy()
-        self.main_frame = tk.Frame(self)
-        self.main_frame.pack(expand=1, fill=tk.BOTH)
+        # Set up confi tab
+        self.add(config_frame, image=self.img_config)
+        ttk.Button(config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
+        
+        # Set up graphing tab
+        self.add(self.graph_frame, image=self.img_graph)
 
-    def home(self):
-        """Return to StartPage."""
-        if self.running:
-            tk.messagebox.showwarning("Warning Program is Running",
-                                      " ".join(["Cannot return to the home screen while the",
-                                                "program is running. Please pause the program",
-                                                "to continue."]))
-        else:
-            self.menu = tk.Menu(self.master, tearoff=0)
-            self.master.config(menu=self.menu)
-            self.master.show_frame(self.start_page, 300, 300)
+        # Graphs need to be empty until csv is created
+        self.fig = Figure(figsize=(5,5), dpi=100)
+        self.main_axes = []
+        self.ax_zoom = None
+        self.show_main_plots()
 
+
+        self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
+        self.canvas.show()
+
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
+
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.graph_frame)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
+
+        
+    def show_main_plots(self):
+        # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
+        num = self.program_type.plot_num + 1
+        for offs in range(self.program_type.num_graphs):
+            self.main_axes.append(self.fig.add_subplot(num+offs))
+
+    def graph_back(self, event):
+        if event.dblclick:
+            self.ax_zoom.cla()
+            self.fig.clf()
+            self.canvas.draw()
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
+            self.show_main_plots()
+            self.canvas.draw()
+            self.toolbar.update()
+
+    def onclick(self, event):
+        for i, ax in enumerate(self.main_axes):
+            if event.dblclick and ax == event.inaxes:
+                #print("Click is in axes ax{}".format(i+1))
+                for ax in self.main_axes:
+                    ax.cla()
+                self.fig.clf()
+                self.canvas.draw()
+                self.toolbar.update()
+
+                self.ax_zoom = self.fig.add_subplot(111)
+                self.canvas.mpl_disconnect(self.cid)
+                self.cid = self.canvas.mpl_connect('button_press_event', self.graph_back)
+
+                self.ax_zoom.plot(np.random.rand(10))
+                self.canvas.draw()
+                break
+        
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
         self.options = options_frame.OptionsPanel(self.main_frame, num_sns,
@@ -123,16 +173,8 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
                     self.header.configure(text=self.program_type.in_prog_msg)
                     ui_helper.lock_widgets(self.options)
                 else:
-                    need_comma = False
-                    conn_str = "Failed to connect to: "
-                    for dev in conn_fails:
-                        if need_comma:
-                            conn_str += ", "
-                            need_comma = True
-                        conn_str += dev
-                    conn_str += "."
-                    messagebox.showwarning(
-                        "Device Connection Failure", conn_str)
+                    conn_str = "Failed to connect to: {}.".format(", ".join(conn_fails))
+                    messagebox.showwarning("Device Connection Failure", conn_str)
 
                 delayed_prog = self.master.after(int(self.options.delay.get() *
                                                      1000 * 60 * 60 + .5), lambda: self.start(True))

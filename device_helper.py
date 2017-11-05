@@ -57,7 +57,8 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
             all_amps.append(amps)
         except socket.error:
             func = header.configure
-            add_to_queue(master, func, {'text': "SM125 Connection Error...Trying Again"})
+            add_to_queue(master, func, {
+                         'text': "SM125 Connection Error...Trying Again"})
     func = header.configure
     add_to_queue(master, func, {'text': in_prog_msg})
     return wavelens, amps, lens
@@ -165,13 +166,7 @@ def chan_error(snums, warned, master):
     are being scanned.
     """
     if not warned:
-        errs_str = "SM125 didn't report any data for the serial numbers: "
-        need_comma = False
-        for snum in snums:
-            if need_comma:
-                errs_str += ", "
-            errs_str += str(snum)
-            need_comma = True
-
+        errs_str = "SM125 didn't report any data for the serial numbers: {}.".format(
+            ", ".join(sums))
         func = messagebox.showwarning
         add_to_queue(master, func, errs_str, "Scanning error")
