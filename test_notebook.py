@@ -44,14 +44,19 @@ class Test(tk.Tk):
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
         style.theme_use("outer")
-        notebook = ttk.Notebook(style='OuterNB.TNotebook')
-        notebook.enable_traversal()
+        self.notebook = ttk.Notebook(style='OuterNB.TNotebook')
+        self.notebook.enable_traversal()
         s = ttk.Style()
         s.configure('InnerNB.TNotebook', tabposition='wn')
         self.notebook_inner = ttk.Notebook(style='InnerNB.TNotebook')
-        frame = ttk.Frame()
-        tk.Label(frame, text="I'm in Frame 1!").\
-            pack(side="top", expand=True, padx=10, pady=5)
+        self.frame = ttk.Frame()
+        self.tmp_lbl1 = tk.Label(self.frame, text="I'm in Frame 1!")
+        self.tmp_lbl1.pack(side="top", expand=True, padx=10, pady=5)
+        b = tk.Button(self.frame, text="Add New", command=self.add_new)
+        b.pack()
+        tk.Button(self.frame, text="Add New Tab", command=self.add_main_tab).pack()
+        tk.Button(self.frame, text="Remove Tab", command=self.rm_tab).pack()
+
         frame1 = ttk.Frame()
         tk.Label(frame1, text="I'm in Frame Outer!").\
             pack(side="top", expand=True, padx=10, pady=5)
@@ -61,12 +66,12 @@ class Test(tk.Tk):
         
         self.img_graph = tk.PhotoImage(file=r'graph.png')
         self.img_setts = tk.PhotoImage(file=r'config.png')
-        self.notebook_inner.add(frame, image=self.img_setts)  # , text="Frame")
+        self.notebook_inner.add(self.frame, image=self.img_setts)  # , text="Frame")
         self.notebook_inner.add(self.frame2, image=self.img_graph)
         
-        notebook.add(self.notebook_inner, text='Test')
-        notebook.add(frame1, text="Frame Outer")
-        notebook.pack(side="top", fill="both", expand=True)
+        self.notebook.add(self.notebook_inner, text='Test')
+        self.notebook.add(frame1, text="Frame Outer")
+        self.notebook.pack(side="top", fill="both", expand=True)
 
 
         self.canvas = FigureCanvasTkAgg(self.fig, self.frame2)
@@ -75,21 +80,40 @@ class Test(tk.Tk):
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        cid = self.canvas.mpl_connect('button_press_event', self.onclick)
-        print("{} cid".format(cid))
 
+        self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
 
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.frame2)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
+
+        self.back_button = ttk.Button(self.frame2, text="Back", command=self.graph_back)
+        self.back_button.pack(side = tk.RIGHT)
+
+
         self.geometry("{0}x{1}+0+0".format(
             self.winfo_screenwidth()-pad, self.winfo_screenheight()-pad))
         self.bind('<Escape>',self.toggle_geom)            
 
         self.ax_zoom = None
         self.back_button = None
+        self.tmp_frame = None
 
+    def add_new(self):
+        b = tk.Button(self.frame,text="Click to destroy")
+        b.pack()
+        b.config(command=b.pack_forget) 
 
+    def rm_tab(self):
+        if self.tmp_frame is not None:
+            self.notebook.forget(self.tmp_frame)
+            self.tmp_frame = None
+
+    def add_main_tab(self):
+        if self.tmp_frame is None:
+            self.tmp_frame = ttk.Frame()
+            self.notebook.add(self.tmp_frame, text="New Tab")
+        
     def toggle_geom(self,event):
         geom=self.master.winfo_geometry()
         print(geom,self._geom)
@@ -97,20 +121,21 @@ class Test(tk.Tk):
         self._geom=geom
 
     def graph_back(self, event):
-        self.ax_zoom.cla()
-        self.fig.clf()
-        self.show_main_plots()
-        self.canvas.draw()
-        self.toolbar.update()
+        if event.dblclick:
+            self.ax_zoom.cla()
+            self.fig.clf()
+            self.canvas.draw()
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
+            self.show_main_plots()
+            self.canvas.draw()
+            self.toolbar.update()
+
 
     def onclick(self, event):
-        #print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
-        #    ('double' if event.dblclick else 'single', event.button,
-        #    event.x, event.y, event.xdata, event.ydata))
-
         for i, ax in enumerate(self.main_axes):
             # For infomation, print which axes the click was in
-            if ax == event.inaxes:
+            if event.dblclick and ax == event.inaxes:
                 print("Click is in axes ax{}".format(i+1))
                 for ax in self.main_axes:
                     ax.cla()
@@ -119,9 +144,10 @@ class Test(tk.Tk):
                 self.toolbar.update()
 
                 self.ax_zoom = self.fig.add_subplot(111)
+                self.canvas.mpl_disconnect(self.cid)
+                self.cid = self.canvas.mpl_connect('button_press_event', self.graph_back)
+
                 self.ax_zoom.plot(np.random.rand(10))
-                self.back_button = Button(self.ax_zoom, label='Back')
-                self.back_button.on_clicked(self.graph_back)
                 self.canvas.draw()
                 break
 
