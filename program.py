@@ -50,7 +50,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.program_type = program_type
-        self.temp_controller = None
         self.oven = None
         self.op_switch = None
         self.sm125 = None
@@ -66,12 +65,10 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
         self.start_btn = None
         self.data_pts = {}
 
-        self.main_frame = tk.Frame(self)
-        self.header = ttk.Label(self.main_frame, text=self.program_type.title,
-                                font=LARGE_FONT)
-        self.header.pack(pady=10)
-        self.main_frame.pack()
-        self.menu = tk.Menu(self.master, tearoff=0)
+        #self.main_frame = tk.Frame(self)
+        #self.header = ttk.Label(self.main_frame, text=self.program_type.title,
+        #                        font=LARGE_FONT)
+        #self.header.pack(pady=10)
 
     def clear_frame(self):
         """Clears the main frame."""
@@ -91,47 +88,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
             self.master.config(menu=self.menu)
             self.master.show_frame(self.start_page, 300, 300)
 
-    def create_menu(self):
-        """Creates the menu."""
-        self.menu.add_command(label="Home", command=self.home)
-        self.menu.add_command(label="Create Excel", command=lambda:
-                              fh.create_excel_file(self.options.file_name.get()))
-        self.menu.add_command(label="Config",
-                              command=lambda: ui_helper.update_config(
-                                  self.program_type.config_id))
-
-        graphmenu = tk.Menu(self.menu, tearoff=0)
-        animenu = tk.Menu(graphmenu, tearoff=0)
-        staticmenu = tk.Menu(graphmenu, tearoff=0)
-
-        menu_items = {"Wavelength v. Time": gh.create_mean_wave_time_graph,
-                      "Wavelength v. Power": gh.create_wave_power_graph,
-                      "Power v. Time": gh.create_mean_power_time_graph,
-                      "Temperature v. Time": gh.create_temp_time_graph,
-                      "Indiv. Wavelengths": gh.create_indiv_waves_graph,
-                      "Indiv. Powers": gh.create_indiv_powers_graph}
-
-        if self.program_type.prog_id == CAL_ID:
-            menu_items["Drift Rate"] = gh.create_drift_rates_graph
-
-        for title, func in menu_items.items():
-            self.__create_menu_item(animenu, title, func, True)
-            self.__create_menu_item(staticmenu, title, func, False)
-
-        graphmenu.add_cascade(label="Animated", menu=animenu)
-        graphmenu.add_cascade(label="Static", menu=staticmenu)
-        self.menu.add_cascade(label="Graph", menu=graphmenu)
-        self.master.config(menu=self.menu)
-
-    def __create_menu_item(self, menu, name, command, is_ani=False):
-        is_cal = False
-        if self.program_type.prog_id == CAL_ID:
-            is_cal = True
-        menu.add_command(label=name,
-                         command=lambda: command((
-                             os.path.splitext(self.options.file_name.get())[0]) + '.csv',
-                                                 is_ani, is_cal))
-
     def create_options(self, num_sns):
         """Creates the options panel for the main frame."""
         self.options = options_frame.OptionsPanel(self.main_frame, num_sns,
@@ -142,38 +98,6 @@ class Page(tk.Frame):  # pylint: disable=too-many-instance-attributes
     def create_excel(self):
         """Creates excel file."""
         fh.create_excel_file(self.options.file_nme.get())
-
-    def load_devices(self, conn_fails):
-        """
-        Creates the neccessary connections to the devices for the program.
-        """
-        cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, \
-            sm125_port = fh.get_config(self.program_type.config_id)
-        manager = visa.ResourceManager()
-        if self.options.temp340_state.get():
-            try:
-                self.temp_controller = devices.TempController(
-                    cont_loc, manager)
-            except visa.VisaIOError:
-                conn_fails.append("LSC 340")
-        if self.options.delta_oven_state.get():
-            try:
-                self.oven = devices.Oven(oven_loc, manager)
-                self.oven.set_temp(self.options.baking_temp.get())
-                self.oven.heater_on()
-            except visa.VisaIOError:
-                conn_fails.append("Delta Oven")
-        if self.options.op_switch_state.get():
-            try:
-                self.op_switch = devices.OpSwitch(
-                    op_switch_addr, int(op_switch_port))
-            except socket.error:
-                conn_fails.append("Optical Switch")
-        if self.options.sm125_state.get():
-            try:
-                self.sm125 = devices.SM125(sm125_addr, int(sm125_port))
-            except socket.error:
-                conn_fails.append("Micron Optics SM125")
 
     def start(self, can_start=False):
         """Starts the recording process."""

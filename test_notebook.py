@@ -14,9 +14,10 @@ pad = 3
 
 class Test(tk.Tk):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.fig = Figure(figsize=(5,5), dpi=100)
         self.show_main_plots()
-        super().__init__(*args, **kwargs)
 
         white = "#f0eff4"
         az_white = "#dcedff"

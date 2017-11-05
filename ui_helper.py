@@ -1,9 +1,7 @@
 """UI Helper methods."""
 # pylint: disable=import-error, relative-import
 import os
-from tkinter import ttk, filedialog
-import tkinter as tk
-from PIL import Image, ImageTk
+from tkinter import ttk, filedialog import tkinter as tk from PIL import Image, ImageTk
 import file_helper
 
 
