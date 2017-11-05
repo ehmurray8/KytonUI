@@ -45,11 +45,12 @@ sky_blue = "#328CC1"
 gold = "#D9B310"
 black = "#1D2731"
 
-bg_color = black
+bg_color = onyx
 tab_color = sky_blue
 tabs_color = az_white
-button_color = sky_blue
-text_color = gold
+entry_color = az_white
+button_color = nickel
+text_color = az_white
 
 
 class Application(tk.Tk):
@@ -67,9 +68,10 @@ class Application(tk.Tk):
         style = ttk.Style()
         style.theme_create("outer", parent="alt", settings={
              ".": {"configure": {"background": bg_color}},
-            "TFrame": {"configure": {"background": bg_color}},
+             "TFrame": {"configure": {"background": bg_color, "margin": [10, 10, 10, 10]}},
             "TButton": {"configure": {"background": button_color, "font": ('Helvetica', 16), "foreground": text_color}},
             "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": text_color}},
+            "TEntry": {"configure": {"font": ('Helvetica', 13), "background": entry_color}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TNotebook.Tab": {
                 "configure": {"padding": [10, 4], "font": ('Helvetica', 18), "background": tab_color},
@@ -107,41 +109,55 @@ class Application(tk.Tk):
 
     def setup_home_frame(self):
         device_frame = ttk.Frame(self.home_frame)
+        col = 0
+        device_frame.grid_columnconfigure(col, minsize=10)
+        col = 2
+        while col < 8:
+            device_frame.grid_columnconfigure(col, minsize=20)
+            col += 2
+        device_frame.grid_columnconfigure(col, minsize=100)
+        device_frame.grid_rowconfigure(0, minsize=10)
+        ent_style = ttk.Style()
 
-        ttk.Label(device_frame, text="Device").grid(sticky='ew')
+        ttk.Label(device_frame, text="Device").grid(row=1, column=1, sticky='ew')
         ttk.Label(device_frame, text="Location").grid(
-            row=0, column=1, sticky='ew')
-        ttk.Label(device_frame, text="Port").grid(row=0, column=2, sticky='ew')
-        ttk.Button(device_frame, text="Connection Status").grid(
-            row=0, column=3, sticky='ew')
+            row=1, column=3, sticky='ew')
+        ttk.Label(device_frame, text="Port").grid(row=1, column=5, sticky='ew')
+        ttk.Label(device_frame, text="Connection Status").grid(
+            row=1, column=7, sticky='ew')
         switch_conf = [(LASER, LASER_LOC, LASER_PORT), (SWITCH, SWITCH_LOC, SWITCH_PORT),
                        (TEMP, TEMP_LOC, None), (OVEN, OVEN_LOC, None)]
         for i, dev in enumerate(switch_conf):
-            self.device_entry(device_frame, dev[0], dev[1], i + 1, dev[2])
+            device_frame.grid_rowconfigure(i*2, pad=20)
+            self.device_entry(device_frame, dev[0], dev[1], i+2, dev[2])
         device_frame.grid(sticky='ew')
 
         start_prog_frame = ttk.Frame(self.home_frame)
-        ttk.Button(start_prog_frame, text="Start New Baking Run",
-                   command=self.create_bake_tab).pack()
-        ttk.Button(start_prog_frame, text="Start New Calibration Run",
-                   command=self.create_cal_tab).pack()
+        ttk.Button(start_prog_frame, text="Start New Baking Run", compound=tk.CENTER, pad=5,
+                   command=self.create_bake_tab).grid(sticky='ew')
+        start_prog_frame.grid_rowconfigure(2, minsize=50)
+        ttk.Button(start_prog_frame, text="Start New Calibration Run", compound=tk.CENTER, pad=5,
+                   command=self.create_cal_tab).grid(row=3, sticky='ew')
         start_prog_frame.grid(sticky='ew', row=0, column=1)
 
     def device_entry(self, container, dev_text, loc_str, row, port_str):
         """Creates an entry in the device grid for a device."""
-        ttk.Entry(container, text=dev_text).grid(row=row, sticky='ew')
+        dev_widg = ttk.Label(container, text=dev_text)
+        dev_widg.grid(row=row, column=1, sticky='ew')
 
-        loc_ent = ttk.Entry(container, text=loc_str)
-        loc_ent.grid(row=row, column=1, sticky='ew')
+        loc_ent = ttk.Entry(container, font="Helvetica 14")
+        loc_ent.insert(tk.INSERT, loc_str)
+        loc_ent.grid(row=row, column=3, sticky='ew')
 
         port_ent = None
         if port_str is not None:
-            port_ent = ttk.Entry(container, text=port_str)
-            port_ent.grid(row=row, sticky='ew', column=2)
+            port_ent = ttk.Entry(container, font="Helvetica 14")
+            port_ent.insert(tk.INSERT, port_str)
+            port_ent.grid(row=row, sticky='ew', column=5)
 
         conn_butt = ttk.Button(container, text="Connect",
-                command=lambda: self.conn_dev(loc_ent, port_ent, dev_text)
-        conn_butt.grid(row=row, column=3, sticky='ew')
+                command=lambda: self.conn_dev(loc_ent, port_ent, dev_text))
+        conn_butt.grid(row=row, column=7, sticky='ew')
 
         self.device_widgets.append((loc_ent, port_ent, conn_butt))
 
