@@ -6,12 +6,13 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import file_helper
 
+ENTRY_FONT = ('Helvetica', 14)
 
 def file_entry(container, label_text, row, width):
     """Creates an entry with a browse button for the excel file."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, sticky='ew')
     button_image = Image.open('docs_icon.png')
     button_photo = ImageTk.PhotoImage(button_image)
@@ -20,55 +21,50 @@ def file_entry(container, label_text, row, width):
         container, image=button_photo, command=lambda: browse_file(text_var),
         width=10)
     browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
-    browse_button.image = button_photo
-    return text_var
-
+    browse_button.image = button_photo 
+    return text_var 
 
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
     file_path = filedialog.asksaveasfilename(
         initialdir="./", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
                                                                 ("all files", "*.*")))
-    file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
+    try:
+        file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
+    except AttributeError:
+        pass
 
 
 def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
         .grid(row=row, column=2, sticky='ew')
     text_var.set(default_str)
     return text_var
 
 
-def serial_num_entry(container, label_text, row, width,
-                     default_str="", def_switch=0, def_channel=1):
+def serial_num_entry(container, row, col, def_snum):
     # pylint:disable=too-many-arguments
     """Creates a serial number entry with channel number and switch position."""
-    serial_num_ent = string_entry(
-        container, label_text, row, width, default_str)
-    ttk.Label(container, text="Channel number:").grid(
-        row=row, column=3, sticky='ew')
-    chan_num_ent = tk.IntVar()
-    tk.Spinbox(container, from_=1, to=4, textvariable=chan_num_ent, width=width, state="readonly") \
-        .grid(row=row, column=4, sticky='ew')
-    ttk.Label(container, text="Switch position:").grid(
-        row=row, column=5, sticky='ew')
+    snum_frame = ttk.Frame(container)
+    serial_num_ent = ttk.Entry(snum_frame, font=ENTRY_FONT, width=20)
+    serial_num_ent.pack(side="left", fill="both", expand=True)
     switch_pos_ent = tk.IntVar()
-    tk.Spinbox(container, from_=0, to=16, textvariable=switch_pos_ent, width=width,
-               state="readonly").grid(row=row, column=6, sticky='ew')
-    chan_num_ent.set(def_channel)
-    switch_pos_ent.set(def_switch)
-    ttk.Label(container, width=3).grid(row=row, column=7)
-    return serial_num_ent, chan_num_ent, switch_pos_ent
+    tk.Spinbox(snum_frame, from_=0, to=16, textvariable=switch_pos_ent, width=5,
+               state="readonly").pack(side="left", fill="both", expand=True)
+    switch_pos_ent.set("0")
+    #ttk.Label(container, width=3).grid(row=row, column=7)
+    snum_frame.grid(row=row, column=col, sticky='ew')
+    return serial_num_ent, switch_pos_ent
 
 
 def int_entry(container, label_text, row, width, default_int=0):
     """Creates an int entry, and returns a reference to the entry var."""
     text_var = tk.IntVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
         .grid(row=row, column=2, sticky='ew')
     text_var.set(default_int)
     return text_var
@@ -78,13 +74,13 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     """Creates an double entry, and returns a reference to the entry var."""
     text_var = tk.DoubleVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width)\
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
         .grid(row=row, column=2, sticky='ew')
     text_var.set(default_double)
     return text_var
 
 
-def time_entry(container, label_text, row, width, unit, default_double=0.0):
+def units_entry(container, label_text, row, width, unit, default_double=0.0):
     # pylint:disable=too-many-arguments
     """Creates a time entry, and returns a reference to the entry var."""
     text_var = double_entry(container, label_text, row, width, default_double)
@@ -104,10 +100,10 @@ def checkbox_entry(container, label_text, row, checked=True):
 
 
 # pylint:disable=too-many-arguments
-def array_entry(container, label_text, row, width, height, default_arr=None):
+def array_entry(container, label_text, row, width, height, color, default_arr=None):
     """Creates an entry to import multiline text."""
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    text = tk.Text(container, width=width, height=height)
+    text = tk.Text(container, width=width, height=height, bg=color, font=ENTRY_FONT)
     text.grid(row=row, column=2, sticky='ew')
 
     text.delete(1.0, tk.END)
@@ -134,80 +130,6 @@ def open_center(width, height, root):
 
     root.geometry("{}x{}-{}+{}".format(int(width), int(height),
                                        int(x_cord), int(y_cord)))
-
-
-# pylint: disable=too-many-locals
-def update_config(prog):
-    """Updates devices configuration."""
-    cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port = \
-        file_helper.get_config(prog)
-
-    old_conf = [cont_loc, oven_loc, op_switch_addr,
-                op_switch_port, sm125_addr, sm125_port]
-
-    popup = tk.Toplevel()
-    popup.wm_title("Device Configuration")
-    frame = tk.Frame(popup)
-    frame.pack()
-    config_grid = tk.Frame(frame)
-    config_grid.pack(side="top", fill="both", expand=True, padx=10)
-
-    row_num = 0
-
-    ttk.Label(config_grid, text="340 Controller GPIB0 Number:").grid(
-        row=row_num, padx=5)
-    cont_ent = ttk.Entry(config_grid)
-    cont_ent.grid(row=row_num, column=1, padx=5)
-    cont_ent.insert(0, str(cont_loc))
-    row_num += 1
-
-    ttk.Label(config_grid, text="Delta Oven GPIB0 Number:").grid(
-        row=row_num, padx=5)
-    oven_ent = ttk.Entry(config_grid)
-    oven_ent.grid(row=row_num, column=1, padx=5)
-    oven_ent.insert(0, str(oven_loc))
-    row_num += 1
-
-    ttk.Label(config_grid, text="Optical Switch IP Address").grid(
-        row=row_num, padx=5)
-    op_switch_addr_ent = ttk.Entry(config_grid)
-    op_switch_addr_ent.grid(row=row_num, column=1, padx=5)
-    op_switch_addr_ent.insert(0, str(op_switch_addr))
-    row_num += 1
-
-    ttk.Label(config_grid, text="Optical Switch IP Port").grid(
-        row=row_num, padx=5)
-    op_switch_port_ent = ttk.Entry(config_grid)
-    op_switch_port_ent.grid(row=row_num, column=1, padx=5)
-    op_switch_port_ent.insert(0, str(op_switch_port))
-    row_num += 1
-
-    ttk.Label(config_grid, text="SM125 IP Address:").grid(row=row_num, padx=5)
-    sm125_addr_ent = ttk.Entry(config_grid)
-    sm125_addr_ent.grid(row=row_num, column=1, padx=5)
-    sm125_addr_ent.insert(0, str(sm125_addr))
-    row_num += 1
-
-    ttk.Label(config_grid, text="SM125 IP Port:").grid(row=row_num, padx=5)
-    sm125_port_ent = ttk.Entry(config_grid)
-    sm125_port_ent.grid(row=row_num, column=1, padx=5)
-    sm125_port_ent.insert(0, str(sm125_port))
-    row_num += 1
-
-    conf_widgets = [cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent,
-                    sm125_addr_ent, sm125_port_ent]
-
-    ttk.Button(frame, text="Save",
-               command=lambda: file_helper.save_config(cont_ent, oven_ent,
-                                                       op_switch_addr_ent, op_switch_port_ent,
-                                                       sm125_addr_ent, sm125_port_ent, popup,
-                                                       prog)).\
-        pack(side="top", fill="both", expand=True, pady=10)
-
-    open_center(325, 250, popup)
-    popup.protocol("WM_DELETE_WINDOW", lambda: file_helper.on_closing(
-        popup, old_conf, conf_widgets))
-
 
 def lock_widgets(parent):
     """Locks the widgets to prevent the user from editing while the program is running."""

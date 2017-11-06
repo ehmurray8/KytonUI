@@ -4,23 +4,20 @@
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
+from main_program import white
 
 BAKING = "Baking"
-CAL = "Cal"
+CAL = "Calibration"
 
 
-class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
+class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
                                 # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
 
-    def __init__(self, master, num_sns, program):
-        super().__init__(master)
+    def __init__(self, parent, program):
+        super().__init__(parent)
 
         # Init member vars
-        self.sm125_state = tk.IntVar()
-        self.op_switch_state = tk.IntVar()
-        self.delta_oven_state = tk.IntVar()
-        self.temp340_state = tk.IntVar()
         self.sn_ents = []
         self.chan_nums = []
         self.switch_positions = []
@@ -39,8 +36,14 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
         self.num_cal_cycles = tk.IntVar()
         self.cooling = tk.IntVar()
         self.target_temps_entry = None
+        self.program = program
 
-        self.create_options_grid(program, num_sns)
+        self.chan_rows = [1, 1, 1, 1]
+
+        # Prevent from being garbage collected
+        self.img_plus = tk.PhotoImage(file=r'plus.png')
+
+        self.create_options_grid()
 
     def get_target_temps(self):
         """
@@ -56,11 +59,11 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
 
         return target_temps_arr
 
-    def create_options_grid(self, program, num_sns):
+    def create_options_grid(self):
         """Creates the grid for the user to configure options."""
         self.pack(side="top", fill="both", expand=True)
 
-        options_grid = tk.Frame(self)
+        options_grid = ttk.Frame(self)
         options_grid.pack()
 
         # Options Grid Init
@@ -68,24 +71,7 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
         options_grid.grid_columnconfigure(3, minsize=50)
         row_num = 0
 
-        # Instruments Checkboxes
-        self.sm125_state = uh.checkbox_entry(options_grid,
-                                             "Micron Optics SM125", row_num)
-        row_num += 1
-
-        self.op_switch_state = uh.checkbox_entry(options_grid,
-                                                 "Optical Switch", row_num)
-        row_num += 1
-
-        self.temp340_state = uh.checkbox_entry(options_grid, "340 Controller",
-                                               row_num)
-        row_num += 1
-
-        self.delta_oven_state = uh.checkbox_entry(options_grid, "Delta Oven",
-                                                  row_num)
-        row_num += 1
-
-        if program == CAL:
+        if self.program == CAL:
             self.cooling = uh.checkbox_entry(options_grid,
                                              "Use oven cooling function?",
                                              row_num)
@@ -97,19 +83,19 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
                                     10, 5)
         row_num += 1
 
-        if program == CAL:
-            # self.num_temp_readings = uh.int_entry(options_grid,
-            #                      "Num temperature readings to average: ", \
-            #                                            row_num, 10, 5)
-            # row_num += 1
-            self.temp_interval = uh.time_entry(options_grid,
-                                               "Time between temp readings: ",
-                                               row_num, 10, "seconds", 60.0)
+        if self.program == CAL:
+            self.num_temp_readings = uh.int_entry(options_grid,
+                                                  "Num temperature readings to average: ",
+                                                  row_num, 10, 5)
+            row_num += 1
+            self.temp_interval = uh.units_entry(options_grid,
+                                                "Time between temp readings: ",
+                                                row_num, 10, "seconds", 60.0)
             row_num += 1
 
-            self.drift_rate = uh.double_entry(options_grid,
-                                              "Drift rate (mK/min): ",
-                                              row_num, 10, 1.0)
+            self.drift_rate = uh.units_entry(options_grid,
+                                             "Drift rate: ",
+                                             row_num, 10, "mK/min", 1.0)
             row_num += 1
 
             self.num_cal_cycles = uh.int_entry(options_grid,
@@ -120,54 +106,86 @@ class OptionsPanel(tk.Frame):   # pylint: disable=too-many-ancestors
             self.target_temps_entry = \
                 uh.array_entry(options_grid,
                                "Target temps (C) [Comma Separated]", row_num,
-                               10, 7, "130, 135")
+                               10, 7, white, "130, 135")
             row_num += 1
         else:
             # Time intervals entry
-            self.delay = uh.time_entry(options_grid, "Initial program delay: ",
-                                       row_num, 10, "hours", 1.0)
+            self.delay = uh.units_entry(options_grid, "Initial program delay: ",
+                                        row_num, 10, "hours", 1.0)
             row_num += 1
 
-            self.init_time = uh.time_entry(options_grid, "Initial time interval: ",
-                                           row_num, 10, "seconds", 15.0)
+            self.init_time = uh.units_entry(options_grid, "Initial time interval: ",
+                                            row_num, 10, "seconds", 15.0)
             row_num += 1
 
-            self.init_duration = uh.time_entry(options_grid, "Initial interval duration: ",
-                                               row_num, 10, "minutes", 5.0)
+            self.init_duration = uh.units_entry(options_grid, "Initial interval duration: ",
+                                                row_num, 10, "minutes", 5.0)
             row_num += 1
 
-            self.prim_time = uh.time_entry(options_grid, "Primary time interval: ",
-                                           row_num, 10, "hours", 1.0)
+            self.prim_time = uh.units_entry(options_grid, "Primary time interval: ",
+                                            row_num, 10, "hours", 1.0)
             row_num += 1
-
-        self.file_name = uh.file_entry(options_grid, "Excel file name: ", row_num, 30)
-        row_num += 1
-
-        if program == BAKING:
-                # Baking setpoint entry
             self.baking_temp = uh.double_entry(options_grid, "Baking temp: ",
                                                row_num, 10, 250.0)
             row_num += 1
 
-        # (TEMP) Fiber SN Inputs
-        index = 1
-        while index <= num_sns:
-            serial_num, chan_num, switch_pos = \
-                uh.serial_num_entry(options_grid,
-                                    "Serial Number " + str(index) + ": ",
-                                    row_num, 5, "FBG " + str(index))
-            self.sn_ents.append(serial_num)
-            self.chan_nums.append(chan_num)
-            self.switch_positions.append(switch_pos)
+        self.file_name = uh.file_entry(
+            options_grid, "Excel file name: ", row_num, 30)
+        row_num += 1
 
-            index += 1
-            row_num += 1
+        # (TEMP) Fiber SN Inputs
+        #index = 1
+        # while index <= num_sns:
+        #    serial_num, chan_num, switch_pos = \
+        #        uh.serial_num_entry(options_grid,
+        #                            "Serial Number " + str(index) + ": ",
+        #                            row_num, 5, "FBG " + str(index))
+        #    self.sn_ents.append(serial_num)
+        #    self.chan_nums.append(chan_num)
+        #    self.switch_positions.append(switch_pos)
+
+        #    index += 1
+        #    row_num += 1
 
     def create_start_btn(self, start):
         """Creates the start button in the app."""
         # Start button
         start_button = ttk.Button(self)
-        start_button["text"] = "Start"
+        start_button["text"] = "Start {}".format(self.program)
         start_button["command"] = start
-        start_button.pack(pady=10)
+        start_button.pack(pady=10, padx=30)
         return start_button
+
+    def add_fbg(self, fbg_grid, col, chan):
+        self.chan_nums.append(chan)
+        self.chan_rows[chan] += 1
+        serial_num, switch_pos = uh.serial_num_entry(fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows)))
+        self.sn_ents.append(serial_num)
+        self.switch_positions.append(switch_pos)
+
+    def minus_fbg(self, fbg_grid, col, chan):
+        # Need to add logic to add the switches to separate lists, and then combine them at the end
+        self.chan_nums.pop()
+        uh.remove_serial_num_entry(fbg_grid, self.chan_rows, col)
+        #self.sn_ents.pop()
+        self.chan_rows[chan] -= 1
+
+    def init_fbgs(self):
+        fbg_grid = ttk.Frame(self)
+        for i in range(4):
+            fbg_grid.grid_columnconfigure((i * 2), minsize=80)
+            col_num = i*2+1
+            ttk.Label(fbg_grid, text="Channel {}".format(
+                i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)
+
+            ttk.Label(fbg_grid, text="Serial Number, Switch postiion ").grid(row=1, column=col_num)
+
+            buttons_frame = ttk.Frame(fbg_grid)
+            buttons_frame.grid(sticky='ew', column=col_num, row=20)
+
+            ttk.Button(buttons_frame, image=self.img_plus, command=lambda col=col_num, chan=i: self.add_fbg(fbg_grid,
+                col, chan)).pack(expand=True, fill="both", side="left")
+            #ttk.Button(buttons_frame, image=self.img_minus, command=lambda col=col_num, chan=i: self.minus_fbg(fbg_grid,
+            #    col, chan)).pack(expand=True, fill="both", side="left")
+
+        fbg_grid.pack()

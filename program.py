@@ -71,16 +71,20 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.start_btn = None
         self.data_pts = {}
         
-        config_frame = ttk.Frame()
+        self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
         self.img_config = tk.PhotoImage(file=r'config.png')
         self.img_graph = tk.PhotoImage(file=r'graph.png')
 
-        # Set up confi tab
-        self.add(config_frame, image=self.img_config)
-        ttk.Button(config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
+        # Set up config tab
+        self.add(self.config_frame, image=self.img_config)
+        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options)
+        self.start_btn = self.options.create_start_btn(self.start)
+        self.options.init_fbgs()
+        self.options.pack(expand=True, side="right", fill="both")
+        ttk.Button(self.config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
         
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
@@ -90,7 +94,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.main_axes = []
         self.ax_zoom = None
         self.show_main_plots()
-
 
         self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
         self.canvas.show()
@@ -138,13 +141,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                 self.canvas.draw()
                 break
         
-    def create_options(self, num_sns):
-        """Creates the options panel for the main frame."""
-        self.options = options_frame.OptionsPanel(self.main_frame, num_sns,
-                                                  self.program_type.options)
-        self.start_btn = self.options.create_start_btn(self.start)
-        self.options.pack()
-
     def create_excel(self):
         """Creates excel file."""
         fh.create_excel_file(self.options.file_nme.get())
@@ -164,8 +160,8 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                                            self.options.switch_positions):
                     if snum.get() != "" and snum.get() not in self.snums:
                         self.snums.append(snum.get())
-                        self.channels[chan.get() - 1].append(snum.get())
-                        self.switches[chan.get() - 1].append(pos.get())
+                        self.channels[chan].append(snum.get())
+                        self.switches[chan].append(pos.get())
 
                 if len(conn_fails) == 0:
                     self.running = True

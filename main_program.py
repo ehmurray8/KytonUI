@@ -12,11 +12,11 @@ from tkinter import ttk
 import tkinter as tk
 import program
 import ui_helper
+import devices
 import visa
-
+import argparse
 style.use('ggplot')
 
-LARGE_FONT = ("Verdana", 16)
 
 OVEN = "Dicon Oven"
 OVEN_LOC = 27
@@ -60,6 +60,13 @@ class Application(tk.Tk):
         # pylint: disable=missing-super-argument
         super().__init__(*args, **kwargs)
 
+        parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
+        parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
+        self.use_dev = True
+        cmdargs = parser.parse_args()
+        if cmdargs.nodev:
+            self.use_dev = False
+
         # Setup main window and styling
         self.title("Kyton FBG UI")
         img = tk.PhotoImage(file=r'fiber.png')
@@ -69,10 +76,12 @@ class Application(tk.Tk):
         style.theme_create("outer", parent="alt", settings={
              ".": {"configure": {"background": bg_color}},
              "TFrame": {"configure": {"background": bg_color, "margin": [10, 10, 10, 10]}},
-            "TButton": {"configure": {"background": button_color, "font": ('Helvetica', 16), "foreground": text_color}},
+             "TButton": {"configure": {"background": button_color, "font": ('Helvetica', 16), "foreground": text_color, "justify": "center"}},
+             "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
             "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": text_color}},
-            "TEntry": {"configure": {"font": ('Helvetica', 13), "background": entry_color}},
+            "TEntry": {"configure": {"font": ('Helvetica', 14), "background": entry_color}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
+            "TCheckbutton": {"configre": {"height": 40, "width":40}},
             "TNotebook.Tab": {
                 "configure": {"padding": [10, 4], "font": ('Helvetica', 18), "background": tab_color},
                 "map":       {"background": [("selected", tabs_color)], "font": [("selected", ('Helvetica', 18, "bold"))],
@@ -90,8 +99,8 @@ class Application(tk.Tk):
         self.device_widgets = []
         self.main_queue = queue.Queue()
         
-        # TODO setup args parse for testing purposes
-        #self.manager = visa.ResourceManager()
+        if self.use_dev:
+            self.manager = visa.ResourceManager()
 
         self.temp_controller = None
         self.oven = None
@@ -119,11 +128,11 @@ class Application(tk.Tk):
         device_frame.grid_rowconfigure(0, minsize=10)
         ent_style = ttk.Style()
 
-        ttk.Label(device_frame, text="Device").grid(row=1, column=1, sticky='ew')
-        ttk.Label(device_frame, text="Location").grid(
+        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='ew')
+        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(
             row=1, column=3, sticky='ew')
-        ttk.Label(device_frame, text="Port").grid(row=1, column=5, sticky='ew')
-        ttk.Label(device_frame, text="Connection Status").grid(
+        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='ew')
+        ttk.Label(device_frame, text="Connection Status", style="Bold.TLabel").grid(
             row=1, column=7, sticky='ew')
         switch_conf = [(LASER, LASER_LOC, LASER_PORT), (SWITCH, SWITCH_LOC, SWITCH_PORT),
                        (TEMP, TEMP_LOC, None), (OVEN, OVEN_LOC, None)]
@@ -161,62 +170,64 @@ class Application(tk.Tk):
 
         self.device_widgets.append((loc_ent, port_ent, conn_butt))
 
+    
+
     def conn_dev(self, loc_ent, port_ent, dev):
-        if dev == TEMP:
-            try:
-                self.temp_controller = devices.TempController(
-                    int(loc_ent.get()), self.manager)
-            except visa.VisaIOError:
-                # Need to handle Connection Error
-                pass
-            except ValueError:
-                # Need to handle invalid value
-                pass
-        elif dev == OVEN:
-            try:
-                self.oven = devices.Oven("GPIB0::{}::INSTR".format(
-                    int(loc_ent.get())), self.manager)
-            except visa.VisaIOError:
-                # Need to handle Connection Error
-                pass
-            except ValueError:
-                # Need to handle invalid value
-                pass
-        elif dev == SWITCH:
-            try:
-                self.op_switch = devices.OpSwitch(
-                    loc_ent.get(), int(port_ent.get()))
-            except socket.error:
-                # Need to handle connection error
-                pass
-            except:
-                # Need to handle invalid value
-                pass
-        elif dev == LASER:
-            try:
-                self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
-            except socket.error:
-                # Need to handle connection error
-                pass
-            except ValueError:
-                # Need to handle invalid value
-                pass
+        if self.use_dev:
+            if dev == TEMP:
+                try:
+                    self.temp_controller = devices.TempController(
+                        int(loc_ent.get()), self.manager)
+                except visa.VisaIOError:
+                    conn_warning(dev)
+                except ValueError:
+                    loc_warning("GPIB address")
+            elif dev == OVEN:
+                try:
+                    self.oven = devices.Oven("GPIB0::{}::INSTR".format(
+                        int(loc_ent.get())), self.manager)
+                except visa.VisaIOError:
+                    conn_warning(dev)
+                except ValueError:
+                    loc_warning("GPIB address")
+            elif dev == SWITCH:
+                try:
+                    self.op_switch = devices.OpSwitch(
+                        loc_ent.get(), int(port_ent.get()))
+                except socket.error:
+                    conn_warning(dev)
+                except:
+                    loc_warning("ethernet port")
+            elif dev == LASER:
+                try:
+                    self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
+                except socket.error:
+                    conn_warning(dev)
+                except ValueError:
+                    loc_warning("ethernet port")
 
     def create_bake_tab(self):
         # Need to add logic for confirming, and deleting any cal tabs
-        bake = program.Program(self, len(self.bake_tabs), program.BAKING_ID)
-        self.bake_tabs.append(bake)
-        self.main_notebook.add(
-            bake, text="Bake {}".format(len(self.bake_tabs)))
+        if self.cal_tab is None:
+            bake = program.Program(self, len(self.bake_tabs), program.BAKING_ID)
+            self.bake_tabs.append(bake)
+            self.main_notebook.add(
+                bake, text="Bake {}".format(len(self.bake_tabs)))
+        else:
+            messagebox.showwarning("Calibration Program Open", 
+                    "A calibration program is already open, only one cal can be run at the same time.")
 
     def create_cal_tab(self):
         # Need to add logic for confirming, and deleting any bake tabs
-        if self.cal_tab is None:
+        if self.cal_tab is None and not len(self.bake_tabs):
             self.cal_tab = program.Program(self, CAL_NUM, program.CAL_ID)
             self.main_notebook.add(self.cal_tab, text="Calibration")
+        elif len(self.bake_tabs):
+            messagebox.showwarning("Bake Programs Open", 
+                    "Cannot open a calibration program while Bake programs are open, please close all bake tabs before continuing.")
         else:
-            # Need to handle warning user 1 Cal Max
-            pass
+            messagebox.showwarning("Calibration Program Open", 
+                    "A calibration program is already open, only one cal can be run at the same time.")
 
     def delete_tab(self, id):
         if id == CAL_NUM:
@@ -236,6 +247,13 @@ class Application(tk.Tk):
             pass
 
         self.after(200, self.tkloop)
+
+def conn_warning(dev):
+    messagebox.showwarning("Connection Error", "Currently unable to connect to {},".format(dev) +
+            "make sure the device is connected to the computer and the location information is correct.")
+
+def loc_warning(type):
+    messagebox.showwarning("Invalid Location", "Please import an integer corresponding to the {}.".format(type))
 
 
 if __name__ == "__main__":
