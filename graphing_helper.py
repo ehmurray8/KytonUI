@@ -21,20 +21,13 @@ def create_mean_wave_time_graph(f_name, animate, fig, dims, is_cal=False):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name, is_cal):
         try:
-            #fig = plt.figure(0, figsize=(8, 6))
             ax1 = fig.add_subplot(dims)
             ax1.set_title(dims)
-
-            #fig.suptitle(
-            #    'Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
-
             if animate:
                 ani = animation.FuncAnimation(fig, __animate_mwt_graph,
                                               interval=1000, fargs=(f_name, ax1,))
-                #fig.show()
             else:
                 __animate_mwt_graph(0, f_name, ax1)
-                #plt.show()
             return ax1
         except IndexError:
             __file_error(f_name)
@@ -57,21 +50,17 @@ def __get_mean_wave_diff_time_data(f_name):
     return times, data_coll.mean_wavelen_diffs
 
 
-def create_wave_power_graph(f_name, animate, is_cal=False):
+def create_wave_power_graph(f_name, animate, fig, dims, is_cal=False):
     """Creates the wavelength vs. power graph."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(1, figsize=(8, 6))
-            ax1 = fig.add_subplot(1, 1, 1)
-            fig.suptitle('Power (dBm) vs. Wavelength (nm)', x=.35)
-
+            ax1 = fig.add_subplot(dims)
             if animate:
                 ani = animation.FuncAnimation(fig, __animate_wp_graph,
                                               interval=1000, fargs=(f_name, ax1,))
-                fig.show()
             else:
                 __animate_wp_graph(0, f_name, ax1)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
@@ -79,6 +68,7 @@ def create_wave_power_graph(f_name, animate, is_cal=False):
 def __animate_wp_graph(i, f_name, axis):
     wavelens, powers, snums = __get_wave_power_graph(f_name)
     axis.clear()
+    axis.set_title('Power (dBm) vs. Wavelength (nm)', x=.35)
     axis.set_xlabel('Wavelength (nm)')
     axis.set_ylabel('Power (dBm)')
 
@@ -99,29 +89,21 @@ def __get_wave_power_graph(f_name):
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
 
-def create_temp_time_graph(f_name, animate, is_cal=False):
+def create_temp_time_graph(f_name, animate, fig, dims, is_cal=False):
     """Creates the temperature vs. time graph."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(2, figsize=(8, 6))
 
-            ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=5, colspan=1)
-            ax1.set_ylabel('Temperature (K)')
-            ax2 = plt.subplot2grid((10, 1), (6, 0), rowspan=4, colspan=1,
-                                   sharex=ax1)
-
-            fig.suptitle(
-                'Raw Temperature (K) vs. Time (hr) from start.')
-            ax2.set_ylabel('{} Temperature (K)'.format(u'\u0394'))
-            ax2.set_xlabel('Time (hr)')
+            #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=5, colspan=1)
+            #ax2 = plt.subplot2grid((10, 1), (6, 0), rowspan=4, colspan=1, sharex=ax1)
+            ax1 = fig.add_subplot(dims)
 
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_temp_graph, interval=1000, fargs=(f_name, ax1, ax2, ))
-                fig.show()
             else:
                 __animate_temp_graph(0, f_name, ax1, ax2)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
@@ -129,17 +111,17 @@ def create_temp_time_graph(f_name, animate, is_cal=False):
 def __animate_temp_graph(i, f_name, ax1, ax2):
     times, temp_diffs, temps = __get_temp_time_graph(f_name)
     ax1.clear()
-    ax2.clear()
+    #ax2.clear()
 
-    ax1 = plt.subplot2grid((10, 1), (0, 0), rowspan=7, colspan=1)
+    axis.set_title('Raw Temperature (K) vs. Time (hr) from start.')
+    #ax1 = plt.subplot2grid((10, 1), (0, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Temperature (K)')
-    ax2 = plt.subplot2grid((10, 1), (7, 0), rowspan=3, colspan=1,
-                           sharex=ax1)
+    #ax2 = plt.subplot2grid((10, 1), (7, 0), rowspan=3, colspan=1, sharex=ax1)
 
-    ax2.set_xlabel('Time (hr)')
-    ax2.set_ylabel('{} Temperature (K)'.format(u'\u0394'))
+    #ax2.set_xlabel('Time (hr)')
+    #ax2.set_ylabel('{} Temperature (K)'.format(u'\u0394'))
     ax1.plot(times, temps)
-    ax2.plot(times, temp_diffs, color='b')
+    #ax2.plot(times, temp_diffs, color='b')
 
 
 def __get_temp_time_graph(f_name):
@@ -149,22 +131,18 @@ def __get_temp_time_graph(f_name):
     return times, data_coll.temp_diffs, data_coll.temps
 
 
-def create_mean_power_time_graph(f_name, animate, is_cal=False):
+def create_mean_power_time_graph(f_name, animate, fig, dims, is_cal=False):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(3, figsize=(8, 6))
-            ax1 = fig.add_subplot(1, 1, 1)
-
-            fig.suptitle('Average Power (dBm) vs. Time (hr) from start')
+            ax1 = fig.add_subplot(dims)
 
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_mpt_graph, interval=1000, fargs=(f_name, ax1,))
-                fig.show()
             else:
                 __animate_mpt_graph(0, f_name, ax1)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
@@ -172,6 +150,7 @@ def create_mean_power_time_graph(f_name, animate, is_cal=False):
 def __animate_mpt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_power_diff_time_data(f_name)
     axis.clear()
+    axis.set_title('Average Power (dBm) vs. Time (hr) from start')
     axis.set_xlabel('Time (hr)')
     axis.set_ylabel('Power (dBm)')
     axis.plot(times, wavelen_diffs)
@@ -184,47 +163,48 @@ def __get_mean_power_diff_time_data(f_name):
     return times, data_coll.mean_power_diffs
 
 
-def create_indiv_waves_graph(f_name, animate, is_cal=False):
+def create_indiv_waves_graph(f_name, animate, fig, dims, is_cal=False):
     """Create individual wavelengths graph."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(4, figsize=(8, 6))
+            #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
+            #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
+            #                       sharex=ax1)
+            ax1 = fig.add_subplot(dims)
 
-            ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
-            ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                                   sharex=ax1)
-
-            fig.suptitle('Raw Wavelengths vs. Time (hr)')
 
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1, ax2,))
-                fig.show()
             else:
                 __animate_indiv_waves(0, f_name, ax1, ax2)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_indiv_waves(i, f_name, ax1, ax2):
+def __animate_indiv_waves(i, f_name, ax1, ax2=None):
     times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
     ax1.clear()
-    ax2.clear()
+    #ax2.clear()
 
-    ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
-    ax1.set_ylabel('Wavelength (nm)')
-    ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                           sharex=ax1)
+    axis.set_title('Raw Wavelengths vs. Time (hr)')
+    ax1.set_ylabel('Wavelength (pm)')
+    ax1.set_xlabel('Time (hr)')
 
-    ax2.set_xlabel('Time (hr)')
-    ax2.set_ylabel('{} Wavelength (pm)'.format(u'\u0394'))
+    #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
+    #ax1.set_ylabel('Wavelength (nm)')
+    #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
+    #                       sharex=ax1)
+
+    #ax2.set_xlabel('Time (hr)')
+    #ax2.set_ylabel('{} Wavelength (pm)'.format(u'\u0394'))
 
     idx = 0
     axes = []
     for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, file_helper.HEX_COLORS):
         axes.append(ax1.plot(times, waves, color=color)[0])
-        ax2.plot(times, wave_diffs, color=color)
+        #ax2.plot(times, wave_diffs, color=color)
         idx += 1
 
     ax1.legend(axes, snums, bbox_to_anchor=(1.10, 1.25), loc='upper right', borderaxespad=0.,
@@ -238,47 +218,46 @@ def __get_indiv_waves_data(f_name):
     return times, data_coll.wavelens, data_coll.wavelen_diffs, mdata.serial_nums
 
 
-def create_indiv_powers_graph(f_name, animate, is_cal=False):
+def create_indiv_powers_graph(f_name, animate, fig, dims, is_cal=False):
     """Create individual wavelengths graph."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(5, figsize=(8, 6))
-
-            ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
-            ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                                   sharex=ax1)
-
-            fig.suptitle('Raw Powers (dBm) vs. Time (hr)')
+            #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
+            #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
+            #                       sharex=ax1)
+            ax1 = fig.add_subplot(dims)
 
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_indiv_powers, interval=1000, fargs=(f_name, ax1, ax2,))
-                fig.show()
             else:
                 __animate_indiv_powers(0, f_name, ax1, ax2)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_indiv_powers(i, f_name, ax1, ax2):
+def __animate_indiv_powers(i, f_name, ax1, ax2=None):
     times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
     ax1.clear()
-    ax2.clear()
+    #ax2.clear()
+
+    axis.set_title('Raw Powers (dBm) vs. Time (hr)')
 
     ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Power (dBm)')
-    ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                           sharex=ax1)
+    ax1.set_xlabel('Time (hr)')
+    #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
+    #                       sharex=ax1)
 
-    ax2.set_xlabel('Time (hr)')
-    ax2.set_ylabel('{} Power (dBm)'.format(u'\u0394'))
+    #ax2.set_xlabel('Time (hr)')
+    #ax2.set_ylabel('{} Power (dBm)'.format(u'\u0394'))
 
     idx = 0
     axes = []
     for pows, pow_diffs, color in zip(powers, power_diffs, file_helper.HEX_COLORS):
         axes.append(ax1.plot(times, pows, color=color)[0])
-        ax2.plot(times, pow_diffs, color=color)
+        #ax2.plot(times, pow_diffs, color=color)
         idx += 1
 
     ax1.legend(axes, snums, bbox_to_anchor=(1.10, 1.25), loc='upper right', borderaxespad=0.,
@@ -292,45 +271,39 @@ def __get_indiv_powers_data(f_name):
     return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
 
 
-def create_drift_rates_graph(f_name, animate, is_cal=False):
+def create_drift_rates_graph(f_name, animate, fig, dims, is_cal=False):
     """Create drift rates graph."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(6, figsize=(8, 6))
-
+            ax1 = fig.sub_plt(dims)
             ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
-            plt.ylabel('Average Drift Rate (mK/min)')
-            ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                                   sharex=ax1)
-
-            fig.suptitle('Average Drift Rates (mK/min) vs. Time (hr)')
+            #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1, sharex=ax1)
 
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_drift_rates, interval=1000, fargs=(f_name, ax1, ax2,))
-                fig.show()
             else:
                 __animate_indiv_powers(0, f_name, ax1, ax2)
-                plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
 
-def __animate_drift_rates(i, f_name, ax1, ax2):
+def __animate_drift_rates(i, f_name, ax1, ax2=None):
     times, times_real, drates, drates_real = __get_drift_rates(f_name)
     ax1.clear()
-    ax2.clear()
+    #ax2.clear()
 
-    ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
+    ax1.set_title('Average Drift Rates (mK/min) vs. Time (hr)')
+    #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Average Drift Rate (mK/min)')
-    ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
-                           sharex=ax1)
+    #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,sharex=ax1)
 
-    ax2.set_xlabel('Time (hr)')
-    ax2.set_ylabel('{} Average Drift Rate (mK/min)'.format(u'\u0394'))
+    ax1.set_xlabel('Time (hr)')
+    #ax2.set_ylabel('{} Average Drift Rate (mK/min)'.format(u'\u0394'))
 
     ax1.plot(times, drates)
-    ax2.plot(times_real, drates_real)
+    #ax2.plot(times_real, drates_real)
 
 
 def __get_drift_rates(f_name):
