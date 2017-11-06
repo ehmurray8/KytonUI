@@ -110,7 +110,8 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
         num = self.program_type.plot_num + 1
         for offs in range(self.program_type.num_graphs):
-            self.main_axes.append(self.fig.add_subplot(num+offs))
+            #self.main_axes.append(self.fig.add_subplot(num+offs))
+            self.main_axes.append(gh.create_mean_wave_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
 
     def graph_back(self, event):
         if event.dblclick:

@@ -17,23 +17,25 @@ def __file_error(f_name):
                     .format(f_name))
 
 
-def create_mean_wave_time_graph(f_name, animate, is_cal=False):
+def create_mean_wave_time_graph(f_name, animate, fig, dims, is_cal=False):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name, is_cal):
         try:
-            fig = plt.figure(0, figsize=(8, 6))
-            ax1 = fig.add_subplot(1, 1, 1)
+            #fig = plt.figure(0, figsize=(8, 6))
+            ax1 = fig.add_subplot(dims)
+            ax1.set_title(dims)
 
-            fig.suptitle(
-                'Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
+            #fig.suptitle(
+            #    'Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
 
             if animate:
-                ani =animation.FuncAnimation(fig, __animate_mwt_graph,
+                ani = animation.FuncAnimation(fig, __animate_mwt_graph,
                                               interval=1000, fargs=(f_name, ax1,))
-                fig.show()
+                #fig.show()
             else:
                 __animate_mwt_graph(0, f_name, ax1)
-                plt.show()
+                #plt.show()
+            return ax1
         except IndexError:
             __file_error(f_name)
 
@@ -47,7 +49,9 @@ def __animate_mwt_graph(i, f_name, axis):
 
 
 def __get_mean_wave_diff_time_data(f_name):
+    os.chmod(f_name, stat.S_IRWXU)
     mdata, entries_df = file_helper.parse_csv_file(f_name)
+    os.chmod(f_name, stat.S_IREAD)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_wavelen_diffs
