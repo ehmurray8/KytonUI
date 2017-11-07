@@ -96,6 +96,7 @@ def create_temp_time_graph(f_name, animate, fig, dims, is_cal=False):
 
             #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=5, colspan=1)
             #ax2 = plt.subplot2grid((10, 1), (6, 0), rowspan=4, colspan=1, sharex=ax1)
+            ax2=None
             ax1 = fig.add_subplot(dims)
 
             if animate:
@@ -113,7 +114,7 @@ def __animate_temp_graph(i, f_name, ax1, ax2):
     ax1.clear()
     #ax2.clear()
 
-    axis.set_title('Raw Temperature (K) vs. Time (hr) from start.')
+    ax1.set_title('Raw Temperature (K) vs. Time (hr) from start.')
     #ax1 = plt.subplot2grid((10, 1), (0, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Temperature (K)')
     #ax2 = plt.subplot2grid((10, 1), (7, 0), rowspan=3, colspan=1, sharex=ax1)
@@ -172,7 +173,7 @@ def create_indiv_waves_graph(f_name, animate, fig, dims, is_cal=False):
             #                       sharex=ax1)
             ax1 = fig.add_subplot(dims)
 
-
+            ax2=None
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_indiv_waves, interval=1000, fargs=(f_name, ax1, ax2,))
@@ -188,7 +189,7 @@ def __animate_indiv_waves(i, f_name, ax1, ax2=None):
     ax1.clear()
     #ax2.clear()
 
-    axis.set_title('Raw Wavelengths vs. Time (hr)')
+    ax1.set_title('Raw Wavelengths vs. Time (hr)')
     ax1.set_ylabel('Wavelength (pm)')
     ax1.set_xlabel('Time (hr)')
 
@@ -226,6 +227,7 @@ def create_indiv_powers_graph(f_name, animate, fig, dims, is_cal=False):
             #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,
             #                       sharex=ax1)
             ax1 = fig.add_subplot(dims)
+            ax2=None
 
             if animate:
                 ani = animation.FuncAnimation(
@@ -242,7 +244,7 @@ def __animate_indiv_powers(i, f_name, ax1, ax2=None):
     ax1.clear()
     #ax2.clear()
 
-    axis.set_title('Raw Powers (dBm) vs. Time (hr)')
+    ax1.set_title('Raw Powers (dBm) vs. Time (hr)')
 
     ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Power (dBm)')
@@ -279,6 +281,7 @@ def create_drift_rates_graph(f_name, animate, fig, dims, is_cal=False):
             ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
             #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1, sharex=ax1)
 
+            ax2=None
             if animate:
                 ani = animation.FuncAnimation(
                     fig, __animate_drift_rates, interval=1000, fargs=(f_name, ax1, ax2,))

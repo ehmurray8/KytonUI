@@ -111,12 +111,19 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         num = self.program_type.plot_num + 1
         #for offs in range(self.program_type.num_graphs):
             #self.main_axes.append(self.fig.add_subplot(num+offs))
+        offs = 0
         self.main_axes.append(gh.create_mean_wave_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_wave_power_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_temp_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_mean_power_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_indiv_waves_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_indiv_powers_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         if self.program_type.prog_id == CAL_ID:
             self.main_axes.append(gh.create_drift_rates_graph("./output/test0930-2.csv", False, self.fig, num+offs))
 
