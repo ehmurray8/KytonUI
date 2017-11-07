@@ -5,6 +5,7 @@ program and baking program.
 
 # pylint: disable=import-error, relative-import
 import sys
+import time
 import numpy as np
 from tkinter import ttk, messagebox
 import tkinter as tk
@@ -29,6 +30,7 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 
     def __init__(self, prog_id):
         self.prog_id = prog_id
+        print("{} : {}".format(prog_id, BAKING_ID))
         if self.prog_id == BAKING_ID:
             self.title = "Configure Baking"
             self.config_id = fh.BAKING_SECTION
@@ -56,7 +58,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         self.master = master
         self.id = pid
-        self.program_type = ProgramType(program_type)
+        self.program_type = program_type
+        print(self.program_type.in_prog_msg)
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
@@ -191,8 +194,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     self.master.after_cancel(delayed_prog)
                     delayed_prog = None
                 self.pause_program()
-        else:
-            self.program_loop()
+        self.program_loop()
 
     def pause_program(self):
         """Pauses the program."""
