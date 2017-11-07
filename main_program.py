@@ -3,18 +3,19 @@
 # pylint: disable=import-error, relative-import
 
 import queue
+import socket
 import matplotlib
 matplotlib.use("TkAgg")
-import matplotlib.animation as animation
 from matplotlib import style
 from tkinter import messagebox
 from tkinter import ttk
 import tkinter as tk
 import program
-import ui_helper
 import devices
 import visa
 import argparse
+from baking_program import BakingPage
+from cal_program import CalPage
 style.use('ggplot')
 
 
@@ -45,12 +46,18 @@ sky_blue = "#328CC1"
 gold = "#D9B310"
 black = "#1D2731"
 
-bg_color = onyx
+gray = "#B0ABA0"
+
+#bg_color = onyx
+bg_color = black
 tab_color = sky_blue
 tabs_color = az_white
-entry_color = az_white
-button_color = nickel
-text_color = az_white
+#entry_color = az_white
+#button_color = nickel
+entry_color = gray
+button_color = gray
+#text_color = az_white
+text_color = white
 
 
 class Application(tk.Tk):
@@ -209,7 +216,7 @@ class Application(tk.Tk):
     def create_bake_tab(self):
         # Need to add logic for confirming, and deleting any cal tabs
         if self.cal_tab is None:
-            bake = program.Program(self, len(self.bake_tabs), program.BAKING_ID)
+            bake = BakingPage(self, len(self.bake_tabs))
             self.bake_tabs.append(bake)
             self.main_notebook.add(
                 bake, text="Bake {}".format(len(self.bake_tabs)))
@@ -220,7 +227,7 @@ class Application(tk.Tk):
     def create_cal_tab(self):
         # Need to add logic for confirming, and deleting any bake tabs
         if self.cal_tab is None and not len(self.bake_tabs):
-            self.cal_tab = program.Program(self, CAL_NUM, program.CAL_ID)
+            self.cal_tab = CalPage(self, CAL_NUM)
             self.main_notebook.add(self.cal_tab, text="Calibration")
         elif len(self.bake_tabs):
             messagebox.showwarning("Bake Programs Open", 

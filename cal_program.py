@@ -10,9 +10,9 @@ import options_frame
 
 class CalPage(Page):
     """Object representation of the Calibration Program page."""
-    def __init__(self, parent, master, start_page):
+    def __init__(self, master, pid):
         cal_type = ProgramType(CAL_ID)
-        super().__init__(parent, master, start_page, cal_type)
+        super().__init__(master, pid, cal_type)
         self.finished_point = False
         self.temp_is_good = False
 

@@ -5,26 +5,23 @@ program and baking program.
 
 # pylint: disable=import-error, relative-import
 import sys
-import socket
-import os
 import numpy as np
 from tkinter import ttk, messagebox
-import queue
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-
 
 import options_frame
 import file_helper as fh
 import graphing_helper as gh
 import ui_helper
-import devices
 
 LARGE_FONT = ("Verdana", 13)
 
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
+
+white = "#f0eff4"
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -48,17 +45,17 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.num_graphs = 7
 
 
-class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
+class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
 
-    def __init__(self, master, id, program_type):
+    def __init__(self, master, pid, program_type):
         s = ttk.Style()
         s.configure('InnerNB.TNotebook', tabposition='wn')
 
         super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
-        self.id = id
+        self.id = pid
         self.program_type = ProgramType(program_type)
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -80,8 +77,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
-        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options)
+        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options, white)
         self.start_btn = self.options.create_start_btn(self.start)
+        self.create_xcel_btn = self.options.create_xcel_btn(self.create_excel())
         self.options.init_fbgs()
         self.options.pack(expand=True, side="right", fill="both")
         ttk.Button(self.config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
@@ -105,7 +103,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
-        
     def show_main_plots(self):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
         num = self.program_type.plot_num + 1
@@ -158,7 +155,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_nme.get())
+        fh.create_excel_file(self.options.file_name.get())
 
     def start(self, can_start=False):
         """Starts the recording process."""

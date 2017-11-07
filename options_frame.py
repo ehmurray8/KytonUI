@@ -4,7 +4,7 @@
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
-from main_program import white
+#from main_program import white
 
 BAKING = "Baking"
 CAL = "Calibration"
@@ -14,7 +14,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
                                 # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
 
-    def __init__(self, parent, program):
+    def __init__(self, parent, program, white):
         super().__init__(parent)
 
         # Init member vars
@@ -43,7 +43,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         # Prevent from being garbage collected
         self.img_plus = tk.PhotoImage(file=r'plus.png')
 
-        self.create_options_grid()
+        self.create_options_grid(white)
 
     def get_target_temps(self):
         """
@@ -59,7 +59,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
 
         return target_temps_arr
 
-    def create_options_grid(self):
+    def create_options_grid(self, white):
         """Creates the grid for the user to configure options."""
         self.pack(side="top", fill="both", expand=True)
 
@@ -155,6 +155,13 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         start_button["command"] = start
         start_button.pack(pady=10, padx=30)
         return start_button
+
+    def create_xcel_btn(self, create_xcel):
+        xcel_btn = ttk.Button(self)
+        xcel_btn["text"] = "Create Excel Spreadsheet"
+        xcel_btn["command"] = create_xcel
+        xcel_btn.pack(pady=10, padx=30)
+        return xcel_btn
 
     def add_fbg(self, fbg_grid, col, chan):
         self.chan_nums.append(chan)

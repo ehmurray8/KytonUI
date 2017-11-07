@@ -2,18 +2,18 @@
 # pylint:disable=import-error, relative-import, missing-super-argument
 import sys
 import time
-from program import Page, ProgramType, BAKING_ID
+import program
 import device_helper
 import file_helper
 import options_frame
 
 
-class BakingPage(Page):
+class BakingPage(program.Page):
     """Contains the baking_program specific logic, and gui elements."""
 
-    def __init__(self, parent, master, start_page):
-        baking_type = ProgramType(BAKING_ID)
-        super().__init__(parent, master, start_page, baking_type)
+    def __init__(self, master, pid):
+        baking_type = program.ProgramType(program.BAKING_ID)
+        super().__init__(master, pid, baking_type)
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
