@@ -32,13 +32,14 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
     def __init__(self, prog_id):
         self.prog_id = prog_id
         if self.prog_id == BAKING_ID:
+            self.title = "Configure Baking"
             self.config_id = fh.BAKING_SECTION
             self.options = options_frame.BAKING
             self.in_prog_msg = "Baking..."
             self.plot_num = 230
             self.num_graphs = 6
         else:
-            self.title = "Configre Calibration"
+            self.title = "Configure Calibration"
             self.config_id = fh.CAL_SECTION
             self.options = options_frame.CAL
             self.in_prog_msg = "Calibrating..."
