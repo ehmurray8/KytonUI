@@ -49,7 +49,9 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
             if len(actual_switches) > switch_index:
                 op_switch.set_channel(actual_switches[switch_index])
                 switch_index += 1
+                master.update()
                 time.sleep(1.25)
+                master.update()
             else:
                 keep_going = False
             wavelens, amps, lens = sm125.get_data()

@@ -5,9 +5,12 @@ program and baking program.
 
 # pylint: disable=import-error, relative-import
 import sys
+import socket
 import time
+import os
 import numpy as np
 from tkinter import ttk, messagebox
+import queue
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
@@ -22,20 +25,15 @@ LARGE_FONT = ("Verdana", 13)
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
 
-white = "#f0eff4"
-
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
     """Defines constants for each type of program."""
 
     def __init__(self, prog_id):
         self.prog_id = prog_id
-        print("{} : {}".format(prog_id, BAKING_ID))
         if self.prog_id == BAKING_ID:
-            self.title = "Configure Baking"
             self.config_id = fh.BAKING_SECTION
             self.options = options_frame.BAKING
-            self.in_prog_msg = "Baking..."
             self.plot_num = 230
             self.num_graphs = 6
         else:
@@ -50,16 +48,15 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
 
-    def __init__(self, master, pid, program_type):
+    def __init__(self, master, id, program_type):
         s = ttk.Style()
         s.configure('InnerNB.TNotebook', tabposition='wn')
 
         super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
-        self.id = pid
-        self.program_type = program_type
-        print(self.program_type.in_prog_msg)
+        self.id = id
+        self.program_type = ProgramType(program_type)
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
@@ -80,9 +77,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
-        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options, white)
+        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options)
         self.start_btn = self.options.create_start_btn(self.start)
-        self.create_xcel_btn = self.options.create_xcel_btn(self.create_excel())
         self.options.init_fbgs()
         self.options.pack(expand=True, side="right", fill="both")
         ttk.Button(self.config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
@@ -106,24 +102,18 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
+        
     def show_main_plots(self):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
         num = self.program_type.plot_num + 1
         #for offs in range(self.program_type.num_graphs):
             #self.main_axes.append(self.fig.add_subplot(num+offs))
-        offs = 0
         self.main_axes.append(gh.create_mean_wave_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         self.main_axes.append(gh.create_wave_power_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         self.main_axes.append(gh.create_temp_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         self.main_axes.append(gh.create_mean_power_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         self.main_axes.append(gh.create_indiv_waves_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         self.main_axes.append(gh.create_indiv_powers_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
         if self.program_type.prog_id == CAL_ID:
             self.main_axes.append(gh.create_drift_rates_graph("./output/test0930-2.csv", False, self.fig, num+offs))
 
@@ -158,13 +148,13 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_name.get())
+        fh.create_excel_file(self.options.file_nme.get())
 
     def start(self, can_start=False):
         """Starts the recording process."""
         delayed_prog = None
 
-        if not can_start:
+        if False:#not can_start:
             if not self.running:
                 conn_fails = []
                 if len(sys.argv) > 1 and sys.argv[1] == "-k":
@@ -194,7 +184,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     self.master.after_cancel(delayed_prog)
                     delayed_prog = None
                 self.pause_program()
-        self.program_loop()
+        else:
+            time.sleep(60)
+            #self.program_loop()
 
     def pause_program(self):
         """Pauses the program."""

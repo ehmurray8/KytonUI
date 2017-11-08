@@ -7,7 +7,6 @@ import device_helper
 import file_helper
 import options_frame
 
-
 class BakingPage(program.Page):
     """Contains the baking_program specific logic, and gui elements."""
 

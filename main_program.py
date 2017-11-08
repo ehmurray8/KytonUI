@@ -5,17 +5,18 @@
 import queue
 import socket
 import matplotlib
+
 matplotlib.use("TkAgg")
 from matplotlib import style
 from tkinter import messagebox
 from tkinter import ttk
 import tkinter as tk
-import program
 import devices
 import visa
 import argparse
 from baking_program import BakingPage
 from cal_program import CalPage
+import colors
 style.use('ggplot')
 
 
@@ -34,31 +35,6 @@ TEMP = "LSC Temperature Controller"
 TEMP_LOC = 12
 
 CAL_NUM = -1
-
-white = "#f0eff4"
-az_white = "#dcedff"
-lcbl_blue = "#94b0da"
-onyx = "#343f3e"
-nickel = "#727d71"
-
-med_blue = "#0B3C5D"
-sky_blue = "#328CC1"
-gold = "#D9B310"
-black = "#1D2731"
-
-gray = "#B0ABA0"
-
-#bg_color = onyx
-bg_color = black
-tab_color = sky_blue
-tabs_color = az_white
-#entry_color = az_white
-#button_color = nickel
-entry_color = gray
-button_color = gray
-#text_color = az_white
-text_color = white
-
 
 class Application(tk.Tk):
     """Main Application class."""
@@ -81,17 +57,17 @@ class Application(tk.Tk):
 
         style = ttk.Style()
         style.theme_create("outer", parent="alt", settings={
-             ".": {"configure": {"background": bg_color}},
-             "TFrame": {"configure": {"background": bg_color, "margin": [10, 10, 10, 10]}},
-             "TButton": {"configure": {"background": button_color, "font": ('Helvetica', 16), "foreground": text_color, "justify": "center"}},
+             ".": {"configure": {"background": colors.BG_COLOR}},
+             "TFrame": {"configure": {"background": colors.BG_COLOR, "margin": [10, 10, 10, 10]}},
+             "TButton": {"configure": {"background": colors.BUTTON_COLOR, "font": ('Helvetica', 16), "foreground": text_color, "justify": "center"}},
              "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
-            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": text_color}},
-            "TEntry": {"configure": {"font": ('Helvetica', 14), "background": entry_color}},
+            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": colors.TEXT_COLOR}},
+            "TEntry": {"configure": {"font": ('Helvetica', 14), "background": colors.ENTRY_COLOR}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width":40}},
             "TNotebook.Tab": {
-                "configure": {"padding": [10, 4], "font": ('Helvetica', 18), "background": tab_color},
-                "map":       {"background": [("selected", tabs_color)], "font": [("selected", ('Helvetica', 18, "bold"))],
+                "configure": {"padding": [10, 4], "font": ('Helvetica', 18), "background": colors.TAB_COLOR},
+                "map":       {"background": [("selected", TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
         style.theme_use("outer")
