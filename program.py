@@ -34,6 +34,7 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
         if self.prog_id == BAKING_ID:
             self.config_id = fh.BAKING_SECTION
             self.options = options_frame.BAKING
+            self.in_prog_msg = "Baking..."
             self.plot_num = 230
             self.num_graphs = 6
         else:
