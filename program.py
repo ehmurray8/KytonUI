@@ -58,7 +58,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         self.master = master
         self.id = id
-        self.program_type = ProgramType(program_type)
+        self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
@@ -81,10 +81,14 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.add(self.config_frame, image=self.img_config)
         self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.options)
         self.start_btn = self.options.create_start_btn(self.start)
+        self.xcel_btn = self.options.create_xcel_btn(self.create_excel)
         self.options.init_fbgs()
+        self.options.grid_rowconfigure(1, minsize=20)
+        self.options.grid_rowconfigure(3, minsize=20)
+        self.options.grid_rowconfigure(5, minsize=20)
         self.options.pack(expand=True, side="right", fill="both")
-        ttk.Button(self.config_frame, text="Delete Tab", command=lambda: master.delete_tab(self.id)).pack()
-        
+        ttk.Button(self.options, text="Delete Tab", command=lambda: master.delete_tab(self.id)).grid(row=0, column=0, sticky='nw')
+
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
 
@@ -104,18 +108,24 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
-        
     def show_main_plots(self):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
-        num = self.program_type.plot_num + 1
-        #for offs in range(self.program_type.num_graphs):
-            #self.main_axes.append(self.fig.add_subplot(num+offs))
+        num = self.program_type.plot_num
+        # for offs in range(self.program_type.num_graphs):
+        # self.main_axes.append(self.fig.add_subplot(num+offs))
+        offs = 1
         self.main_axes.append(gh.create_mean_wave_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_wave_power_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_temp_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_mean_power_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_indiv_waves_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         self.main_axes.append(gh.create_indiv_powers_graph("./output/test0930-2.csv", False, self.fig, num+offs))
+        offs += 1
         if self.program_type.prog_id == CAL_ID:
             self.main_axes.append(gh.create_drift_rates_graph("./output/test0930-2.csv", False, self.fig, num+offs))
 
@@ -133,7 +143,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def onclick(self, event):
         for i, ax in enumerate(self.main_axes):
             if event.dblclick and ax == event.inaxes:
-                #print("Click is in axes ax{}".format(i+1))
+                # print("Click is in axes ax{}".format(i+1))
                 for ax in self.main_axes:
                     ax.cla()
                 self.fig.clf()
@@ -150,18 +160,14 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_nme.get())
+        fh.create_excel_file(self.options.file_name.get())
 
     def start(self, can_start=False):
         """Starts the recording process."""
         delayed_prog = None
 
-        if False:#not can_start:
+        if not can_start:
             if not self.running:
-                conn_fails = []
-                if len(sys.argv) > 1 and sys.argv[1] == "-k":
-                    self.load_devices(conn_fails)
-
                 for chan, snum, pos in zip(self.options.chan_nums,
                                            self.options.sn_ents,
                                            self.options.switch_positions):
@@ -170,14 +176,10 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.channels[chan].append(snum.get())
                         self.switches[chan].append(pos.get())
 
-                if len(conn_fails) == 0:
-                    self.running = True
-                    self.start_btn.configure(text="Pause")
-                    self.header.configure(text=self.program_type.in_prog_msg)
-                    ui_helper.lock_widgets(self.options)
-                else:
-                    conn_str = "Failed to connect to: {}.".format(", ".join(conn_fails))
-                    messagebox.showwarning("Device Connection Failure", conn_str)
+                self.running = True
+                self.start_btn.configure(text="Pause")
+                self.header.configure(text=self.program_type.in_prog_msg)
+                ui_helper.lock_widgets(self.options)
 
                 delayed_prog = self.master.after(int(self.options.delay.get() *
                                                      1000 * 60 * 60 + .5), lambda: self.start(True))
@@ -187,8 +189,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     delayed_prog = None
                 self.pause_program()
         else:
-            time.sleep(60)
-            #self.program_loop()
+            self.program_loop()
 
     def pause_program(self):
         """Pauses the program."""

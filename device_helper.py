@@ -49,22 +49,21 @@ def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
             if len(actual_switches) > switch_index:
                 op_switch.set_channel(actual_switches[switch_index])
                 switch_index += 1
-                master.update()
-                time.sleep(1.25)
-                master.update()
+                master.after(1250, lambda: __get_sm125_data(header, in_prog_msg, all_waves, all_amps, sm125, master))
             else:
                 keep_going = False
-            wavelens, amps, lens = sm125.get_data()
-            all_waves.append(wavelens)
-            all_amps.append(amps)
         except socket.error:
             func = header.configure
             add_to_queue(master, func, {
                          'text': "SM125 Connection Error...Trying Again"})
-    func = header.configure
-    add_to_queue(master, func, {'text': in_prog_msg})
     return wavelens, amps, lens
 
+def __get_sm125_data(header, in_prog_msg, all_waves, all_amps, sm125, master):
+    wavelens, amps, lens = sm125.get_data()
+    all_waves.append(wavelens)
+    all_amps.append(amps)
+    func = header.configure
+    add_to_queue(master, func, {'text': in_prog_msg})
 
 def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
                        switch_num, actual_switches, master):

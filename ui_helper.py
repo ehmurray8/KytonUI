@@ -8,6 +8,7 @@ import file_helper
 
 ENTRY_FONT = ('Helvetica', 14)
 
+
 def file_entry(container, label_text, row, width):
     """Creates an entry with a browse button for the excel file."""
     text_var = tk.StringVar()
@@ -23,6 +24,7 @@ def file_entry(container, label_text, row, width):
     browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo 
     return text_var 
+
 
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
@@ -52,7 +54,7 @@ def serial_num_entry(container, row, col, def_snum):
     serial_num_ent = ttk.Entry(snum_frame, font=ENTRY_FONT, width=20)
     serial_num_ent.pack(side="left", fill="both", expand=True)
     switch_pos_ent = tk.IntVar()
-    tk.Spinbox(snum_frame, from_=0, to=16, textvariable=switch_pos_ent, width=5,
+    tk.Spinbox(snum_frame, from_=0, to=16, textvariable=switch_pos_ent, width=2,
                state="readonly").pack(side="left", fill="both", expand=True)
     switch_pos_ent.set("0")
     #ttk.Label(container, width=3).grid(row=row, column=7)

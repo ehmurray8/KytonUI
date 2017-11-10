@@ -9,7 +9,8 @@ GOLD = "#D9B310"
 BLACK = "#1D2731"
 
 # gray = "#B0ABA0"
-GRAY = "#5b5a59"
+GRAY = "#2b2a29"#5b5a59"
+
 
 #bg_color = onyx
 BG_COLOR = BLACK
@@ -20,4 +21,5 @@ TABS_COLOR = AZ_WHITE
 ENTRY_COLOR = GRAY
 BUTTON_COLOR = GRAY
 #text_color = az_white
-TEXT_COLOR = WHITE
+TEXT_COLOR = GOLD
+BUTTON_TEXT = BLACK

@@ -4,6 +4,7 @@
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
+import colors
 #from main_program import white
 
 BAKING = "Baking"
@@ -14,7 +15,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
                                 # pylint: disable=too-many-instance-attributes
     """Main Tkinter window class."""
 
-    def __init__(self, parent, program, white):
+    def __init__(self, parent, program):
         super().__init__(parent)
 
         # Init member vars
@@ -43,7 +44,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         # Prevent from being garbage collected
         self.img_plus = tk.PhotoImage(file=r'plus.png')
 
-        self.create_options_grid(white)
+        self.create_options_grid(colors.WHITE)
 
     def get_target_temps(self):
         """
@@ -61,10 +62,9 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
 
     def create_options_grid(self, white):
         """Creates the grid for the user to configure options."""
-        self.pack(side="top", fill="both", expand=True)
-
         options_grid = ttk.Frame(self)
-        options_grid.pack()
+        #options_grid.pack()
+        options_grid.grid(column=1, sticky='w')
 
         # Options Grid Init
         options_grid.grid_columnconfigure(1, minsize=50)
@@ -153,14 +153,16 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         start_button = ttk.Button(self)
         start_button["text"] = "Start {}".format(self.program)
         start_button["command"] = start
-        start_button.pack(pady=10, padx=30)
+        #start_button.pack(pady=10, padx=30)
+        start_button.grid(row=2, column=1)
         return start_button
 
     def create_xcel_btn(self, create_xcel):
         xcel_btn = ttk.Button(self)
         xcel_btn["text"] = "Create Excel Spreadsheet"
         xcel_btn["command"] = create_xcel
-        xcel_btn.pack(pady=10, padx=30)
+        #xcel_btn.pack(pady=10, padx=30)
+        xcel_btn.grid(row=4, column=1)
         return xcel_btn
 
     def add_fbg(self, fbg_grid, col, chan):
@@ -180,12 +182,12 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
     def init_fbgs(self):
         fbg_grid = ttk.Frame(self)
         for i in range(4):
-            fbg_grid.grid_columnconfigure((i * 2), minsize=80)
+            #fbg_grid.grid_columnconfigure(((i+1) * 2), minsize=40)
             col_num = i*2+1
             ttk.Label(fbg_grid, text="Channel {}".format(
                 i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)
 
-            ttk.Label(fbg_grid, text="Serial Number, Switch postiion ").grid(row=1, column=col_num)
+            ttk.Label(fbg_grid, text="Serial Number, Switch position ").grid(row=1, column=col_num)
 
             buttons_frame = ttk.Frame(fbg_grid)
             buttons_frame.grid(sticky='ew', column=col_num, row=20)
@@ -195,4 +197,4 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
             #ttk.Button(buttons_frame, image=self.img_minus, command=lambda col=col_num, chan=i: self.minus_fbg(fbg_grid,
             #    col, chan)).pack(expand=True, fill="both", side="left")
 
-        fbg_grid.pack()
+        fbg_grid.grid(row=6, column=0, columnspan=2)

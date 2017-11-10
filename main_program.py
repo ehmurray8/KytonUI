@@ -56,10 +56,11 @@ class Application(tk.Tk):
         self.tk.call('wm', 'iconphoto', self._w, img)
 
         style = ttk.Style()
-        style.theme_create("outer", parent="alt", settings={
+        style.theme_create("outer", parent="winnative", settings={
              ".": {"configure": {"background": colors.BG_COLOR}},
              "TFrame": {"configure": {"background": colors.BG_COLOR, "margin": [10, 10, 10, 10]}},
-             "TButton": {"configure": {"background": colors.BUTTON_COLOR, "font": ('Helvetica', 16), "foreground": text_color, "justify": "center"}},
+             "TButton": {"configure": {"background": colors.BUTTON_COLOR, "font": ('Helvetica', 16),
+                                       "foreground": colors.BUTTON_TEXT, "justify": "center"}},
              "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
             "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": colors.TEXT_COLOR}},
             "TEntry": {"configure": {"font": ('Helvetica', 14), "background": colors.ENTRY_COLOR}},
@@ -67,7 +68,7 @@ class Application(tk.Tk):
             "TCheckbutton": {"configre": {"height": 40, "width":40}},
             "TNotebook.Tab": {
                 "configure": {"padding": [10, 4], "font": ('Helvetica', 18), "background": colors.TAB_COLOR},
-                "map":       {"background": [("selected", TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
+                "map":       {"background": [("selected", colors.TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
         style.theme_use("outer")
@@ -125,12 +126,14 @@ class Application(tk.Tk):
         device_frame.grid(sticky='ew')
 
         start_prog_frame = ttk.Frame(self.home_frame)
+        start_prog_frame.grid_columnconfigure(0, minsize=300)
+        start_prog_frame.grid_columnconfigure(2, minsize=70)
         ttk.Button(start_prog_frame, text="Start New Baking Run", compound=tk.CENTER, pad=5,
-                   command=self.create_bake_tab).grid(sticky='ew')
-        start_prog_frame.grid_rowconfigure(2, minsize=50)
+                   command=self.create_bake_tab).grid(row=1, column=1, sticky='ew')
         ttk.Button(start_prog_frame, text="Start New Calibration Run", compound=tk.CENTER, pad=5,
-                   command=self.create_cal_tab).grid(row=3, sticky='ew')
-        start_prog_frame.grid(sticky='ew', row=0, column=1)
+                   command=self.create_cal_tab).grid(row=1, column=3, sticky='ew')
+        start_prog_frame.grid(sticky='ew', row=2, column=0)
+        self.home_frame.grid_rowconfigure(1, minsize=50)
 
     def device_entry(self, container, dev_text, loc_str, row, port_str):
         """Creates an entry in the device grid for a device."""
@@ -148,46 +151,70 @@ class Application(tk.Tk):
             port_ent.grid(row=row, sticky='ew', column=5)
 
         conn_butt = ttk.Button(container, text="Connect",
-                command=lambda: self.conn_dev(loc_ent, port_ent, dev_text))
+                command=lambda: self.conn_dev(loc_ent, port_ent, dev_text, conn_butt))
         conn_butt.grid(row=row, column=7, sticky='ew')
 
         self.device_widgets.append((loc_ent, port_ent, conn_butt))
 
-    
-
-    def conn_dev(self, loc_ent, port_ent, dev):
+    def conn_dev(self, loc_ent, port_ent, dev, button):
+        connect = False
         if self.use_dev:
             if dev == TEMP:
-                try:
-                    self.temp_controller = devices.TempController(
-                        int(loc_ent.get()), self.manager)
-                except visa.VisaIOError:
-                    conn_warning(dev)
-                except ValueError:
-                    loc_warning("GPIB address")
+                if self.temp_controller is None:
+                    try:
+                        self.temp_controller = devices.TempController(
+                            int(loc_ent.get()), self.manager)
+                        connect = True
+                    except visa.VisaIOError:
+                        conn_warning(dev)
+                    except ValueError:
+                        loc_warning("GPIB address")
+                else:
+                    self.temp_controller.close()
+                    self.temp_controller = None
             elif dev == OVEN:
-                try:
-                    self.oven = devices.Oven("GPIB0::{}::INSTR".format(
-                        int(loc_ent.get())), self.manager)
-                except visa.VisaIOError:
-                    conn_warning(dev)
-                except ValueError:
-                    loc_warning("GPIB address")
+                if self.oven is None:
+                    try:
+                        self.oven = devices.Oven("GPIB0::{}::INSTR".format(
+                            int(loc_ent.get())), self.manager)
+                        connect = True
+                    except visa.VisaIOError:
+                        conn_warning(dev)
+                    except ValueError:
+                        loc_warning("GPIB address")
+                else:
+                    self.oven.close()
+                    self.oven = None
             elif dev == SWITCH:
-                try:
-                    self.op_switch = devices.OpSwitch(
-                        loc_ent.get(), int(port_ent.get()))
-                except socket.error:
-                    conn_warning(dev)
-                except:
-                    loc_warning("ethernet port")
+                if self.switch is None:
+                    try:
+                        self.switch = devices.OpSwitch(
+                            loc_ent.get(), int(port_ent.get()))
+                        connect = True
+                    except socket.error:
+                        conn_warning(dev)
+                    except ValueError:
+                        loc_warning("ethernet port")
+                else:
+                    self.switch.close()
+                    self.switch = None
             elif dev == LASER:
-                try:
-                    self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
-                except socket.error:
-                    conn_warning(dev)
-                except ValueError:
-                    loc_warning("ethernet port")
+                if self.laser is None:
+                    try:
+                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
+                        connect = True
+                    except socket.error:
+                        conn_warning(dev)
+                    except ValueError:
+                        loc_warning("ethernet port")
+                else:
+                    self.laser.close()
+                    self.laser = None
+        if connect:
+            button['text'] = "Disconnect"
+        else:
+            button['text'] = "Connect"
+
 
     def create_bake_tab(self):
         # Need to add logic for confirming, and deleting any cal tabs
@@ -231,9 +258,11 @@ class Application(tk.Tk):
 
         self.after(200, self.tkloop)
 
+
 def conn_warning(dev):
     messagebox.showwarning("Connection Error", "Currently unable to connect to {},".format(dev) +
-            "make sure the device is connected to the computer and the location information is correct.")
+                           "make sure the device is connected to the computer and the location information is correct.")
+
 
 def loc_warning(type):
     messagebox.showwarning("Invalid Location", "Please import an integer corresponding to the {}.".format(type))
