@@ -3,6 +3,7 @@
 
 import os
 import time
+import platform
 import stat
 import threading
 import configparser
@@ -34,7 +35,8 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
     lock.acquire()
     if os.path.isfile(file_name):
-        os.chmod(file_name, stat.S_IRWXU)
+        if platform.system() != "Linux":
+            os.chmod(file_name, stat.S_IRWXU)
         file_obj = open(file_name, "a")
     else:
         file_obj = open(file_name, "w")
@@ -69,12 +71,14 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     file_obj.write("\n\n")
     file_obj.close()
     lock.release()
-    os.chmod(file_name, stat.S_IREAD)
+    if platform.system() != "Linux":
+        os.chmod(file_name, stat.S_IREAD)
 
 
 def parse_csv_file(csv_file):
     """Parses defined csv file."""
-    os.chmod(csv_file, stat.S_IWRITE)
+    if platform.system() != "Linux":
+        os.chmod(csv_file, stat.S_IWRITE)
     entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
 
     mdata = datac.Metadata()
@@ -99,7 +103,8 @@ def parse_csv_file(csv_file):
     mdata.start_time = float(start_time_wavelen_temp[0])
     mdata.start_wavelen_avg = float(start_time_wavelen_temp[1])
     mdata.start_temp = float(start_time_wavelen_temp[2])
-    os.chmod(csv_file, stat.S_IWRITE)
+    if platform.system() != "Linux":
+        os.chmod(csv_file, stat.S_IWRITE)
     lock.release()
     return mdata, entries_df
 

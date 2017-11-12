@@ -11,6 +11,9 @@ from matplotlib import style
 from tkinter import messagebox
 from tkinter import ttk
 import tkinter as tk
+import platform
+if platform.system() == "Linux":
+    from ttkthemes import ThemedStyle
 import devices
 import visa
 import argparse
@@ -55,8 +58,12 @@ class Application(tk.Tk):
         img = tk.PhotoImage(file=r'fiber.png')
         self.tk.call('wm', 'iconphoto', self._w, img)
 
-        style = ttk.Style()
-        style.theme_create("outer", parent="winnative", settings={
+        #style = ttk.Style()
+        self.style = ThemedStyle(self)
+        parent_theme = "winnative"
+        if platform.system() == "Linux":
+            parent_theme = "clearlooks"
+        self.style.theme_create("main", parent=parent_theme, settings={
              ".": {"configure": {"background": colors.BG_COLOR}},
              "TFrame": {"configure": {"background": colors.BG_COLOR, "margin": [10, 10, 10, 10]}},
              "TButton": {"configure": {"background": colors.BUTTON_COLOR, "font": ('Helvetica', 16),
@@ -71,7 +78,7 @@ class Application(tk.Tk):
                 "map":       {"background": [("selected", colors.TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
-        style.theme_use("outer")
+        self.style.set_theme("main")
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()

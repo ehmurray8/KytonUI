@@ -110,25 +110,11 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def show_main_plots(self):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
-        num = self.program_type.plot_num
-        # for offs in range(self.program_type.num_graphs):
-        # self.main_axes.append(self.fig.add_subplot(num+offs))
-        offs = 1
-        self.main_axes.append(gh.create_mean_wave_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
-        self.main_axes.append(gh.create_wave_power_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
-        self.main_axes.append(gh.create_temp_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
-        self.main_axes.append(gh.create_mean_power_time_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
-        self.main_axes.append(gh.create_indiv_waves_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
-        self.main_axes.append(gh.create_indiv_powers_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-        offs += 1
+        is_cal = False
         if self.program_type.prog_id == CAL_ID:
-            self.main_axes.append(gh.create_drift_rates_graph("./output/test0930-2.csv", False, self.fig, num+offs))
-
+            is_cal = True
+        self.main_axes = gh.show_main_plots(self.fig, self.program_type.plot_num, is_cal)
+        
     def graph_back(self, event):
         if event.dblclick:
             self.ax_zoom.cla()
