@@ -58,8 +58,9 @@ class Application(tk.Tk):
         img = tk.PhotoImage(file=r'fiber.png')
         self.tk.call('wm', 'iconphoto', self._w, img)
 
-        #style = ttk.Style()
-        self.style = ThemedStyle(self)
+        self.style = ttk.Style()
+        if platform.system() == "Linux":
+            self.style = ThemedStyle(self)
         parent_theme = "winnative"
         if platform.system() == "Linux":
             parent_theme = "clearlooks"
@@ -78,7 +79,10 @@ class Application(tk.Tk):
                 "map":       {"background": [("selected", colors.TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
-        self.style.set_theme("main")
+        if platform.system() == "Linux":
+            self.style.set_theme("main")
+        else:
+            self.style.theme_use("main")
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()
