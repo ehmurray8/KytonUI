@@ -13,6 +13,8 @@ style.use("ggplot")
 
 TEST_FILE = "./output/test0930-2.csv"
 
+PAUSE = False
+
 def __file_error(f_name): 
     messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}." .format(f_name))
 
@@ -56,7 +58,7 @@ def create_mean_wave_time_graph(f_name, animate, fig, dims, is_cal, need_warning
 def __animate_mwt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_wave_diff_time_data(f_name)
     axis.clear()
-    axis.set_title('Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'))
+    axis.set_title('Average {} (pm) vs. Time (hr) from start'.format(u'\u0394\u03BB'), fontsize=12)
     axis.set_xlabel('Time (hr)')
     axis.set_ylabel('Wavelength (pm)')
     axis.plot(times, wavelen_diffs)
@@ -92,7 +94,7 @@ def create_wave_power_graph(f_name, animate, fig, dims, is_cal, need_warning):
 def __animate_wp_graph(i, f_name, axis):
     wavelens, powers, snums = __get_wave_power_graph(f_name)
     axis.clear()
-    axis.set_title('Power (dBm) vs. Wavelength (nm)')#, x=.35)
+    axis.set_title('Power (dBm) vs. Wavelength (nm)', fontsize=12)#, x=.35)
     axis.set_xlabel('Wavelength (nm)')
     axis.set_ylabel('Power (dBm)')
 
@@ -139,7 +141,7 @@ def __animate_temp_graph(i, f_name, ax1, ax2):
     ax1.clear()
     #ax2.clear()
 
-    ax1.set_title('Raw Temperature (K) vs. Time (hr) from start.')
+    ax1.set_title('Raw Temperature (K) vs. Time (hr) from start.', fontsize=12)
     #ax1 = plt.subplot2grid((10, 1), (0, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Temperature (K)')
     #ax2 = plt.subplot2grid((10, 1), (7, 0), rowspan=3, colspan=1, sharex=ax1)
@@ -177,7 +179,7 @@ def create_mean_power_time_graph(f_name, animate, fig, dims, is_cal, need_warnin
 def __animate_mpt_graph(i, f_name, axis):
     times, wavelen_diffs = __get_mean_power_diff_time_data(f_name)
     axis.clear()
-    axis.set_title('Average Power (dBm) vs. Time (hr) from start')
+    axis.set_title('Average Power (dBm) vs. Time (hr) from start', fontsize=12)
     axis.set_xlabel('Time (hr)')
     axis.set_ylabel('Power (dBm)')
     axis.plot(times, wavelen_diffs)
@@ -216,7 +218,7 @@ def __animate_indiv_waves(i, f_name, ax1, ax2):
     ax1.clear()
     #ax2.clear()
 
-    ax1.set_title('Raw Wavelengths vs. Time (hr)')
+    ax1.set_title('Raw Wavelengths vs. Time (hr)', fontsize=12)
     ax1.set_ylabel('Wavelength (pm)')
     ax1.set_xlabel('Time (hr)')
 
@@ -274,7 +276,7 @@ def __animate_indiv_powers(i, f_name, ax1, ax2):
     ax1.clear()
     #ax2.clear()
 
-    ax1.set_title('Raw Powers (dBm) vs. Time (hr)')
+    ax1.set_title('Raw Powers (dBm) vs. Time (hr)', fontsize=12)
 
     #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Power (dBm)')
@@ -310,7 +312,7 @@ def create_drift_rates_graph(f_name, animate, fig, dims, is_cal, need_warning):
     if check_valid_file(f_name, is_cal):
         try:
             ax1 = fig.sub_plt(dims)
-            ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
+            #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
             #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1, sharex=ax1)
 
             ax2=None
@@ -330,7 +332,7 @@ def __animate_drift_rates(i, f_name, ax1, ax2):
     ax1.clear()
     #ax2.clear()
 
-    ax1.set_title('Average Drift Rates (mK/min) vs. Time (hr)')
+    ax1.set_title('Average Drift Rates (mK/min) vs. Time (hr)', fontsize=12)
     #ax1 = plt.subplot2grid((10, 1), (1, 0), rowspan=7, colspan=1)
     ax1.set_ylabel('Average Drift Rate (mK/min)')
     #ax2 = plt.subplot2grid((10, 1), (8, 0), rowspan=2, colspan=1,sharex=ax1)
