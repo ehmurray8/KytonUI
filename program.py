@@ -228,8 +228,8 @@ class MyToolbar(NavigationToolbar2TkAgg):
                          ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
                          (None, None, None, None),
                          ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'),
-                         ('Save', 'Save the figure', 'filesave', 'save_figure'),
-                         ('Port', 'Select', 'selectimg', 'select_tool'))
+                         ('Save', 'Save the figure', 'filesave', 'save_figure'))#,
+                         #('Port', 'Select', 'selectimg', 'select_tool'))
 
         NavigationToolbar2TkAgg.__init__(self, figure_canvas, parent)#, parent= None)
 

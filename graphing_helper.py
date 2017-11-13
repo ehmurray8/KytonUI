@@ -24,8 +24,8 @@ def show_main_plots(fig, num, is_cal, fname=TEST_FILE):
     offs = 1
     need_warning = True
 
-    graph_funcs = [create_mean_wave_time_graph, create_wave_power_graph, create_temp_time_graph,
-                   create_mean_power_time_graph, create_indiv_waves_graph, create_indiv_powers_graph]
+    graph_funcs = [create_indiv_waves_graph, create_wave_power_graph, create_indiv_powers_graph,
+                   create_mean_power_time_graph, create_mean_wave_time_graph, create_temp_time_graph]
 
     for i, func in enumerate(graph_funcs):
         axis = func(fname, False, fig, num+offs, is_cal, need_warning)
@@ -104,8 +104,10 @@ def __animate_wp_graph(i, f_name, axis):
         axes.append(axis.scatter(waves, powers, color=color, s=75))
         idx += 1
 
-    axis.legend(axes, snums, bbox_to_anchor=(.95, 1.25), loc='upper right', #borderaxespad=0.,
-            ncol=int(len(snums) / 2 + 0.5), fontsize=8, fancybox=True, shadow=True)
+    legend = axis.legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', #borderaxespad=0.,
+            ncol=int(len(snums) / 2 + 0.5), fontsize=10, fancybox=True, shadow=True)
+    for text in legend.get_texts():
+        text.set_color("black")
 
 
 def __get_wave_power_graph(f_name):
@@ -237,8 +239,8 @@ def __animate_indiv_waves(i, f_name, ax1, ax2):
         #ax2.plot(times, wave_diffs, color=color)
         idx += 1
 
-    ax1.legend(axes, snums, loc='upper center', bbox_to_anchor=(0.5, -0.15),
-          fancybox=True, shadow=True, ncol=int(len(snums) / 2 + 0.5), fontsize=8)
+    #ax1.legend(axes, snums, loc='upper center', bbox_to_anchor=(0.5, -0.15),
+    #      fancybox=True, shadow=True, ncol=int(len(snums) / 2 + 0.5), fontsize=8)
     #ax1.legend(axes, snums, bbox_to_anchor=(1, -1.25), loc='lower right', borderaxespad=0.,
     #           ncol=int(len(snums) / 2 + 0.5), fontsize=8)
 
@@ -294,8 +296,8 @@ def __animate_indiv_powers(i, f_name, ax1, ax2):
         #ax2.plot(times, pow_diffs, color=color)
         idx += 1
 
-    ax1.legend(axes, snums, loc='upper center', bbox_to_anchor=(0.5, -0.15),
-          fancybox=True, shadow=True, ncol=int(len(snums) / 2 + 0.5), fontsize=8)
+    #ax1.legend(axes, snums, loc='upper center', bbox_to_anchor=(0.5, -0.15),
+    #      fancybox=True, shadow=True, ncol=int(len(snums) / 2 + 0.5), fontsize=8)
     #ax1.legend(axes, snums, bbox_to_anchor=(1, -1.25), loc='lower right', borderaxespad=0.,
     #           ncol=int(len(snums) / 2 + 0.5), fontsize=8)
 

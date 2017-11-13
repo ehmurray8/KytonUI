@@ -1,0 +1,58 @@
+# Author: Emmet Murray
+# Based on FiveThirtyEight and Seaborn-Darkgrid styles
+# .15 = dark_gray
+# .8 = light_gray
+
+
+lines.linewidth: 4
+lines.solid_capstyle: butt
+
+legend.fancybox: true
+
+axes.prop_cycle: cycler('color', ['008fd5', 'fc4f30', 'e5ae38', '6d904f', '8b8b8b', '810f7c'])
+#axes.facecolor: f0f0f0
+axes.axisbelow: true
+axes.grid: true
+#axes.edgecolor: f0f0f0
+axes.linewidth: 3.0
+axes.titlesize: x-large
+axes.labelsize: medium
+#axes.labelcolor: D9B310
+axes.labelcolor: f0eff4
+#.15
+axes.facecolor: EAEAF2
+axes.edgecolor: white
+
+patch.edgecolor: f0f0f0
+patch.linewidth: 0.5
+
+svg.fonttype: path
+
+grid.linestyle: -
+grid.linewidth: 1.0
+grid.color: cbcbcb
+
+xtick.major.size: 0
+xtick.color: f0eff4 
+xtick.minor.size: 0
+ytick.major.size: 0
+ytick.color: f0eff4 
+ytick.minor.size: 0
+
+savefig.edgecolor: f0f0f0
+#savefig.facecolor: f0f0f0
+savefig.facecolor: 1D2731
+
+figure.subplot.left: 0.08
+figure.subplot.right: 0.95
+figure.subplot.bottom: 0.07
+#figure.facecolor: f0f0f0
+figure.facecolor: 1D2731
+
+font.family: sans-serif
+font.sans-serif: Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
+font.size:14.0
+
+image.cmap: Greys
+#text.color: .15
+text.color: D9B310

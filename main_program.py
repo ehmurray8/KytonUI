@@ -20,7 +20,8 @@ import argparse
 from baking_program import BakingPage
 from cal_program import CalPage
 import colors
-style.use('ggplot')
+#style.use('ggplot')
+style.use('kyton')
 
 
 OVEN = "Dicon Oven"
@@ -58,9 +59,8 @@ class Application(tk.Tk):
         img = tk.PhotoImage(file=r'fiber.png')
         self.tk.call('wm', 'iconphoto', self._w, img)
 
-        self.style = ttk.Style()
-        if platform.system() == "Linux":
-            self.style = ThemedStyle(self)
+        #style = ttk.Style()
+        self.style = ThemedStyle(self)
         parent_theme = "winnative"
         if platform.system() == "Linux":
             parent_theme = "clearlooks"
@@ -79,10 +79,7 @@ class Application(tk.Tk):
                 "map":       {"background": [("selected", colors.TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
-        if platform.system() == "Linux":
-            self.style.set_theme("main")
-        else:
-            self.style.theme_use("main")
+        self.style.set_theme("main")
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()
