@@ -19,6 +19,7 @@ from PIL import ImageTk, Image
 import options_frame
 import file_helper as fh
 import graphing_helper as gh
+import graphing
 import ui_helper
 
 LARGE_FONT = ("Verdana", 13)
@@ -95,56 +96,60 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5,5), dpi=100)
-        self.main_axes = []
-        self.ax_zoom = None
-        self.show_main_plots()
+        #self.main_axes = []
+        #self.ax_zoom = None
+        #self.show_main_plots()
 
         self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
         self.canvas.show()
-
-        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
-
-        #self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.graph_frame)
-        self.toolbar = Toolbar(self.canvas, self.graph_frame)
-        self.toolbar.update()
-        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
-
-    def show_main_plots(self):
-        # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
         is_cal = False
         if self.program_type.prog_id == CAL_ID:
             is_cal = True
-        self.main_axes = gh.show_main_plots(self.fig, self.program_type.plot_num, is_cal)
         
-    def graph_back(self, event):
-        if event.dblclick:
-            self.ax_zoom.cla()
-            self.fig.clf()
-            self.canvas.draw()
-            self.canvas.mpl_disconnect(self.cid)
-            self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
-            self.show_main_plots()
-            self.canvas.draw()
-            self.toolbar.update()
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        #self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
 
-    def onclick(self, event):
-        for i, ax in enumerate(self.main_axes):
-            if event.dblclick and ax == event.inaxes:
-                # print("Click is in axes ax{}".format(i+1))
-                for ax in self.main_axes:
-                    ax.cla()
-                self.fig.clf()
-                self.canvas.draw()
-                self.toolbar.update()
+        self.toolbar = Toolbar(self.canvas, self.graph_frame)
+        self.toolbar.update()
+        self.graph_helper = graphing.Graphing(self.options.file_name.get(), self.program_type.plot_num, 
+                                              is_cal, self.fig, self.canvas, self.toolbar, self.master)
+        self.toolbar.set_gh(self.graph_helper)
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
-                self.ax_zoom = self.fig.add_subplot(111)
-                self.canvas.mpl_disconnect(self.cid)
-                self.cid = self.canvas.mpl_connect('button_press_event', self.graph_back)
+    #def show_main_plots(self):
+    #    # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
+    #    is_cal = False
+    #    if self.program_type.prog_id == CAL_ID:
+    #        is_cal = True
+    #    self.main_axes = gh.show_main_plots(self.fig, self.program_type.plot_num, is_cal)
+    #    
+    #def graph_back(self, event):
+    #    if event.dblclick:
+    #        self.ax_zoom.cla()
+    #        self.fig.clf()
+    #        self.canvas.mpl_disconnect(self.cid)
+    #        self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
+    #        self.show_main_plots()
+    #        self.canvas.draw()
+    #        self.toolbar.update()
 
-                self.ax_zoom.plot(np.random.rand(10))
-                self.canvas.draw()
-                break
+    #def onclick(self, event):
+    #    for i, ax in enumerate(self.main_axes):
+    #        if event.dblclick and ax == event.inaxes:
+    #            # print("Click is in axes ax{}".format(i+1))
+    #            for ax in self.main_axes:
+    #                ax.cla()
+    #            self.fig.clf()
+    #            self.canvas.draw()
+    #            self.toolbar.update()
+
+    #            self.ax_zoom = self.fig.add_subplot(111)
+    #            self.canvas.mpl_disconnect(self.cid)
+    #            self.cid = self.canvas.mpl_connect('button_press_event', self.graph_back)
+
+    #            self.ax_zoom.plot(np.random.rand(10))
+    #            self.canvas.draw()
+    #            break
         
     def create_excel(self):
         """Creates excel file."""
@@ -215,7 +220,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
 
 class Toolbar(NavigationToolbar2TkAgg):
-    def __init__(self, figure_canvas, parent):#, parent= None):
+    def __init__(self, figure_canvas, parent):
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
                          ('Back', 'Back to  previous view', 'back', 'back'),
                          ('Forward', 'Forward to next view', 'forward', 'forward'),
@@ -230,10 +235,15 @@ class Toolbar(NavigationToolbar2TkAgg):
 
         self.figure_canvas = figure_canvas
         self.parent = parent
+        self.graphing_helper = None
         NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+
+    def set_gh(self, graphing_helper):
+        self.graphing_helper = graphing_helper
 
     def play(self):
         print("Play")
+        self.graphing_helper.play()
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
                          ('Back', 'Back to  previous view', 'back', 'back'),                   
                          ('Forward', 'Forward to next view', 'forward', 'forward'),            
@@ -249,6 +259,7 @@ class Toolbar(NavigationToolbar2TkAgg):
 
     def pause(self):
         print("Pause")
+        self.graphing_helper.pause()
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
                          ('Back', 'Back to  previous view', 'back', 'back'),                   
                          ('Forward', 'Forward to next view', 'forward', 'forward'),            

@@ -74,11 +74,7 @@ def __animate_mwt_graph(i, f_name, axis):
 
 
 def __get_mean_wave_diff_time_data(f_name):
-    if platform.system() != 'Linux':
-        os.chmod(f_name, stat.S_IRWXU)
     mdata, entries_df = file_helper.parse_csv_file(f_name)
-    if platform.system() != 'Linux':
-        os.chmod(f_name, stat.S_IREAD)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_wavelen_diffs
