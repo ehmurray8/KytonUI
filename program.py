@@ -106,7 +106,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
 
         #self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.graph_frame)
-        self.toolbar = MyToolbar(self.canvas, self.graph_frame)
+        self.toolbar = Toolbar(self.canvas, self.graph_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
@@ -214,12 +214,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.master.destroy()
 
 
-class MyToolbar(NavigationToolbar2TkAgg):
+class Toolbar(NavigationToolbar2TkAgg):
     def __init__(self, figure_canvas, parent):#, parent= None):
-        play_image = Image.open('play.png')
-        play_photo = ImageTk.PhotoImage(play_image)
-        pause_image = Image.open('pause.png')
-        pause_photo = ImageTk.PhotoImage(pause_image)
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
                          ('Back', 'Back to  previous view', 'back', 'back'),
                          ('Forward', 'Forward to next view', 'forward', 'forward'),
@@ -228,10 +224,41 @@ class MyToolbar(NavigationToolbar2TkAgg):
                          ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
                          (None, None, None, None),
                          ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'),
-                         ('Save', 'Save the figure', 'filesave', 'save_figure'))#,
-                         #('Port', 'Select', 'selectimg', 'select_tool'))
+                         ('Save', 'Save the figure', 'filesave', 'save_figure'),
+                         (None, None, None, None),
+                         ('Pause', 'Pause the animation', 'pause', 'pause'))
 
-        NavigationToolbar2TkAgg.__init__(self, figure_canvas, parent)#, parent= None)
+        self.figure_canvas = figure_canvas
+        self.parent = parent
+        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
 
-    def select_tool(self):
-        print("You clicked the selection tool")
+    def play(self):
+        print("Play")
+        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
+                         ('Back', 'Back to  previous view', 'back', 'back'),                   
+                         ('Forward', 'Forward to next view', 'forward', 'forward'),            
+                         (None, None, None, None),                                             
+                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),  
+                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),                
+                         (None, None, None, None),                                             
+                         ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), 
+                         ('Save', 'Save the figure', 'filesave', 'save_figure'),               
+                         (None, None, None, None),                                             
+                         ('Pause', 'Pause the animation', 'pause', 'pause'))              
+        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+
+    def pause(self):
+        print("Pause")
+        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
+                         ('Back', 'Back to  previous view', 'back', 'back'),                   
+                         ('Forward', 'Forward to next view', 'forward', 'forward'),            
+                         (None, None, None, None),                                             
+                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),  
+                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),                
+                         (None, None, None, None),                                             
+                         ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), 
+                         ('Save', 'Save the figure', 'filesave', 'save_figure'),               
+                         (None, None, None, None),                                             
+                         ('Play', 'Play the animation', 'play', 'play'))
+
+        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)

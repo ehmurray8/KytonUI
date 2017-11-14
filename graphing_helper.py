@@ -13,10 +13,19 @@ style.use("ggplot")
 
 TEST_FILE = "./output/test0930-2.csv"
 
-PAUSE = False
+PLAY = False
 
 def __file_error(f_name): 
     messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}." .format(f_name))
+
+def pause():
+    global PLAY
+    PLAY = False
+
+def play():
+    global PLAY
+    PLAY = True
+
 
 def show_main_plots(fig, num, is_cal, fname=TEST_FILE):
     # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
