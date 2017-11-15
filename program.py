@@ -4,21 +4,14 @@ program and baking program.
 """
 
 # pylint: disable=import-error, relative-import
-import sys
-import socket
-import time
-import os
-import numpy as np
 from tkinter import ttk, messagebox
-import queue
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from PIL import ImageTk, Image
+import platform
 
 import options_frame
 import file_helper as fh
-import graphing_helper as gh
 import graphing
 import ui_helper
 
@@ -96,9 +89,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5,5), dpi=100)
-        #self.main_axes = []
-        #self.ax_zoom = None
-        #self.show_main_plots()
 
         self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
         self.canvas.show()
@@ -107,7 +97,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             is_cal = True
         
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        #self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
 
         self.toolbar = Toolbar(self.canvas, self.graph_frame)
         self.toolbar.update()
@@ -116,41 +105,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
 
-    #def show_main_plots(self):
-    #    # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
-    #    is_cal = False
-    #    if self.program_type.prog_id == CAL_ID:
-    #        is_cal = True
-    #    self.main_axes = gh.show_main_plots(self.fig, self.program_type.plot_num, is_cal)
-    #    
-    #def graph_back(self, event):
-    #    if event.dblclick:
-    #        self.ax_zoom.cla()
-    #        self.fig.clf()
-    #        self.canvas.mpl_disconnect(self.cid)
-    #        self.cid = self.canvas.mpl_connect('button_press_event', self.onclick)
-    #        self.show_main_plots()
-    #        self.canvas.draw()
-    #        self.toolbar.update()
-
-    #def onclick(self, event):
-    #    for i, ax in enumerate(self.main_axes):
-    #        if event.dblclick and ax == event.inaxes:
-    #            # print("Click is in axes ax{}".format(i+1))
-    #            for ax in self.main_axes:
-    #                ax.cla()
-    #            self.fig.clf()
-    #            self.canvas.draw()
-    #            self.toolbar.update()
-
-    #            self.ax_zoom = self.fig.add_subplot(111)
-    #            self.canvas.mpl_disconnect(self.cid)
-    #            self.cid = self.canvas.mpl_connect('button_press_event', self.graph_back)
-
-    #            self.ax_zoom.plot(np.random.rand(10))
-    #            self.canvas.draw()
-    #            break
-        
     def create_excel(self):
         """Creates excel file."""
         fh.create_excel_file(self.options.file_name.get())
@@ -254,8 +208,14 @@ class Toolbar(NavigationToolbar2TkAgg):
                          ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), 
                          ('Save', 'Save the figure', 'filesave', 'save_figure'),               
                          (None, None, None, None),                                             
-                         ('Pause', 'Pause the animation', 'pause', 'pause'))              
-        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+                         ('Pause', 'Pause the animation', 'pause', 'pause'))
+        if platform.system() == "Linux":
+            NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+        else:
+            self.update()
+            self.draw()
+            self.figure_canvas.draw()
+            self.figure_canvas.draw_idle()
 
     def pause(self):
         print("Pause")
@@ -272,4 +232,10 @@ class Toolbar(NavigationToolbar2TkAgg):
                          (None, None, None, None),                                             
                          ('Play', 'Play the animation', 'play', 'play'))
 
-        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+        if platform.system() == "Linux":
+            NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+        else:
+            self.update()
+            self.draw()
+            self.figure_canvas.draw()
+            self.figure_canvas.draw_idle()

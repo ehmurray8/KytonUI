@@ -51,7 +51,7 @@ figure.facecolor: 1D2731
 
 font.family: sans-serif
 font.sans-serif: Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
-font.size:14.0
+font.size:8.0
 
 image.cmap: Greys
 #text.color: .15

@@ -20,7 +20,6 @@ import argparse
 from baking_program import BakingPage
 from cal_program import CalPage
 import colors
-#style.use('ggplot')
 style.use('kyton')
 
 
@@ -59,10 +58,10 @@ class Application(tk.Tk):
         img = tk.PhotoImage(file=r'fiber.png')
         self.tk.call('wm', 'iconphoto', self._w, img)
 
-        #style = ttk.Style()
-        self.style = ThemedStyle(self)
+        self.style = ttk.Style()
         parent_theme = "winnative"
         if platform.system() == "Linux":
+            self.style = ThemedStyle(self)
             parent_theme = "clearlooks"
         self.style.theme_create("main", parent=parent_theme, settings={
              ".": {"configure": {"background": colors.BG_COLOR}},
@@ -79,7 +78,10 @@ class Application(tk.Tk):
                 "map":       {"background": [("selected", colors.TABS_COLOR)], "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
-        self.style.set_theme("main")
+        if platform.system() == "Linux":
+            self.style.set_theme("main")
+        else:
+            self.style.theme_use("main")
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()
@@ -104,9 +106,22 @@ class Application(tk.Tk):
 
         self.setup_home_frame()
 
-        pad = 3
         self.geometry("{0}x{1}+0+0".format(
-            self.winfo_screenwidth() - pad, self.winfo_screenheight() - pad))
+            self.winfo_screenwidth(), self.winfo_screenheight()))
+        self.attributes("-fullscreen", True)
+        self.state = True
+        self.bind("<F11>", self.toggle_fullscreen)
+        self.bind("<Escape>", self.end_fullscreen)
+
+    def toggle_fullscreen(self, event=None):
+        self.state = not self.state  # Just toggling the boolean
+        self.attributes("-fullscreen", self.state)
+        return "break"
+
+    def end_fullscreen(self, event=None):
+        self.state = False
+        self.attributes("-fullscreen", False)
+        return "break"
 
     def setup_home_frame(self):
         device_frame = ttk.Frame(self.home_frame)

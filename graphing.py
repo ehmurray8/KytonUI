@@ -9,7 +9,8 @@ import matplotlib.animation as animation
 from matplotlib import style
 import matplotlib.pyplot as plt
 import file_helper
-style.use("ggplot")
+import matplotlib.gridspec as gridspec
+style.use("kyton")
 
 TEST_FILE = "./output/test0930-2.csv"
 
@@ -26,7 +27,7 @@ class Graph():
         self.fig = fig
         self.sub_axis = None
         self.anim = None
-        self.zoom_axes =  None
+        self.zoom_axes = []
         self.show_sub()
 
     def pause(self):
@@ -39,11 +40,9 @@ class Graph():
         if self.anim is not None:
             self.anim.event_source.stop()
 
-        if self.zoom_axes is not None:
-            for axis in self.zoom_axes:
-                axis.cla()
-            self.fig.clf()
-            #self.zoom_axes = None
+        for axis in self.zoom_axes:
+            axis.cla()
+        self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
         self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1500)
 
@@ -60,35 +59,27 @@ class Graph():
 
     def show_main(self):
         self.anim.event_source.stop()
-        self.sub_axis.cla()
+        if self.sub_axis is not None:
+            self.sub_axis.cla()
         self.fig.clf()
-        self.sub_axis = None
         self.zoom_axes = []
         share = None
         for dim in self.zoom_dims:
-            print(dim)
             if share is None:
                 if dim != 111:
-                    share = plt.subplot2grid(dim[0], dim[1], fig=self.fig, rowspan=dim[2], colspan=dim[3])
-                    #share.get_xaxis().set_ticks([])
-                    #self.fig.subplots_adjust(wspace=0, hspace=0)
-                    #labels = [item.get_text() for item in share.get_xticklabels()]
-
-                    #empty_string_labels = ['']*len(labels)
-                    #share.set_xticklabels(empty_string_labels)
+                    share = self.fig.add_subplot(dim)
                     share.get_xticklabels()[1].set_visible(False)
                 else:
-                    print("one plot.")
                     share = self.fig.add_subplot(dim)
             else:
-                share = plt.subplot2grid(dim[0], dim[1], fig=self.fig, rowspan=dim[2], colspan=dim[3], sharex=share)
+                share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
         self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000)
 
     def main_graph(self, i):
         for axis in self.zoom_axes:
             axis.clear()
-        self.zoom_axes[0].set_title(self.title, fontsize=14)
+        self.zoom_axes[0].set_title(self.title, fontsize=18)
         if len(self.zoom_axes) > 1:
             self.zoom_axes[1].set_xlabel(self.xlabel)
         else:
@@ -123,13 +114,19 @@ class Graphing():
                    ("Power (dBm)",), ("Wavelength (pm)",)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers, animate_temp_graph, animate_mpt_graph,
                          animate_mwt_graph]
-        reg_dims = (((10, 1), (1, 0), 7, 1), ((10, 1), (8, 0), 2, 1))
-        split_dims = (((10, 1), (1, 0), 5, 1), ((10, 1), (6, 0), 4, 1))
-        dims = (reg_dims, (111,), reg_dims, split_dims, (111,), (111,))
+
+        gs1 = gridspec.GridSpec(10, 1)
+        reg_dims1 = (gs1[1:7, :])
+        reg_dims2 = (gs1[7:10, :])
+        reg_dims = (reg_dims1, reg_dims2)
+        split_dims1 = (gs1[1:6, :])
+        split_dims2 = (gs1[6:10, :])
+        split_dims = (split_dims1, split_dims2)
+        dims = [reg_dims, (111,), reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
             titles.append("Average Drift Rate vs.Time")
             xlabels.append("Time (hr)")
-            ylabels.append("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394'))
+            ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
             animate_funcs.append(animate_drift_rates)
             dims.append(reg_dims)
 
@@ -164,16 +161,17 @@ class Graphing():
 
     def show_subplots(self, event):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
-        print(len(self.graphs))
-        for graph in self.graphs:
-            graph.show_sub()
+        if event.dblclick:
+            self.figure.clf()
+            for graph in self.graphs:
+                graph.show_sub()
 
-        self.canvas.mpl_disconnect(self.cid)
-        self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
-        self.canvas.draw()
-        self.toolbar.update()
-        if not self.is_playing:
-            self.master.after(1500, self.pause)
+            self.canvas.mpl_disconnect(self.cid)
+            self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
+            self.canvas.draw()
+            self.toolbar.update()
+            if not self.is_playing:
+                self.master.after(1500, self.pause)
 
     def show_main_plot(self, event):
         self.update_axes()
@@ -212,8 +210,11 @@ def animate_wp_graph(f_name, axis):
         axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
 
+    fontsize = 8
+    if platform.system() == "Linux":
+        fontsize = 10
     legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=10, fancybox=True, shadow=True)
+            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
     for text in legend.get_texts():
         text.set_color("black")
 
@@ -261,8 +262,11 @@ def animate_indiv_waves(f_name, axis):
         idx += 1
 
     if len(axis) > 1:
+        fontsize = 8
+        if platform.system() == "Linux":
+            fontsize = 10
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=10, fancybox=True, shadow=True)
+            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
@@ -285,8 +289,12 @@ def animate_indiv_powers(f_name, axis):
         idx += 1
 
     if len(axis) > 1:
+        fontsize = 8
+        if platform.system() == "Linux":
+            fontsize = 10
+
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=10, fancybox=True, shadow=True)
+            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
@@ -331,13 +339,13 @@ def check_valid_file(f_name, is_cal):
             ret_val = True
             line = check_file.readline()
             ret_val = True
-            if not is_cal and line != "Metadata\n" and need_warning:
+            if not is_cal and line != "Metadata\n":
                 messagebox.showwarning("Invalid File",
                                        "".join(["File was either not generated by ",
                                                 "this program or was altered. The specified csv ",
                                                 "file must be a valid file to view the graphs."]))
                 ret_val = False
-            elif is_cal and line != "Caldata\n" and need_warning:
+            elif is_cal and line != "Caldata\n":
                 messagebox.showwarning("Invalid File",
                                        "".join(["File was either not generated by ",
                                                 "this program or was altered. The specified csv ",
@@ -348,7 +356,7 @@ def check_valid_file(f_name, is_cal):
         prog = "baking"
         if is_cal:
             prog = "calibration"
-        if need_warning:
+        if False:#need_warning:
             messagebox.showwarning("File doesn't exist.",
                                "".join(["Specified csv file doesn't exist, start the {} process "
                                         .format(prog), "to view the graphs."]))
