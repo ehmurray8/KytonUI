@@ -148,18 +148,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
-        if self.oven is not None:
-            self.oven.close()
-            self.oven = None
-        if self.temp_controller is not None:
-            self.temp_controller.close()
-            self.temp_controller = None
-        if self.sm125 is not None:
-            self.sm125.close()
-            self.sm125 = None
-        if self.op_switch is not None:
-            self.op_switch.close()
-            self.op_switch = None
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""

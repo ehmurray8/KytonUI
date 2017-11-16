@@ -23,7 +23,7 @@ def avg_waves_amps(parent):
     wavelengths_avg, amplitudes_avg, lens = \
         __get_average_data(num_snums, parent.header,
                            parent.program_type.in_prog_msg,
-                           parent.sm125, parent.op_switch,
+                           parent.master.sm125, parent.master.op_switch,
                            switch_num, actual_switches, parent.master)
 
     chan_errs, data_pts = __process_data(parent, lens, actual_switches,
@@ -168,6 +168,6 @@ def chan_error(snums, warned, master):
     """
     if not warned:
         errs_str = "SM125 didn't report any data for the serial numbers: {}.".format(
-            ", ".join(sums))
+            ", ".join(snums))
         func = messagebox.showwarning
         add_to_queue(master, func, errs_str, "Scanning error")

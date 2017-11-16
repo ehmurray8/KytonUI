@@ -7,6 +7,7 @@ import device_helper
 import file_helper
 import options_frame
 
+
 class BakingPage(program.Page):
     """Contains the baking_program specific logic, and gui elements."""
 
@@ -40,7 +41,7 @@ class BakingPage(program.Page):
     def baking_loop(self):
         """Runs the baking process."""
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temperature = self.temp_controller.get_temp_c()
+            temperature = self.master.temp_controller.get_temp_c()
             temperature = float(temperature[:-3])
         else:
             temperature = 0.0
@@ -58,7 +59,7 @@ class BakingPage(program.Page):
             amplitudes_avg.append(self.data_pts[snum][1])
 
         if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temp2 = self.temp_controller.get_temp_c()
+            temp2 = self.master.temp_controller.get_temp_c()
             temperature += float(temp2[:-3])
 
         temperature /= 2.0
