@@ -40,32 +40,23 @@ class BakingPage(program.Page):
 
     def baking_loop(self):
         """Runs the baking process."""
-        if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temperature = self.master.temp_controller.get_temp_c()
-            temperature = float(temperature[:-3])
-        else:
-            temperature = 0.0
+        temperature = self.master.temp_controller.get_temp_c()
+        temperature = float(temperature[:-3])
 
         wavelengths_avg = []
         amplitudes_avg = []
 
-        if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            device_helper.avg_waves_amps(self)
-        else:
-            time.sleep(15)
+        self.data_pts = device_helper.avg_waves_amps(self)
 
         for snum in self.snums:
             wavelengths_avg.append(self.data_pts[snum][0])
             amplitudes_avg.append(self.data_pts[snum][1])
 
-        if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            temp2 = self.master.temp_controller.get_temp_c()
-            temperature += float(temp2[:-3])
+        temp2 = self.master.temp_controller.get_temp_c()
+        temperature += float(temp2[:-3])
 
         temperature /= 2.0
         curr_time = time.time()
 
-        if len(sys.argv) > 1 and sys.argv[1] == "-k":
-            file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                                       curr_time, temperature, wavelengths_avg,
-                                       amplitudes_avg, options_frame.BAKING)
+        file_helper.write_csv_file(self.options.file_name.get(), self.snums,
+                                   curr_time, temperature, wavelengths_avg, amplitudes_avg, options_frame.BAKING)

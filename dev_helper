@@ -6,28 +6,17 @@ and the Optical Switch.
 import sys
 import time
 import socket
+import numpy as np
 from tkinter import messagebox
 
 
 def avg_waves_amps(parent):
     """Gets the average wavelengths and powers, updates data_pts."""
-    #actual_switches = []
-    #switch_num = 0
-    lens = list(map(lambda x: len(x), parent.switches))
-    #for i, arr in enumerate(parent.switches):
-    #    if len(arr) != 0 and arr[0] != 0:
-    #        actual_switches = arr
-    #        #switch_num = i
-    #        switch_num += 1
-    #        break
-    actual_switches =
+    lens = list(map(lambda x: len(x), parent.snums))
+    actual_switches = functools.reduce(lambda x, y: x+y, parent.switches)
 
-    num_snums = sum(lens)
-    wavelengths_avg, amplitudes_avg, lens = \
-        __get_average_data(num_snums, None,#parent.header,
-                           parent.program_type.in_prog_msg,
-                           parent.master.laser, parent.master.switch,
-                           switch_num, actual_switches, parent.master, lens)
+    wavelengths_avg, amplitudes_avg = __get_average_data(parent.master.laser, parent.master.switch,
+                                                         actual_switches, parent.master, lens)
 
     chan_errs, data_pts = __process_data(parent, lens, actual_switches,
                                          wavelengths_avg, amplitudes_avg,
@@ -40,45 +29,33 @@ def avg_waves_amps(parent):
     return data_pts
 
 
-def __get_data(header, in_prog_msg, all_waves, all_amps, sm125, op_switch,
-               actual_switches, master):
-    keep_going = True
-    switch_index = 0
+def __get_data(all_waves, all_amps, laser, op_switch, actual_switches, master):
     wavelens = []
     amps = []
-    #lens = []
-    while keep_going:
+    for switch in actual_switches:
         try:
-            if len(actual_switches) > switch_index:
-                op_switch.set_channel(actual_switches[switch_index])
-                switch_index += 1
-                master.after(1250, lambda: __get_sm125_data(header, in_prog_msg, all_waves, all_amps, sm125, master))
-            else:
-                keep_going = False
+            op_switch.set_channel(switch)
+            master.after(1250, lambda: __get_sm125_data(all_waves, all_amps, laser))
         except socket.error:
-            func = header.configure
-            add_to_queue(master, func, {
-                         'text': "SM125 Connection Error...Trying Again"})
-    return wavelens, amps#, lens
+            pass
+    return wavelens, amps
 
 
-def __get_sm125_data(header, in_prog_msg, all_waves, all_amps, sm125, master, lens):
-    wavelens, amps, temp_lens = sm125.get_data()
-    lens.set(temp_lens)
+def __get_sm125_data(all_waves, all_amps, sm125):
+    wavelens, amps, lens = sm125.get_data()
     all_waves.append(wavelens)
     all_amps.append(amps)
-    #func = header.configure
-    #add_to_queue(master, func, {'text': in_prog_msg})
 
 
-def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
-                       switch_num, actual_switches, master, lens):
+def __get_average_data(sm125, op_switch, actual_switches, master, lens):
     need_init = True
-    for i in range(num_snums):
+
+    try:
+
+    for i in range(sum(lens)):
         all_waves = []
         all_amps = []
-        wavelengths, amplitudes = __get_data(header, in_prog_msg, all_waves, all_amps,
-                                             sm125, op_switch, actual_switches, master)
+        wavelengths, amplitudes = __get_data(all_waves, all_amps, sm125, op_switch, actual_switches, master)
         if need_init:
             wavelengths_avg = [0] * (len(wavelengths) +
                                      len(actual_switches) - 1)
@@ -117,7 +94,7 @@ def __get_average_data(num_snums, header, in_prog_msg, sm125, op_switch,
 
     wavelengths_avg = [x / num_snums for x in wavelengths_avg]
     amplitudes_avg = [x / num_snums for x in amplitudes_avg]
-    return wavelengths_avg, amplitudes_avg, lens
+    return wavelengths_avg, amplitudes_avg
 
 
 def __process_data(parent, lens, actual_switches, wavelengths_avg,
@@ -150,11 +127,6 @@ def __process_data(parent, lens, actual_switches, wavelengths_avg,
             offset = len(actual_switches) - 1
         chan_num += 1
     return chan_errs, data_pts
-
-
-def add_to_queue(master, func, *args, **kwargs):
-    """Adds the warning to the main_queue to properly handle threading."""
-    master.main_queue.put((func, args, kwargs))
 
 
 def chan_error(snums, warned, master):

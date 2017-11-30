@@ -23,11 +23,11 @@ import colors
 style.use('kyton')
 
 
-OVEN = "Dicon Oven"
+OVEN = "Delta Oven"
 OVEN_LOC = 27
 
 LASER = "Micron Optics SM125"
-LASER_LOC = "10.0.0.122"
+LASER_LOC = "192.168.1.203"
 LASER_PORT = 50000
 
 SWITCH = "Optical Switch"
@@ -198,8 +198,7 @@ class Application(tk.Tk):
             elif dev == OVEN:
                 if self.oven is None:
                     try:
-                        self.oven = devices.Oven("GPIB0::{}::INSTR".format(
-                            int(loc_ent.get())), self.manager)
+                        self.oven = devices.Oven(int(loc_ent.get()), self.manager)
                         connect = True
                     except visa.VisaIOError:
                         conn_warning(dev)

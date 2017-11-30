@@ -112,7 +112,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def start(self, can_start=False):
         """Starts the recording process."""
         delayed_prog = None
-
         if not can_start:
             if not self.running:
                 for chan, snum, pos in zip(self.options.chan_nums,
@@ -121,15 +120,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     if snum.get() != "" and snum.get() not in self.snums:
                         self.snums.append(snum.get())
                         self.channels[chan].append(snum.get())
-                        self.switches[chan].append(pos.get())
+                        if pos.get() != 0:
+                            self.switches[chan].append(pos.get())
 
                 self.running = True
                 self.start_btn.configure(text="Pause")
-                self.header.configure(text=self.program_type.in_prog_msg)
+                #self.header.configure(text=self.program_type.in_prog_msg)
                 ui_helper.lock_widgets(self.options)
 
                 delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                     1000 * 60 * 60 + .5), lambda: self.start(True))
+                                                     1000 * 60 * 60 + .5), self.program_loop)
             else:
                 if delayed_prog is not None:
                     self.master.after_cancel(delayed_prog)
@@ -141,7 +141,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def pause_program(self):
         """Pauses the program."""
         self.start_btn.configure(text="Start")
-        self.header.configure(text=self.program_type.title)
+        #self.header.configure(text=self.program_type.title)
         ui_helper.unlock_widgets(self.options)
         self.running = False
         self.stable_count = 0
