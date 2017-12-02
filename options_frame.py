@@ -42,7 +42,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         self.chan_rows = [1, 1, 1, 1]
 
         # Prevent from being garbage collected
-        self.img_plus = tk.PhotoImage(file=r'plus.png')
+        self.img_plus = tk.PhotoImage(file=r'assets\plus.png')
 
         self.create_options_grid(colors.WHITE)
 

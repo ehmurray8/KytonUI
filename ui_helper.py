@@ -14,7 +14,7 @@ def file_entry(container, label_text, row, width):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, sticky='ew')
-    button_image = Image.open('docs_icon.png')
+    button_image = Image.open('assets\docs_icon.png')
     button_photo = ImageTk.PhotoImage(button_image)
 
     browse_button = ttk.Button(

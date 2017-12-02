@@ -69,8 +69,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.graph_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
-        self.img_config = tk.PhotoImage(file=r'config.png')
-        self.img_graph = tk.PhotoImage(file=r'graph.png')
+        self.img_config = tk.PhotoImage(file=r'assets\config.png')
+        self.img_graph = tk.PhotoImage(file=r'assets\graph.png')
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
