@@ -135,12 +135,17 @@ def open_center(width, height, root):
 
 def lock_widgets(parent):
     """Locks the widgets to prevent the user from editing while the program is running."""
-    for child in parent.children.values():
-        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
-                and "Frame" not in child.winfo_class():
-            child.config(state=tk.DISABLED)
-        elif child.winfo_class() == "Frame":
-            lock_widgets(child)
+    try:
+        for child in parent.winfo_children:#.values():
+            if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
+                    and "Frame" not in child.winfo_class():
+                #child.config(state=tk.DISABLED)
+                child.state(["disabled"])
+            elif child.winfo_class() == "Frame":
+                lock_widgets(child)
+    except Exception as e:
+        print(str(e))
+        pass
 
 
 def unlock_widgets(parent):
