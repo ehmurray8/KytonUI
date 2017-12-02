@@ -1,9 +1,8 @@
 """Module for baking program specific logic."""
 # pylint:disable=import-error, relative-import, missing-super-argument
-import sys
 import time
 import program
-import device_helper
+import dev_helper
 import file_helper
 import options_frame
 
@@ -43,14 +42,8 @@ class BakingPage(program.Page):
         temperature = self.master.temp_controller.get_temp_c()
         temperature = float(temperature[:-3])
 
-        wavelengths_avg = []
-        amplitudes_avg = []
-
-        self.data_pts = device_helper.avg_waves_amps(self)
-
-        for snum in self.snums:
-            wavelengths_avg.append(self.data_pts[snum][0])
-            amplitudes_avg.append(self.data_pts[snum][1])
+        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                                self.options.num_pts.get(), self.master.after)
 
         temp2 = self.master.temp_controller.get_temp_c()
         temperature += float(temp2[:-3])
@@ -59,4 +52,4 @@ class BakingPage(program.Page):
         curr_time = time.time()
 
         file_helper.write_csv_file(self.options.file_name.get(), self.snums,
-                                   curr_time, temperature, wavelengths_avg, amplitudes_avg, options_frame.BAKING)
+                                   curr_time, temperature, waves, amps, options_frame.BAKING)

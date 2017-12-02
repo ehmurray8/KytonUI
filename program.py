@@ -9,14 +9,13 @@ import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import platform
-
 import options_frame
 import file_helper as fh
 import graphing
 import ui_helper
 
+TEST_FILE = "./output/test0930-2.csv"
 LARGE_FONT = ("Verdana", 13)
-
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
 
@@ -45,14 +44,14 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
 
-    def __init__(self, master, id, program_type):
+    def __init__(self, master, prog_id, program_type):
         s = ttk.Style()
         s.configure('InnerNB.TNotebook', tabposition='wn')
 
         super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
-        self.id = id
+        self.id = prog_id
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -64,7 +63,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.options = None
         self.start_btn = None
         self.data_pts = {}
-        
+        self.delayed_prog = None
+
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
 
@@ -82,13 +82,14 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.options.grid_rowconfigure(3, minsize=20)
         self.options.grid_rowconfigure(5, minsize=20)
         self.options.pack(expand=True, side="right", fill="both")
-        ttk.Button(self.options, text="Delete Tab", command=lambda: master.delete_tab(self.id)).grid(row=0, column=0, sticky='nw')
+        ttk.Button(self.options, text="Delete Tab", command=lambda: master.delete_tab(self.id)).grid(row=0, column=0,
+                                                                                                     sticky='nw')
 
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
 
         # Graphs need to be empty until csv is created
-        self.fig = Figure(figsize=(5,5), dpi=100)
+        self.fig = Figure(figsize=(5, 5), dpi=100)
 
         self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
         self.canvas.show()
@@ -100,7 +101,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         self.toolbar = Toolbar(self.canvas, self.graph_frame)
         self.toolbar.update()
-        self.graph_helper = graphing.Graphing(self.options.file_name.get(), self.program_type.plot_num, 
+        file_name = self.options.file_name
+        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num,
                                               is_cal, self.fig, self.canvas, self.toolbar, self.master)
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
@@ -111,9 +113,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def start(self, can_start=False):
         """Starts the recording process."""
-        delayed_prog = None
+        switch_chan = -1
         if not can_start:
-            if not self.running:
+            if not self.running and len(self.options.sn_ents):
                 for chan, snum, pos in zip(self.options.chan_nums,
                                            self.options.sn_ents,
                                            self.options.switch_positions):
@@ -121,19 +123,29 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.snums.append(snum.get())
                         self.channels[chan].append(snum.get())
                         if pos.get() != 0:
+                            if switch_chan != -1 and switch_chan != chan:
+                                break
                             self.switches[chan].append(pos.get())
+                            switch_chan = chan
+                if switch_chan != -1 and switch_chan != chan:
+                    messagebox.showwarning("Invalid configuration",
+                                           "Cannot have multiple channels configured to use the optical switch.")
+                    self.pause_program()
+                else:
+                    self.running = True
+                    self.start_btn.configure(text="Pause")
+                    #self.header.configure(text=self.program_type.in_prog_msg)
+                    ui_helper.lock_widgets(self.options)
 
-                self.running = True
-                self.start_btn.configure(text="Pause")
-                #self.header.configure(text=self.program_type.in_prog_msg)
-                ui_helper.lock_widgets(self.options)
-
-                delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                     1000 * 60 * 60 + .5), self.program_loop)
+                    self.delayed_prog = self.master.after(int(self.options.delay.get() *
+                                                          1000 * 60 * 60 + .5), self.program_loop)
             else:
-                if delayed_prog is not None:
-                    self.master.after_cancel(delayed_prog)
-                    delayed_prog = None
+                if self.delayed_prog is not None:
+                    self.master.after_cancel(self.delayed_prog)
+                    self.delayed_prog = None
+                if not len(self.options.sn_ents):
+                    messagebox.showwarning("Invalid configuration",
+                                           "Please add fbg entries to your configuration before running the program.")
                 self.pause_program()
         else:
             self.program_loop()
@@ -163,18 +175,20 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
 class Toolbar(NavigationToolbar2TkAgg):
     def __init__(self, figure_canvas, parent):
-        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
-                         ('Back', 'Back to  previous view', 'back', 'back'),
-                         ('Forward', 'Forward to next view', 'forward', 'forward'),
-                         (None, None, None, None),
-                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),
-                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-                         (None, None, None, None),
-                         ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'),
-                         ('Save', 'Save the figure', 'filesave', 'save_figure'),
-                         (None, None, None, None),
-                         ('Pause', 'Pause the animation', 'pause', 'pause'))
+        self.pause_toolbar = (('Home', 'Reset original view', 'home', 'home'),
+                              ('Back', 'Back to  previous view', 'back', 'back'),
+                              ('Forward', 'Forward to next view', 'forward', 'forward'),
+                              (None, None, None, None),
+                              ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),
+                              ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+                              (None, None, None, None),
+                              ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'),
+                              ('Save', 'Save the figure', 'filesave', 'save_figure'),
+                              (None, None, None, None),
+                              ('Pause', 'Pause the animation', 'pause', 'pause'))
 
+
+        self.toolitems = self.pause_toolbar
         self.figure_canvas = figure_canvas
         self.parent = parent
         self.graphing_helper = None
@@ -186,17 +200,7 @@ class Toolbar(NavigationToolbar2TkAgg):
     def play(self):
         print("Play")
         self.graphing_helper.play()
-        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
-                         ('Back', 'Back to  previous view', 'back', 'back'),                   
-                         ('Forward', 'Forward to next view', 'forward', 'forward'),            
-                         (None, None, None, None),                                             
-                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),  
-                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),                
-                         (None, None, None, None),                                             
-                         ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), 
-                         ('Save', 'Save the figure', 'filesave', 'save_figure'),               
-                         (None, None, None, None),                                             
-                         ('Pause', 'Pause the animation', 'pause', 'pause'))
+        self.toolitems = self.pause_toolbar
         if platform.system() == "Linux":
             NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
         else:
@@ -209,12 +213,12 @@ class Toolbar(NavigationToolbar2TkAgg):
         print("Pause")
         self.graphing_helper.pause()
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),                     
-                         ('Back', 'Back to  previous view', 'back', 'back'),                   
+                         ('Back', 'Back to  previous view', 'back', 'back'),
                          ('Forward', 'Forward to next view', 'forward', 'forward'),            
                          (None, None, None, None),                                             
-                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),  
-                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),                
-                         (None, None, None, None),                                             
+                         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),
+                         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+                         (None, None, None, None),
                          ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), 
                          ('Save', 'Save the figure', 'filesave', 'save_figure'),               
                          (None, None, None, None),                                             

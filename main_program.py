@@ -39,6 +39,7 @@ TEMP_LOC = 12
 
 CAL_NUM = -1
 
+
 class Application(tk.Tk):
     """Main Application class."""
 
@@ -133,7 +134,6 @@ class Application(tk.Tk):
             col += 2
         device_frame.grid_columnconfigure(col, minsize=100)
         device_frame.grid_rowconfigure(0, minsize=10)
-        ent_style = ttk.Style()
 
         ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='ew')
         ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(
@@ -261,13 +261,13 @@ class Application(tk.Tk):
             messagebox.showwarning("Calibration Program Open", 
                     "A calibration program is already open, only one cal can be run at the same time.")
 
-    def delete_tab(self, id):
-        if id == CAL_NUM:
+    def delete_tab(self, prog_id):
+        if prog_id == CAL_NUM:
             self.main_notebook.forget(self.cal_tab)
             self.cal_tab = None
         else:
-            self.main_notebook.forget(self.bake_tabs[id])
-            del self.bake_tabs[id]
+            self.main_notebook.forget(self.bake_tabs[prog_id])
+            del self.bake_tabs[prog_id]
 
     def tkloop(self):
         """Loop for threaded processes."""
@@ -286,8 +286,8 @@ def conn_warning(dev):
                            "make sure the device is connected to the computer and the location information is correct.")
 
 
-def loc_warning(type):
-    messagebox.showwarning("Invalid Location", "Please import an integer corresponding to the {}.".format(type))
+def loc_warning(loc_type):
+    messagebox.showwarning("Invalid Location", "Please import an integer corresponding to the {}.".format(loc_type))
 
 
 if __name__ == "__main__":

@@ -63,7 +63,6 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
     def create_options_grid(self, white):
         """Creates the grid for the user to configure options."""
         options_grid = ttk.Frame(self)
-        #options_grid.pack()
         options_grid.grid(column=1, sticky='w')
 
         # Options Grid Init
@@ -133,27 +132,12 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
             options_grid, "Excel file name: ", row_num, 30)
         row_num += 1
 
-        # (TEMP) Fiber SN Inputs
-        #index = 1
-        # while index <= num_sns:
-        #    serial_num, chan_num, switch_pos = \
-        #        uh.serial_num_entry(options_grid,
-        #                            "Serial Number " + str(index) + ": ",
-        #                            row_num, 5, "FBG " + str(index))
-        #    self.sn_ents.append(serial_num)
-        #    self.chan_nums.append(chan_num)
-        #    self.switch_positions.append(switch_pos)
-
-        #    index += 1
-        #    row_num += 1
-
     def create_start_btn(self, start):
         """Creates the start button in the app."""
         # Start button
         start_button = ttk.Button(self)
         start_button["text"] = "Start {}".format(self.program)
         start_button["command"] = start
-        #start_button.pack(pady=10, padx=30)
         start_button.grid(row=2, column=1)
         return start_button
 
@@ -161,7 +145,6 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         xcel_btn = ttk.Button(self)
         xcel_btn["text"] = "Create Excel Spreadsheet"
         xcel_btn["command"] = create_xcel
-        #xcel_btn.pack(pady=10, padx=30)
         xcel_btn.grid(row=4, column=1)
         return xcel_btn
 
@@ -182,7 +165,6 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
     def init_fbgs(self):
         fbg_grid = ttk.Frame(self)
         for i in range(4):
-            #fbg_grid.grid_columnconfigure(((i+1) * 2), minsize=40)
             col_num = i*2+1
             ttk.Label(fbg_grid, text="Channel {}".format(
                 i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)

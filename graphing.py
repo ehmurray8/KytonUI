@@ -7,14 +7,12 @@ import platform
 from tkinter import messagebox
 import matplotlib.animation as animation
 from matplotlib import style
-import matplotlib.pyplot as plt
 import file_helper
 import matplotlib.gridspec as gridspec
 style.use("kyton")
 
-TEST_FILE = "./output/test0930-2.csv"
 
-class Graph():
+class Graph:
     def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal):
         self.title = title
         self.is_cal = is_cal
@@ -46,13 +44,13 @@ class Graph():
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
         self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1500)
 
-    def sub_graph(self, i):
+    def sub_graph(self, _):
         self.sub_axis.clear()
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
         self.sub_axis.set_ylabel(self.ylabels[0])
-        if check_valid_file(self.file_name, self.is_cal):
-            self.animate_func(self.file_name, (self.sub_axis,))
+        if check_valid_file(self.file_name.get(), self.is_cal):
+            self.animate_func(self.file_name.get(), (self.sub_axis,))
         else:
             # Invalid File
             pass
@@ -76,7 +74,7 @@ class Graph():
             self.zoom_axes.append(share)
         self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000)
 
-    def main_graph(self, i):
+    def main_graph(self, _):
         for axis in self.zoom_axes:
             axis.clear()
         self.zoom_axes[0].set_title(self.title, fontsize=18)
@@ -86,16 +84,16 @@ class Graph():
             self.zoom_axes[0].set_xlabel(self.xlabel)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
-        if check_valid_file(self.file_name, self.is_cal):
-            self.animate_func(self.file_name, tuple(self.zoom_axes))
+        if check_valid_file(self.file_name.get(), self.is_cal):
+            self.animate_func(self.file_name.get(), tuple(self.zoom_axes))
         else:
             # Invalid File
             pass
         
 
-class Graphing():
+class Graphing:
     def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master):
-        self.file_name = TEST_FILE#fname
+        self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
         self.figure = figure
@@ -157,7 +155,7 @@ class Graphing():
             graph.play()
 
     def __file_error(self): 
-        messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}." .format(self.file_name))
+        messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}." .format(self.file_name.get()))
 
     def show_subplots(self, event):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper

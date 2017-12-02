@@ -26,9 +26,10 @@ CAL_SECTION = "Calibration"
 
 lock = threading.Lock()
 
+
 # pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
-                   function, drift_rate=None, real_cal_pt=False):
+                   func, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
 
     file_name = os.path.splitext(file_name)[0] + '.csv'
@@ -41,7 +42,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     else:
         file_obj = open(file_name, "w")
 
-        if function == options_frame.BAKING:
+        if func == options_frame.BAKING:
             header = "Metadata\n"
         else:
             header = "Caldata\n"
@@ -56,7 +57,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
 
         line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
-        if function == options_frame.CAL:
+        if func == options_frame.CAL:
             line += ",Real Point,Drift Rate(mK/min)"
         line += "\n\n"
         file_obj.write(line)
@@ -64,7 +65,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     for snum, wave, power in zip(serial_nums, wavelengths, powers):
         line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," +\
             str(wave) + "," + str(power)
-        if function == options_frame.CAL:
+        if func == options_frame.CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
         file_obj.write("".join([line, "\n"]))
 

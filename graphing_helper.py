@@ -48,6 +48,7 @@ def show_main_plots(fig, num, is_cal, fname=TEST_FILE):
         axes.append(axis)
     return axes
 
+
 def create_mean_wave_time_graph(f_name, animate, fig, dims, is_cal, need_warning):
     """Create a mpl graph in a separate window."""
     if check_valid_file(f_name, is_cal):

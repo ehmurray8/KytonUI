@@ -4,7 +4,6 @@ import os
 from tkinter import ttk, filedialog 
 import tkinter as tk 
 from PIL import Image, ImageTk
-import file_helper
 
 ENTRY_FONT = ('Helvetica', 14)
 
@@ -132,6 +131,7 @@ def open_center(width, height, root):
 
     root.geometry("{}x{}-{}+{}".format(int(width), int(height),
                                        int(x_cord), int(y_cord)))
+
 
 def lock_widgets(parent):
     """Locks the widgets to prevent the user from editing while the program is running."""
