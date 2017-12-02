@@ -35,6 +35,7 @@ class Graph:
         self.anim.event_source.start()
 
     def show_sub(self):
+        print("Show sub file name: {}".format(to_csv(self.file_name.get())))
         if self.anim is not None:
             self.anim.event_source.stop()
 
@@ -49,13 +50,15 @@ class Graph:
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
         self.sub_axis.set_ylabel(self.ylabels[0])
-        if check_valid_file(self.file_name.get(), self.is_cal):
-            self.animate_func(self.file_name.get(), (self.sub_axis,))
+        if check_valid_file(self.file_name, self.is_cal):
+            print("Animating {} ...".format(self.animate_func.__name__))
+            self.animate_func(self.file_name, (self.sub_axis,))
         else:
             # Invalid File
             pass
 
     def show_main(self):
+        print("Show main file name: {}".format(to_csv(self.file_name.get())))
         self.anim.event_source.stop()
         if self.sub_axis is not None:
             self.sub_axis.cla()
@@ -84,8 +87,8 @@ class Graph:
             self.zoom_axes[0].set_xlabel(self.xlabel)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
-        if check_valid_file(self.file_name.get(), self.is_cal):
-            self.animate_func(self.file_name.get(), tuple(self.zoom_axes))
+        if check_valid_file(self.file_name, self.is_cal):
+            self.animate_func(self.file_name, tuple(self.zoom_axes))
         else:
             # Invalid File
             pass
@@ -155,11 +158,12 @@ class Graphing:
             graph.play()
 
     def __file_error(self): 
-        messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}." .format(self.file_name.get()))
+        messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}."
+                               .format(self.file_name.get()))
 
-    def show_subplots(self, event):
+    def show_subplots(self, event=None):
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
-        if event.dblclick:
+        if event is None or event.dblclick:
             self.figure.clf()
             for graph in self.graphs:
                 graph.show_sub()
@@ -190,11 +194,12 @@ def animate_mwt_graph(f_name, axes):
 
 
 def __get_mean_wave_diff_time_data(f_name):
+    print("Get_mean_wave_diff_time_data f_name: {}".format(to_csv(f_name.get())))
     if platform.system() != 'Linux':
-        os.chmod(f_name, stat.S_IRWXU)
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+        os.chmod(to_csv(f_name.get()), stat.S_IRWXU)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     if platform.system() != 'Linux':
-        os.chmod(f_name, stat.S_IREAD)
+        os.chmod(to_csv(f_name.get()), stat.S_IREAD)
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_wavelen_diffs
@@ -208,17 +213,17 @@ def animate_wp_graph(f_name, axis):
         axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
 
-    fontsize = 8
+    font_size = 8
     if platform.system() == "Linux":
-        fontsize = 10
+        font_size = 10
     legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
+            ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
     for text in legend.get_texts():
         text.set_color("black")
 
 
 def __get_wave_power_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     return data_coll.wavelens, data_coll.powers, mdata.serial_nums
 
@@ -231,7 +236,7 @@ def animate_temp_graph(f_name, axes):
 
 
 def __get_temp_time_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.temp_diffs, data_coll.temps
@@ -243,7 +248,7 @@ def animate_mpt_graph(f_name, axis):
 
 
 def __get_mean_power_diff_time_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.mean_power_diffs
@@ -260,17 +265,17 @@ def animate_indiv_waves(f_name, axis):
         idx += 1
 
     if len(axis) > 1:
-        fontsize = 8
+        font_size = 8
         if platform.system() == "Linux":
-            fontsize = 10
+            font_size = 10
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
 
 def __get_indiv_waves_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.wavelens, data_coll.wavelen_diffs, mdata.serial_nums
@@ -287,22 +292,22 @@ def animate_indiv_powers(f_name, axis):
         idx += 1
 
     if len(axis) > 1:
-        fontsize = 8
+        font_size = 8
         if platform.system() == "Linux":
-            fontsize = 10
+            font_size = 10
 
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=fontsize, fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
 
-
 def __get_indiv_powers_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
+
 
 def animate_drift_rates(f_name, axes):
     times, times_real, drates, drates_real = __get_drift_rates(f_name)
@@ -312,7 +317,7 @@ def animate_drift_rates(f_name, axes):
 
 
 def __get_drift_rates(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(f_name)
+    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
     data_coll = file_helper.create_data_coll(mdata, entries_df)
     times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
     drates = data_coll.drift_rates
@@ -330,11 +335,10 @@ def __get_drift_rates(f_name):
 def check_valid_file(f_name, is_cal):
     """Checks if the file is a valid formatted csv file."""
     ret_val = False
-    if os.path.isfile(f_name):
+    if os.path.isfile(f_name.get()):
         if platform.system() != 'Linux':
-            os.chmod(f_name, stat.S_IRWXU)
-        with open(f_name, "r") as check_file:
-            ret_val = True
+            os.chmod(f_name.get(), stat.S_IRWXU)
+        with open(f_name.get(), "r") as check_file:
             line = check_file.readline()
             ret_val = True
             if not is_cal and line != "Metadata\n":
@@ -349,13 +353,18 @@ def check_valid_file(f_name, is_cal):
                                                 "this program or was altered. The specified csv ",
                                                 "file must be a valid file to view the graphs."]))
                 ret_val = False
-        os.chmod(f_name, stat.S_IREAD)
+        os.chmod(f_name.get(), stat.S_IREAD)
     if not ret_val:
         prog = "baking"
         if is_cal:
             prog = "calibration"
         if False:#need_warning:
             messagebox.showwarning("File doesn't exist.",
-                               "".join(["Specified csv file doesn't exist, start the {} process "
-                                        .format(prog), "to view the graphs."]))
+                                   "".join(["Specified csv file doesn't exist, start the {} process "
+                                            .format(prog), "to view the graphs."]))
     return ret_val
+
+
+def to_csv(xcel_file):
+    file = xcel_file.split(".")[0]
+    return "{}.csv".format(file)

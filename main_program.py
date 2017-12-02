@@ -237,7 +237,6 @@ class Application(tk.Tk):
         else:
             button['text'] = "Connect"
 
-
     def create_bake_tab(self):
         # Need to add logic for confirming, and deleting any cal tabs
         if self.cal_tab is None:

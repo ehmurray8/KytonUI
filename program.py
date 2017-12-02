@@ -4,6 +4,8 @@ program and baking program.
 """
 
 # pylint: disable=import-error, relative-import
+import time
+from PIL import Image, ImageTk
 from tkinter import ttk, messagebox
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -69,8 +71,10 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.graph_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
-        self.img_config = tk.PhotoImage(file=r'assets\config.png')
-        self.img_graph = tk.PhotoImage(file=r'assets\graph.png')
+        img = Image.open(r'assets\config.png')
+        self.img_config = ImageTk.PhotoImage(img)
+        img = Image.open(r'assets\graph.png')
+        self.img_graph = ImageTk.PhotoImage(img)
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
@@ -136,7 +140,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     self.start_btn.configure(text="Pause")
                     #self.header.configure(text=self.program_type.in_prog_msg)
                     ui_helper.lock_widgets(self.options)
-
+                    time.sleep(.1)
+                    self.graph_helper.show_subplots()
+                    time.sleep(.1)
                     self.delayed_prog = self.master.after(int(self.options.delay.get() *
                                                           1000 * 60 * 60 + .5), self.program_loop)
             else:
