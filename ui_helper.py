@@ -98,7 +98,7 @@ def checkbox_entry(container, label_text, row, checked=True):
     """Creates a checkbox entry, and returns a reference to the entry var."""
     int_var = tk.IntVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    checkbox = ttk.Checkbutton(container, variable=int_var)
+    checkbox = ttk.Checkbutton(container, variable=int_var, width=5)
     checkbox.grid(row=row, column=2, sticky='ew')
     if checked:
         checkbox.invoke()
@@ -150,4 +150,4 @@ def unlock_widgets(options_frame):
     """Unlocks the widgets."""
     for child in options_frame.options_grid.winfo_children():
         if "Label" not in child.winfo_class():
-            child.config(state="enabled")
+            child.config(state="normal")

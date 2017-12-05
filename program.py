@@ -126,7 +126,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             if self.delayed_prog is not None:
                     self.master.after_cancel(self.delayed_prog)
                     self.delayed_prog = None
-            elif not self.master.running:
+            elif self.master.running:
                 prog = "Baking"
                 run = "calibration"
                 if self.program_type.prog_id == BAKING_ID:
@@ -134,7 +134,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     run = "bake"
                 mbox.showwarning("{} program is already running".format(prog),
                                  "Please stop the {} program before starting the {}."
-                                 .format(run))
+                                 .format(prog, run))
             elif not len(self.options.sn_ents):
                 mbox.showwarning("Invalid configuration",
                                     "Please add fbg entries to your configuration before " +
@@ -161,17 +161,17 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     need_switch = False
                     need_oven = False
                     if self.master.laser is None:
-                        self.conn_buttons[0].invoke()
+                        self.master.conn_buttons[0].invoke()
                     if switch_chan != -1 and self.master.switch is None:
                         need_switch = True
-                        self.conn_buttons[1].invoke()
-                    if self.temp_controller is None:
-                        self.conn_buttons[2].invoke()
-                    if self.program_type.prog_id == CAL_ID and self.oven is None:
+                        self.master.conn_buttons[1].invoke()
+                    if self.master.temp_controller is None:
+                        self.master.conn_buttons[2].invoke()
+                    if self.program_type.prog_id == CAL_ID and self.master.oven is None:
                         need_oven = True
-                        self.conn_buttons[3].invoke()
+                        self.master.conn_buttons[3].invoke()
 
-                    if self.master.laser is not None and (self.master.switch is not None or not need_switch) and
+                    if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
                         self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
 
                         self.master.running = True
@@ -191,7 +191,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def pause_program(self):
         """Pauses the program."""
-        self.start_btn.configure(text="Start")
+        self.start_btn.configure(text=self.program_type.title)
         # self.header.configure(text=self.program_type.title)
         ui_helper.unlock_widgets(self.options)
         self.running = False
@@ -215,7 +215,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 class Toolbar(NavigationToolbar2TkAgg):
     """Overrides the default Matplotlib toolbar to add play and pause animation buttons."""
     def __init__(self, figure_canvas, parent):
-        self.pause_toolbar = (('Home', 'Reset original view', 'home', 'home'),
+        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
                               ('Back', 'Back to  previous view', 'back', 'back'),
                               ('Forward', 'Forward to next view',
                                'forward', 'forward'),
@@ -229,9 +229,9 @@ class Toolbar(NavigationToolbar2TkAgg):
                               ('Save', 'Save the figure',
                                'filesave', 'save_figure'),
                               (None, None, None, None),
-                              ('Pause', 'Pause the animation', 'pause', 'pause'))
+                              ('Pause', 'Pause the animation', 'pause', 'pause'),
+                              ('Play', 'Play the animation', 'play', 'play'))
 
-        self.toolitems = self.pause_toolbar
         self.figure_canvas = figure_canvas
         self.parent = parent
         self.graphing_helper = None
@@ -243,41 +243,8 @@ class Toolbar(NavigationToolbar2TkAgg):
 
     def play(self):
         """Plays graph animation linked to play button on toolbar."""
-        print("Play")
         self.graphing_helper.play()
-        self.toolitems = self.pause_toolbar
-        if platform.system() == "Linux":
-            NavigationToolbar2TkAgg.__init__(
-                self, self.figure_canvas, self.parent)
-        else:
-            self.update()
-            self.draw()
-            self.figure_canvas.draw()
-            self.figure_canvas.draw_idle()
-
+        
     def pause(self):
         """Pauses graph animation linked to button on toolbar."""
-        print("Pause")
         self.graphing_helper.pause()
-        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
-                          ('Back', 'Back to  previous view', 'back', 'back'),
-                          ('Forward', 'Forward to next view', 'forward', 'forward'),
-                          (None, None, None, None),
-                          ('Pan', 'Pan axes with left mouse, zoom with right',
-                           'move', 'pan'),
-                          ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-                          (None, None, None, None),
-                          ('Subplots', 'Configure subplots',
-                           'subplots', 'configure_subplots'),
-                          ('Save', 'Save the figure', 'filesave', 'save_figure'),
-                          (None, None, None, None),
-                          ('Play', 'Play the animation', 'play', 'play'))
-
-        if platform.system() == "Linux":
-            NavigationToolbar2TkAgg.__init__(
-                self, self.figure_canvas, self.parent)
-        else:
-            self.update()
-            self.draw()
-            self.figure_canvas.draw()
-            self.figure_canvas.draw_idle()

@@ -35,8 +35,8 @@ def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
     for switch in switches_arr:
         try:
             op_switch.set_channel(switch)
-            #after_func(1250, lambda: __get_sm125_data(wavelens, amps, switch_num, laser))
-            time.sleep(1.2)
+            after_func(1250, lambda: print("Done"))#__get_sm125_data(wavelens, amps, switch_num, laser))
+            #time.sleep(1.2)
             __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass

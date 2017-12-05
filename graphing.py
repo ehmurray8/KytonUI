@@ -50,8 +50,7 @@ class Graph(object):
             axis.cla()
         self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
-        self.anim = animation.FuncAnimation(
-            self.fig, self.sub_graph, interval=1500)
+        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1500)
 
     def sub_graph(self, _):
         """Graph the subplot."""
@@ -78,6 +77,7 @@ class Graph(object):
                 if dim != 111:
                     share = self.fig.add_subplot(dim)
                     share.get_xticklabels()[1].set_visible(False)
+                    share.get_xaxis().set_visible(False)
                 else:
                     share = self.fig.add_subplot(dim)
             else:
@@ -93,10 +93,13 @@ class Graph(object):
         self.zoom_axes[0].set_title(self.title, fontsize=18)
         if len(self.zoom_axes) > 1:
             self.zoom_axes[1].set_xlabel(self.xlabel)
+            self.zoom_axes[1].xaxis.label.set_fontsize(16)
         else:
             self.zoom_axes[0].set_xlabel(self.xlabel)
+            self.zoom_axes[0].xaxis.label.set_fontsize(16)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
+            self.zoom_axes[i].yaxis.label.set_fontsie(16)
         if check_valid_file(self.file_name, self.is_cal):
             self.animate_func(self.file_name, tuple(self.zoom_axes))
         else:

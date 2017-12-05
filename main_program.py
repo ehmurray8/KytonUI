@@ -10,6 +10,7 @@ import argparse
 from tkinter import ttk
 import platform
 import matplotlib
+import configparser
 
 matplotlib.use("TkAgg")
 from matplotlib import style
@@ -26,20 +27,12 @@ style.use('kyton')
 
 
 OVEN = "Delta Oven"
-OVEN_LOC = 27
-
 LASER = "Micron Optics SM125"
-LASER_LOC = "192.168.1.203"
-LASER_PORT = 50000
-
 SWITCH = "Optical Switch"
-SWITCH_LOC = "192.168.1.111"
-SWITCH_PORT = 5000
-
 TEMP = "LSC Temperature Controller"
-TEMP_LOC = 12
-
-CAL_NUM = -1
+CPARSER = configparser.SafeConfigParser()
+CPARSER.read("devices.cfg")
+HEADER = "Devices"
 
 
 class Application(tk.Tk):
@@ -170,8 +163,14 @@ class Application(tk.Tk):
             row=1, column=5, sticky='ew')
         ttk.Label(device_frame, text="Connection Status", style="Bold.TLabel").grid(
             row=1, column=7, sticky='ew')
-        switch_conf = [(LASER, LASER_LOC, LASER_PORT), (SWITCH, SWITCH_LOC, SWITCH_PORT),
-                       (TEMP, TEMP_LOC, None), (OVEN, OVEN_LOC, None)]
+        laser_loc = CPARSER.get(HEADER, "sm125_address")
+        laser_port = CPARSER.get(HEADER, "sm125_port")
+        switch_loc = CPARSER.get(HEADER, "op_switch_address")
+        switch_port = CPARSER.get(HEADER, "op_switch_port")
+        temp_loc = CPARSER.get(HEADER, "controller_location")
+        oven_loc = CPARSER.get(HEADER, "oven_location")
+        switch_conf = [(LASER, laser_loc, laser_port), (SWITCH, switch_loc, switch_port),
+                       (TEMP, temp_loc, None), (OVEN, oven_loc, None)]
         for i, dev in enumerate(switch_conf):
             device_frame.grid_rowconfigure(i * 2, pad=20)
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
@@ -213,6 +212,7 @@ class Application(tk.Tk):
                         err_specifier = "GPIB address"
                         self.temp_controller = devices.TempController(int(loc_ent.get()),
                                                                       self.manager)
+                        CPARSER.set(HEADER, "controller_location", loc_ent.get())
                         connect = True
                     else:
                         self.temp_controller.close()
@@ -220,8 +220,8 @@ class Application(tk.Tk):
                 elif dev == OVEN:
                     if self.oven is None:
                         err_specifier = "GPIB address"
-                        self.oven = devices.Oven(
-                            int(loc_ent.get()), self.manager)
+                        self.oven = devices.Oven(int(loc_ent.get()), self.manager)
+                        CPARSER.set(HEADER, "oven_location", loc_ent.get())
                         connect = True
                     else:
                         self.oven.close()
@@ -229,8 +229,9 @@ class Application(tk.Tk):
                 elif dev == SWITCH:
                     if self.switch is None:
                         err_specifier = "ethernet port"
-                        self.switch = devices.OpSwitch(
-                            loc_ent.get(), int(port_ent.get()))
+                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()))
+                        CPARSER.set(HEADER, "op_switch_address", loc_ent.get())
+                        CPARSER.set(HEADER, "op_switch_port", port_ent.get())
                         connect = True
                     else:
                         self.switch.close()
@@ -238,8 +239,9 @@ class Application(tk.Tk):
                 elif dev == LASER:
                     if self.laser is None:
                         err_specifier = "ethernet port"
-                        self.laser = devices.SM125(
-                            loc_ent.get(), int(port_ent.get()))
+                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
+                        CPARSER.set(HEADER, "sm125_address", loc_ent.get())
+                        CPARSER.set(HEADER, "sm125_port", port_ent.get())
                         connect = True
                     else:
                         self.laser.close()

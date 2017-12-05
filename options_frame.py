@@ -74,14 +74,12 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
         if self.program == CAL:
             self.cooling = uh.checkbox_entry(self.options_grid,
-                                             "Use oven cooling function?",
-                                             row_num)
+                                             "Use oven cooling function?", row_num)
             row_num += 1
 
         # Number of points to average entry
-        self.num_pts = uh.int_entry(self.options_grid,
-                                    "Num laser scans to average:", row_num,
-                                    10, 5)
+        self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:",
+                                    row_num, 10, 5)
         row_num += 1
 
         if self.program == CAL:
