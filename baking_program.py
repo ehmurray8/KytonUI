@@ -10,9 +10,9 @@ import options_frame
 class BakingPage(program.Page):
     """Contains the baking_program specific logic, and gui elements."""
 
-    def __init__(self, master, pid):
+    def __init__(self, master):
         baking_type = program.ProgramType(program.BAKING_ID)
-        super().__init__(master, pid, baking_type)
+        super().__init__(master, baking_type)
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""

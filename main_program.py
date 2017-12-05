@@ -49,6 +49,8 @@ class Application(tk.Tk):
         # pylint: disable=missing-super-argument
         super().__init__(*args, **kwargs)
 
+        # Created for development purposes --nodev runs on a computer w/o
+        # proper instruments connected
         parser = argparse.ArgumentParser(
             description='Run the Kyton program for the correct computer.')
         parser.add_argument('--nodev', action="store_true",
@@ -108,13 +110,16 @@ class Application(tk.Tk):
         if self.use_dev:
             self.manager = visa.ResourceManager()
 
+        self.bake = None
+        self.cal = None
+        self.running = False
+
         self.temp_controller = None
         self.oven = None
         self.laser = None
         self.switch = None
 
-        self.cal_tab = None
-        self.bake_tabs = []
+        self.conn_buttons = []
 
         self.setup_home_frame()
 
@@ -127,6 +132,10 @@ class Application(tk.Tk):
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
+
+        # Create the program tabs
+        self.create_bake_tab()
+        self.create_cal_tab()
 
     # Second argument is required to accept the event, unused here so renamed _
     def toggle_fullscreen(self, _=None):
@@ -168,14 +177,6 @@ class Application(tk.Tk):
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
         device_frame.grid(sticky='ew')
 
-        start_prog_frame = ttk.Frame(self.home_frame)
-        start_prog_frame.grid_columnconfigure(0, minsize=300)
-        start_prog_frame.grid_columnconfigure(2, minsize=70)
-        ttk.Button(start_prog_frame, text="Start New Baking Run", compound=tk.CENTER, pad=5,
-                   command=self.create_bake_tab).grid(row=1, column=1, sticky='ew')
-        ttk.Button(start_prog_frame, text="Start New Calibration Run", compound=tk.CENTER, pad=5,
-                   command=self.create_cal_tab).grid(row=1, column=3, sticky='ew')
-        start_prog_frame.grid(sticky='ew', row=2, column=0)
         self.home_frame.grid_rowconfigure(1, minsize=50)
 
     def device_entry(self, container, dev_text, loc_str, row, port_str):
@@ -197,8 +198,8 @@ class Application(tk.Tk):
                                command=lambda: self.conn_dev(loc_ent, port_ent, dev_text,
                                                              conn_butt))
         conn_butt.grid(row=row, column=7, sticky='ew')
-
-        self.device_widgets.append((loc_ent, port_ent, conn_butt))
+        self.conn_buttons.append(conn_butt)
+        #self.device_widgets.append((loc_ent, port_ent, conn_butt))
 
     def conn_dev(self, loc_ent, port_ent, dev, button):
         """
@@ -255,39 +256,13 @@ class Application(tk.Tk):
 
     def create_bake_tab(self):
         """Create a tab used for a baking run."""
-        if self.cal_tab is None:
-            bake = BakingPage(self, len(self.bake_tabs))
-            self.bake_tabs.append(bake)
-            self.main_notebook.add(
-                bake, text="Bake {}".format(len(self.bake_tabs)))
-        else:
-            messagebox.showwarning("Calibration Program Open",
-                                   "A calibration program is already open, only one cal can be " +
-                                   "run at the same time.")
+        self.bake = BakingPage(self)
+        self.main_notebook.add(self.bake, text="Bake")
 
     def create_cal_tab(self):
         """Create a tab used for a calibration run."""
-        if self.cal_tab is None and not len(self.bake_tabs):
-            self.cal_tab = CalPage(self, CAL_NUM)
-            self.main_notebook.add(self.cal_tab, text="Calibration")
-        elif len(self.bake_tabs):
-            messagebox.showwarning("Bake Programs Open",
-                                   "Cannot open a calibration program while Bake programs are " +
-                                   "open, please close all bake tabs before continuing.")
-        else:
-            messagebox.showwarning("Calibration Program Open",
-                                   "A calibration program is already open, only one cal can be "
-                                   "run at the same time.")
-
-    def delete_tab(self, prog_id):
-        """Deletes a tab from the main view based on the passed in prog_id."""
-        # Most likely deprecate in favor of fixed number of tabs
-        if prog_id == CAL_NUM:
-            self.main_notebook.forget(self.cal_tab)
-            self.cal_tab = None
-        else:
-            self.main_notebook.forget(self.bake_tabs[prog_id])
-            del self.bake_tabs[prog_id]
+        self.cal = CalPage(self)
+        self.main_notebook.add(self.cal, text="Calibration")
 
     # def tkloop(self):
     #    """Loop for threaded processes."""

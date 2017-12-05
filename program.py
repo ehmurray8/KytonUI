@@ -16,8 +16,6 @@ import file_helper as fh
 import graphing
 import ui_helper
 
-TEST_FILE = "./output/test0930-2.csv"
-LARGE_FONT = ("Verdana", 13)
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
 
@@ -46,14 +44,13 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
 
-    def __init__(self, master, prog_id, program_type):
+    def __init__(self, master, program_type):
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
 
         super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
-        self.prog_id = prog_id
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -93,9 +90,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.options.grid_rowconfigure(3, minsize=20)
         self.options.grid_rowconfigure(5, minsize=20)
         self.options.pack(expand=True, side="right", fill="both")
-        ttk.Button(self.options, text="Delete Tab",
-                   command=lambda: master.delete_tab(self.prog_id)) \
-           .grid(row=0, column=0, sticky='nw')
 
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
@@ -127,8 +121,25 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def start(self, can_start=False):
         """Starts the recording process."""
         switch_chan = -1
+        chan = -2
         if not can_start:
-            if not self.running and len(self.options.sn_ents):
+            if self.delayed_prog is not None:
+                    self.master.after_cancel(self.delayed_prog)
+                    self.delayed_prog = None
+            elif not self.master.running:
+                prog = "Baking"
+                run = "calibration"
+                if self.program_type.prog_id == BAKING_ID:
+                    prog = "Calibration"
+                    run = "bake"
+                mbox.showwarning("{} program is already running".format(prog),
+                                 "Please stop the {} program before starting the {}."
+                                 .format(run))
+            elif not len(self.options.sn_ents):
+                mbox.showwarning("Invalid configuration",
+                                    "Please add fbg entries to your configuration before " +
+                                    "running the program.")
+            else:
                 for chan, snum, pos in zip(self.options.chan_nums,
                                            self.options.sn_ents,
                                            self.options.switch_positions):
@@ -141,33 +152,40 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             self.switches[chan].append(pos.get())
                             switch_chan = chan
 
-                # pylint: disable=undefined-loop-variable
-                # Safe since switch_chan will only not be -1 after chan is defined
                 if switch_chan != -1 and switch_chan != chan:
                     mbox.showwarning("Invalid configuration",
                                      "Cannot have multiple channels configured to use the optical" +
                                      " switch.")
                     self.pause_program()
                 else:
-                    self.running = True
-                    self.start_btn.configure(text="Pause")
-                    # self.header.configure(text=self.program_type.in_prog_msg)
-                    ui_helper.lock_widgets(self.options)
-                    time.sleep(.1)
-                    self.graph_helper.show_subplots()
-                    time.sleep(.1)
-                    self.delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                              1000 * 60 * 60 + .5),
-                                                          self.program_loop)
-            else:
-                if self.delayed_prog is not None:
-                    self.master.after_cancel(self.delayed_prog)
-                    self.delayed_prog = None
-                if not len(self.options.sn_ents):
-                    mbox.showwarning("Invalid configuration",
-                                     "Please add fbg entries to your configuration before " +
-                                     "running the program.")
-                self.pause_program()
+                    need_switch = False
+                    need_oven = False
+                    if self.master.laser is None:
+                        self.conn_buttons[0].invoke()
+                    if switch_chan != -1 and self.master.switch is None:
+                        need_switch = True
+                        self.conn_buttons[1].invoke()
+                    if self.temp_controller is None:
+                        self.conn_buttons[2].invoke()
+                    if self.program_type.prog_id == CAL_ID and self.oven is None:
+                        need_oven = True
+                        self.conn_buttons[3].invoke()
+
+                    if self.master.laser is not None and (self.master.switch is not None or not need_switch) and
+                        self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
+
+                        self.master.running = True
+                        self.start_btn.configure(text="Pause")
+                        # self.header.configure(text=self.program_type.in_prog_msg)
+                        ui_helper.lock_widgets(self.options)
+                        time.sleep(.1)
+                        self.graph_helper.show_subplots()
+                        time.sleep(.1)
+                        self.delayed_prog = self.master.after(int(self.options.delay.get() *
+                                                                1000 * 60 * 60 + .5),
+                                                            self.program_loop)
+                    else:
+                        self.pause_program()
         else:
             self.program_loop()
 
