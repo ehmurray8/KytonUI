@@ -12,6 +12,7 @@ BLACK = "#1D2731"
 GRAY = "#2b2a29"#5b5a59"
 
 
+DISABLED_COLOR = GRAY
 #bg_color = onyx
 BG_COLOR = BLACK
 TAB_COLOR = SKY_BLUE

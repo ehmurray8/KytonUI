@@ -5,7 +5,7 @@ program and baking program.
 
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
 import time
-from tkinter import ttk, mbox as mbox
+from tkinter import ttk, messagebox as mbox
 import platform
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -71,10 +71,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.graph_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
-        img = Image.open(r'assets\config.png')
-        self.img_config = ImageTk.PhotoImage(img)
-        img = Image.open(r'assets\graph.png')
-        self.img_graph = ImageTk.PhotoImage(img)
+        config_path = r'assets\config.png'
+        graph_path = r'assets\graph.png'
+        if platform.system() == "Linux":
+            config_path = "assets/config.png"
+            graph_path = "assets/graph.png"
+        img_config = Image.open(config_path)
+        img_graph = Image.open(graph_path)
+
+        self.img_config = ImageTk.PhotoImage(img_config)
+        self.img_graph = ImageTk.PhotoImage(img_graph)
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)

@@ -1,6 +1,7 @@
 """Class sets up the tkinter UI code for the options panel."""
 
 # pylint: disable=import-error, relative-import, missing-super-argument
+import platform
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
@@ -36,11 +37,16 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.cooling = tk.IntVar()
         self.target_temps_entry = None
         self.program = program
+        self.options_grid = ttk.Frame(self)
+        self.options_grid.grid(column=1, sticky='w')
 
         self.chan_rows = [1, 1, 1, 1]
 
         # Prevent from being garbage collected
-        self.img_plus = tk.PhotoImage(file=r'assets\plus.png')
+        path = r'assets\plus.png'
+        if platform.system() == "Linux":
+            path = "assets/plus.png"
+        self.img_plus = tk.PhotoImage(file=path)
 
         self.create_options_grid(colors.WHITE)
 
@@ -60,71 +66,69 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
     def create_options_grid(self, white):
         """Creates the grid for the user to configure options."""
-        options_grid = ttk.Frame(self)
-        options_grid.grid(column=1, sticky='w')
 
         # Options Grid Init
-        options_grid.grid_columnconfigure(1, minsize=50)
-        options_grid.grid_columnconfigure(3, minsize=50)
+        self.options_grid.grid_columnconfigure(1, minsize=50)
+        self.options_grid.grid_columnconfigure(3, minsize=50)
         row_num = 0
 
         if self.program == CAL:
-            self.cooling = uh.checkbox_entry(options_grid,
+            self.cooling = uh.checkbox_entry(self.options_grid,
                                              "Use oven cooling function?",
                                              row_num)
             row_num += 1
 
         # Number of points to average entry
-        self.num_pts = uh.int_entry(options_grid,
+        self.num_pts = uh.int_entry(self.options_grid,
                                     "Num laser scans to average:", row_num,
                                     10, 5)
         row_num += 1
 
         if self.program == CAL:
-            self.num_temp_readings = uh.int_entry(options_grid,
+            self.num_temp_readings = uh.int_entry(self.options_grid,
                                                   "Num temperature readings to average: ",
                                                   row_num, 10, 5)
             row_num += 1
-            self.temp_interval = uh.units_entry(options_grid,
+            self.temp_interval = uh.units_entry(self.options_grid,
                                                 "Time between temp readings: ",
                                                 row_num, 10, "seconds", 60.0)
             row_num += 1
 
-            self.drift_rate = uh.units_entry(options_grid,
+            self.drift_rate = uh.units_entry(self.options_grid,
                                              "Drift rate: ",
                                              row_num, 10, "mK/min", 1.0)
             row_num += 1
 
-            self.num_cal_cycles = uh.int_entry(options_grid,
+            self.num_cal_cycles = uh.int_entry(self.options_grid,
                                                "Num cal cycles: ",
                                                row_num, 10, 1)
             row_num += 1
 
             self.target_temps_entry = \
-                uh.array_entry(options_grid,
+                uh.array_entry(self.options_grid,
                                "Target temps (C) [Comma Separated]", row_num,
                                10, 7, white, "130, 135")
             row_num += 1
         else:
             # Time intervals entry
-            self.delay = uh.units_entry(options_grid, "Initial program delay: ",
+            self.delay = uh.units_entry(self.options_grid, "Initial program delay: ",
                                         row_num, 10, "hours", 1.0)
             row_num += 1
 
-            self.init_time = uh.units_entry(options_grid, "Initial time interval: ",
+            self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ",
                                             row_num, 10, "seconds", 15.0)
             row_num += 1
 
-            self.init_duration = uh.units_entry(options_grid, "Initial interval duration: ",
+            self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ",
                                                 row_num, 10, "minutes", 5.0)
             row_num += 1
 
-            self.prim_time = uh.units_entry(options_grid, "Primary time interval: ",
+            self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ",
                                             row_num, 10, "hours", 1.0)
             row_num += 1
 
         self.file_name = uh.file_entry(
-            options_grid, "Excel file name: ", row_num, 30)
+            self.options_grid, "Excel file name: ", row_num, 30)
         row_num += 1
 
     def create_start_btn(self, start):
@@ -149,7 +153,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.chan_nums.append(chan)
         self.chan_rows[chan] += 1
         serial_num, switch_pos = uh.serial_num_entry(
-            fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows)))
+            fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows) - 4))
         self.sn_ents.append(serial_num)
         self.switch_positions.append(switch_pos)
 

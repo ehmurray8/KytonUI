@@ -1,6 +1,7 @@
 """UI Helper methods."""
 # pylint: disable=import-error, relative-import, superfluous-parens
 import os
+import platform
 from tkinter import ttk, filedialog
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -14,7 +15,10 @@ def file_entry(container, label_text, row, width):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, sticky='ew')
-    button_image = Image.open(r'assets\docs_icon.png')
+    path = r'assets\docs_icon.png'
+    if platform.system() == "Linux":
+        path = "assets/docs_icon.png"
+    button_image = Image.open(path)
     button_photo = ImageTk.PhotoImage(button_image)
 
     browse_button = ttk.Button(
@@ -40,8 +44,8 @@ def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
-        .grid(row=row, column=2, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT) \
+       .grid(row=row, column=2, sticky='ew')
     text_var.set(default_str)
     return text_var
 
@@ -57,7 +61,7 @@ def serial_num_entry(container, row, col, def_snum):
                state="readonly").pack(side="left", fill="both", expand=True)
     switch_pos_ent.set("0")
     snum_frame.grid(row=row, column=col, sticky='ew')
-    serial_num_ent.set(def_snum)
+    serial_num_ent.insert(0, def_snum)
     return serial_num_ent, switch_pos_ent
 
 
@@ -75,8 +79,9 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     """Creates an double entry, and returns a reference to the entry var."""
     text_var = tk.DoubleVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
-        .grid(row=row, column=2, sticky='ew')
+    ent = ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)
+    ent.grid(row=row, column=2, sticky='ew')
+    #ent.config(state="disabled")
     text_var.set(default_double)
     return text_var
 
@@ -134,26 +139,15 @@ def open_center(width, height, root):
                                        int(x_cord), int(y_cord)))
 
 
-def lock_widgets(parent):
+def lock_widgets(options_frame):
     """Locks the widgets to prevent the user from editing while the program is running."""
-    try:
-        for child in parent.winfo_children:  # .values():
-            if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
-                    and "Frame" not in child.winfo_class():
-                # child.config(state=tk.DISABLED)
-                child.state(["disabled"])
-            elif child.winfo_class() == "Frame":
-                lock_widgets(child)
-    #Temporary for testing
-    except Exception as exc: #pylint: disable=broad-except
-        print(str(exc))
+    for child in options_frame.options_grid.winfo_children():  # .values():
+        if "Label" not in child.winfo_class():
+            child.config(state="disabled")
 
 
-def unlock_widgets(parent):
+def unlock_widgets(options_frame):
     """Unlocks the widgets."""
-    for child in parent.children.values():
-        if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
-                and "Frame" not in child.winfo_class():
-            child.config(state=tk.NORMAL)
-        elif child.winfo_class() == "Frame":
-            unlock_widgets(child)
+    for child in options_frame.options_grid.winfo_children():
+        if "Label" not in child.winfo_class():
+            child.config(state="enabled")

@@ -75,7 +75,11 @@ class Application(tk.Tk):
                                       "foreground": colors.BUTTON_TEXT, "justify": "center"}},
             "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
             "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": colors.TEXT_COLOR}},
-            "TEntry": {"configure": {"font": ('Helvetica', 14), "background": colors.ENTRY_COLOR}},
+            "TEntry": {"configure": {"font": ('Helvetica', 14)},
+                       "map":       {"fieldbackground": [("active", colors.ENTRY_COLOR),
+                                                         ("disabled", colors.BLACK)],
+                                     "foreground": [("active", "black"),
+                                                    ("disabled", colors.TEXT_COLOR)]}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width": 40}},
             "TNotebook.Tab": {
@@ -127,7 +131,7 @@ class Application(tk.Tk):
     # Second argument is required to accept the event, unused here so renamed _
     def toggle_fullscreen(self, _=None):
         """Toggles full screen on and off."""
-        self.state = not self.state  # Just toggling the boolean
+        self.state = not self.state
         self.attributes("-fullscreen", self.state)
         return "break"
 
@@ -311,5 +315,5 @@ def loc_warning(loc_type):
 
 if __name__ == "__main__":
     APP = Application()
-    APP.tkloop()
+    # APP.tkloop()
     APP.mainloop()
