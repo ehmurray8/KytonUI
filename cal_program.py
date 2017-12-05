@@ -28,8 +28,9 @@ class CalPage(Page):
                 self.master.oven.heater_on()
 
                 start_temp = float(self.master.temp_controller.get_temp_k())
-                waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                        self.options.num_pts.get(), self.master.after)
+                waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch,
+                                                        self.switches, self.options.num_pts.get(),
+                                                        self.master.after)
 
                 for snum in self.snums:
                     waves.append(self.data_pts[snum][0])
@@ -74,8 +75,9 @@ class CalPage(Page):
     def __check_drift_rate(self, last_time, last_temp):
         curr_temp = float(self.master.temp_controller.get_temp_k())
 
-        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                self.options.num_pts.get(), self.master.after)
+        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch,
+                                                self.switches, self.options.num_pts.get(),
+                                                self.master.after)
 
         curr_temp += float(self.master.temp_controller.get_temp_k())
         curr_temp /= 2

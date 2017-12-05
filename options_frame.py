@@ -5,14 +5,12 @@ from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
 import colors
-#from main_program import white
 
 BAKING = "Baking"
 CAL = "Calibration"
 
 
-class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
-                                # pylint: disable=too-many-instance-attributes
+class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Main Tkinter window class."""
 
     def __init__(self, parent, program):
@@ -139,6 +137,7 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         return start_button
 
     def create_xcel_btn(self, create_xcel):
+        """Create the button for creating the excel file."""
         xcel_btn = ttk.Button(self)
         xcel_btn["text"] = "Create Excel Spreadsheet"
         xcel_btn["command"] = create_xcel
@@ -146,34 +145,41 @@ class OptionsPanel(ttk.Frame):   # pylint: disable=too-many-ancestors
         return xcel_btn
 
     def add_fbg(self, fbg_grid, col, chan):
+        """Add an fbg input to the view."""
         self.chan_nums.append(chan)
         self.chan_rows[chan] += 1
-        serial_num, switch_pos = uh.serial_num_entry(fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows)))
+        serial_num, switch_pos = uh.serial_num_entry(
+            fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows)))
         self.sn_ents.append(serial_num)
         self.switch_positions.append(switch_pos)
 
-    def minus_fbg(self, fbg_grid, col, chan):
-        # Need to add logic to add the switches to separate lists, and then combine them at the end
-        self.chan_nums.pop()
-        uh.remove_serial_num_entry(fbg_grid, self.chan_rows, col)
-        #self.sn_ents.pop()
-        self.chan_rows[chan] -= 1
+    # Need to associate everything properly when deleting
+    # def minus_fbg(self, fbg_grid, col, chan):
+    #    # Need to add logic to add the switches to separate lists, and then combine them at the end
+    #    self.chan_nums.pop()
+    #    uh.remove_serial_num_entry(fbg_grid, self.chan_rows, col)
+    #    # self.sn_ents.pop()
+    #    self.chan_rows[chan] -= 1
 
     def init_fbgs(self):
+        """Initialize the fbg input section of the configuration page."""
         fbg_grid = ttk.Frame(self)
         for i in range(4):
-            col_num = i*2+1
+            col_num = i * 2 + 1
             ttk.Label(fbg_grid, text="Channel {}".format(
                 i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)
 
-            ttk.Label(fbg_grid, text="Serial Number, Switch position ").grid(row=1, column=col_num)
+            ttk.Label(fbg_grid, text="Serial Number, Switch position ").grid(
+                row=1, column=col_num)
 
             buttons_frame = ttk.Frame(fbg_grid)
             buttons_frame.grid(sticky='ew', column=col_num, row=20)
 
-            ttk.Button(buttons_frame, image=self.img_plus, command=lambda col=col_num, chan=i: self.add_fbg(fbg_grid,
-                col, chan)).pack(expand=True, fill="both", side="left")
-            #ttk.Button(buttons_frame, image=self.img_minus, command=lambda col=col_num, chan=i: self.minus_fbg(fbg_grid,
-            #    col, chan)).pack(expand=True, fill="both", side="left")
+            ttk.Button(buttons_frame, image=self.img_plus,
+                       command=lambda col=col_num, chan=i: self.add_fbg(fbg_grid, col, chan)) \
+                .pack(expand=True, fill="both", side="left")
+            # ttk.Button(buttons_frame, image=self.img_minus,
+            #             command=lambda col=col_num, chan=i: self.minus_fbg(fbg_grid, col, chan))
+            #     .pack(expand=True, fill="both", side="left")
 
         fbg_grid.grid(row=6, column=0, columnspan=2)

@@ -24,7 +24,7 @@ CPARSER.read("devices.cfg")
 BAKING_SECTION = "Baking"
 CAL_SECTION = "Calibration"
 
-lock = threading.Lock()
+LOCK = threading.Lock()
 
 
 # pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
@@ -34,7 +34,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
     file_name = os.path.splitext(file_name)[0] + '.csv'
 
-    lock.acquire()
+    LOCK.acquire()
     if os.path.isfile(file_name):
         if platform.system() != "Linux":
             os.chmod(file_name, stat.S_IRWXU)
@@ -71,7 +71,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
     file_obj.write("\n\n")
     file_obj.close()
-    lock.release()
+    LOCK.release()
     if platform.system() != "Linux":
         os.chmod(file_name, stat.S_IREAD)
 
@@ -85,7 +85,7 @@ def parse_csv_file(csv_file):
     mdata = datac.Metadata()
 
     # Read Metadata
-    lock.acquire()
+    LOCK.acquire()
     with open(csv_file) as csv:
         csv.readline()
         mdata.serial_nums = csv.readline().split(",")
@@ -106,7 +106,7 @@ def parse_csv_file(csv_file):
     mdata.start_temp = float(start_time_wavelen_temp[2])
     if platform.system() != "Linux":
         os.chmod(csv_file, stat.S_IWRITE)
-    lock.release()
+    LOCK.release()
     return mdata, entries_df
 
 

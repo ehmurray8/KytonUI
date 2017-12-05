@@ -1,18 +1,22 @@
 """Module to help with graphing."""
 # pylint: disable=import-error, relative-import, unused-argument
+# pylint: disable=superfluous-parens
 
 import os
 import stat
 import platform
-from tkinter import messagebox
+from tkinter import mbox as mbox
 import matplotlib.animation as animation
 from matplotlib import style
-import file_helper
 import matplotlib.gridspec as gridspec
+import file_helper
 style.use("kyton")
 
 
-class Graph:
+class Graph(object):
+    """
+    Class describes a specific graph that can be representted as a subplot or a main plot.
+    """
     def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal):
         self.title = title
         self.is_cal = is_cal
@@ -29,12 +33,15 @@ class Graph:
         self.show_sub()
 
     def pause(self):
+        """Pauses the graph animation."""
         self.anim.event_source.stop()
 
     def play(self):
+        """Plays the graph animation."""
         self.anim.event_source.start()
 
     def show_sub(self):
+        """Show the graph as a subplot in the grid."""
         print("Show sub file name: {}".format(to_csv(self.file_name.get())))
         if self.anim is not None:
             self.anim.event_source.stop()
@@ -43,9 +50,11 @@ class Graph:
             axis.cla()
         self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
-        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1500)
+        self.anim = animation.FuncAnimation(
+            self.fig, self.sub_graph, interval=1500)
 
     def sub_graph(self, _):
+        """Graph the subplot."""
         self.sub_axis.clear()
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
@@ -58,6 +67,7 @@ class Graph:
             pass
 
     def show_main(self):
+        """Show the graph as the main plot."""
         print("Show main file name: {}".format(to_csv(self.file_name.get())))
         self.anim.event_source.stop()
         if self.sub_axis is not None:
@@ -75,9 +85,11 @@ class Graph:
             else:
                 share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
-        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000)
+        self.anim = animation.FuncAnimation(
+            self.fig, self.main_graph, interval=1000)
 
     def main_graph(self, _):
+        """Graph the main plot."""
         for axis in self.zoom_axes:
             axis.clear()
         self.zoom_axes[0].set_title(self.title, fontsize=18)
@@ -92,9 +104,11 @@ class Graph:
         else:
             # Invalid File
             pass
-        
 
-class Graphing:
+
+class Graphing(object):
+    """Class used for graphing the individual Graph objects."""
+
     def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master):
         self.file_name = fname
         self.dimensions = dims
@@ -107,14 +121,18 @@ class Graphing:
         self.is_playing = True
         self.master = master
 
-        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)", "Raw Powers vs. Time",
-                  "Raw Temperature vs. Time from start", "Average Power vs. Time from start", "Average {} Wavelength vs. Time from start".format(u'\u0394')]
-        xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
-        ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",), 
-                   ("Power (dBm)", "{} Power (dBm)".format(u'\u0394')), ("Temperature (K)", "{} Temperature (K)".format(u'\u0394')),
+        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)",
+                  "Raw Powers vs. Time", "Raw Temperature vs. Time from start",
+                  "Average Power vs. Time from start",
+                  "Average {} Wavelength vs. Time from start".format(u'\u0394')]
+        xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)",
+                   "Time (hr)", "Time (hr)", "Time (hr)"]
+        ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
+                   ("Power (dBm)", "{} Power (dBm)".format(u'\u0394')),
+                   ("Temperature (K)", "{} Temperature (K)".format(u'\u0394')),
                    ("Power (dBm)",), ("Wavelength (pm)",)]
-        animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers, animate_temp_graph, animate_mpt_graph,
-                         animate_mwt_graph]
+        animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
+                         animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
 
         gs1 = gridspec.GridSpec(10, 1)
         reg_dims1 = (gs1[1:7, :])
@@ -123,45 +141,56 @@ class Graphing:
         split_dims1 = (gs1[1:6, :])
         split_dims2 = (gs1[6:10, :])
         split_dims = (split_dims1, split_dims2)
-        dims = [reg_dims, (111,), reg_dims, split_dims, (111,), (111,)]
+        dimens = [reg_dims, (111,), reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
             titles.append("Average Drift Rate vs.Time")
             xlabels.append("Time (hr)")
-            ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
+            ylabels.append(("Average Drift Rate (mK/min)",
+                            "{} Average Drift Rate (mK/min)".format(u'\u0394')))
             animate_funcs.append(animate_drift_rates)
             dims.append(reg_dims)
 
-        for i, (title, xlbl, ylbl, anim, dim) in enumerate(zip(titles, xlabels, ylabels, animate_funcs, dims)):
+        # Create the graph objects and sub plot objects.
+        for i, (title, xlbl, ylbl, anim, dimen) in \
+                enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):
             dim_list = [self.dimensions + i + 1]
-            for d in dim:
-                dim_list.append(d)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal)
+            for dim in dimen:
+                dim_list.append(dim)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure,
+                         dim_list, self.file_name, self.is_cal)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
+        # Setup double click for graphs."""
         self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
+
+        # Display the canvas and toolbar
         self.canvas.draw()
         self.toolbar.update()
 
     def update_axes(self):
+        """Update the axes to include the sub plots on the graphing page."""
         self.sub_axes = []
         for graph in self.graphs:
             self.sub_axes.append(graph.sub_axis)
 
     def pause(self):
+        """Pause animation for all the graphs."""
         self.is_playing = False
         for graph in self.graphs:
             graph.pause()
 
     def play(self):
+        """Play animation for all the graphs."""
         self.is_playing = True
         for graph in self.graphs:
             graph.play()
 
-    def __file_error(self): 
-        messagebox.showwarning("File Error", "Inconsistency in the number of reading being stored in file {}."
-                               .format(self.file_name.get()))
+    def __file_error(self):
+        mbox.showwarning("File Error", "Inconsistency in the number of reading being" +
+                         "stored in file {}.".format(self.file_name.get()))
 
     def show_subplots(self, event=None):
+        """Show all the subplots in the graphing page."""
         # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
         if event is None or event.dblclick:
             self.figure.clf()
@@ -176,6 +205,7 @@ class Graphing:
                 self.master.after(1500, self.pause)
 
     def show_main_plot(self, event):
+        """Show the main plot on the graphing page."""
         self.update_axes()
         for i, axis in enumerate(self.sub_axes):
             if event.dblclick and axis == event.inaxes:
@@ -186,9 +216,10 @@ class Graphing:
                 self.toolbar.update()
                 if not self.is_playing:
                     self.master.after(1500, self.pause)
-    
+
 
 def animate_mwt_graph(f_name, axes):
+    """Animate function for the mean wavelength vs. time graph."""
     times, wavelen_diffs = __get_mean_wave_diff_time_data(f_name)
     axes[0].plot(times, wavelen_diffs)
 
@@ -206,6 +237,7 @@ def __get_mean_wave_diff_time_data(f_name):
 
 
 def animate_wp_graph(f_name, axis):
+    """Animate function for the wavelength vs. power graph."""
     wavelens, powers, snums = __get_wave_power_graph(f_name)
     idx = 0
     axes = []
@@ -217,7 +249,8 @@ def animate_wp_graph(f_name, axis):
     if platform.system() == "Linux":
         font_size = 10
     legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-            ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+                            ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
+                            fancybox=True, shadow=True)
     for text in legend.get_texts():
         text.set_color("black")
 
@@ -229,8 +262,9 @@ def __get_wave_power_graph(f_name):
 
 
 def animate_temp_graph(f_name, axes):
+    """Animate function for the temperature graph."""
     times, temp_diffs, temps = __get_temp_time_graph(f_name)
-    axes[0].plot(times, temps) 
+    axes[0].plot(times, temps)
     if len(axes) > 1:
         axes[1].plot(times, temp_diffs, color='b')
 
@@ -243,6 +277,7 @@ def __get_temp_time_graph(f_name):
 
 
 def animate_mpt_graph(f_name, axis):
+    """Animate function for the mean power vs. time graph."""
     times, wavelen_diffs = __get_mean_power_diff_time_data(f_name)
     axis[0].plot(times, wavelen_diffs)
 
@@ -255,6 +290,7 @@ def __get_mean_power_diff_time_data(f_name):
 
 
 def animate_indiv_waves(f_name, axis):
+    """Animate function for the individual wavelengths graph."""
     times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
     idx = 0
     axes = []
@@ -269,7 +305,8 @@ def animate_indiv_waves(f_name, axis):
         if platform.system() == "Linux":
             font_size = 10
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
+                                fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
@@ -282,6 +319,7 @@ def __get_indiv_waves_data(f_name):
 
 
 def animate_indiv_powers(f_name, axis):
+    """Animate function for the individual powers graph."""
     times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
     idx = 0
     axes = []
@@ -297,7 +335,8 @@ def animate_indiv_powers(f_name, axis):
             font_size = 10
 
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
+                                fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
@@ -310,6 +349,7 @@ def __get_indiv_powers_data(f_name):
 
 
 def animate_drift_rates(f_name, axes):
+    """Animate function for the drift rates graph."""
     times, times_real, drates, drates_real = __get_drift_rates(f_name)
     axes[0].plot(times, drates)
     if len(axes) > 1:
@@ -342,29 +382,30 @@ def check_valid_file(f_name, is_cal):
             line = check_file.readline()
             ret_val = True
             if not is_cal and line != "Metadata\n":
-                messagebox.showwarning("Invalid File",
-                                       "".join(["File was either not generated by ",
-                                                "this program or was altered. The specified csv ",
-                                                "file must be a valid file to view the graphs."]))
+                mbox.showwarning("Invalid File",
+                                 "".join(["File was either not generated by ",
+                                          "this program or was altered. The specified csv ",
+                                          "file must be a valid file to view the graphs."]))
                 ret_val = False
             elif is_cal and line != "Caldata\n":
-                messagebox.showwarning("Invalid File",
-                                       "".join(["File was either not generated by ",
-                                                "this program or was altered. The specified csv ",
-                                                "file must be a valid file to view the graphs."]))
+                mbox.showwarning("Invalid File",
+                                 "".join(["File was either not generated by ",
+                                          "this program or was altered. The specified csv ",
+                                          "file must be a valid file to view the graphs."]))
                 ret_val = False
         os.chmod(f_name.get(), stat.S_IREAD)
     if not ret_val:
         prog = "baking"
         if is_cal:
             prog = "calibration"
-        if False:#need_warning:
-            messagebox.showwarning("File doesn't exist.",
-                                   "".join(["Specified csv file doesn't exist, start the {} process "
-                                            .format(prog), "to view the graphs."]))
+        if False:  # need_warning: # pylint: disable=using-constant-test
+            mbox.showwarning("File doesn't exist.",
+                             "".join(["Specified csv file doesn't exist, start the {} process "
+                                      .format(prog), "to view the graphs."]))
     return ret_val
 
 
 def to_csv(xcel_file):
-    file = xcel_file.split(".")[0]
-    return "{}.csv".format(file)
+    """Convert the excel file name to a csv file name."""
+    temp = xcel_file.split(".")[0]
+    return "{}.csv".format(temp)

@@ -1,8 +1,8 @@
 """UI Helper methods."""
-# pylint: disable=import-error, relative-import
+# pylint: disable=import-error, relative-import, superfluous-parens
 import os
-from tkinter import ttk, filedialog 
-import tkinter as tk 
+from tkinter import ttk, filedialog
+import tkinter as tk
 from PIL import Image, ImageTk
 
 ENTRY_FONT = ('Helvetica', 14)
@@ -14,15 +14,15 @@ def file_entry(container, label_text, row, width):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, sticky='ew')
-    button_image = Image.open('assets\docs_icon.png')
+    button_image = Image.open(r'assets\docs_icon.png')
     button_photo = ImageTk.PhotoImage(button_image)
 
     browse_button = ttk.Button(
         container, image=button_photo, command=lambda: browse_file(text_var),
         width=10)
     browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
-    browse_button.image = button_photo 
-    return text_var 
+    browse_button.image = button_photo
+    return text_var
 
 
 def browse_file(file_label_var):
@@ -56,8 +56,8 @@ def serial_num_entry(container, row, col, def_snum):
     tk.Spinbox(snum_frame, from_=0, to=16, textvariable=switch_pos_ent, width=2,
                state="readonly").pack(side="left", fill="both", expand=True)
     switch_pos_ent.set("0")
-    #ttk.Label(container, width=3).grid(row=row, column=7)
     snum_frame.grid(row=row, column=col, sticky='ew')
+    serial_num_ent.set(def_snum)
     return serial_num_ent, switch_pos_ent
 
 
@@ -104,7 +104,8 @@ def checkbox_entry(container, label_text, row, checked=True):
 def array_entry(container, label_text, row, width, height, color, default_arr=None):
     """Creates an entry to import multiline text."""
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    text = tk.Text(container, width=width, height=height, bg=color, font=ENTRY_FONT)
+    text = tk.Text(container, width=width, height=height,
+                   bg=color, font=ENTRY_FONT)
     text.grid(row=row, column=2, sticky='ew')
 
     text.delete(1.0, tk.END)
@@ -136,16 +137,16 @@ def open_center(width, height, root):
 def lock_widgets(parent):
     """Locks the widgets to prevent the user from editing while the program is running."""
     try:
-        for child in parent.winfo_children:#.values():
+        for child in parent.winfo_children:  # .values():
             if "Label" not in child.winfo_class() and "Button" not in child.winfo_class() \
                     and "Frame" not in child.winfo_class():
-                #child.config(state=tk.DISABLED)
+                # child.config(state=tk.DISABLED)
                 child.state(["disabled"])
             elif child.winfo_class() == "Frame":
                 lock_widgets(child)
-    except Exception as e:
-        print(str(e))
-        pass
+    #Temporary for testing
+    except Exception as exc: #pylint: disable=broad-except
+        print(str(exc))
 
 
 def unlock_widgets(parent):
