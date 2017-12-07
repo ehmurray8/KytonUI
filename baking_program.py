@@ -27,7 +27,7 @@ class BakingPage(program.Page):
 
     def program_loop(self):
         """Infinite program loop."""
-        if self.running:
+        if self.master.running:
             if not self.check_stable():
                 self.baking_loop()
                 self.after(int(self.options.init_time.get()
