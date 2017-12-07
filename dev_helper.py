@@ -20,7 +20,6 @@ def avg_waves_amps(laser, switch, switches, num_pts, after_func):
 
 def __avg_arr(first, second):
     temp = functools.reduce(lambda x, y: x + y, second)
-    print("Second (2d?): {}, Second (1d): {}".format(second, temp))
     if len(functools.reduce(lambda x, y: x + y, second)):
         for i, row in enumerate(second):
             for j, col in enumerate(row):
@@ -35,8 +34,8 @@ def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
     for switch in switches_arr:
         try:
             op_switch.set_channel(switch)
-            after_func(1250, lambda: print("Done"))#__get_sm125_data(wavelens, amps, switch_num, laser))
-            #time.sleep(1.2)
+            #after_func(1250, lambda: print("Done"))#__get_sm125_data(wavelens, amps, switch_num, laser))
+            time.sleep(1.2)
             __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass
@@ -46,11 +45,8 @@ def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
 def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     wavelens, amps, lens = sm125.get_data()
     first_run = True
-    # try:
     if len(functools.reduce(lambda x, y: x + y, all_waves)):
         first_run = False
-    # except Exception as e:
-    #    print(str(exc))
     for i, (amp, wave) in enumerate(zip(amps, wavelens)):
         if first_run or i == switch_num:
             all_waves[i].append(wave)
@@ -68,8 +64,6 @@ def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num,
     for _ in range(num_readings):
         wavelengths, amplitudes = __get_data(
             laser, op_switch, switches_arr, switch_num, after_func)
-        print("Wavelengths {}".format(str(wavelengths)))
-        print("Amplitudes {}".format(str(amplitudes)))
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
     return functools.reduce(lambda x, y: x + y, all_waves), \
