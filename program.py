@@ -178,9 +178,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.start_btn.configure(text="Pause")
                         # self.header.configure(text=self.program_type.in_prog_msg)
                         ui_helper.lock_widgets(self.options)
-                        time.sleep(.1)
                         self.graph_helper.show_subplots()
-                        time.sleep(.1)
                         self.delayed_prog = self.master.after(int(self.options.delay.get() *
                                                                 1000 * 60 * 60 + .5),
                                                             self.program_loop)

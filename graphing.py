@@ -99,7 +99,7 @@ class Graph(object):
             self.zoom_axes[0].xaxis.label.set_fontsize(16)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
-            self.zoom_axes[i].yaxis.label.set_fontsie(16)
+            self.zoom_axes[i].yaxis.label.set_fontsize(16)
         if check_valid_file(self.file_name, self.is_cal):
             self.animate_func(self.file_name, tuple(self.zoom_axes))
         else:
