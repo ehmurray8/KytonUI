@@ -224,7 +224,7 @@ def __create_row_strs(mdata, entries_df, is_cal=False):
 def __create_formats(serial_nums, workbook, is_cal=False):
     color_formats = []
     bold_color_formats = []
-    for color in HEX_COLORS:
+    for _, color in zip(serial_nums, HEX_COLORS):
         format_col = workbook.add_format({'bg_color': color})
         color_formats.append(format_col)
         bold_format = workbook.add_format({'bg_color': color, 'bold': True, 'font_size': 16})

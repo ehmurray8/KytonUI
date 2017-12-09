@@ -14,7 +14,7 @@ def file_entry(container, label_text, row, width):
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
-       .grid(row=row, column=2, sticky='ew')
+       .grid(row=row, column=2, columnspan=2, sticky='ew')
     path = r'assets\docs_icon.png'
     if platform.system() == "Linux":
         path = "assets/docs_icon.png"
@@ -24,7 +24,7 @@ def file_entry(container, label_text, row, width):
     browse_button = ttk.Button(
         container, image=button_photo, command=lambda: browse_file(text_var),
         width=10)
-    browse_button.grid(column=3, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
+    browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo
     return text_var
 

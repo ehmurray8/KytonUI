@@ -26,6 +26,7 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
     def __init__(self, prog_id):
         self.prog_id = prog_id
         if self.prog_id == BAKING_ID:
+            self.start_title = "Start Baking"
             self.title = "Configure Baking"
             self.config_id = fh.BAKING_SECTION
             self.options = options_frame.BAKING
@@ -33,6 +34,7 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.plot_num = 230
             self.num_graphs = 6
         else:
+            self.start_title = "Start Calibration"
             self.title = "Configure Calibration"
             self.config_id = fh.CAL_SECTION
             self.options = options_frame.CAL
@@ -59,7 +61,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.running = False
         self.cancel_run = False
         self.chan_error_been_warned = False
-        self.options = None
         self.start_btn = None
         self.data_pts = {}
         self.delayed_prog = None
@@ -118,23 +119,28 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Creates excel file."""
         fh.create_excel_file(self.options.file_name.get())
 
-    def start(self, can_start=False):
+    def start(self):
         """Starts the recording process."""
         switch_chan = -1
         chan = -2
-        if not can_start:
+        can_start = self.options.check_config()
+        if can_start:
             if self.delayed_prog is not None:
                     self.master.after_cancel(self.delayed_prog)
                     self.delayed_prog = None
+                    self.pause_program()
             elif self.master.running:
-                prog = "Baking"
-                run = "calibration"
-                if self.program_type.prog_id == BAKING_ID:
-                    prog = "Calibration"
-                    run = "bake"
-                mbox.showwarning("{} program is already running".format(prog),
-                                 "Please stop the {} program before starting the {}."
-                                 .format(prog, run))
+                if self.master.running_prog != self.program_type.prog_id:
+                    prog = "Baking"
+                    run = "calibration"
+                    if self.program_type.prog_id == BAKING_ID:
+                        prog = "Calibration"
+                        run = "bake"
+                    mbox.showwarning("{} program is already running".format(prog),
+                                     "Please stop the {} program before starting the {}."
+                                     .format(prog, run))
+                else:
+                    self.pause_program()
             elif not len(self.options.sn_ents):
                 mbox.showwarning("Invalid configuration",
                                     "Please add fbg entries to your configuration before " +
@@ -175,24 +181,28 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
 
                         self.master.running = True
+                        self.master.running_prog = self.program_type.prog_id
                         self.start_btn.configure(text="Pause")
                         # self.header.configure(text=self.program_type.in_prog_msg)
                         ui_helper.lock_widgets(self.options)
                         self.graph_helper.show_subplots()
                         self.delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                                1000 * 60 * 60 + .5),
-                                                            self.program_loop)
+                                                                  1000 * 60 * 60 + .5),
+                                                              self.program_loop)
                     else:
                         self.pause_program()
         else:
-            self.program_loop()
+            self.pause_program()
+            mbox.showwarning("Invalid configuration",
+                             "Please check the configuration boxes, an invalid entry was detected.")
 
     def pause_program(self):
         """Pauses the program."""
-        self.start_btn.configure(text=self.program_type.title)
+        self.start_btn.configure(text=self.program_type.start_title)
         # self.header.configure(text=self.program_type.title)
         ui_helper.unlock_widgets(self.options)
-        self.running = False
+        self.master.running = False
+        self.master.running_prog = None
         self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]

@@ -50,6 +50,18 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
         self.create_options_grid(colors.WHITE)
 
+    def check_config(self):
+        try:
+            if self.program != CAL:
+                int(self.num_pts.get())
+                float(self.delay.get())
+                float(self.init_time.get())
+                float(self.init_duration.get())
+                float(self.prim_time.get())
+        except ValueError:
+            return False
+        return True
+
     def get_target_temps(self):
         """
         Returns the target temps as an array, returns None if formatting of
@@ -79,7 +91,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
         # Number of points to average entry
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:",
-                                    row_num, 10, 5)
+                                    row_num, 5, 5)
         row_num += 1
 
         if self.program == CAL:
@@ -110,23 +122,23 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         else:
             # Time intervals entry
             self.delay = uh.units_entry(self.options_grid, "Initial program delay: ",
-                                        row_num, 10, "hours", 1.0)
+                                        row_num, 5, "hours", 1.0)
             row_num += 1
 
             self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ",
-                                            row_num, 10, "seconds", 15.0)
+                                            row_num, 5, "seconds", 15.0)
             row_num += 1
 
             self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ",
-                                                row_num, 10, "minutes", 5.0)
+                                                row_num, 5, "minutes", 5.0)
             row_num += 1
 
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ",
-                                            row_num, 10, "hours", 1.0)
+                                            row_num, 5, "hours", 1.0)
             row_num += 1
 
         self.file_name = uh.file_entry(
-            self.options_grid, "Excel file name: ", row_num, 30)
+            self.options_grid, "Excel file name: ", row_num, 50)
         row_num += 1
 
     def create_start_btn(self, start):

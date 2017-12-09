@@ -96,6 +96,7 @@ class Application(tk.Tk):
         self.home_frame = ttk.Frame()
         self.main_notebook.add(self.home_frame, text="Home")
         self.main_notebook.pack(side="top", fill="both", expand=True)
+        self.running_prog = None
 
         self.device_widgets = []
         #self.main_queue = queue.Queue()
@@ -247,6 +248,8 @@ class Application(tk.Tk):
                         self.laser.close()
                         self.laser = None
             except socket.error:
+                conn_warning(dev)
+            except visa.VisaIOError:
                 conn_warning(dev)
             except ValueError:
                 loc_warning(err_specifier)
