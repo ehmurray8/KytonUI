@@ -9,7 +9,7 @@ from PIL import Image, ImageTk
 ENTRY_FONT = ('Helvetica', 14)
 
 
-def file_entry(container, label_text, row, width):
+def file_entry(container, label_text, row, width, def_file=""):
     """Creates an entry with a browse button for the excel file."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
@@ -26,13 +26,18 @@ def file_entry(container, label_text, row, width):
         width=10)
     browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo
+    text_var.set(def_file)
     return text_var
 
 
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
+    try:
+        os.mkdir("output")
+    except FileExistsError:
+        pass
     file_path = filedialog.asksaveasfilename(
-        initialdir="./", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
+        initialdir="./output", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
                                                                 ("all files", "*.*")))
     try:
         file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')

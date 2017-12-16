@@ -4,9 +4,10 @@ program and baking program.
 """
 
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
-import time
+import os
 from tkinter import ttk, messagebox as mbox
 import platform
+import configparser
 from PIL import Image, ImageTk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -18,6 +19,11 @@ import ui_helper
 
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
+
+CPARSER = configparser.ConfigParser()
+CPARSER.read("prog_config.cfg")
+BAKE_HEAD = "Baking"
+CAL_HEAD = "Calibration"
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -123,8 +129,14 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Starts the recording process."""
         switch_chan = -1
         chan = -2
+
+        file_filled = True
+        fname = self.options.file_name.get().split(".")
+        if len(fname) != 2 or fname[0] == "" or fname[1] != "xlsx":
+            file_filled = False
+
         can_start = self.options.check_config()
-        if can_start:
+        if can_start and file_filled:
             if self.delayed_prog is not None:
                     self.master.after_cancel(self.delayed_prog)
                     self.delayed_prog = None
@@ -143,8 +155,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     self.pause_program()
             elif not len(self.options.sn_ents):
                 mbox.showwarning("Invalid configuration",
-                                    "Please add fbg entries to your configuration before " +
-                                    "running the program.")
+                                 "Please add fbg entries to your configuration before " +
+                                 "running the program.")
             else:
                 for chan, snum, pos in zip(self.options.chan_nums,
                                            self.options.sn_ents,
@@ -173,13 +185,31 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.master.conn_buttons[1].invoke()
                     if self.master.temp_controller is None:
                         self.master.conn_buttons[2].invoke()
-                    if self.program_type.prog_id == CAL_ID and self.master.oven is None:
+                    if (self.program_type.prog_id == CAL_ID or self.options.set_temp.get()) \
+                            and self.master.oven is None:
                         need_oven = True
                         self.master.conn_buttons[3].invoke()
 
                     if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
                         self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
+                        CPARSER.set(BAKE_HEAD, "running", "true")
+                        CPARSER.set(CAL_HEAD, "running", "false")
+                        if self.program_type == BAKING_ID:
+                            CPARSER.set(BAKE_HEAD, "num_scans", str(self.options.num_pts.get()))
+                            CPARSER.set(BAKE_HEAD, "set_temp", str(self.options.set_temp.get()))
+                            CPARSER.set(BAKE_HEAD, "init_delay", str(self.options.delay.get()))
+                            CPARSER.set(BAKE_HEAD, "init_interval", str(self.options.init_time.get()))
+                            CPARSER.set(BAKE_HEAD, "init_duration", str(self.options.init_duration.get()))
+                            CPARSER.set(BAKE_HEAD, "prim_interval", str(self.options.prim_time.get()))
+                            CPARSER.set(BAKE_HEAD, "file", str(self.options.file_name.get()))
+                            last_folder = os.path.dirname(self.options.file_name.get())
+                            CPARSER.set(BAKE_HEAD, "last_folder", last_folder)
+                            with open("prog_config.cfg", "w") as pcfg:
+                                CPARSER.write(pcfg)
 
+                        if need_oven:
+                            self.master.oven.set_temp(self.options.set_temp.get())
+                            self.master.oven.heater_on()
                         self.master.running = True
                         self.master.running_prog = self.program_type.prog_id
                         self.start_btn.configure(text="Pause")
@@ -192,9 +222,13 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     else:
                         self.pause_program()
         else:
-            self.pause_program()
-            mbox.showwarning("Invalid configuration",
-                             "Please check the configuration boxes, an invalid entry was detected.")
+            if not file_filled:
+                mbox.showwarning("Invalid configuration",
+                                 "Please insert a proper file name that has the extension .xlsx.")
+            else:
+                mbox.showwarning("Invalid configuration",
+                                 "Please check the configuration boxes, an invalid entry was detected." +
+                                 "Please ensure the entries are numeric, and the file path is valid.")
 
     def pause_program(self):
         """Pauses the program."""
@@ -203,6 +237,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         ui_helper.unlock_widgets(self.options)
         self.master.running = False
         self.master.running_prog = None
+        CPARSER.set(BAKE_HEAD, "running", "false")
+        CPARSER.set(CAL_HEAD, "running", "false")
         self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]

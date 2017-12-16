@@ -19,7 +19,6 @@ def avg_waves_amps(laser, switch, switches, num_pts, after_func):
 
 
 def __avg_arr(first, second):
-    temp = functools.reduce(lambda x, y: x + y, second)
     if len(functools.reduce(lambda x, y: x + y, second)):
         for i, row in enumerate(second):
             for j, col in enumerate(row):
@@ -62,6 +61,7 @@ def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num,
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
+        time.sleep(1.25)
         wavelengths, amplitudes = __get_data(
             laser, op_switch, switches_arr, switch_num, after_func)
         all_waves = __avg_arr(wavelengths, all_waves)

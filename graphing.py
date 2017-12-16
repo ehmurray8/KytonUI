@@ -15,7 +15,7 @@ style.use("kyton")
 
 class Graph(object):
     """
-    Class describes a specific graph that can be representted as a subplot or a main plot.
+    Class describes a specific graph that can be represented as a subplot or a main plot.
     """
 
     def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal):
@@ -131,7 +131,7 @@ class Graphing(object):
         ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
                    ("Power (dBm)", "{} Power (dBm)".format(u'\u0394')),
                    ("Temperature (K)", "{} Temperature (K)".format(u'\u0394')),
-                   ("Power (dBm)",), ("Wavelength (pm)",)]
+                   ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
                          animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
 

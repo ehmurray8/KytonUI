@@ -30,7 +30,7 @@ OVEN = "Delta Oven"
 LASER = "Micron Optics SM125"
 SWITCH = "Optical Switch"
 TEMP = "LSC Temperature Controller"
-CPARSER = configparser.SafeConfigParser()
+CPARSER = configparser.ConfigParser()
 CPARSER.read("devices.cfg")
 HEADER = "Devices"
 

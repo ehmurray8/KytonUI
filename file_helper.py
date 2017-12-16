@@ -1,5 +1,6 @@
 """Module used for helping with creating output files."""
 # pylint: disable=import-error, relative-import
+# pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
 
 import os
 import time
@@ -19,15 +20,13 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
               "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
               "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
-CPARSER = configparser.ConfigParser()
-CPARSER.read("devices.cfg")
-BAKING_SECTION = "Baking"
-CAL_SECTION = "Calibration"
 
 LOCK = threading.Lock()
 
+BAKING_SECTION = "Baking"
+CAL_SECTION = "Calibration"
 
-# pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
+
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
                    func, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
@@ -40,7 +39,11 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
             os.chmod(file_name, stat.S_IRWXU)
         file_obj = open(file_name, "a")
     else:
-        file_obj = open(file_name, "w")
+        try:
+            file_obj = open(file_name, "w")
+        except FileNotFoundError:
+            os.mkdir(os.path.dirname(file_name), os.W_OK)
+            file_obj = open(file_name, "w")
 
         if func == options_frame.BAKING:
             header = "Metadata\n"
@@ -80,7 +83,11 @@ def parse_csv_file(csv_file):
     """Parses defined csv file."""
     if platform.system() != "Linux":
         os.chmod(csv_file, stat.S_IWRITE)
-    entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
+
+    try:
+        entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
+    except pd.errors.ParserError:
+        raise IOError("Fatal error csv file has been corrupted.")
 
     mdata = datac.Metadata()
 
@@ -254,7 +261,7 @@ def __create_formats(serial_nums, workbook, is_cal=False):
     sn_num = 0
     while sn_num < len(serial_nums):
         row_format.append(None)
-        row_header_format.append(None)
+        row_header_format.append(bold_format)
         sn_num += 1
 
     # Add red text format for delta temperature, and format for mean delta wavelength
@@ -414,55 +421,6 @@ def on_closing(root, old_conf, widgets):
             root.tkraise()
     else:
         root.destroy()
-
-
-def save_config(cont_ent, oven_ent, op_switch_addr_ent, op_switch_port_ent,
-                sm125_addr_ent, sm125_port_ent, window, prog):
-
-    # pylint:disable=too-many-arguments
-    """Save configuration data to config file."""
-    s_addr_str = sm125_addr_ent.get()
-    o_addr_str = op_switch_addr_ent.get()
-    s_addrs = s_addr_str.split(".")
-    o_addrs = o_addr_str.split(".")
-    valid = True
-
-    try:
-        cont_loc = int(cont_ent.get())
-        oven_loc = int(oven_ent.get())
-        op_switch_port = int(op_switch_port_ent.get())
-        sm125_port = int(sm125_port_ent.get())
-        for (s_addr, o_addr) in zip(s_addrs, o_addrs):
-            int(s_addr)
-            int(o_addr)
-    except ValueError:
-        valid = False
-        messagebox.showwarning("Invalid Input", "GPIB0 port entries require integers. \
-                                                    \nIP port requires an integer. \
-                                                    \nIP address requires #.#.#.#")
-
-    if valid:
-        CPARSER.set(prog, "controller_location", str(cont_loc))
-        CPARSER.set(prog, "oven_location", str(oven_loc))
-        CPARSER.set(prog, "op_switch_address", str(o_addr_str))
-        CPARSER.set(prog, "op_switch_port", str(op_switch_port))
-        CPARSER.set(prog, "sm125_address", str(s_addr_str))
-        CPARSER.set(prog, "sm125_port", str(sm125_port))
-        with open("devices.cfg", "w+") as conf:
-            CPARSER.write(conf)
-        window.destroy()
-
-
-def get_config(prog):
-    """Gets the information stored in the config file."""
-    cont_loc = CPARSER.get(prog, "controller_location")
-    oven_loc = CPARSER.get(prog, "oven_location")
-    op_switch_addr = CPARSER.get(prog, "op_switch_address")
-    op_switch_port = CPARSER.get(prog, "op_switch_port")
-    sm125_addr = CPARSER.get(prog, "sm125_address")
-    sm125_port = CPARSER.get(prog, "sm125_port")
-
-    return cont_loc, oven_loc, op_switch_addr, op_switch_port, sm125_addr, sm125_port
 
 
 if __name__ == "__main__":

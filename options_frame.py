@@ -1,7 +1,9 @@
 """Class sets up the tkinter UI code for the options panel."""
 
 # pylint: disable=import-error, relative-import, missing-super-argument
+import os
 import platform
+import configparser
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
@@ -10,6 +12,10 @@ import colors
 BAKING = "Baking"
 CAL = "Calibration"
 
+CPARSER = configparser.ConfigParser()
+CPARSER.read("prog_config.cfg")
+BAKE_HEAD = "Baking"
+CAL_HEAD = "Calibration"
 
 class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Main Tkinter window class."""
@@ -34,6 +40,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.temp_interval = tk.IntVar()
         self.drift_rate = tk.DoubleVar()
         self.num_cal_cycles = tk.IntVar()
+        self.set_temp = tk.DoubleVar()
         self.cooling = tk.IntVar()
         self.target_temps_entry = None
         self.program = program
@@ -58,6 +65,9 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                 float(self.init_time.get())
                 float(self.init_duration.get())
                 float(self.prim_time.get())
+                if not os.path.exists(self.file_name.get()) and os.path.dirname(self.file_name.get()) != "" and \
+                        not os.access(os.path.dirname(self.file_name.get()), os.W_OK):
+                    return False
         except ValueError:
             return False
         return True
@@ -88,10 +98,14 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             self.cooling = uh.checkbox_entry(self.options_grid,
                                              "Use oven cooling function?", row_num)
             row_num += 1
+            num_scans = 5
+        else:
+            num_scans = CPARSER.getint(BAKE_HEAD, "num_scans")
+
 
         # Number of points to average entry
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:",
-                                    row_num, 5, 5)
+                                    row_num, 5, num_scans)
         row_num += 1
 
         if self.program == CAL:
@@ -119,26 +133,37 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                                "Target temps (C) [Comma Separated]", row_num,
                                10, 7, white, "130, 135")
             row_num += 1
+            fname = "" #CPARSER.get(BAKE_HEAD, "file")
         else:
+            set_temp = CPARSER.getfloat(BAKE_HEAD, "set_temp")
+            self.set_temp = uh.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
+                                            row_num, 10, set_temp)
+            row_num += 1
+
             # Time intervals entry
+            init_delay = CPARSER.getfloat(BAKE_HEAD, "init_delay")
             self.delay = uh.units_entry(self.options_grid, "Initial program delay: ",
-                                        row_num, 5, "hours", 1.0)
+                                        row_num, 5, "hours", init_delay)
             row_num += 1
 
+            init_interval = CPARSER.getfloat(BAKE_HEAD, "init_interval")
             self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ",
-                                            row_num, 5, "seconds", 15.0)
+                                            row_num, 5, "seconds", init_interval)
             row_num += 1
 
+            init_duration = CPARSER.getfloat(BAKE_HEAD, "init_duration")
             self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ",
-                                                row_num, 5, "minutes", 5.0)
+                                                row_num, 5, "minutes", init_duration)
             row_num += 1
 
+            prim_interval = CPARSER.getfloat(BAKE_HEAD, "prim_interval")
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ",
-                                            row_num, 5, "hours", 1.0)
+                                            row_num, 5, "hours", prim_interval)
             row_num += 1
+            fname = CPARSER.get(BAKE_HEAD, "file")
 
         self.file_name = uh.file_entry(
-            self.options_grid, "Excel file name: ", row_num, 50)
+            self.options_grid, "Excel file name: ", row_num, 50, fname)
         row_num += 1
 
     def create_start_btn(self, start):
