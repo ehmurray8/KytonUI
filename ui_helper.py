@@ -2,6 +2,7 @@
 # pylint: disable=import-error, relative-import, superfluous-parens
 import os
 import platform
+import configparser
 from tkinter import ttk, filedialog
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -32,12 +33,15 @@ def file_entry(container, label_text, row, width, def_file=""):
 
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
+    cparser = configparser.ConfigParser()
+    cparser.read("prog_config.cfg")
+    last_dir = cparser.get("Baking", "last_folder")
     try:
-        os.mkdir("output")
+        os.mkdir(last_dir)
     except FileExistsError:
         pass
     file_path = filedialog.asksaveasfilename(
-        initialdir="./output", title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
+        initialdir=last_dir, title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
                                                                 ("all files", "*.*")))
     try:
         file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
