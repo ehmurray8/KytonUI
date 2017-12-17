@@ -11,6 +11,7 @@ from matplotlib import style
 import matplotlib.gridspec as gridspec
 import file_helper as fh
 import helpers as help
+from constants import HEX_COLORS
 style.use("kyton")
 
 
@@ -149,7 +150,7 @@ class Graphing(object):
             xlabels.append("Time (hr)")
             ylabels.append(("Average Drift Rate (mK/min)",
                             "{} Average Drift Rate (mK/min)".format(u'\u0394')))
-            animate_funcs.append(animate_drift_rates)
+            animate_funcs.append(animate_drift_rates_avg)
             dimens.append(reg_dims)
 
         # Create the graph objects and sub plot objects.
@@ -244,7 +245,7 @@ def animate_wp_graph(f_name, axis):
     wavelens, powers, snums = __get_wave_power_graph(f_name)
     idx = 0
     axes = []
-    for waves, powers, color in zip(wavelens, powers, fh.HEX_COLORS):
+    for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
         axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
 
@@ -306,7 +307,7 @@ def animate_indiv_waves(f_name, axis):
     times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
     idx = 0
     axes = []
-    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, fh.HEX_COLORS):
+    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
         axes.append(axis[0].plot(times, waves, color=color)[0])
         if len(axis) > 1:
             axis[1].plot(times, wave_diffs, color=color)
@@ -338,7 +339,7 @@ def animate_indiv_powers(f_name, axis):
     times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
     idx = 0
     axes = []
-    for pows, pow_diffs, color in zip(powers, power_diffs, fh.HEX_COLORS):
+    for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
         axes.append(axis[0].plot(times, pows, color=color)[0])
         if len(axis) > 1:
             axis[1].plot(times, pow_diffs, color=color)
@@ -366,29 +367,28 @@ def __get_indiv_powers_data(f_name):
         return [], [], [], []
 
 
-def animate_drift_rates(f_name, axes):
+def animate_drift_rates_avg(f_name, axes):
     """Animate function for the drift rates graph."""
-    times, times_real, drates, drates_real = __get_drift_rates(f_name)
+    times, times_real, drates, drates_real = __get_drift_rates_avg(f_name)
     axes[0].plot(times, drates)
     if len(axes) > 1:
         axes[1].plot(times_real, drates_real)
 
 
-def __get_drift_rates(f_name):
+def __get_drift_rates_avg(f_name):
     mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
     if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
+        data_coll = fh.create_data_coll(mdata, entries_df, True)
         times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        drates = data_coll.drift_rates
 
         drates_real = []
         times_real = []
-        for time, drate, real_point in zip(times, drates, data_coll.drift_rates):
+        for time, drate, real_point in zip(times, data_coll.drift_rates, data_coll.real_points):
             if real_point:
                 drates_real.append(drate)
                 times_real.append(time)
 
-        return times, times_real, drates, drates_real
+        return times, times_real, data_coll.avg_drift_rates, drates_real#, mdata.serial_nums
     else:
         return [], [], [], []
 
@@ -404,13 +404,13 @@ def check_valid_file(fname, is_cal):
                 valid_file = False
             else:
                 next(file_lines)
-                valid_file = fh.check_metadata(file_lines) and valid_file
+                valid_file = fh.check_metadata(file_lines, is_cal) and valid_file
         elif "Caldata" in prog_header:
             if not is_cal:
                 valid_file = False
             else:
                 next(file_lines)
-                valid_file = fh.check_metadata(file_lines) and valid_file
+                valid_file = fh.check_metadata(file_lines, is_cal) and valid_file
         else:
             valid_file = False
     else:

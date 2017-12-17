@@ -4,7 +4,6 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=import-error, relative-import
 
-#import queue
 from shutil import copy2
 import socket
 import argparse
@@ -13,6 +12,7 @@ import platform
 import matplotlib
 import configparser
 import getpass
+import visa
 
 matplotlib.use("TkAgg")
 from matplotlib import style
@@ -21,20 +21,10 @@ import tkinter as tk
 if platform.system() == "Linux":
     from ttkthemes import ThemedStyle
 import devices
-import visa
 from baking_program import BakingPage
 from cal_program import CalPage
-import colors
+import constants
 style.use('kyton')
-
-
-OVEN = "Delta Oven"
-LASER = "Micron Optics SM125"
-SWITCH = "Optical Switch"
-TEMP = "LSC Temperature Controller"
-CPARSER = configparser.ConfigParser()
-CPARSER.read("devices.cfg")
-HEADER = "Devices"
 
 
 class Application(tk.Tk):
@@ -50,6 +40,10 @@ class Application(tk.Tk):
             description='Run the Kyton program for the correct computer.')
         parser.add_argument('--nodev', action="store_true",
                             help='Use this arg if no devices are available.')
+
+
+        self.conf_parser = configparser.ConfigParser()
+        self.conf_parser.read("devices.cfg")
         self.use_dev = True
         cmdargs = parser.parse_args()
         if cmdargs.nodev:
@@ -66,23 +60,23 @@ class Application(tk.Tk):
             self.style = ThemedStyle(self)
             parent_theme = "clearlooks"
         self.style.theme_create("main", parent=parent_theme, settings={
-            ".": {"configure": {"background": colors.BG_COLOR}},
-            "TFrame": {"configure": {"background": colors.BG_COLOR, "margin": [10, 10, 10, 10]}},
-            "TButton": {"configure": {"background": colors.BUTTON_COLOR, "font": ('Helvetica', 16),
-                                      "foreground": colors.BUTTON_TEXT, "justify": "center"}},
+            ".": {"configure": {"background": constants.BG_COLOR}},
+            "TFrame": {"configure": {"background": constants.BG_COLOR, "margin": [10, 10, 10, 10]}},
+            "TButton": {"configure": {"background": constants.BUTTON_COLOR, "font": ('Helvetica', 16),
+                                      "foreground": constants.BUTTON_TEXT, "justify": "center"}},
             "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
-            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": colors.TEXT_COLOR}},
+            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": constants.TEXT_COLOR}},
             "TEntry": {"configure": {"font": ('Helvetica', 14)},
-                       "map":       {"fieldbackground": [("active", colors.ENTRY_COLOR),
-                                                         ("disabled", colors.BLACK)],
+                       "map":       {"fieldbackground": [("active", constants.ENTRY_COLOR),
+                                                         ("disabled", constants.BG_COLOR)],
                                      "foreground": [("active", "black"),
-                                                    ("disabled", colors.TEXT_COLOR)]}},
+                                                    ("disabled", constants.TEXT_COLOR)]}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width": 40}},
             "TNotebook.Tab": {
                 "configure": {"padding": [10, 4], "font": ('Helvetica', 18),
-                              "background": colors.TAB_COLOR},
-                "map":       {"background": [("selected", colors.TABS_COLOR)],
+                              "background": constants.TAB_COLOR},
+                "map":       {"background": [("selected", constants.TABS_COLOR)],
                               "font": [("selected", ('Helvetica', 18, "bold"))],
                               "expand": [("selected", [1, 1, 1, 0])]}}})
 
@@ -169,14 +163,14 @@ class Application(tk.Tk):
             row=1, column=5, sticky='ew')
         ttk.Label(device_frame, text="Connection Status", style="Bold.TLabel").grid(
             row=1, column=7, sticky='ew')
-        laser_loc = CPARSER.get(HEADER, "sm125_address")
-        laser_port = CPARSER.get(HEADER, "sm125_port")
-        switch_loc = CPARSER.get(HEADER, "op_switch_address")
-        switch_port = CPARSER.get(HEADER, "op_switch_port")
-        temp_loc = CPARSER.get(HEADER, "controller_location")
-        oven_loc = CPARSER.get(HEADER, "oven_location")
-        switch_conf = [(LASER, laser_loc, laser_port), (SWITCH, switch_loc, switch_port),
-                       (TEMP, temp_loc, None), (OVEN, oven_loc, None)]
+        laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
+        laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
+        switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
+        switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
+        temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
+        oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
+        switch_conf = [(constants.LASER, laser_loc, laser_port), (constants.SWITCH, switch_loc, switch_port),
+                       (constants.TEMP, temp_loc, None), (constants.OVEN, oven_loc, None)]
         for i, dev in enumerate(switch_conf):
             device_frame.grid_rowconfigure(i * 2, pad=20)
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
@@ -213,41 +207,41 @@ class Application(tk.Tk):
         connect = False
         if self.use_dev:
             try:
-                if dev == TEMP:
+                if dev == constants.TEMP:
                     if self.temp_controller is None:
                         err_specifier = "GPIB address"
                         self.temp_controller = devices.TempController(int(loc_ent.get()),
                                                                       self.manager)
-                        CPARSER.set(HEADER, "controller_location", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                         connect = True
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
-                elif dev == OVEN:
+                elif dev == constants.OVEN:
                     if self.oven is None:
                         err_specifier = "GPIB address"
                         self.oven = devices.Oven(int(loc_ent.get()), self.manager)
-                        CPARSER.set(HEADER, "oven_location", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
                         connect = True
                     else:
                         self.oven.close()
                         self.oven = None
-                elif dev == SWITCH:
+                elif dev == constants.SWITCH:
                     if self.switch is None:
                         err_specifier = "ethernet port"
                         self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()))
-                        CPARSER.set(HEADER, "op_switch_address", loc_ent.get())
-                        CPARSER.set(HEADER, "op_switch_port", port_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
                         connect = True
                     else:
                         self.switch.close()
                         self.switch = None
-                elif dev == LASER:
+                elif dev == constants.LASER:
                     if self.laser is None:
                         err_specifier = "ethernet port"
                         self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
-                        CPARSER.set(HEADER, "sm125_address", loc_ent.get())
-                        CPARSER.set(HEADER, "sm125_port", port_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
                         connect = True
                     else:
                         self.laser.close()

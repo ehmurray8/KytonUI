@@ -5,9 +5,8 @@ import platform
 import configparser
 from tkinter import ttk, filedialog
 import tkinter as tk
+from constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
 from PIL import Image, ImageTk
-
-ENTRY_FONT = ('Helvetica', 14)
 
 
 def file_entry(container, label_text, row, width, def_file=""):
@@ -96,7 +95,6 @@ def double_entry(container, label_text, row, width, default_double=0.0):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ent = ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)
     ent.grid(row=row, column=2, sticky='ew')
-    #ent.config(state="disabled")
     text_var.set(default_double)
     return text_var
 
@@ -121,12 +119,11 @@ def checkbox_entry(container, label_text, row, checked=True):
 
 
 # pylint:disable=too-many-arguments
-def array_entry(container, label_text, row, width, height, color, default_arr=None):
+def array_entry(container, label_text, row, width, height, default_arr=None):
     """Creates an entry to import multiline text."""
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    text = tk.Text(container, width=width, height=height,
-                   bg=color, font=ENTRY_FONT)
-    text.grid(row=row, column=2, sticky='ew')
+    text = tk.Text(container, width=width, height=height, bg=ARRAY_ENTRY_COLOR, font=ENTRY_FONT)
+    text.grid(row=row, column=2, sticky='ew', columnspan=2)
 
     text.delete(1.0, tk.END)
     if default_arr is not None:

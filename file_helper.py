@@ -13,25 +13,16 @@ import pandas as pd
 import data_container as datac
 import options_frame
 import helpers as help
-
-
-HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
-              "#40E0D0", "#FFA500", "#00FF00", "#468499",
-              "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
-              "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
-              "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
+from constants import HEX_COLORS, CAL
 
 LOCK = threading.Lock()
-
-BAKING_SECTION = "Baking"
-CAL_SECTION = "Calibration"
 
 
 def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
                    func, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
 
-    file_name = os.path.splitext(file_name)[0] + '.csv'
+    file_name = help.to_ext(file_name, "csv")
 
     LOCK.acquire()
     if os.path.isfile(file_name):
@@ -60,7 +51,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
 
         line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
-        if func == options_frame.CAL:
+        if func == CAL:
             line += ",Real Point,Drift Rate(mK/min)"
         line += "\n\n"
         file_obj.write(line)
@@ -68,7 +59,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     for snum, wave, power in zip(serial_nums, wavelengths, powers):
         line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," +\
             str(wave) + "," + str(power)
-        if func == options_frame.CAL:
+        if func == CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
         file_obj.write("".join([line, "\n"]))
 
@@ -154,11 +145,6 @@ def create_data_coll(mdata, entries_df, is_cal=False, dataq=None):
             data_coll.temp_diffs.append(
                 float(temp) + 273.15 - float(mdata.start_temp))
 
-    if is_cal:
-        data_coll.drift_rates = entries_df['Drift Rate(mK/min)'].values.tolist()
-
-        data_coll.real_points = entries_df['Real Point'].values.tolist()
-
     wavelens = entries_df['Wavelength(nm)'].values.tolist()
 
     data_coll.wavelens = [[] for _ in range(len(mdata.serial_nums))]
@@ -172,6 +158,19 @@ def create_data_coll(mdata, entries_df, is_cal=False, dataq=None):
     start_powers = []
     for power in data_coll.powers:
         start_powers.append(power[0])
+
+    if is_cal:
+        data_coll.real_points = entries_df['Real Point'].values.tolist()
+        data_coll.drift_rates = [[] for _ in range(len(mdata.serial_nums))]
+        drift_rates = entries_df['Drift Rate(mK/min)']
+        for idx, drift_rate in enumerate(drift_rates):
+            data_coll.drift_rates[int(idx % len(mdata.serial_nums))].append(drift_rate)
+
+        for i in range(len(data_coll.drift_rates[0])):
+            total_dr = 0
+            for dr in data_coll.drift_rates:
+                total_dr += dr[i]
+            data_coll.avg_drift_rates.append(total_dr)
 
     data_coll.wavelen_diffs = [[] for _ in range(len(mdata.serial_nums))]
     data_coll.power_diffs = [[] for _ in range(len(mdata.serial_nums))]
@@ -345,7 +344,7 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
         drates_real.append(drate)
 
     chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real,
-                      'values': data_coll.drates_real})
+                      'values': drates_real})
     chart.set_title({'name': 'Average Drift Rate (mK/min) vs. Time(hr)'})
     chart.set_y_axis({'name': 'Average Drift Rate (mK/min)'})
     chart.set_x_axis({'name': 'Time (hr)'})
@@ -378,7 +377,9 @@ def create_excel_file(xcel_file, is_cal=False):
             bold_format = workbook.add_format()
             bold_format.set_bold()
 
-            __write_headers(headers, row_header_format, bold_format, worksheet)
+            bf = workbook.add_format({"bold": True, "font_size": 16})
+            bf.set_bold()
+            __write_headers(headers, row_header_format, bf, worksheet)
 
             __write_rows(row_strs, row_format, worksheet,
                          bold_format, data_coll, is_cal)
@@ -415,24 +416,7 @@ def num_to_excel_col(num):
     return letters[curr_overflow_index] + letters[num]
 
 
-def on_closing(root, old_conf, widgets):
-    """Stops the user from closing if they haven't saved."""
-    unsaved = False
-    for old_c, widg in zip(old_conf, widgets):
-        if old_c != widg.get():
-            unsaved = True
-            break
-
-    if unsaved:
-        if messagebox.askyesno("Quit", "Changes won't be save. Are you sure you want to quit?"):
-            root.destroy()
-        else:
-            root.tkraise()
-    else:
-        root.destroy()
-
-
-def check_metadata(file_lines, num_fbgs=None):
+def check_metadata(file_lines, is_cal, num_fbgs=None):
     try:
         init_vals = help.list_cast(next(file_lines).split(","), float)
         if num_fbgs is not None and len(init_vals) != num_fbgs:
@@ -442,8 +426,11 @@ def check_metadata(file_lines, num_fbgs=None):
             return False
         if next(file_lines) != "\n":
             return False
-        if help.clean_str_list(next(file_lines).split(",")) != ["Serial Num", "Timestamp(s)", "Temperature(K)",
-                                                                "Wavelength(nm)", "Power(dBm)"]:
+        headers = help.clean_str_list(next(file_lines).split(","))
+        if not is_cal and headers != ["Serial Num", "Timestamp(s)", "Temperature(K)", "Wavelength(nm)", "Power(dBm)"]:
+            return False
+        elif headers != ["Serial Num", "Timestamp(s)", "Temperature(K)", "Wavelength(nm)", "Power(dBm)", "Real Point",
+                         "Drift Rate(mK/min)"]:
             return False
         if next(file_lines) != "\n":
             return False
@@ -451,7 +438,3 @@ def check_metadata(file_lines, num_fbgs=None):
         return False
 
     return True
-
-
-if __name__ == "__main__":
-    create_excel_file("kyton_out.csv")

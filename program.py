@@ -17,11 +17,7 @@ import file_helper as fh
 import graphing
 import ui_helper
 import helpers as help
-
-BAKING_ID = "Baking"
-CAL_ID = "Cal"
-BAKE_HEAD = "Baking"
-CAL_HEAD = "Calibration"
+from constants import CAL, BAKING
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -29,19 +25,15 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
 
     def __init__(self, prog_id):
         self.prog_id = prog_id
-        if self.prog_id == BAKING_ID:
+        if self.prog_id == BAKING:
             self.start_title = "Start Baking"
             self.title = "Configure Baking"
-            self.config_id = fh.BAKING_SECTION
-            self.options = options_frame.BAKING
             self.in_prog_msg = "Baking..."
             self.plot_num = 230
             self.num_graphs = 6
         else:
             self.start_title = "Start Calibration"
             self.title = "Configure Calibration"
-            self.config_id = fh.CAL_SECTION
-            self.options = options_frame.CAL
             self.in_prog_msg = "Calibrating..."
             self.plot_num = 240
             self.num_graphs = 7
@@ -66,7 +58,6 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.cancel_run = False
         self.chan_error_been_warned = False
         self.start_btn = None
-        self.data_pts = {}
         self.delayed_prog = None
 
         self.conf_parser = configparser.ConfigParser()
@@ -89,8 +80,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
-        self.options = options_frame.OptionsPanel(
-            self.config_frame, self.program_type.options)
+        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.prog_id)
         self.start_btn = self.options.create_start_btn(self.start)
         self.xcel_btn = self.options.create_xcel_btn(self.create_excel)
         self.options.init_fbgs()
@@ -108,7 +98,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
         self.canvas.show()
         is_cal = False
-        if self.program_type.prog_id == CAL_ID:
+        if self.program_type.prog_id == CAL:
             is_cal = True
 
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -122,8 +112,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        is_running = self.program_type.prog_id == BAKING_ID and self.conf_parser.getboolean(BAKE_HEAD, "running")
-        is_running = is_running or self.program_type.prog_id == CAL_ID and self.conf_parser.getboolean(CAL_HEAD, "running")
+        is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
+        is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
         if is_running:
             self.start()
 
@@ -144,7 +134,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                                  "data for. The file contains the FBGs: {}".format(str(saved_snums)))
             return False
 
-        if not fh.check_metadata(file_lines, num_conf_fbgs):
+        if not fh.check_metadata(file_lines, self.program_type.prog_id == CAL, num_conf_fbgs):
             file_error(csv_file, "has been corrupted.")
             return False
         return True
@@ -156,13 +146,13 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             file_lines = (line for line in open(csv_file))
             prog_header = next(file_lines)
             if "Metadata" in prog_header:
-                if self.program_type.prog_id != BAKING_ID:
+                if self.program_type.prog_id != BAKING:
                     file_error(csv_file, "was created to be used for baking.")
                     valid_file = False
                 else:
                     valid_file = self.valid_header(csv_file, file_lines) and valid_file
             elif "Caldata" in prog_header:
-                if self.program_type.prog_id == BAKING_ID:
+                if self.program_type.prog_id == BAKING:
                     file_error(csv_file, "was created to be used for calibration.")
                     valid_file = False
                 else:
@@ -185,7 +175,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                 if self.master.running_prog != self.program_type.prog_id:
                     prog = "Baking"
                     run = "calibration"
-                    if self.program_type.prog_id == BAKING_ID:
+                    if self.program_type.prog_id == BAKING:
                         prog = "Calibration"
                         run = "bake"
                     mbox.showerror("{} program is already running".format(prog),
@@ -230,7 +220,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             self.master.conn_buttons[1].invoke()
                         if self.master.temp_controller is None:
                             self.master.conn_buttons[2].invoke()
-                        if (self.program_type.prog_id == CAL_ID or self.options.set_temp.get()) \
+                        if (self.program_type.prog_id == CAL or self.options.set_temp.get()) \
                                 and self.master.oven is None:
                             need_oven = True
                             self.master.conn_buttons[3].invoke()
@@ -246,8 +236,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             # self.header.configure(text=self.program_type.in_prog_msg)
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
-                            self.delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                                      1000 * 60 * 60 + 1.5),
+                            self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
                                                                   self.program_loop)
                         else:
                             self.pause_program()
@@ -255,23 +244,33 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     self.pause_program()
 
     def save_config_info(self):
-        self.conf_parser.set(BAKE_HEAD, "running", "true")
-        self.conf_parser.set(CAL_HEAD, "running", "false")
-        if self.program_type.prog_id == BAKING_ID:
-            self.conf_parser.set(BAKE_HEAD, "num_scans", str(self.options.num_pts.get()))
-            self.conf_parser.set(BAKE_HEAD, "set_temp", str(self.options.set_temp.get()))
-            self.conf_parser.set(BAKE_HEAD, "init_delay", str(self.options.delay.get()))
-            self.conf_parser.set(BAKE_HEAD, "init_interval", str(self.options.init_time.get()))
-            self.conf_parser.set(BAKE_HEAD, "init_duration", str(self.options.init_duration.get()))
-            self.conf_parser.set(BAKE_HEAD, "prim_interval", str(self.options.prim_time.get()))
-            self.conf_parser.set(BAKE_HEAD, "file", str(self.options.file_name.get()))
-            last_folder = os.path.dirname(self.options.file_name.get())
-            self.conf_parser.set(BAKE_HEAD, "last_folder", last_folder)
-            for i, (snums, switches) in enumerate(zip(self.channels, self.switches)):
-                self.conf_parser.set(BAKE_HEAD, "chan{}_fbgs".format(i+1), ",".join(snums))
-                self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i+1), ",".join(str(x) for x in switches))
-            with open("prog_config.cfg", "w") as pcfg:
-                self.conf_parser.write(pcfg)
+        self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
+        self.conf_parser.set(self.program_type.prog_id, "file", str(self.options.file_name.get()))
+        last_folder = os.path.dirname(self.options.file_name.get())
+        self.conf_parser.set(self.program_type.prog_id, "last_folder", last_folder)
+        self.conf_parser.set(self.program_type.prog_id, "running", "true")
+        for i, (snums, switches) in enumerate(zip(self.channels, self.switches)):
+            self.conf_parser.set(BAKING, "chan{}_fbgs".format(i+1), ",".join(snums))
+            self.conf_parser.set(BAKING, "chan{}_positions".format(i+1), ",".join(str(x) for x in switches))
+
+        if self.program_type.prog_id == BAKING:
+            self.conf_parser.set(CAL, "running", "false")
+            self.conf_parser.set(self.program_type.prog_id, "set_temp", str(self.options.set_temp.get()))
+            self.conf_parser.set(self.program_type.prog_id, "init_delay", str(self.options.delay.get()))
+            self.conf_parser.set(self.program_type.prog_id, "init_interval", str(self.options.init_time.get()))
+            self.conf_parser.set(self.program_type.prog_id, "init_duration", str(self.options.init_duration.get()))
+            self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
+        else:
+            self.conf_parser.set(BAKING, "running", "false")
+            self.conf_parser.set(self.program_type.prog_id, "use_cool", str(self.options.cooling.get()))
+            self.conf_parser.set(self.program_type.prog_id, "num_temp_readings", str(self.options.num_temp_readings.get()))
+            self.conf_parser.set(self.program_type.prog_id, "temp_interval", str(self.options.temp_interval.get()))
+            self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
+            self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
+            self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
+
+        with open("prog_config.cfg", "w") as pcfg:
+            self.conf_parser.write(pcfg)
 
     def pause_program(self):
         """Pauses the program."""
@@ -280,8 +279,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         ui_helper.unlock_widgets(self.options)
         self.master.running = False
         self.master.running_prog = None
-        self.conf_parser.set(BAKE_HEAD, "running", "false")
-        self.conf_parser.set(CAL_HEAD, "running", "false")
+        self.conf_parser.set(BAKING, "running", "false")
+        self.conf_parser.set(CAL, "running", "false")
         with open("prog_config.cfg", "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0

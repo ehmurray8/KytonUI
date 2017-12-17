@@ -8,16 +8,8 @@ import configparser
 from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
-import colors
 import helpers as help
-
-BAKING = "Baking"
-CAL = "Calibration"
-
-CPARSER = configparser.ConfigParser()
-CPARSER.read("prog_config.cfg")
-BAKE_HEAD = "Baking"
-CAL_HEAD = "Calibration"
+from constants import BAKING, CAL
 
 
 class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
@@ -52,6 +44,9 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.options_grid.grid(column=1, sticky='w')
         self.fbg_grid = ttk.Frame(self)
 
+        self.conf_parser = configparser.ConfigParser()
+        self.conf_parser.read("prog_config.cfg")
+
         self.chan_rows = [1, 1, 1, 1]
 
         # Prevent from being garbage collected
@@ -65,50 +60,57 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             path = "assets/minus.png"
         self.img_minus = tk.PhotoImage(file=path)
 
-        self.create_options_grid(colors.WHITE)
+        self.create_options_grid()
 
     def check_config(self):
         try:
-            if self.program != CAL:
-                int(self.num_pts.get())
+            int(self.num_pts.get())
+            path, fname = os.path.split(self.file_name.get())
+            fname, ext = os.path.splitext(fname)
+            if not path or ext != ".xlsx" or not fname:
+                mbox.showerror("Invalid configuration",
+                               "Please insert a proper file name that has the extension .xlsx.")
+                return False
+
+            if not os.path.exists(self.file_name.get()) and os.path.dirname(self.file_name.get()) != "" and \
+                    not os.access(os.path.dirname(self.file_name.get()), os.W_OK):
+                mbox.showerror("Invalid configuration",
+                               "Please check the file path, the file cannot be opened or created.")
+                return False
+            if self.program == BAKING:
                 float(self.delay.get())
                 float(self.init_time.get())
                 float(self.init_duration.get())
                 float(self.prim_time.get())
+            else:
+                float(self.num_temp_readings.get())
+                float(self.temp_interval.get())
+                float(self.drift_rate.get())
+                float(self.num_cal_cycles.get())
 
-                path, fname = os.path.split(self.file_name.get())
-                fname, ext = os.path.splitext(fname)
-                if not path or ext != ".xlsx" or not fname:
-                    mbox.showerror("Invalid configuration",
-                                   "Please insert a proper file name that has the extension .xlsx.")
-                    return False
-
-                if not os.path.exists(self.file_name.get()) and os.path.dirname(self.file_name.get()) != "" and \
-                        not os.access(os.path.dirname(self.file_name.get()), os.W_OK):
-                    mbox.showerror("Invalid configuration",
-                                   "Please check the file path, the file cannot be opened or created.")
-                    return False
         except ValueError:
             mbox.showerror("Invalid configuration",
                            "Please check to make sure the configuration settings are numeric.")
             return False
+
+        if self.program == CAL:
+            try:
+                self.get_target_temps()
+            except ValueError:
+                mbox.showerror("Configuration Error",
+                               "The target temperatures import is not formatted properly, please insert the target " +
+                               "temps as comma separated decimal numbers.")
+                return False
+
         return True
 
     def get_target_temps(self):
         """
-        Returns the target temps as an array, returns None if formatting of
-        Text widget is wrong.
+        Returns the target temps as an array, doesn't catch the ValueError exception possibility.
         """
-        target_temps_str = self.target_temps_entry.get(1.0, tk.END)
-        target_temps_arr = target_temps_str.split(",")
-        try:
-            target_temps_arr = [int(x) for x in target_temps_arr]
-        except ValueError:
-            return None
+        return help.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
 
-        return target_temps_arr
-
-    def create_options_grid(self, white):
+    def create_options_grid(self):
         """Creates the grid for the user to configure options."""
 
         # Options Grid Init
@@ -117,75 +119,66 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         row_num = 0
 
         if self.program == CAL:
-            self.cooling = uh.checkbox_entry(self.options_grid,
-                                             "Use oven cooling function?", row_num)
+            use_cool = self.conf_parser.getboolean(self.program, "use_cool")
+            self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
             row_num += 1
-            num_scans = 5
-        else:
-            num_scans = CPARSER.getint(BAKE_HEAD, "num_scans")
-
 
         # Number of points to average entry
-        self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:",
-                                    row_num, 5, num_scans)
+        num_scans = self.conf_parser.getint(self.program, "num_scans")
+        self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
         row_num += 1
 
         if self.program == CAL:
-            self.num_temp_readings = uh.int_entry(self.options_grid,
-                                                  "Num temperature readings to average: ",
-                                                  row_num, 10, 5)
-            row_num += 1
-            self.temp_interval = uh.units_entry(self.options_grid,
-                                                "Time between temp readings: ",
-                                                row_num, 10, "seconds", 60.0)
+            num_readings = self.conf_parser.getint(self.program, "num_temp_readings")
+            self.num_temp_readings = uh.int_entry(self.options_grid, "Num temperature readings to average: ",
+                                                  row_num, 10, num_readings)
             row_num += 1
 
-            self.drift_rate = uh.units_entry(self.options_grid,
-                                             "Drift rate: ",
-                                             row_num, 10, "mK/min", 1.0)
+            temp_int = self.conf_parser.getfloat(self.program, "temp_interval")
+            self.temp_interval = uh.units_entry(self.options_grid, "Time between temp readings: ", row_num, 10,
+                                                "seconds", temp_int)
             row_num += 1
 
-            self.num_cal_cycles = uh.int_entry(self.options_grid,
-                                               "Num cal cycles: ",
-                                               row_num, 10, 1)
+            drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
-            self.target_temps_entry = \
-                uh.array_entry(self.options_grid,
-                               "Target temps (C) [Comma Separated]", row_num,
-                               10, 7, white, "130, 135")
+            num_cycles = self.conf_parser.getint(self.program, "num_cycles")
+            self.num_cal_cycles = uh.int_entry(self.options_grid, "Num cal cycles: ", row_num, 10, num_cycles)
             row_num += 1
-            fname = "" #CPARSER.get(BAKE_HEAD, "file")
+
+            target_temps = self.conf_parser.get(self.program, "target_temps")
+            self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
+                                                     .format(u'\u00B0'), row_num, 10, 4, target_temps)
+            row_num += 1
         else:
-            set_temp = CPARSER.getfloat(BAKE_HEAD, "set_temp")
+            set_temp = self.conf_parser.getfloat(BAKING, "set_temp")
             self.set_temp = uh.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
                                             row_num, 10, set_temp)
             row_num += 1
 
             # Time intervals entry
-            init_delay = CPARSER.getfloat(BAKE_HEAD, "init_delay")
-            self.delay = uh.units_entry(self.options_grid, "Initial program delay: ",
-                                        row_num, 5, "hours", init_delay)
+            init_delay = self.conf_parser.getfloat(BAKING, "init_delay")
+            self.delay = uh.units_entry(self.options_grid, "Initial program delay: ", row_num, 5, "hours", init_delay)
             row_num += 1
 
-            init_interval = CPARSER.getfloat(BAKE_HEAD, "init_interval")
-            self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ",
-                                            row_num, 5, "seconds", init_interval)
+            init_interval = self.conf_parser.getfloat(BAKING, "init_interval")
+            self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ", row_num, 5,
+                                            "seconds", init_interval)
             row_num += 1
 
-            init_duration = CPARSER.getfloat(BAKE_HEAD, "init_duration")
-            self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ",
-                                                row_num, 5, "minutes", init_duration)
+            init_duration = self.conf_parser.getfloat(BAKING, "init_duration")
+            self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ", row_num, 5,
+                                                "minutes", init_duration)
             row_num += 1
 
-            prim_interval = CPARSER.getfloat(BAKE_HEAD, "prim_interval")
-            self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ",
-                                            row_num, 5, "hours", prim_interval)
+            prim_interval = self.conf_parser.getfloat(BAKING, "prim_interval")
+            self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
+                                            "hours", prim_interval)
             row_num += 1
-            fname = CPARSER.get(BAKE_HEAD, "file")
 
-        self.file_name = uh.file_entry(
-            self.options_grid, "Excel file name: ", row_num, 50, fname)
+        fname = self.conf_parser.get(self.program, "file")
+        self.file_name = uh.file_entry(self.options_grid, "Excel file name: ", row_num, 50, fname)
         row_num += 1
 
     def create_start_btn(self, start):
@@ -247,26 +240,22 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             buttons_frame = ttk.Frame(self.fbg_grid)
             buttons_frame.grid(sticky='ew', column=col_num, row=20)
 
-            ttk.Button(buttons_frame, image=self.img_minus,
-                       command=lambda chan=i: self.minus_fbg(chan)) \
+            ttk.Button(buttons_frame, image=self.img_minus, command=lambda chan=i: self.minus_fbg(chan)) \
                .pack(expand=True, fill="both", side="left")
             ttk.Button(buttons_frame, image=self.img_plus,
                        command=lambda col=col_num, chan=i: self.add_fbg(self.fbg_grid, col, chan)) \
                 .pack(expand=True, fill="both", side="left")
 
         self.fbg_grid.grid(row=6, column=0, columnspan=2)
-        if self.program == CAL:
-            pass
-        else:
-            for i in range(4):
-                snums = CPARSER.get(BAKE_HEAD, "chan{}_fbgs".format(i+1)).split(",")
-                positions = CPARSER.get(BAKE_HEAD, "chan{}_positions".format(i+1)).split(",")
-                try:
-                    positions = help.list_cast(positions, int)
-                    for snum, pos in zip(snums, positions):
-                        self.add_fbg(self.fbg_grid, i * 2 + 1, i, snum, pos)
-                except ValueError:
-                    for snum in snums:
-                        if snum:
-                            self.add_fbg(self.fbg_grid, i*2+1, i, snum)
+        for i in range(4):
+            snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
+            positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
+            try:
+                positions = help.list_cast(positions, int)
+                for snum, pos in zip(snums, positions):
+                    self.add_fbg(self.fbg_grid, i * 2 + 1, i, snum, pos)
+            except ValueError:
+                for snum in snums:
+                    if snum:
+                        self.add_fbg(self.fbg_grid, i*2+1, i, snum)
 

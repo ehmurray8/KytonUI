@@ -31,5 +31,6 @@ class DataCollection(object):
         # wavelength delta from start broken into lists by Serial Numbers
         self.wavelen_diffs = [[]]
         self.mean_wavelen_diffs = []  # average wavelength delta from start
-        self.drift_rates = []  # drift rates in mk/min
+        self.drift_rates = [[]]  # drift rates in mk/min
         self.real_points = []  # list of which points are the "real" cal points
+        self.avg_drift_rates = []  # average drift rates in mK/min
