@@ -5,12 +5,14 @@
 # pylint: disable=import-error, relative-import
 
 #import queue
+from shutil import copy2
 import socket
 import argparse
 from tkinter import ttk
 import platform
 import matplotlib
 import configparser
+import getpass
 
 matplotlib.use("TkAgg")
 from matplotlib import style
@@ -126,6 +128,9 @@ class Application(tk.Tk):
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
+
+        user = getpass.getuser()
+        copy2("BakingCal.lnk", r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
 
         # Create the program tabs
         self.create_bake_tab()

@@ -59,7 +59,7 @@ def string_entry(container, label_text, row, width, default_str=""):
     return text_var
 
 
-def serial_num_entry(container, row, col, def_snum):
+def serial_num_entry(container, row, col, def_snum, switch_pos):
     # pylint:disable=too-many-arguments
     """Creates a serial number entry with channel number and switch position."""
     snum_frame = ttk.Frame(container)
@@ -68,7 +68,9 @@ def serial_num_entry(container, row, col, def_snum):
     switch_pos_ent = tk.IntVar()
     tk.Spinbox(snum_frame, from_=0, to=16, textvariable=switch_pos_ent, width=2,
                state="readonly").pack(side="left", fill="both", expand=True)
-    switch_pos_ent.set("0")
+    if switch_pos is None:
+        switch_pos = 0
+    switch_pos_ent.set(str(switch_pos))
     snum_frame.grid(row=row, column=col, sticky='ew')
     serial_num_ent.insert(0, def_snum)
     return serial_num_ent, switch_pos_ent, snum_frame

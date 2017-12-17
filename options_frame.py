@@ -9,6 +9,7 @@ from tkinter import ttk
 import tkinter as tk
 import ui_helper as uh
 import colors
+import helpers as help
 
 BAKING = "Baking"
 CAL = "Calibration"
@@ -204,7 +205,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         xcel_btn.grid(row=4, column=1)
         return xcel_btn
 
-    def add_fbg(self, fbg_grid, col, chan):
+    def add_fbg(self, fbg_grid, col, chan, fbg_name=None, switch_pos=None):
         """Add an fbg input to the view."""
         most = -1
         for i, chan_num in enumerate(self.chan_nums):
@@ -217,13 +218,16 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                            .format(most + 1) + " before continuing.")
         else:
             self.chan_nums[chan].append(chan)
+            def_name = "FBG {}".format(sum(len(x) for x in self.chan_nums))
+            if fbg_name is not None:
+                def_name = fbg_name
             serial_num, switch_pos, frame = uh.serial_num_entry(
-                fbg_grid, len(self.chan_nums[chan])+1, col, "FBG {}".format(sum(len(x) for x in self.chan_nums)))
+                fbg_grid, len(self.chan_nums[chan])+1, col, def_name, switch_pos)
             self.snum_frames[chan].append(frame)
             self.sn_ents[chan].append(serial_num)
             self.switch_positions[chan].append(switch_pos)
 
-    def minus_fbg(self, fbg_grid, col, chan):
+    def minus_fbg(self, chan):
         if len(self.chan_nums[chan]):
             self.chan_nums[chan].pop()
             uh.remove_snum_entry(self.snum_frames[chan][-1])
@@ -244,10 +248,25 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             buttons_frame.grid(sticky='ew', column=col_num, row=20)
 
             ttk.Button(buttons_frame, image=self.img_minus,
-                       command=lambda col=col_num, chan=i: self.minus_fbg(self.fbg_grid, col, chan)) \
+                       command=lambda chan=i: self.minus_fbg(chan)) \
                .pack(expand=True, fill="both", side="left")
             ttk.Button(buttons_frame, image=self.img_plus,
                        command=lambda col=col_num, chan=i: self.add_fbg(self.fbg_grid, col, chan)) \
                 .pack(expand=True, fill="both", side="left")
 
         self.fbg_grid.grid(row=6, column=0, columnspan=2)
+        if self.program == CAL:
+            pass
+        else:
+            for i in range(4):
+                snums = CPARSER.get(BAKE_HEAD, "chan{}_fbgs".format(i+1)).split(",")
+                positions = CPARSER.get(BAKE_HEAD, "chan{}_positions".format(i+1)).split(",")
+                try:
+                    positions = help.list_cast(positions, int)
+                    for snum, pos in zip(snums, positions):
+                        self.add_fbg(self.fbg_grid, i * 2 + 1, i, snum, pos)
+                except ValueError:
+                    for snum in snums:
+                        if snum:
+                            self.add_fbg(self.fbg_grid, i*2+1, i, snum)
+

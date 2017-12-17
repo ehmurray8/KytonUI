@@ -122,6 +122,11 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        is_running = self.program_type.prog_id == BAKING_ID and self.conf_parser.getboolean(BAKE_HEAD, "running")
+        is_running = is_running or self.program_type.prog_id == CAL_ID and self.conf_parser.getboolean(CAL_HEAD, "running")
+        if is_running:
+            self.start()
+
     def create_excel(self):
         """Creates excel file."""
         fh.create_excel_file(self.options.file_name.get())
@@ -242,7 +247,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
                             self.delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                                      1000 * 60 * 60 + .5),
+                                                                      1000 * 60 * 60 + 1.5),
                                                                   self.program_loop)
                         else:
                             self.pause_program()
@@ -262,12 +267,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.conf_parser.set(BAKE_HEAD, "file", str(self.options.file_name.get()))
             last_folder = os.path.dirname(self.options.file_name.get())
             self.conf_parser.set(BAKE_HEAD, "last_folder", last_folder)
-            for i, (snums) in enumerate(self.channels):
-                self.conf_parser.set(BAKE_HEAD, "chan{}_fbgs".format(i), ",".join(snums))
-                if snums[0] in self.switches:
-                    self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i), ",".join(help.flatten(self.switches)))
-                else:
-                    self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i), "")
+            for i, (snums, switches) in enumerate(zip(self.channels, self.switches)):
+                self.conf_parser.set(BAKE_HEAD, "chan{}_fbgs".format(i+1), ",".join(snums))
+                self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i+1), ",".join(str(x) for x in switches))
             with open("prog_config.cfg", "w") as pcfg:
                 self.conf_parser.write(pcfg)
 
@@ -280,6 +282,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.master.running_prog = None
         self.conf_parser.set(BAKE_HEAD, "running", "false")
         self.conf_parser.set(CAL_HEAD, "running", "false")
+        with open("prog_config.cfg", "w") as pcfg:
+            self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]
