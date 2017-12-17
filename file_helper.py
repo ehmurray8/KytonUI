@@ -7,12 +7,12 @@ import time
 import platform
 import stat
 import threading
-import configparser
 from tkinter import messagebox
 import xlsxwriter
 import pandas as pd
 import data_container as datac
 import options_frame
+import helpers as help
 
 
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
@@ -81,18 +81,22 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
 def parse_csv_file(csv_file):
     """Parses defined csv file."""
+    LOCK.acquire()
     if platform.system() != "Linux":
         os.chmod(csv_file, stat.S_IWRITE)
 
+    entries_df = None
     try:
         entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
     except pd.errors.ParserError:
-        raise IOError("Fatal error csv file has been corrupted.")
+        pass
+        #raise IOError("Fatal error csv file has been corrupted.")
+    except KeyError:
+        pass
 
     mdata = datac.Metadata()
 
     # Read Metadata
-    LOCK.acquire()
     with open(csv_file) as csv:
         csv.readline()
         mdata.serial_nums = csv.readline().split(",")
@@ -357,37 +361,42 @@ def create_excel_file(xcel_file, is_cal=False):
 
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)
-        num_cols = len(mdata.serial_nums) * 3 + 5
+        if entries_df is not None:
+            num_cols = len(mdata.serial_nums) * 3 + 5
 
-        workbook = xlsxwriter.Workbook(xcel_file)
-        worksheet = workbook.add_worksheet()
+            workbook = xlsxwriter.Workbook(xcel_file)
+            worksheet = workbook.add_worksheet()
 
-        headers = __create_headers(
-            mdata.serial_nums, worksheet, num_cols, is_cal)
+            headers = __create_headers(
+                mdata.serial_nums, worksheet, num_cols, is_cal)
 
-        row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
+            row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
 
-        row_format, row_header_format = __create_formats(
-            mdata.serial_nums, workbook, is_cal)
+            row_format, row_header_format = __create_formats(
+                mdata.serial_nums, workbook, is_cal)
 
-        bold_format = workbook.add_format()
-        bold_format.set_bold()
+            bold_format = workbook.add_format()
+            bold_format.set_bold()
 
-        __write_headers(headers, row_header_format, bold_format, worksheet)
+            __write_headers(headers, row_header_format, bold_format, worksheet)
 
-        __write_rows(row_strs, row_format, worksheet,
-                     bold_format, data_coll, is_cal)
+            __write_rows(row_strs, row_format, worksheet,
+                         bold_format, data_coll, is_cal)
 
-        worksheet.set_column(0, num_cols, 37)
+            worksheet.set_column(0, num_cols, 37)
 
-        col_end = __create_chart(
-            entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
+            col_end = __create_chart(
+                entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
 
-        if is_cal:
-            __create_chart_dr(data_coll, worksheet, workbook, col_end)
+            if is_cal:
+                __create_chart_dr(data_coll, worksheet, workbook, col_end)
 
-        workbook.close()
-        os.system("start " + xcel_file)
+            workbook.close()
+            os.system("start " + xcel_file)
+        else:
+            messagebox.showwarning("File Error",
+                                   "Error generating the excel file, please try to wait for more data to be collected." +
+                                   "If this error persists the csv data file may have been corrupted.")
 
 
 def num_to_excel_col(num):
@@ -421,6 +430,27 @@ def on_closing(root, old_conf, widgets):
             root.tkraise()
     else:
         root.destroy()
+
+
+def check_metadata(file_lines, num_fbgs=None):
+    try:
+        init_vals = help.list_cast(next(file_lines).split(","), float)
+        if num_fbgs is not None and len(init_vals) != num_fbgs:
+            return False
+        config_vals = help.list_cast(next(file_lines).split(","), float)
+        if len(config_vals) != 3:
+            return False
+        if next(file_lines) != "\n":
+            return False
+        if help.clean_str_list(next(file_lines).split(",")) != ["Serial Num", "Timestamp(s)", "Temperature(K)",
+                                                                "Wavelength(nm)", "Power(dBm)"]:
+            return False
+        if next(file_lines) != "\n":
+            return False
+    except ValueError:
+        return False
+
+    return True
 
 
 if __name__ == "__main__":

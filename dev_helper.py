@@ -5,13 +5,13 @@ and the Optical Switch.
 # pylint: disable=import-error, relative-import, superfluous-parens
 import socket
 import time
-import functools
+import helpers as help
 
 
 def avg_waves_amps(laser, switch, switches, num_pts, after_func):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
-    switches_arr = functools.reduce(lambda x, y: x + y, switches)
+    switches_arr = help.flatten(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
@@ -19,7 +19,7 @@ def avg_waves_amps(laser, switch, switches, num_pts, after_func):
 
 
 def __avg_arr(first, second):
-    if len(functools.reduce(lambda x, y: x + y, second)):
+    if len(help.flatten(second)):
         for i, row in enumerate(second):
             for j, col in enumerate(row):
                 first[i][j] += col
@@ -44,7 +44,7 @@ def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
 def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     wavelens, amps, lens = sm125.get_data()
     first_run = True
-    if len(functools.reduce(lambda x, y: x + y, all_waves)):
+    if len(help.flatten(all_waves)):
         first_run = False
     for i, (amp, wave) in enumerate(zip(amps, wavelens)):
         if first_run or i == switch_num:
@@ -66,5 +66,4 @@ def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num,
             laser, op_switch, switches_arr, switch_num, after_func)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
-    return functools.reduce(lambda x, y: x + y, all_waves), \
-           functools.reduce(lambda x, y: x + y, all_amps)
+    return help.flatten(all_waves), help.flatten(all_amps)

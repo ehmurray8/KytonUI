@@ -71,7 +71,11 @@ def serial_num_entry(container, row, col, def_snum):
     switch_pos_ent.set("0")
     snum_frame.grid(row=row, column=col, sticky='ew')
     serial_num_ent.insert(0, def_snum)
-    return serial_num_ent, switch_pos_ent
+    return serial_num_ent, switch_pos_ent, snum_frame
+
+
+def remove_snum_entry(snum_frame):
+    snum_frame.grid_forget()
 
 
 def int_entry(container, label_text, row, width, default_int=0):
@@ -153,10 +157,22 @@ def lock_widgets(options_frame):
     for child in options_frame.options_grid.winfo_children():  # .values():
         if "Label" not in child.winfo_class():
             child.config(state="disabled")
+    for child in options_frame.fbg_grid.winfo_children():
+        if "TFrame" in child.winfo_class():
+            for gchild in child.winfo_children():
+                gchild.config(state="disabled")
+        elif "Label" not in child.winfo_class():
+            child.config(state="disabled")
 
 
 def unlock_widgets(options_frame):
     """Unlocks the widgets."""
     for child in options_frame.options_grid.winfo_children():
         if "Label" not in child.winfo_class():
+            child.config(state="normal")
+    for child in options_frame.fbg_grid.winfo_children():
+        if "TFrame" in child.winfo_class():
+            for gchild in child.winfo_children():
+                gchild.config(state="normal")
+        elif "Label" not in child.winfo_class():
             child.config(state="normal")

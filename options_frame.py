@@ -2,6 +2,7 @@
 
 # pylint: disable=import-error, relative-import, missing-super-argument
 import os
+from tkinter import messagebox as mbox
 import platform
 import configparser
 from tkinter import ttk
@@ -17,6 +18,7 @@ CPARSER.read("prog_config.cfg")
 BAKE_HEAD = "Baking"
 CAL_HEAD = "Calibration"
 
+
 class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
     """Main Tkinter window class."""
 
@@ -24,9 +26,10 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         super().__init__(parent)
 
         # Init member vars
-        self.sn_ents = []
-        self.chan_nums = []
-        self.switch_positions = []
+        self.sn_ents = [[], [], [], []]
+        self.chan_nums = [[], [], [], []]
+        self.switch_positions = [[], [], [], []]
+        self.snum_frames = [[], [], [], []]
 
         # Init member widgets
         self.baking_temp = tk.DoubleVar()
@@ -46,6 +49,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.program = program
         self.options_grid = ttk.Frame(self)
         self.options_grid.grid(column=1, sticky='w')
+        self.fbg_grid = ttk.Frame(self)
 
         self.chan_rows = [1, 1, 1, 1]
 
@@ -54,6 +58,11 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         if platform.system() == "Linux":
             path = "assets/plus.png"
         self.img_plus = tk.PhotoImage(file=path)
+
+        path = r'assets\minus.png'
+        if platform.system() == "Linux":
+            path = "assets/minus.png"
+        self.img_minus = tk.PhotoImage(file=path)
 
         self.create_options_grid(colors.WHITE)
 
@@ -65,10 +74,22 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                 float(self.init_time.get())
                 float(self.init_duration.get())
                 float(self.prim_time.get())
+
+                path, fname = os.path.split(self.file_name.get())
+                fname, ext = os.path.splitext(fname)
+                if not path or ext != ".xlsx" or not fname:
+                    mbox.showerror("Invalid configuration",
+                                   "Please insert a proper file name that has the extension .xlsx.")
+                    return False
+
                 if not os.path.exists(self.file_name.get()) and os.path.dirname(self.file_name.get()) != "" and \
                         not os.access(os.path.dirname(self.file_name.get()), os.W_OK):
+                    mbox.showerror("Invalid configuration",
+                                   "Please check the file path, the file cannot be opened or created.")
                     return False
         except ValueError:
+            mbox.showerror("Invalid configuration",
+                           "Please check to make sure the configuration settings are numeric.")
             return False
         return True
 
@@ -185,40 +206,48 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
     def add_fbg(self, fbg_grid, col, chan):
         """Add an fbg input to the view."""
-        self.chan_nums.append(chan)
-        self.chan_rows[chan] += 1
-        serial_num, switch_pos = uh.serial_num_entry(
-            fbg_grid, self.chan_rows[chan], col, "FBG {}".format(sum(self.chan_rows) - 4))
-        self.sn_ents.append(serial_num)
-        self.switch_positions.append(switch_pos)
+        most = -1
+        for i, chan_num in enumerate(self.chan_nums):
+            if len(chan_num) > 1:
+                most = i
+        if len(self.chan_nums[chan]) >= 16:
+            mbox.showerror("Channel error", "Can only have 16 FBGs on single channel.")
+        elif most != -1 and most != chan and len(self.chan_nums[chan]):
+            mbox.showerror("Channel error", "Can only have multiple FBGs on a single channel, please clear channel {} "
+                           .format(most + 1) + " before continuing.")
+        else:
+            self.chan_nums[chan].append(chan)
+            serial_num, switch_pos, frame = uh.serial_num_entry(
+                fbg_grid, len(self.chan_nums[chan])+1, col, "FBG {}".format(sum(len(x) for x in self.chan_nums)))
+            self.snum_frames[chan].append(frame)
+            self.sn_ents[chan].append(serial_num)
+            self.switch_positions[chan].append(switch_pos)
 
-    # Need to associate everything properly when deleting
-    # def minus_fbg(self, fbg_grid, col, chan):
-    #    # Need to add logic to add the switches to separate lists, and then combine them at the end
-    #    self.chan_nums.pop()
-    #    uh.remove_serial_num_entry(fbg_grid, self.chan_rows, col)
-    #    # self.sn_ents.pop()
-    #    self.chan_rows[chan] -= 1
+    def minus_fbg(self, fbg_grid, col, chan):
+        if len(self.chan_nums[chan]):
+            self.chan_nums[chan].pop()
+            uh.remove_snum_entry(self.snum_frames[chan][-1])
+            self.sn_ents[chan].pop()
+            self.switch_positions[chan].pop()
 
     def init_fbgs(self):
         """Initialize the fbg input section of the configuration page."""
-        fbg_grid = ttk.Frame(self)
         for i in range(4):
             col_num = i * 2 + 1
-            ttk.Label(fbg_grid, text="Channel {}".format(
+            ttk.Label(self.fbg_grid, text="Channel {}".format(
                 i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)
 
-            ttk.Label(fbg_grid, text="Serial Number, Switch position ").grid(
+            ttk.Label(self.fbg_grid, text="Serial Number, Switch position ").grid(
                 row=1, column=col_num)
 
-            buttons_frame = ttk.Frame(fbg_grid)
+            buttons_frame = ttk.Frame(self.fbg_grid)
             buttons_frame.grid(sticky='ew', column=col_num, row=20)
 
+            ttk.Button(buttons_frame, image=self.img_minus,
+                       command=lambda col=col_num, chan=i: self.minus_fbg(self.fbg_grid, col, chan)) \
+               .pack(expand=True, fill="both", side="left")
             ttk.Button(buttons_frame, image=self.img_plus,
-                       command=lambda col=col_num, chan=i: self.add_fbg(fbg_grid, col, chan)) \
+                       command=lambda col=col_num, chan=i: self.add_fbg(self.fbg_grid, col, chan)) \
                 .pack(expand=True, fill="both", side="left")
-            # ttk.Button(buttons_frame, image=self.img_minus,
-            #             command=lambda col=col_num, chan=i: self.minus_fbg(fbg_grid, col, chan))
-            #     .pack(expand=True, fill="both", side="left")
 
-        fbg_grid.grid(row=6, column=0, columnspan=2)
+        self.fbg_grid.grid(row=6, column=0, columnspan=2)

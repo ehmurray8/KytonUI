@@ -16,12 +16,10 @@ import options_frame
 import file_helper as fh
 import graphing
 import ui_helper
+import helpers as help
 
 BAKING_ID = "Baking"
 CAL_ID = "Cal"
-
-CPARSER = configparser.ConfigParser()
-CPARSER.read("prog_config.cfg")
 BAKE_HEAD = "Baking"
 CAL_HEAD = "Calibration"
 
@@ -70,6 +68,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.start_btn = None
         self.data_pts = {}
         self.delayed_prog = None
+
+        self.conf_parser = configparser.ConfigParser()
+        self.conf_parser.read("prog_config.cfg")
 
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
@@ -125,18 +126,52 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Creates excel file."""
         fh.create_excel_file(self.options.file_name.get())
 
+    def valid_header(self, csv_file, file_lines):
+        saved_snums = help.clean_str_list(next(file_lines).split(","))
+        num_conf_fbgs = len(help.flatten(self.options.sn_ents))
+        if len(saved_snums) != num_conf_fbgs:
+            file_error(csv_file, "contains {} FBGs you are attempting to record data for {} FBGs. "
+                                 .format(len(saved_snums), num_conf_fbgs) +
+                                 "The file contains the FBGS: {}".format(str(saved_snums)))
+            return False
+        elif set(saved_snums) != set(x.get() for x in help.flatten(self.options.sn_ents)):
+            file_error(csv_file, "has FBGs in it that differ from the ones you have configured the program to record "
+                                 "data for. The file contains the FBGs: {}".format(str(saved_snums)))
+            return False
+
+        if not fh.check_metadata(file_lines, num_conf_fbgs):
+            file_error(csv_file, "has been corrupted.")
+            return False
+        return True
+
+    def is_valid_file(self):
+        valid_file = True
+        csv_file = help.to_ext(self.options.file_name.get(), "csv")
+        if os.path.exists(csv_file):
+            file_lines = (line for line in open(csv_file))
+            prog_header = next(file_lines)
+            if "Metadata" in prog_header:
+                if self.program_type.prog_id != BAKING_ID:
+                    file_error(csv_file, "was created to be used for baking.")
+                    valid_file = False
+                else:
+                    valid_file = self.valid_header(csv_file, file_lines) and valid_file
+            elif "Caldata" in prog_header:
+                if self.program_type.prog_id == BAKING_ID:
+                    file_error(csv_file, "was created to be used for calibration.")
+                    valid_file = False
+                else:
+                    valid_file = self.valid_header(csv_file, file_lines) and valid_file
+            else:
+                file_error(csv_file, "already exists and it was not created by this program.")
+                valid_file = False
+        return valid_file
+
     def start(self):
         """Starts the recording process."""
-        switch_chan = -1
-        chan = -2
-
-        file_filled = True
-        fname = self.options.file_name.get().split(".")
-        if len(fname) != 2 or fname[0] == "" or fname[1] != "xlsx":
-            file_filled = False
-
+        self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
-        if can_start and file_filled:
+        if can_start:
             if self.delayed_prog is not None:
                     self.master.after_cancel(self.delayed_prog)
                     self.delayed_prog = None
@@ -148,87 +183,93 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     if self.program_type.prog_id == BAKING_ID:
                         prog = "Calibration"
                         run = "bake"
-                    mbox.showwarning("{} program is already running".format(prog),
-                                     "Please stop the {} program before starting the {}."
-                                     .format(prog, run))
+                    mbox.showerror("{} program is already running".format(prog),
+                                   "Please stop the {} program before starting the {}."
+                                   .format(prog, run))
                 else:
                     self.pause_program()
             elif not len(self.options.sn_ents):
-                mbox.showwarning("Invalid configuration",
-                                 "Please add fbg entries to your configuration before " +
-                                 "running the program.")
+                mbox.showerror("Invalid configuration",
+                               "Please add fbg entries to your configuration before running the program.")
             else:
-                for chan, snum, pos in zip(self.options.chan_nums,
-                                           self.options.sn_ents,
-                                           self.options.switch_positions):
-                    if snum.get() != "" and snum.get() not in self.snums:
-                        self.snums.append(snum.get())
-                        self.channels[chan].append(snum.get())
-                        if pos.get() != 0:
-                            if switch_chan != -1 and switch_chan != chan:
-                                break
-                            self.switches[chan].append(pos.get())
-                            switch_chan = chan
+                if self.is_valid_file():
+                    switch_chan = 0
+                    for chan, snum, pos in zip(help.flatten(self.options.chan_nums), help.flatten(self.options.sn_ents),
+                                               help.flatten(self.options.switch_positions)):
+                        if snum.get() and snum.get() not in self.snums:
+                            self.snums.append(snum.get())
+                            self.channels[chan].append(snum.get())
+                            if pos.get():
+                                self.switches[chan].append(pos.get())
+                                switch_chan = chan + 1
 
-                if switch_chan != -1 and switch_chan != chan:
-                    mbox.showwarning("Invalid configuration",
-                                     "Cannot have multiple channels configured to use the optical" +
-                                     " switch.")
-                    self.pause_program()
-                else:
-                    need_switch = False
-                    need_oven = False
-                    if self.master.laser is None:
-                        self.master.conn_buttons[0].invoke()
-                    if switch_chan != -1 and self.master.switch is None:
-                        need_switch = True
-                        self.master.conn_buttons[1].invoke()
-                    if self.master.temp_controller is None:
-                        self.master.conn_buttons[2].invoke()
-                    if (self.program_type.prog_id == CAL_ID or self.options.set_temp.get()) \
-                            and self.master.oven is None:
-                        need_oven = True
-                        self.master.conn_buttons[3].invoke()
-
-                    if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
-                        self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
-                        CPARSER.set(BAKE_HEAD, "running", "true")
-                        CPARSER.set(CAL_HEAD, "running", "false")
-                        if self.program_type == BAKING_ID:
-                            CPARSER.set(BAKE_HEAD, "num_scans", str(self.options.num_pts.get()))
-                            CPARSER.set(BAKE_HEAD, "set_temp", str(self.options.set_temp.get()))
-                            CPARSER.set(BAKE_HEAD, "init_delay", str(self.options.delay.get()))
-                            CPARSER.set(BAKE_HEAD, "init_interval", str(self.options.init_time.get()))
-                            CPARSER.set(BAKE_HEAD, "init_duration", str(self.options.init_duration.get()))
-                            CPARSER.set(BAKE_HEAD, "prim_interval", str(self.options.prim_time.get()))
-                            CPARSER.set(BAKE_HEAD, "file", str(self.options.file_name.get()))
-                            last_folder = os.path.dirname(self.options.file_name.get())
-                            CPARSER.set(BAKE_HEAD, "last_folder", last_folder)
-                            with open("prog_config.cfg", "w") as pcfg:
-                                CPARSER.write(pcfg)
-
-                        if need_oven:
-                            self.master.oven.set_temp(self.options.set_temp.get())
-                            self.master.oven.heater_on()
-                        self.master.running = True
-                        self.master.running_prog = self.program_type.prog_id
-                        self.start_btn.configure(text="Pause")
-                        # self.header.configure(text=self.program_type.in_prog_msg)
-                        ui_helper.lock_widgets(self.options)
-                        self.graph_helper.show_subplots()
-                        self.delayed_prog = self.master.after(int(self.options.delay.get() *
-                                                                  1000 * 60 * 60 + .5),
-                                                              self.program_loop)
-                    else:
+                    if any(len(x) > 1 for x in self.channels) and not sum(len(x) for x in self.switches):
+                        mbox.showerror("Configuration Error",
+                                       "Program was configured to use the optical switch but no " +
+                                       "switch positions were provided.")
                         self.pause_program()
-        else:
-            if not file_filled:
-                mbox.showwarning("Invalid configuration",
-                                 "Please insert a proper file name that has the extension .xlsx.")
-            else:
-                mbox.showwarning("Invalid configuration",
-                                 "Please check the configuration boxes, an invalid entry was detected." +
-                                 "Please ensure the entries are numeric, and the file path is valid.")
+                    elif sum(any(x) for x in self.switches) > 1:
+                        mbox.showerror("Configuration Error",
+                                       "Can only have one channel configured to use the optical switch.")
+                        self.pause_program()
+                    elif not help.is_unique(help.flatten(self.switches)):
+                        mbox.showerror("Configuration Error",
+                                       "Multiple FBGs are configured to use the same switch position.")
+                    else:
+                        need_switch = False
+                        need_oven = False
+                        if self.master.laser is None:
+                            self.master.conn_buttons[0].invoke()
+                        if switch_chan != -1 and self.master.switch is None:
+                            need_switch = True
+                            self.master.conn_buttons[1].invoke()
+                        if self.master.temp_controller is None:
+                            self.master.conn_buttons[2].invoke()
+                        if (self.program_type.prog_id == CAL_ID or self.options.set_temp.get()) \
+                                and self.master.oven is None:
+                            need_oven = True
+                            self.master.conn_buttons[3].invoke()
+
+                        if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
+                                self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
+                            self.save_config_info()
+                            if need_oven:
+                                self.master.oven.set_temp(self.options.set_temp.get())
+                                self.master.oven.heater_on()
+                            self.master.running = True
+                            self.master.running_prog = self.program_type.prog_id
+                            # self.header.configure(text=self.program_type.in_prog_msg)
+                            ui_helper.lock_widgets(self.options)
+                            self.graph_helper.show_subplots()
+                            self.delayed_prog = self.master.after(int(self.options.delay.get() *
+                                                                      1000 * 60 * 60 + .5),
+                                                                  self.program_loop)
+                        else:
+                            self.pause_program()
+                else:
+                    self.pause_program()
+
+    def save_config_info(self):
+        self.conf_parser.set(BAKE_HEAD, "running", "true")
+        self.conf_parser.set(CAL_HEAD, "running", "false")
+        if self.program_type.prog_id == BAKING_ID:
+            self.conf_parser.set(BAKE_HEAD, "num_scans", str(self.options.num_pts.get()))
+            self.conf_parser.set(BAKE_HEAD, "set_temp", str(self.options.set_temp.get()))
+            self.conf_parser.set(BAKE_HEAD, "init_delay", str(self.options.delay.get()))
+            self.conf_parser.set(BAKE_HEAD, "init_interval", str(self.options.init_time.get()))
+            self.conf_parser.set(BAKE_HEAD, "init_duration", str(self.options.init_duration.get()))
+            self.conf_parser.set(BAKE_HEAD, "prim_interval", str(self.options.prim_time.get()))
+            self.conf_parser.set(BAKE_HEAD, "file", str(self.options.file_name.get()))
+            last_folder = os.path.dirname(self.options.file_name.get())
+            self.conf_parser.set(BAKE_HEAD, "last_folder", last_folder)
+            for i, (snums) in enumerate(self.channels):
+                self.conf_parser.set(BAKE_HEAD, "chan{}_fbgs".format(i), ",".join(snums))
+                if snums[0] in self.switches:
+                    self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i), ",".join(help.flatten(self.switches)))
+                else:
+                    self.conf_parser.set(BAKE_HEAD, "chan{}_positions".format(i), "")
+            with open("prog_config.cfg", "w") as pcfg:
+                self.conf_parser.write(pcfg)
 
     def pause_program(self):
         """Pauses the program."""
@@ -237,8 +278,8 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         ui_helper.unlock_widgets(self.options)
         self.master.running = False
         self.master.running_prog = None
-        CPARSER.set(BAKE_HEAD, "running", "false")
-        CPARSER.set(CAL_HEAD, "running", "false")
+        self.conf_parser.set(BAKE_HEAD, "running", "false")
+        self.conf_parser.set(CAL_HEAD, "running", "false")
         self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]
@@ -292,3 +333,8 @@ class Toolbar(NavigationToolbar2TkAgg):
     def pause(self):
         """Pauses graph animation linked to button on toolbar."""
         self.graphing_helper.pause()
+
+
+def file_error(csv_file, extra_info):
+        mbox.showerror("File Error", "The file {} cannot be used as the file for this program, this file "
+                                       .format(csv_file) + extra_info)

@@ -9,7 +9,8 @@ from tkinter import messagebox as mbox
 import matplotlib.animation as animation
 from matplotlib import style
 import matplotlib.gridspec as gridspec
-import file_helper
+import file_helper as fh
+import helpers as help
 style.use("kyton")
 
 
@@ -229,14 +230,13 @@ def animate_mwt_graph(f_name, axes):
 
 
 def __get_mean_wave_diff_time_data(f_name):
-    if platform.system() != 'Linux':
-        os.chmod(to_csv(f_name.get()), stat.S_IRWXU)
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    if platform.system() != 'Linux':
-        os.chmod(to_csv(f_name.get()), stat.S_IREAD)
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    return times, data_coll.mean_wavelen_diffs
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        return times, data_coll.mean_wavelen_diffs
+    else:
+        return [], []
 
 
 def animate_wp_graph(f_name, axis):
@@ -244,7 +244,7 @@ def animate_wp_graph(f_name, axis):
     wavelens, powers, snums = __get_wave_power_graph(f_name)
     idx = 0
     axes = []
-    for waves, powers, color in zip(wavelens, powers, file_helper.HEX_COLORS):
+    for waves, powers, color in zip(wavelens, powers, fh.HEX_COLORS):
         axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
 
@@ -259,9 +259,12 @@ def animate_wp_graph(f_name, axis):
 
 
 def __get_wave_power_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    return data_coll.wavelens, data_coll.powers, mdata.serial_nums
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        return data_coll.wavelens, data_coll.powers, mdata.serial_nums
+    else:
+        return [], [], []
 
 
 def animate_temp_graph(f_name, axes):
@@ -273,10 +276,13 @@ def animate_temp_graph(f_name, axes):
 
 
 def __get_temp_time_graph(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    return times, data_coll.temp_diffs, data_coll.temps
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        return times, data_coll.temp_diffs, data_coll.temps
+    else:
+        return [], [], []
 
 
 def animate_mpt_graph(f_name, axis):
@@ -286,10 +292,13 @@ def animate_mpt_graph(f_name, axis):
 
 
 def __get_mean_power_diff_time_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    return times, data_coll.mean_power_diffs
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        return times, data_coll.mean_power_diffs
+    else:
+        return [], []
 
 
 def animate_indiv_waves(f_name, axis):
@@ -297,7 +306,7 @@ def animate_indiv_waves(f_name, axis):
     times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
     idx = 0
     axes = []
-    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, file_helper.HEX_COLORS):
+    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, fh.HEX_COLORS):
         axes.append(axis[0].plot(times, waves, color=color)[0])
         if len(axis) > 1:
             axis[1].plot(times, wave_diffs, color=color)
@@ -315,10 +324,13 @@ def animate_indiv_waves(f_name, axis):
 
 
 def __get_indiv_waves_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    return times, data_coll.wavelens, data_coll.wavelen_diffs, mdata.serial_nums
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        return times, data_coll.wavelens, data_coll.wavelen_diffs, mdata.serial_nums
+    else:
+        return [], [], [], []
 
 
 def animate_indiv_powers(f_name, axis):
@@ -326,7 +338,7 @@ def animate_indiv_powers(f_name, axis):
     times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
     idx = 0
     axes = []
-    for pows, pow_diffs, color in zip(powers, power_diffs, file_helper.HEX_COLORS):
+    for pows, pow_diffs, color in zip(powers, power_diffs, fh.HEX_COLORS):
         axes.append(axis[0].plot(times, pows, color=color)[0])
         if len(axis) > 1:
             axis[1].plot(times, pow_diffs, color=color)
@@ -345,10 +357,13 @@ def animate_indiv_powers(f_name, axis):
 
 
 def __get_indiv_powers_data(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
+    else:
+        return [], [], [], []
 
 
 def animate_drift_rates(f_name, axes):
@@ -360,55 +375,44 @@ def animate_drift_rates(f_name, axes):
 
 
 def __get_drift_rates(f_name):
-    mdata, entries_df = file_helper.parse_csv_file(to_csv(f_name.get()))
-    data_coll = file_helper.create_data_coll(mdata, entries_df)
-    times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-    drates = data_coll.drift_rates
+    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
+    if entries_df is not None:
+        data_coll = fh.create_data_coll(mdata, entries_df)
+        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+        drates = data_coll.drift_rates
 
-    drates_real = []
-    times_real = []
-    for time, drate, real_point in zip(times, drates, data_coll.drift_rates):
-        if real_point:
-            drates_real.append(drate)
-            times_real.append(time)
+        drates_real = []
+        times_real = []
+        for time, drate, real_point in zip(times, drates, data_coll.drift_rates):
+            if real_point:
+                drates_real.append(drate)
+                times_real.append(time)
 
-    return times, times_real, drates, drates_real
-
-
-def check_valid_file(f_name, is_cal):
-    """Checks if the file is a valid formatted csv file."""
-    ret_val = False
-    if os.path.isfile(to_csv(f_name.get())):
-        if platform.system() != 'Linux':
-            os.chmod(to_csv(f_name.get()), stat.S_IRWXU)
-        with open(to_csv(f_name.get()), "r") as check_file:
-            line = check_file.readline()
-            ret_val = True
-            if not is_cal and line != "Metadata\n":
-                mbox.showwarning("Invalid File",
-                                 "".join(["File was either not generated by ",
-                                          "this program or was altered. The specified csv ",
-                                          "file must be a valid file to view the graphs."]))
-                ret_val = False
-            elif is_cal and line != "Caldata\n":
-                mbox.showwarning("Invalid File",
-                                 "".join(["File was either not generated by ",
-                                          "this program or was altered. The specified csv ",
-                                          "file must be a valid file to view the graphs."]))
-                ret_val = False
-        os.chmod(to_csv(f_name.get()), stat.S_IREAD)
-    if not ret_val:
-        prog = "baking"
-        if is_cal:
-            prog = "calibration"
-        if False:  # need_warning: # pylint: disable=using-constant-test
-            mbox.showwarning("File doesn't exist.",
-                             "".join(["Specified csv file doesn't exist, start the {} process "
-                                      .format(prog), "to view the graphs."]))
-    return ret_val
+        return times, times_real, drates, drates_real
+    else:
+        return [], [], [], []
 
 
-def to_csv(xcel_file):
-    """Convert the excel file name to a csv file name."""
-    temp = xcel_file.split(".")[0]
-    return "{}.csv".format(temp)
+def check_valid_file(fname, is_cal):
+    valid_file = True
+    csv_file = help.to_ext(fname.get(), "csv")
+    if os.path.exists(csv_file):
+        file_lines = (line for line in open(csv_file))
+        prog_header = next(file_lines)
+        if "Metadata" in prog_header:
+            if is_cal:
+                valid_file = False
+            else:
+                next(file_lines)
+                valid_file = fh.check_metadata(file_lines) and valid_file
+        elif "Caldata" in prog_header:
+            if not is_cal:
+                valid_file = False
+            else:
+                next(file_lines)
+                valid_file = fh.check_metadata(file_lines) and valid_file
+        else:
+            valid_file = False
+    else:
+        valid_file = False
+    return valid_file
