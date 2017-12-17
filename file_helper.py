@@ -429,8 +429,8 @@ def check_metadata(file_lines, is_cal, num_fbgs=None):
         headers = help.clean_str_list(next(file_lines).split(","))
         if not is_cal and headers != ["Serial Num", "Timestamp(s)", "Temperature(K)", "Wavelength(nm)", "Power(dBm)"]:
             return False
-        elif headers != ["Serial Num", "Timestamp(s)", "Temperature(K)", "Wavelength(nm)", "Power(dBm)", "Real Point",
-                         "Drift Rate(mK/min)"]:
+        elif is_cal and headers != ["Serial Num", "Timestamp(s)", "Temperature(K)", "Wavelength(nm)", "Power(dBm)",
+                                    "Real Point", "Drift Rate(mK/min)"]:
             return False
         if next(file_lines) != "\n":
             return False
