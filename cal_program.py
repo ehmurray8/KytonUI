@@ -23,13 +23,13 @@ class CalProgram(Program):
             for temp in temps_arr:
                 while True:
                     self.master.oven.set_temp(temp)
-                    self.master.oven.cooling_off()
-                    self.master.oven.heater_on()
+                    await self.master.oven.cooling_off()
+                    await self.master.oven.heater_on()
 
-                    start_temp = float(self.master.temp_controller.get_temp_k())
+                    start_temp = float(await self.master.temp_controller.get_temp_k())
                     waves, amps = await self.get_wave_amp_data()
 
-                    start_temp += float(self.master.temp_controller.get_temp_k())
+                    start_temp += float(await self.master.temp_controller.get_temp_k())
                     start_temp /= 2
                     start_time = time.time()
 
@@ -41,25 +41,25 @@ class CalProgram(Program):
                     else:
                         await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
 
-            self.master.oven.heater_off()
-            self.master.oven.set_temp(temps_arr[0])
+            await self.master.oven.heater_off()
+            await self.master.oven.set_temp(temps_arr[0])
 
             if self.options.cooling.get():
-                self.master.oven.cooling_on()
+                await self.master.oven.cooling_on()
 
             await self.reset_temp(temps_arr)
 
     async def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        temp = float(self.master.temp_controller.get_temp_c())
+        temp = float(await self.master.temp_controller.get_temp_c())
         while temp >= float(temps_arr[0]) - .1:
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
-            temp = float(self.master.temp_controller.get_temp_c())
+            temp = float(await self.master.temp_controller.get_temp_c())
 
     async def get_drift_rate(self, last_time, last_temp):
         waves, amps = await self.get_wave_amp_data()
-        curr_temp = float(self.master.temp_controller.get_temp_k())
-        curr_temp += float(self.master.temp_controller.get_temp_k())
+        curr_temp = float(await self.master.temp_controller.get_temp_k())
+        curr_temp += float(await self.master.temp_controller.get_temp_k())
         curr_temp /= 2
         curr_time = time.time()
 

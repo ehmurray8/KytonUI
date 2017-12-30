@@ -32,17 +32,16 @@ async def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
     amps = [[], [], [], []]
     for switch in switches_arr:
         try:
-            op_switch.set_channel(switch)
-            #after_func(1250, lambda: print("Done"))#__get_sm125_data(wavelens, amps, switch_num, laser))
+            await op_switch.set_channel(switch)
             await asyncio.sleep(1.2)
-            __get_sm125_data(wavelens, amps, switch_num, laser)
+            await __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass
     return wavelens, amps
 
 
-def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
-    wavelens, amps, lens = sm125.get_data()
+async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
+    wavelens, amps, lens = await sm125.get_data()
     first_run = True
     if len(help.flatten(all_waves)):
         first_run = False

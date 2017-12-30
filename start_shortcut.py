@@ -11,7 +11,7 @@ def create():
     path = os.path.join(desktop, "BakingCalUI.lnk")
     target = "{}\\main_program.exe".format(curr_path)
     wDir = "{}\\".format(curr_path)
-    icon = "{}\\ui\\lsc.ico".format(curr_path)
+    icon = "{}\\assets\\fiber.png".format(curr_path)
 
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(path)

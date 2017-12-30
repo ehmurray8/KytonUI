@@ -69,18 +69,23 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
+        self.table_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
         config_path = r'assets\config.png'
         graph_path = r'assets\graph.png'
+        table_path = r'assets\table.png'
         if platform.system() == "Linux":
             config_path = "assets/config.png"
             graph_path = "assets/graph.png"
+            table_path = "assets/table.png"
         img_config = Image.open(config_path)
         img_graph = Image.open(graph_path)
+        img_table = Image.open(table_path)
 
         self.img_config = ImageTk.PhotoImage(img_config)
         self.img_graph = ImageTk.PhotoImage(img_graph)
+        self.img_table = ImageTk.PhotoImage(img_table)
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
@@ -95,6 +100,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
+
+        # Set up table tab
+        self.add(self.table_frame, image=self.img_table)
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5, 5), dpi=100)
@@ -237,7 +245,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
                                 self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
                             self.save_config_info()
-                            if need_oven:
+                            if need_oven and self.program_type.prog_id == BAKING:
                                 self.master.oven.set_temp(self.options.set_temp.get())
                                 self.master.oven.heater_on()
                             self.master.running = True

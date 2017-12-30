@@ -51,7 +51,10 @@ class Application(tk.Tk):
 
         # Setup main window and styling
         self.title("Kyton FBG UI")
-        img = tk.PhotoImage(file=r'fiber.png')
+        fiber_path = r'assets\fiber.png'
+        if platform.system() == "Linux":
+            fiber_path = "assets/fiber.png"
+        img = tk.PhotoImage(file=fiber_path)
         self.tk.call('wm', 'iconphoto', self._w, img)
 
         self.style = ttk.Style()
@@ -205,13 +208,13 @@ class Application(tk.Tk):
         Connects or Disconnects the program to a required device based on the input location params.
         """
         connect = False
-        if self.use_dev:
+        err_specifier = "Unknown error"
+        if self.use_dev and not self.running:
             try:
                 if dev == constants.TEMP:
                     if self.temp_controller is None:
                         err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()),
-                                                                      self.manager)
+                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager)
                         self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                         connect = True
                     else:
@@ -268,16 +271,6 @@ class Application(tk.Tk):
         self.cal = CalProgram(self)
         self.main_notebook.add(self.cal, text="Calibration")
 
-    # def tkloop(self):
-    #    """Loop for threaded processes."""
-    #    try:
-    #        while True:
-    #            func, args, kwargs = self.main_queue.get_nowait()
-    #            func(*args, **kwargs)
-    #    except queue.Empty:
-    #        pass
-    #    self.after(200, self.tkloop)
-
 
 def conn_warning(dev):
     """Warn the user that there was an error connecting to a device."""
@@ -294,5 +287,4 @@ def loc_warning(loc_type):
 
 if __name__ == "__main__":
     APP = Application()
-    # APP.tkloop()
     APP.mainloop()

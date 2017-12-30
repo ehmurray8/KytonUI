@@ -1,6 +1,7 @@
 """Contains object representations of all the necessary devices."""
 
 # pylint:disable=missing-super-argument
+import asyncio
 import socket
 from socket import AF_INET, SOCK_STREAM
 import numpy as np
@@ -13,9 +14,14 @@ class SM125(socket.socket):
     """TCP socket connection for SM125 device."""
     def __init__(self, address, port):
         super().__init__(AF_INET, SOCK_STREAM)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.conect_dev(address, port))
+        loop.close()
+
+    async def connect_dev(self, address, port):
         super().connect((address, port))
 
-    def get_data(self):
+    async def get_data(self):
         """Returns the SM125 wavelengths, amplitudes, and lengths of each channel."""
         self.send(b'#GET_PEAKS_AND_LEVELS')
         pre_response = self.recv(10)
@@ -42,25 +48,30 @@ class Oven(object):
     """Delta oven object, uses pyvisa."""
     def __init__(self, port, manager):
         loc = "GPIB0::{}::INSTR".format(port)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.connect_dev(loc, manager))
+        loop.close()
+
+    async def connect_dev(self, loc, manager):
         self.device = manager.open_resource(loc, read_termination="\n")
 
-    def set_temp(self, temp):
+    async def set_temp(self, temp):
         """Sets set point of delta oven."""
         self.device.query('S {}'.format(temp))
 
-    def heater_on(self):
+    async def heater_on(self):
         """Turns oven heater on."""
         self.device.query('H ON')
 
-    def heater_off(self):
+    async def heater_off(self):
         """Turns oven heater off."""
         self.device.query('H OFF')
 
-    def cooling_on(self):
+    async def cooling_on(self):
         """Turns oven cooling on."""
         self.device.query('C ON')
 
-    def cooling_off(self):
+    async def cooling_off(self):
         """Turns oven cooling off."""
         self.device.query('C OFF')
 
@@ -74,9 +85,14 @@ class OpSwitch(socket.socket):
 
     def __init__(self, addr, port):
         super().__init__(AF_INET, SOCK_STREAM)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.connect_dev(addr, port))
+        loop.close()
+
+    async def connect_dev(self, addr, port):
         self.connect((addr, port))
 
-    def set_channel(self, chan):
+    async def set_channel(self, chan):
         """Sets the channel on the optical switch."""
         msg = "<OSW{}_OUT_{}>".format(format(int(1), '02d'), format(int(chan), '02d'))
         self.send(msg.encode())
@@ -86,13 +102,18 @@ class TempController(object):
     """Object representation of the Temperature Controller needed for the program."""
     def __init__(self, port, manager):
         loc = "GPIB0::{}::INSTR".format(port)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.connect_dev(loc, manager))
+        loop.close()
+
+    async def connect_dev(self, loc, manager):
         self.device = manager.open_resource(loc, read_termination='\n')
 
-    def get_temp_c(self):
+    async def get_temp_c(self):
         """Return temperature reading in degrees C."""
         return self.device.query('CRDG? B')[:-4]
 
-    def get_temp_k(self):
+    async def get_temp_k(self):
         """Return temperature reading in degrees Kelvin."""
         return self.device.query('KRDG? B')[:-4]
 

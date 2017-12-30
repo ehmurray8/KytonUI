@@ -21,9 +21,7 @@ def file_entry(container, label_text, row, width, def_file=""):
     button_image = Image.open(path)
     button_photo = ImageTk.PhotoImage(button_image)
 
-    browse_button = ttk.Button(
-        container, image=button_photo, command=lambda: browse_file(text_var),
-        width=10)
+    browse_button = ttk.Button( container, image=button_photo, command=lambda: browse_file(text_var), width=10)
     browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo
     text_var.set(def_file)

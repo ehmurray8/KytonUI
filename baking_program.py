@@ -36,12 +36,12 @@ class BakingProgram(program.Program):
 
     async def baking_loop(self):
         """Runs the baking process."""
-        temperature = self.master.temp_controller.get_temp_c()
+        temperature = await self.master.temp_controller.get_temp_c()
         temperature = float(temperature[:-3])
 
         waves, amps = await self.get_wave_amp_data()
 
-        temp2 = self.master.temp_controller.get_temp_c()
+        temp2 = await self.master.temp_controller.get_temp_c()
         temperature += float(temp2[:-3])
 
         temperature /= 2.0
