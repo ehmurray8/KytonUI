@@ -2,7 +2,6 @@
 # pylint:disable=import-error, relative-import, missing-super-argument
 import time
 import program
-import dev_helper
 import file_helper
 from constants import BAKING
 
@@ -40,8 +39,9 @@ class BakingPage(program.Page):
         temperature = self.master.temp_controller.get_temp_c()
         temperature = float(temperature[:-3])
 
-        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                self.options.num_pts.get(), self.master.after)
+        waves, amps = self.get_wave_amp_data()
+        #waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+        #                                        self.options.num_pts.get(), self.master.after)
 
         temp2 = self.master.temp_controller.get_temp_c()
         temperature += float(temp2[:-3])

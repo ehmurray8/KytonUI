@@ -4,7 +4,6 @@
 import time
 from program import Page, ProgramType
 from constants import CAL
-import dev_helper
 import file_helper
 import options_frame
 import threading
@@ -34,8 +33,9 @@ class CalPage(Page):
                 print("take first reading")
 
                 start_temp = float(self.master.temp_controller.get_temp_k())
-                waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                        self.options.num_pts.get(), self.master.after)
+                waves, amps = self.get_wave_amp_data()
+                #waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                #                                        self.options.num_pts.get(), self.master.after)
 
                 start_temp += float(self.master.temp_controller.get_temp_k())
                 start_temp /= 2
@@ -73,8 +73,9 @@ class CalPage(Page):
         print("take reading")
         curr_temp = float(self.master.temp_controller.get_temp_k())
 
-        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                self.options.num_pts.get(), self.master.after)
+        waves, amps = self.get_wave_amp_data()
+        #waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+        #                                        self.options.num_pts.get(), self.master.after)
 
         curr_temp += float(self.master.temp_controller.get_temp_k())
         curr_temp /= 2

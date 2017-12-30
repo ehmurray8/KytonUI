@@ -4,6 +4,7 @@ program and baking program.
 """
 
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
+import asyncio
 import os
 from tkinter import ttk, messagebox as mbox
 import platform
@@ -14,6 +15,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import options_frame
 import file_helper as fh
+import dev_helper
 import graphing
 import ui_helper
 import helpers as help
@@ -287,6 +289,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
+
+    def get_wave_amp_data(self):
+        loop = asyncio.get_event_loop()
+        future = asyncio.Future()
+        asyncio.ensure_future(dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                                        self.options.num_pts.get(), self.master.after, future))
+        loop.run_until_complete(future)
+        waves, amps = future.result()
+        loop.close()
+        return waves, amps
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""
