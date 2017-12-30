@@ -8,7 +8,10 @@ def flatten(list2d):
 
 
 def to_ext(file, ext):
-    """Accepts a file name and returns the file name with a csv extension."""
+    """
+    Accepts a file name and returns the file name with the specified extension.
+    Extension parameter does not contain a dot.
+    """
     return os.path.splitext(file)[0] + "." + ext
 
 

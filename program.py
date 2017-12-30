@@ -6,9 +6,9 @@ program and baking program.
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
 import asyncio
 import os
+import threading
 import abc
 from tkinter import ttk, messagebox as mbox
-import platform
 import configparser
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -21,6 +21,7 @@ import graphing
 import ui_helper
 import helpers as help
 from constants import CAL, BAKING
+from table import Table
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -65,20 +66,16 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.delayed_prog = None
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("prog_config.cfg")
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
-        self.table_frame = ttk.Frame()
+        self.table = Table()
 
         # Need images as instance variables to prevent garbage collection
-        config_path = r'assets\config.png'
-        graph_path = r'assets\graph.png'
-        table_path = r'assets\table.png'
-        if platform.system() == "Linux":
-            config_path = "assets/config.png"
-            graph_path = "assets/graph.png"
-            table_path = "assets/table.png"
+        config_path = os.path.join("assets", "config.png")
+        graph_path = os.path.join("assets", "graph.png")
+        table_path = os.path.join("assets", "table.png")
         img_config = Image.open(config_path)
         img_graph = Image.open(graph_path)
         img_table = Image.open(table_path)
@@ -102,7 +99,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.add(self.graph_frame, image=self.img_graph)
 
         # Set up table tab
-        self.add(self.table_frame, image=self.img_table)
+        self.add(self.table, image=self.img_table)
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5, 5), dpi=100)
@@ -118,14 +115,15 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar = Toolbar(self.canvas, self.graph_frame)
         self.toolbar.update()
         file_name = self.options.file_name
-        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num,
-                                              is_cal, self.fig, self.canvas, self.toolbar,
-                                              self.master)
+        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, is_cal, self.fig,
+                                              self.canvas, self.toolbar, self.master)
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
+
+        self.update_table()
         if is_running:
             self.start()
 
@@ -133,6 +131,11 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     async def program_loop(self):
         """Main loop that the program uses to run."""
         return
+
+    def update_table(self):
+        new_loop = asyncio.new_event_loop()
+        t = threading.Thread(target=fh.update_table, args=(self.table, lambda: self.options.file_name.get,
+                                                           self.program_type.prog_id == CAL, new_loop))
 
     def create_excel(self):
         """Creates excel file."""
@@ -291,7 +294,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open("prog_config.cfg", "w") as pcfg:
+        with open(os.path.join("cnfig", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
 
     def pause_program(self):
@@ -303,7 +306,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open("prog_config.cfg", "w") as pcfg:
+        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []

@@ -5,12 +5,10 @@ from dateutil import parser
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, master, headers):
-        super().__init__(master)
-        self.headers = headers
+    def __init__(self):
+        super().__init__()
+        self.headers = []
         self.tree = None
-        self._setup_widgets()
-        self.setup_headers()
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars
@@ -29,19 +27,25 @@ class Table(ttk.Frame):
     def temp(self):
         self.add_data(("new car", "new", 1, "1/1/2000"))
 
-    def setup_headers(self):
-        for col in self.headers:
+    def setup_headers(self, headers):
+        self.headers.extend(headers)
+        self._setup_widgets()
+        for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: sortby(self.tree, c, 0))
             # adjust the column's width to the header string
             self.tree.column(col, width=tkFont.Font().measure(col.title()))
 
     def add_data(self, item):
+        print(item)
         self.tree.insert('', 'end', values=item)
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkFont.Font().measure(val)
             if self.tree.column(self.headers[ix],width=None)<col_w:
                 self.tree.column(self.headers[ix], width=col_w)
+
+    def reset(self):
+        self.tree.delete(*self.tree.get_children())
 
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""

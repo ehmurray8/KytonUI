@@ -45,7 +45,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.fbg_grid = ttk.Frame(self)
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("prog_config.cfg")
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.chan_rows = [1, 1, 1, 1]
 

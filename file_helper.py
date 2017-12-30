@@ -3,6 +3,7 @@
 # pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
 
 import os
+import asyncio
 import time
 import platform
 import stat
@@ -13,7 +14,7 @@ import pandas as pd
 import data_container as datac
 import options_frame
 import helpers as help
-from constants import HEX_COLORS, CAL
+from constants import HEX_COLORS, CAL, BAKE_FID, CAL_FID
 
 LOCK = threading.Lock()
 
@@ -23,7 +24,6 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     """Writes the output csv file."""
 
     file_name = help.to_ext(file_name, "csv")
-
     LOCK.acquire()
     if os.path.isfile(file_name):
         if platform.system() != "Linux":
@@ -37,9 +37,9 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
             file_obj = open(file_name, "w")
 
         if func == options_frame.BAKING:
-            header = "Metadata\n"
+            header = BAKE_FID
         else:
-            header = "Caldata\n"
+            header = CAL_FID
 
         file_obj.write(header)
         file_obj.write(",".join(serial_nums))
@@ -57,8 +57,7 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         file_obj.write(line)
 
     for snum, wave, power in zip(serial_nums, wavelengths, powers):
-        line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," +\
-            str(wave) + "," + str(power)
+        line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," + str(wave) + "," + str(power)
         if func == CAL:
             line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
         file_obj.write("".join([line, "\n"]))
@@ -68,6 +67,28 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     LOCK.release()
     if platform.system() != "Linux":
         os.chmod(file_name, stat.S_IREAD)
+
+
+def update_table(table, xcel_file, is_cal, new_loop):
+    asyncio.set_event_loop(new_loop)
+    new_loop.run_until_complete(add_table_data(table, xcel_file, is_cal))
+    new_loop.close()
+
+
+async def add_table_data(table, xcel_file, is_cal):
+    csv_file = help.to_ext(xcel_file, ".csv")
+    if os.path.isfile(csv_file):
+        mdata, entries_df = parse_csv_file(csv_file)
+        if entries_df is not None:
+            num_cols = len(mdata.serial_nums) * 3 + 5
+
+            workbook = xlsxwriter.Workbook(xcel_file)
+            worksheet = workbook.add_worksheet()
+            headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
+            row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
+            table.setup_headers(headers)
+            for row in row_strs:
+                table.add_data(row)
 
 
 def parse_csv_file(csv_file):
@@ -99,8 +120,7 @@ def parse_csv_file(csv_file):
             '\n', '') for wave in mdata.start_wavelens]
 
         start_time_wavelen_temp = csv.readline().split(",")
-        start_time_wavelen_temp = [num.replace(
-            '\n', '') for num in start_time_wavelen_temp]
+        start_time_wavelen_temp = [num.replace('\n', '') for num in start_time_wavelen_temp]
         csv.close()
 
     mdata.start_time = float(start_time_wavelen_temp[0])
@@ -120,8 +140,7 @@ def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
         headers.append(str(snum) + " Power (dBm.)")
     headers.append("Mean Temp (K)")
     for snum in serial_nums:
-        headers.append(str(snum) + " " + u'\u0394\u03BB' +
-                       ", from start (nm.)")
+        headers.append(str(snum) + " " + u'\u0394\u03BB' + ", from start (nm.)")
     headers.append(u'\u0394' + "T, from start (K)")
     headers.append("Mean raw " + u'\u0394\u03BB' + ", from start (pm.)")
     if is_cal:
@@ -178,8 +197,7 @@ def create_data_coll(mdata, entries_df, is_cal=False, dataq=None):
         total_diff_w = 0
         total_diff_p = 0
         for idx, (wavelen, power) in enumerate(zip(data_coll.wavelens, data_coll.powers)):
-            diff_w = round(float(wavelen[row_num]), 5) - \
-                float(mdata.start_wavelens[idx])
+            diff_w = round(float(wavelen[row_num]), 5) - float(mdata.start_wavelens[idx])
             diff_p = round(float(power[row_num]), 5) - float(start_powers[idx])
             total_diff_w += diff_w
             total_diff_p += diff_p
@@ -206,10 +224,8 @@ def __create_row_strs(mdata, entries_df, is_cal=False):
     row_strs = []
     for time_num, temp in zip(data_coll.times, data_coll.temps):
         row_strs.append([])
-        row_strs[row_num].append(
-            time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(time_num)))
-        row_strs[row_num].append(round(time_num / 3600 -
-                                       mdata.start_time / 3600, 5))
+        row_strs[row_num].append(time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(time_num)))
+        row_strs[row_num].append(round(time_num / 3600 - mdata.start_time / 3600, 5))
 
         idx = 0
         for wavelen, power in zip(data_coll.wavelens, data_coll.powers):
@@ -231,14 +247,14 @@ def __create_row_strs(mdata, entries_df, is_cal=False):
     return row_strs, data_coll
 
 
-def __create_formats(serial_nums, workbook, is_cal=False):
+def __create_formats(serial_nums, workbook, bold_format, is_cal=False):
     color_formats = []
     bold_color_formats = []
     for _, color in zip(serial_nums, HEX_COLORS):
         format_col = workbook.add_format({'bg_color': color})
         color_formats.append(format_col)
-        bold_format = workbook.add_format({'bg_color': color, 'bold': True, 'font_size': 16})
-        bold_color_formats.append(bold_format)
+        bold_color_format = workbook.add_format({'bg_color': color, 'bold': True, 'font_size': 16})
+        bold_color_formats.append(bold_color_format)
 
     std_head_f = workbook.add_format({'bold': True, 'font_size': 16})
     std_head_red_f = workbook.add_format({'bold': True, 'font_size': 16, 'font_color': 'red'})
@@ -314,16 +330,13 @@ def __write_rows(row_strs, row_format, worksheet, data_coll, bold_format, is_cal
 
 
 def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
-    chart = workbook.add_chart({'type': 'scatter',
-                                'subtype': 'smooth_with_markers'})
+    chart = workbook.add_chart({'type': 'scatter', 'subtype': 'smooth_with_markers'})
     cats = "=Sheet1!$B$2:$B$" + str(len(entries) + 1)
     val_col = num_to_excel_col((len(serial_nums) * 3) + 4)
-    vals = "=Sheet1!$" + val_col + "$2:$" + \
-        val_col + "$" + str(len(entries) + 1)
+    vals = "=Sheet1!$" + val_col + "$2:$" + val_col + "$" + str(len(entries) + 1)
     line_name = "Raw " + u'\u0394\u03BB' + "pm"
     chart.add_series({'name': line_name, 'categories': cats, 'values': vals})
-    chart.set_title({'name': 'Baking: ' + u'\u0394\u03BB' +
-                             " (pm) vs. Time (hr) from start"})
+    chart.set_title({'name': 'Baking: ' + u'\u0394\u03BB' + " (pm) vs. Time (hr) from start"})
     chart.set_y_axis({'name': u'\u0394\u03BB' + " average (pm)"})
     chart.set_x_axis({'name': 'Elapsed Time from start (hr)'})
 
@@ -334,8 +347,7 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
 
 
 def __create_chart_dr(data_coll, worksheet, workbook, col_start):
-    chart = workbook.add_chart(
-        {'type': 'scatter', 'subtype': 'smooth_with_markers'})
+    chart = workbook.add_chart({'type': 'scatter', 'subtype': 'smooth_with_markers'})
 
     times_real = []
     drates_real = []
@@ -343,8 +355,7 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
         times_real.append(time_num)
         drates_real.append(drate)
 
-    chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real,
-                      'values': drates_real})
+    chart.add_series({'name': 'Average Drift Rate (mK/min)', 'categories': times_real, 'values': drates_real})
     chart.set_title({'name': 'Average Drift Rate (mK/min) vs. Time(hr)'})
     chart.set_y_axis({'name': 'Average Drift Rate (mK/min)'})
     chart.set_x_axis({'name': 'Time (hr)'})
@@ -355,9 +366,7 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
 
 def create_excel_file(xcel_file, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
-
-    csv_file = os.path.splitext(xcel_file)[0]+'.csv'
-
+    csv_file = help.to_ext(xcel_file, ".csv")
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)
         if entries_df is not None:
@@ -365,30 +374,17 @@ def create_excel_file(xcel_file, is_cal=False):
 
             workbook = xlsxwriter.Workbook(xcel_file)
             worksheet = workbook.add_worksheet()
-
-            headers = __create_headers(
-                mdata.serial_nums, worksheet, num_cols, is_cal)
-
+            headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
             row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
-
-            row_format, row_header_format = __create_formats(
-                mdata.serial_nums, workbook, is_cal)
-
-            bold_format = workbook.add_format()
-            bold_format.set_bold()
 
             bf = workbook.add_format({"bold": True, "font_size": 16})
             bf.set_bold()
+            row_format, row_header_format = __create_formats(mdata.serial_nums, workbook, bf, is_cal)
+
             __write_headers(headers, row_header_format, bf, worksheet)
-
-            __write_rows(row_strs, row_format, worksheet,
-                         bold_format, data_coll, is_cal)
-
+            __write_rows(row_strs, row_format, worksheet, bf, data_coll, is_cal)
             worksheet.set_column(0, num_cols, 37)
-
-            col_end = __create_chart(
-                entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
-
+            col_end = __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
             if is_cal:
                 __create_chart_dr(data_coll, worksheet, workbook, col_end)
 

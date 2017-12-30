@@ -22,7 +22,8 @@ if __name__ == '__main__':
                          ('Ford', 'tire', 1, '1/2/98'), ('Chevy', 'air', 3, '1/3/78'),
                          ('Chrysler', 'piston', 7, "1/2/99"), ('Toyota', 'brake pedal', 1, "1/1/16"),
                          ('BMW', 'seat', 2, "1/2/92")]
-    listbox = Table(root, headers)
+    listbox = Table()
+    listbox.setup_headers(headers)
     listbox.pack(fill='both', expand=True)
     new_loop = asyncio.new_event_loop()
     t = threading.Thread(target=add_data_pts, args=(data, listbox, new_loop))

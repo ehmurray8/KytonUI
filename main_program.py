@@ -3,7 +3,7 @@
 # pylint: disable=too-many-arguments, too-many-branches
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=import-error, relative-import
-
+import os
 from shutil import copy2
 import socket
 import argparse
@@ -36,14 +36,11 @@ class Application(tk.Tk):
 
         # Created for development purposes --nodev runs on a computer w/o
         # proper instruments connected
-        parser = argparse.ArgumentParser(
-            description='Run the Kyton program for the correct computer.')
-        parser.add_argument('--nodev', action="store_true",
-                            help='Use this arg if no devices are available.')
-
+        parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
+        parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("devices.cfg")
+        self.conf_parser.read(os.path.join("config", "devices.cfg"))
         self.use_dev = True
         cmdargs = parser.parse_args()
         if cmdargs.nodev:
@@ -51,9 +48,7 @@ class Application(tk.Tk):
 
         # Setup main window and styling
         self.title("Kyton FBG UI")
-        fiber_path = r'assets\fiber.png'
-        if platform.system() == "Linux":
-            fiber_path = "assets/fiber.png"
+        fiber_path = os.path.join("assets", "fiber.png")
         img = tk.PhotoImage(file=fiber_path)
         self.tk.call('wm', 'iconphoto', self._w, img)
 
@@ -127,7 +122,7 @@ class Application(tk.Tk):
         self.bind("<Escape>", self.end_fullscreen)
 
         user = getpass.getuser()
-        copy2("BakingCal.lnk", r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
+        copy2(os.path.join("install", "BakingCal.lnk"), r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
 
         # Create the program tabs
         self.create_bake_tab()

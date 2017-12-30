@@ -49,3 +49,4 @@ class BakingProgram(program.Program):
 
         file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time, temperature, waves,
                                    amps, BAKING)
+        self.update_table()
