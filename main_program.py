@@ -21,8 +21,8 @@ import tkinter as tk
 if platform.system() == "Linux":
     from ttkthemes import ThemedStyle
 import devices
-from baking_program import BakingPage
-from cal_program import CalPage
+from baking_program import BakingProgram
+from cal_program import CalProgram
 import constants
 style.use('kyton')
 
@@ -260,12 +260,12 @@ class Application(tk.Tk):
 
     def create_bake_tab(self):
         """Create a tab used for a baking run."""
-        self.bake = BakingPage(self)
+        self.bake = BakingProgram(self)
         self.main_notebook.add(self.bake, text="Bake")
 
     def create_cal_tab(self):
         """Create a tab used for a calibration run."""
-        self.cal = CalPage(self)
+        self.cal = CalProgram(self)
         self.main_notebook.add(self.cal, text="Calibration")
 
     # def tkloop(self):

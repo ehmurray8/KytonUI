@@ -6,7 +6,7 @@ import file_helper
 from constants import BAKING
 
 
-class BakingPage(program.Page):
+class BakingProgram(program.Program):
     """Contains the baking_program specific logic, and gui elements."""
 
     def __init__(self, master):
@@ -24,24 +24,22 @@ class BakingPage(program.Page):
             return False
         return True
 
-    def program_loop(self):
+    async def program_loop(self):
         """Infinite program loop."""
         if self.master.running:
             if not self.check_stable():
-                self.baking_loop()
+                await self.baking_loop()
                 self.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
             else:
-                self.baking_loop()
+                await self.baking_loop()
                 self.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
 
-    def baking_loop(self):
+    async def baking_loop(self):
         """Runs the baking process."""
         temperature = self.master.temp_controller.get_temp_c()
         temperature = float(temperature[:-3])
 
-        waves, amps = self.get_wave_amp_data()
-        #waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-        #                                        self.options.num_pts.get(), self.master.after)
+        waves, amps = await self.get_wave_amp_data()
 
         temp2 = self.master.temp_controller.get_temp_c()
         temperature += float(temp2[:-3])

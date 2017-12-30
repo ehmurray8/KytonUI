@@ -8,14 +8,14 @@ import socket
 import helpers as help
 
 
-async def avg_waves_amps(laser, switch, switches, num_pts, after_func, future):
+async def avg_waves_amps(laser, switch, switches, num_pts, after_func):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = help.flatten(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    future.set_result(await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, after_func))
+    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, after_func)
 
 
 def __avg_arr(first, second):
@@ -62,8 +62,7 @@ async def __get_average_data(laser, op_switch, switches_arr, num_readings, switc
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
         await asyncio.sleep(1.25)
-        wavelengths, amplitudes = __get_data(
-            laser, op_switch, switches_arr, switch_num, after_func)
+        wavelengths, amplitudes = __get_data(laser, op_switch, switches_arr, switch_num, after_func)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
     return help.flatten(all_waves), help.flatten(all_amps)

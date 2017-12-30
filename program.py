@@ -6,6 +6,7 @@ program and baking program.
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
 import asyncio
 import os
+import abc
 from tkinter import ttk, messagebox as mbox
 import platform
 import configparser
@@ -41,8 +42,9 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.num_graphs = 7
 
 
-class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
+class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
+    __metaclass_ = abc.ABCMeta
 
     def __init__(self, master, program_type):
         style = ttk.Style()
@@ -118,6 +120,11 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
         if is_running:
             self.start()
+
+    @abc.abstractmethod
+    async def program_loop(self):
+        """Main loop that the program uses to run."""
+        return
 
     def create_excel(self):
         """Creates excel file."""
@@ -239,11 +246,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
                             self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                                                                  self.program_loop)
+                                                                  self.run_program)
                         else:
                             self.pause_program()
                 else:
                     self.pause_program()
+
+    def run_program(self):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.program_loop())
+        loop.close()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -290,15 +302,9 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
 
-    def get_wave_amp_data(self):
-        loop = asyncio.get_event_loop()
-        future = asyncio.Future()
-        asyncio.ensure_future(dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                        self.options.num_pts.get(), self.master.after, future))
-        loop.run_until_complete(future)
-        waves, amps = future.result()
-        loop.close()
-        return waves, amps
+    async def get_wave_amp_data(self):
+        return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                         self.options.num_pts.get(), self.master.after)
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""
