@@ -98,6 +98,7 @@ class Graph(object):
             self.zoom_axes[1].xaxis.label.set_fontsize(16)
         else:
             self.zoom_axes[0].set_xlabel(self.xlabel)
+            print(self.zoom_axes[0].get_xlabel())
             self.zoom_axes[0].xaxis.label.set_fontsize(16)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
@@ -142,7 +143,9 @@ class Graphing(object):
         split_dims1 = (gs1[1:6, :])
         split_dims2 = (gs1[6:10, :])
         split_dims = (split_dims1, split_dims2)
-        dimens = [reg_dims, (111,), reg_dims, split_dims, (111,), (111,)]
+        mid_dims = ((gs1[1:9, :]), )
+        #mid_dims = (111,)
+        dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
             titles.append("Average Drift Rate vs.Time")
             xlabels.append("Time (hr)")
@@ -342,7 +345,7 @@ def animate_indiv_powers(f_name, axis):
         if platform.system() == "Linux":
             font_size = 10
 
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.1), loc='upper center',
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
                                 ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
