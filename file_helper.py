@@ -76,18 +76,19 @@ def update_table(table, xcel_file, is_cal, new_loop):
 
 
 async def add_table_data(table, xcel_file, is_cal):
-    csv_file = help.to_ext(xcel_file, ".csv")
+    csv_file = help.to_ext(xcel_file, "csv")
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)
         if entries_df is not None:
             num_cols = len(mdata.serial_nums) * 3 + 5
-
             workbook = xlsxwriter.Workbook(xcel_file)
             worksheet = workbook.add_worksheet()
             headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
+            headers.insert(0, "#")
             row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
             table.setup_headers(headers)
-            for row in row_strs:
+            for i, row in enumerate(row_strs):
+                row.insert(0, i)
                 table.add_data(row)
 
 
@@ -112,12 +113,10 @@ def parse_csv_file(csv_file):
     with open(csv_file) as csv:
         csv.readline()
         mdata.serial_nums = csv.readline().split(",")
-        mdata.serial_nums = [snum.replace('\n', '')
-                             for snum in mdata.serial_nums]
+        mdata.serial_nums = [snum.replace('\n', '') for snum in mdata.serial_nums]
 
         mdata.start_wavelens = csv.readline().split(",")
-        mdata.start_wavelens = [wave.replace(
-            '\n', '') for wave in mdata.start_wavelens]
+        mdata.start_wavelens = [wave.replace('\n', '') for wave in mdata.start_wavelens]
 
         start_time_wavelen_temp = csv.readline().split(",")
         start_time_wavelen_temp = [num.replace('\n', '') for num in start_time_wavelen_temp]
@@ -348,7 +347,6 @@ def __create_chart(entries, serial_nums, num_cols, worksheet, workbook):
 
 def __create_chart_dr(data_coll, worksheet, workbook, col_start):
     chart = workbook.add_chart({'type': 'scatter', 'subtype': 'smooth_with_markers'})
-
     times_real = []
     drates_real = []
     for time_num, drate in zip(data_coll.times, data_coll.drift_rates):
@@ -366,7 +364,7 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
 
 def create_excel_file(xcel_file, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
-    csv_file = help.to_ext(xcel_file, ".csv")
+    csv_file = help.to_ext(xcel_file, "csv")
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)
         if entries_df is not None:

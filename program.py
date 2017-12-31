@@ -70,7 +70,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
-        self.table = Table()
+        table_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
         config_path = os.path.join("assets", "config.png")
@@ -88,7 +88,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.add(self.config_frame, image=self.img_config)
         self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.prog_id)
         self.start_btn = self.options.create_start_btn(self.start)
-        self.xcel_btn = self.options.create_xcel_btn(self.create_excel)
         self.options.init_fbgs()
         self.options.grid_rowconfigure(1, minsize=20)
         self.options.grid_rowconfigure(3, minsize=20)
@@ -99,7 +98,11 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.add(self.graph_frame, image=self.img_graph)
 
         # Set up table tab
-        self.add(self.table, image=self.img_table)
+        self.add(table_frame, image=self.img_table)
+        self.table = Table(table_frame, self.create_excel)
+        self.table.setup_headers([])
+        self.table.pack(fill="both", expand=True)
+
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5, 5), dpi=100)
@@ -134,8 +137,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def update_table(self):
         new_loop = asyncio.new_event_loop()
-        t = threading.Thread(target=fh.update_table, args=(self.table, lambda: self.options.file_name.get,
+        t = threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
                                                            self.program_type.prog_id == CAL, new_loop))
+        t.start()
 
     def create_excel(self):
         """Creates excel file."""
@@ -184,6 +188,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
+        self.update_table()
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:

@@ -69,6 +69,9 @@ class Application(tk.Tk):
                                                          ("disabled", constants.BG_COLOR)],
                                      "foreground": [("active", "black"),
                                                     ("disabled", constants.TEXT_COLOR)]}},
+            "Treeview" : {"configure": {"foreground" : constants.Colors.WHITE}},
+            "Treeview.Heading" : {"configure" : {"foreground" : constants.TEXT_COLOR,
+                                                 "font" : {("Helvetica", 12, "bold")}, "sticky": "ew"}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width": 40}},
             "TNotebook.Tab": {
@@ -122,7 +125,8 @@ class Application(tk.Tk):
         self.bind("<Escape>", self.end_fullscreen)
 
         user = getpass.getuser()
-        copy2(os.path.join("install", "BakingCal.lnk"), r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
+        copy2(os.path.join("install", "BakingCal.lnk"),
+              r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
 
         # Create the program tabs
         self.create_bake_tab()

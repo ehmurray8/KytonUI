@@ -5,10 +5,11 @@ from dateutil import parser
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, master=None, func=None):
+        super().__init__(master)
         self.headers = []
         self.tree = None
+        self.func = func
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars
@@ -19,13 +20,10 @@ class Table(ttk.Frame):
         self.tree.grid(column=0, row=0, sticky='nsew', in_=self)
         vsb.grid(column=1, row=0, sticky='ns', in_=self)
         hsb.grid(column=0, row=1, sticky='ew', in_=self)
-        add = ttk.Button(self, text="Create Excel Spreadsheet", command=self.temp)
-        add.grid(column=0, row=2)
+        create_xcel = ttk.Button(self, text="Create Excel Spreadsheet", command=self.func)
+        create_xcel.grid(column=0, row=2)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
-    def temp(self):
-        self.add_data(("new car", "new", 1, "1/1/2000"))
 
     def setup_headers(self, headers):
         self.headers.extend(headers)
@@ -36,13 +34,12 @@ class Table(ttk.Frame):
             self.tree.column(col, width=tkFont.Font().measure(col.title()))
 
     def add_data(self, item):
-        print(item)
         self.tree.insert('', 'end', values=item)
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkFont.Font().measure(val)
-            if self.tree.column(self.headers[ix],width=None)<col_w:
-                self.tree.column(self.headers[ix], width=col_w)
+            if self.tree.column(self.headers[ix],width=None)<int(col_w * 1.6):
+                self.tree.column(self.headers[ix], width=int(col_w * 1.6))
 
     def reset(self):
         self.tree.delete(*self.tree.get_children())
