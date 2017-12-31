@@ -75,14 +75,14 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         # Need images as instance variables to prevent garbage collection
         config_path = os.path.join("assets", "config.png")
         graph_path = os.path.join("assets", "graph.png")
-        table_path = os.path.join("assets", "table.png")
+        file_path = os.path.join("assets", "file.png")
         img_config = Image.open(config_path)
         img_graph = Image.open(graph_path)
-        img_table = Image.open(table_path)
+        img_file = Image.open(file_path)
 
         self.img_config = ImageTk.PhotoImage(img_config)
         self.img_graph = ImageTk.PhotoImage(img_graph)
-        self.img_table = ImageTk.PhotoImage(img_table)
+        self.img_table = ImageTk.PhotoImage(img_file)
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
