@@ -45,7 +45,7 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.fbg_grid = ttk.Frame(self)
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("prog_config.cfg")
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.chan_rows = [1, 1, 1, 1]
 
@@ -189,14 +189,6 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         start_button["command"] = start
         start_button.grid(row=2, column=1)
         return start_button
-
-    def create_xcel_btn(self, create_xcel):
-        """Create the button for creating the excel file."""
-        xcel_btn = ttk.Button(self)
-        xcel_btn["text"] = "Create Excel Spreadsheet"
-        xcel_btn["command"] = create_xcel
-        xcel_btn.grid(row=4, column=1)
-        return xcel_btn
 
     def add_fbg(self, fbg_grid, col, chan, fbg_name=None, switch_pos=None):
         """Add an fbg input to the view."""

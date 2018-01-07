@@ -2,81 +2,65 @@
 
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
-from program import Page, ProgramType
+from program import Program, ProgramType
 from constants import CAL
-import dev_helper
 import file_helper
 import options_frame
-import threading
+import asyncio
 
 
-class CalPage(Page):
+class CalProgram(Program):
     """Object representation of the Calibration Program page."""
     def __init__(self, master):
         cal_type = ProgramType(CAL)
         super().__init__(master, cal_type)
-        self.temp_mutex = threading.Semaphore()
-        self.cycle_mutex = threading.Semaphore()
 
-    def program_loop(self):
+    async def program_loop(self):
         """Runs the calibration."""
         temps_arr = self.options.get_target_temps()
 
         for _ in range(self.options.num_cal_cycles.get()):
-            print("Cycle acquire")
-            self.cycle_mutex.acquire()
             for temp in temps_arr:
-                print("Temp acquire")
-                self.temp_mutex.acquire()
-                self.master.oven.set_temp(temp)
-                self.master.oven.cooling_off()
-                self.master.oven.heater_on()
-                print("take first reading")
+                while True:
+                    self.master.oven.set_temp(temp)
+                    await self.master.oven.cooling_off()
+                    await self.master.oven.heater_on()
 
-                start_temp = float(self.master.temp_controller.get_temp_k())
-                waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                        self.options.num_pts.get(), self.master.after)
+                    start_temp = float(await self.master.temp_controller.get_temp_k())
+                    waves, amps = await self.get_wave_amp_data()
 
-                start_temp += float(self.master.temp_controller.get_temp_k())
-                start_temp /= 2
-                start_time = time.time()
+                    start_temp += float(await self.master.temp_controller.get_temp_k())
+                    start_temp /= 2
+                    start_time = time.time()
 
-                print("write first reading")
-                # Need to write csv file init code
-                file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time,
-                                           start_temp, waves, amps, options_frame.CAL, False, 0.0)
+                    # Need to write csv file init code
+                    file_helper.write_csv_file(self.options.file_name.get(), self.snums, start_time,
+                                               start_temp, waves, amps, options_frame.CAL, False, 0.0)
+                    self.update_table()
+                    if self.__check_drift_rate(start_time, start_temp):
+                        break
+                    else:
+                        await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
 
-                thread = threading.Thread(target=self.__check_drift_rate, args=(start_time, start_temp))
-                self.after(int(self.options.temp_interval.get() * 1000 + .5), thread.start)
-                #thread = threading.Thread(target=self.__check_drift_rate, args=(start_time, start_temp))
-                #self.after(int(self.options.temp_interval.get() * 1000 + .5), thread.start)
-
-            self.master.oven.heater_off()
-            self.master.oven.set_temp(temps_arr[0])
+            await self.master.oven.heater_off()
+            await self.master.oven.set_temp(temps_arr[0])
 
             if self.options.cooling.get():
-                self.master.oven.cooling_on()
+                await self.master.oven.cooling_on()
 
-            self.check_temp(temps_arr)
+            await self.reset_temp(temps_arr)
 
-    def check_temp(self, temps_arr):
+    async def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        temp = float(self.master.temp_controller.get_temp_c())
-        if temp >= float(temps_arr[0]) - .1:
-            thread = threading.Thread(target=self.__check_drift_rate, args=(temps_arr, ))
-            self.after(int(self.options.temp_interval.get() * 1000 + .5), thread.start)
-        else:
-            print("cycle release")
-            self.cycle_mutex.release()
+        temp = float(await self.master.temp_controller.get_temp_c())
+        while temp >= float(temps_arr[0]) - .1:
+            await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
+            temp = float(await self.master.temp_controller.get_temp_c())
 
-    def __check_drift_rate(self, last_time, last_temp):
-        print("take reading")
-        curr_temp = float(self.master.temp_controller.get_temp_k())
-
-        waves, amps = dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                self.options.num_pts.get(), self.master.after)
-
-        curr_temp += float(self.master.temp_controller.get_temp_k())
+    async def get_drift_rate(self, last_time, last_temp):
+        waves, amps = await self.get_wave_amp_data()
+        curr_temp = float(await self.master.temp_controller.get_temp_k())
+        curr_temp += float(await self.master.temp_controller.get_temp_k())
         curr_temp /= 2
         curr_time = time.time()
 
@@ -84,16 +68,18 @@ class CalPage(Page):
         temp_ratio_mk = curr_temp / last_temp / 1000
 
         drift_rate = temp_ratio_mk / time_ratio_min
+        return drift_rate, curr_temp, curr_time, waves, amps
 
-        if drift_rate <= self.options.drift_rate.get():
-            # record actual point
-            file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
-                                       curr_temp, waves, amps, options_frame.CAL, True, drift_rate)
-            print("temp release")
-            self.temp_mutex.release()
-        else:
-            print("write reading")
+    async def __check_drift_rate(self, last_time, last_temp):
+        drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
+        while drift_rate > self.options.drift_rate.get():
             file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
                                        curr_temp, waves, amps, options_frame.CAL, False, drift_rate)
-            thread = threading.Thread(target=self.__check_drift_rate, args=(curr_time, curr_temp))
-            self.after(int(self.options.temp_interval.get() * 1000 + .5), thread.start)
+            self.update_table()
+            await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
+            drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
+
+        # record actual point
+        file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
+                                   curr_temp, waves, amps, options_frame.CAL, True, drift_rate)
+        self.update_table()

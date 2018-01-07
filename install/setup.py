@@ -17,8 +17,7 @@ include_files = ["fiber.png", "devices.cfg"]
 
 cx_Freeze.setup(
     name="BakingCalUI",
-    options={"build_exe": {"packages": ["tkinter", "matplotlib"],
-                           "include_files": include_files}},
+    options={"build_exe": {"packages": ["tkinter", "matplotlib"], "include_files": include_files}},
     version="0.0.1",
     description="GUI for data collection of baking and calibrating of FBGs.",
     executables=executables

@@ -4,9 +4,11 @@ program and baking program.
 """
 
 # pylint: disable=import-error, relative-import, protected-access, superfluous-parens
+import asyncio
 import os
+import threading
+import abc
 from tkinter import ttk, messagebox as mbox
-import platform
 import configparser
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -14,10 +16,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import options_frame
 import file_helper as fh
+import dev_helper
 import graphing
 import ui_helper
 import helpers as help
 from constants import CAL, BAKING
+from table import Table
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -39,8 +43,9 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.num_graphs = 7
 
 
-class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
+class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     """Definition of the abstract program page."""
+    __metaclass_ = abc.ABCMeta
 
     def __init__(self, master, program_type):
         style = ttk.Style()
@@ -61,28 +66,28 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.delayed_prog = None
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("prog_config.cfg")
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.config_frame = ttk.Frame()
         self.graph_frame = ttk.Frame()
+        table_frame = ttk.Frame()
 
         # Need images as instance variables to prevent garbage collection
-        config_path = r'assets\config.png'
-        graph_path = r'assets\graph.png'
-        if platform.system() == "Linux":
-            config_path = "assets/config.png"
-            graph_path = "assets/graph.png"
+        config_path = os.path.join("assets", "config.png")
+        graph_path = os.path.join("assets", "graph.png")
+        file_path = os.path.join("assets", "file.png")
         img_config = Image.open(config_path)
         img_graph = Image.open(graph_path)
+        img_file = Image.open(file_path)
 
         self.img_config = ImageTk.PhotoImage(img_config)
         self.img_graph = ImageTk.PhotoImage(img_graph)
+        self.img_table = ImageTk.PhotoImage(img_file)
 
         # Set up config tab
         self.add(self.config_frame, image=self.img_config)
         self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.prog_id)
         self.start_btn = self.options.create_start_btn(self.start)
-        self.xcel_btn = self.options.create_xcel_btn(self.create_excel)
         self.options.init_fbgs()
         self.options.grid_rowconfigure(1, minsize=20)
         self.options.grid_rowconfigure(3, minsize=20)
@@ -91,6 +96,13 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
+
+        # Set up table tab
+        self.add(table_frame, image=self.img_table)
+        self.table = Table(table_frame, self.create_excel)
+        self.table.setup_headers([])
+        self.table.pack(fill="both", expand=True)
+
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5, 5), dpi=100)
@@ -106,16 +118,28 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar = Toolbar(self.canvas, self.graph_frame)
         self.toolbar.update()
         file_name = self.options.file_name
-        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num,
-                                              is_cal, self.fig, self.canvas, self.toolbar,
-                                              self.master)
+        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, is_cal, self.fig,
+                                              self.canvas, self.toolbar, self.master)
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
+
+        self.update_table()
         if is_running:
             self.start()
+
+    @abc.abstractmethod
+    async def program_loop(self):
+        """Main loop that the program uses to run."""
+        return
+
+    def update_table(self):
+        new_loop = asyncio.new_event_loop()
+        t = threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
+                                                           self.program_type.prog_id == CAL, new_loop))
+        t.start()
 
     def create_excel(self):
         """Creates excel file."""
@@ -164,6 +188,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
+        self.update_table()
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
@@ -228,7 +253,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
                                 self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
                             self.save_config_info()
-                            if need_oven:
+                            if need_oven and self.program_type.prog_id == BAKING:
                                 self.master.oven.set_temp(self.options.set_temp.get())
                                 self.master.oven.heater_on()
                             self.master.running = True
@@ -237,11 +262,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
                             self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                                                                  self.program_loop)
+                                                                  self.run_program)
                         else:
                             self.pause_program()
                 else:
                     self.pause_program()
+
+    def run_program(self):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.program_loop())
+        loop.close()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -269,7 +299,7 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open("prog_config.cfg", "w") as pcfg:
+        with open(os.path.join("cnfig", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
 
     def pause_program(self):
@@ -281,12 +311,16 @@ class Page(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open("prog_config.cfg", "w") as pcfg:
+        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
+
+    async def get_wave_amp_data(self):
+        return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                         self.options.num_pts.get(), self.master.after)
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""

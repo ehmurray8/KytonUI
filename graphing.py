@@ -98,6 +98,7 @@ class Graph(object):
             self.zoom_axes[1].xaxis.label.set_fontsize(16)
         else:
             self.zoom_axes[0].set_xlabel(self.xlabel)
+            print(self.zoom_axes[0].get_xlabel())
             self.zoom_axes[0].xaxis.label.set_fontsize(16)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
@@ -124,12 +125,10 @@ class Graphing(object):
         self.is_playing = True
         self.master = master
 
-        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)",
-                  "Raw Powers vs. Time", "Raw Temperature vs. Time from start",
-                  "Average Power vs. Time from start",
+        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)", "Raw Powers vs. Time",
+                  "Raw Temperature vs. Time from start", "Average Power vs. Time from start",
                   "Average {} Wavelength vs. Time from start".format(u'\u0394')]
-        xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)",
-                   "Time (hr)", "Time (hr)", "Time (hr)"]
+        xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
         ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
                    ("Power (dBm)", "{} Power (dBm)".format(u'\u0394')),
                    ("Temperature (K)", "{} Temperature (K)".format(u'\u0394')),
@@ -144,28 +143,26 @@ class Graphing(object):
         split_dims1 = (gs1[1:6, :])
         split_dims2 = (gs1[6:10, :])
         split_dims = (split_dims1, split_dims2)
-        dimens = [reg_dims, (111,), reg_dims, split_dims, (111,), (111,)]
+        mid_dims = ((gs1[1:9, :]), )
+        #mid_dims = (111,)
+        dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
             titles.append("Average Drift Rate vs.Time")
             xlabels.append("Time (hr)")
-            ylabels.append(("Average Drift Rate (mK/min)",
-                            "{} Average Drift Rate (mK/min)".format(u'\u0394')))
+            ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
             animate_funcs.append(animate_drift_rates_avg)
             dimens.append(reg_dims)
 
         # Create the graph objects and sub plot objects.
-        for i, (title, xlbl, ylbl, anim, dimen) in \
-                enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):
+        for i, (title, xlbl, ylbl, anim, dimen) in enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):
             dim_list = [self.dimensions + i + 1]
             for dim in dimen:
                 dim_list.append(dim)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure,
-                         dim_list, self.file_name, self.is_cal)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
         # Setup double click for graphs."""
-        self.cid = self.canvas.mpl_connect(
-            'button_press_event', self.show_main_plot)
+        self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
 
         # Display the canvas and toolbar
         self.canvas.draw()
@@ -252,9 +249,8 @@ def animate_wp_graph(f_name, axis):
     font_size = 8
     if platform.system() == "Linux":
         font_size = 10
-    legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                            ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
-                            fancybox=True, shadow=True)
+    legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', ncol=int(len(snums) / 2 + 0.5),
+                            fontsize=font_size, fancybox=True, shadow=True)
     for text in legend.get_texts():
         text.set_color("black")
 
@@ -318,8 +314,7 @@ def animate_indiv_waves(f_name, axis):
         if platform.system() == "Linux":
             font_size = 10
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
-                                fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
@@ -351,8 +346,7 @@ def animate_indiv_powers(f_name, axis):
             font_size = 10
 
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size,
-                                fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 

@@ -3,7 +3,7 @@
 # pylint: disable=too-many-arguments, too-many-branches
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=import-error, relative-import
-
+import os
 from shutil import copy2
 import socket
 import argparse
@@ -21,8 +21,8 @@ import tkinter as tk
 if platform.system() == "Linux":
     from ttkthemes import ThemedStyle
 import devices
-from baking_program import BakingPage
-from cal_program import CalPage
+from baking_program import BakingProgram
+from cal_program import CalProgram
 import constants
 style.use('kyton')
 
@@ -36,14 +36,11 @@ class Application(tk.Tk):
 
         # Created for development purposes --nodev runs on a computer w/o
         # proper instruments connected
-        parser = argparse.ArgumentParser(
-            description='Run the Kyton program for the correct computer.')
-        parser.add_argument('--nodev', action="store_true",
-                            help='Use this arg if no devices are available.')
-
+        parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
+        parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read("devices.cfg")
+        self.conf_parser.read(os.path.join("config", "devices.cfg"))
         self.use_dev = True
         cmdargs = parser.parse_args()
         if cmdargs.nodev:
@@ -51,7 +48,8 @@ class Application(tk.Tk):
 
         # Setup main window and styling
         self.title("Kyton FBG UI")
-        img = tk.PhotoImage(file=r'fiber.png')
+        fiber_path = os.path.join("assets", "fiber.png")
+        img = tk.PhotoImage(file=fiber_path)
         self.tk.call('wm', 'iconphoto', self._w, img)
 
         self.style = ttk.Style()
@@ -71,6 +69,9 @@ class Application(tk.Tk):
                                                          ("disabled", constants.BG_COLOR)],
                                      "foreground": [("active", "black"),
                                                     ("disabled", constants.TEXT_COLOR)]}},
+            "Treeview" : {"configure": {"foreground" : constants.Colors.WHITE}},
+            "Treeview.Heading" : {"configure" : {"foreground" : constants.TEXT_COLOR,
+                                                 "font" : {("Helvetica", 12, "bold")}, "sticky": "ew"}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width": 40}},
             "TNotebook.Tab": {
@@ -124,7 +125,8 @@ class Application(tk.Tk):
         self.bind("<Escape>", self.end_fullscreen)
 
         user = getpass.getuser()
-        copy2("BakingCal.lnk", r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
+        copy2(os.path.join("install", "BakingCal.lnk"),
+              r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
 
         # Create the program tabs
         self.create_bake_tab()
@@ -205,13 +207,13 @@ class Application(tk.Tk):
         Connects or Disconnects the program to a required device based on the input location params.
         """
         connect = False
-        if self.use_dev:
+        err_specifier = "Unknown error"
+        if self.use_dev and not self.running:
             try:
                 if dev == constants.TEMP:
                     if self.temp_controller is None:
                         err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()),
-                                                                      self.manager)
+                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager)
                         self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                         connect = True
                     else:
@@ -260,23 +262,13 @@ class Application(tk.Tk):
 
     def create_bake_tab(self):
         """Create a tab used for a baking run."""
-        self.bake = BakingPage(self)
+        self.bake = BakingProgram(self)
         self.main_notebook.add(self.bake, text="Bake")
 
     def create_cal_tab(self):
         """Create a tab used for a calibration run."""
-        self.cal = CalPage(self)
+        self.cal = CalProgram(self)
         self.main_notebook.add(self.cal, text="Calibration")
-
-    # def tkloop(self):
-    #    """Loop for threaded processes."""
-    #    try:
-    #        while True:
-    #            func, args, kwargs = self.main_queue.get_nowait()
-    #            func(*args, **kwargs)
-    #    except queue.Empty:
-    #        pass
-    #    self.after(200, self.tkloop)
 
 
 def conn_warning(dev):
@@ -294,5 +286,4 @@ def loc_warning(loc_type):
 
 if __name__ == "__main__":
     APP = Application()
-    # APP.tkloop()
     APP.mainloop()

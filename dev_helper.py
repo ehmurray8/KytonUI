@@ -3,19 +3,19 @@ Gets the amplitude and wavelength data using the Mircon Optics SM125,
 and the Optical Switch.
 """
 # pylint: disable=import-error, relative-import, superfluous-parens
+import asyncio
 import socket
-import time
 import helpers as help
 
 
-def avg_waves_amps(laser, switch, switches, num_pts, after_func):
+async def avg_waves_amps(laser, switch, switches, num_pts, after_func):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = help.flatten(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    return __get_average_data(laser, switch, switches_arr, num_pts, switch_num, after_func)
+    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, after_func)
 
 
 def __avg_arr(first, second):
@@ -27,22 +27,21 @@ def __avg_arr(first, second):
     return first
 
 
-def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
+async def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
         try:
-            op_switch.set_channel(switch)
-            #after_func(1250, lambda: print("Done"))#__get_sm125_data(wavelens, amps, switch_num, laser))
-            time.sleep(1.2)
-            __get_sm125_data(wavelens, amps, switch_num, laser)
+            await op_switch.set_channel(switch)
+            await asyncio.sleep(1.2)
+            await __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass
     return wavelens, amps
 
 
-def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
-    wavelens, amps, lens = sm125.get_data()
+async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
+    wavelens, amps, lens = await sm125.get_data()
     first_run = True
     if len(help.flatten(all_waves)):
         first_run = False
@@ -57,13 +56,12 @@ def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
             all_amps[i].insert(0, (temp_amp + amp) / 2.)
 
 
-def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, after_func):
+async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, after_func):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
-        time.sleep(1.25)
-        wavelengths, amplitudes = __get_data(
-            laser, op_switch, switches_arr, switch_num, after_func)
+        await asyncio.sleep(1.25)
+        wavelengths, amplitudes = __get_data(laser, op_switch, switches_arr, switch_num, after_func)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
     return help.flatten(all_waves), help.flatten(all_amps)
