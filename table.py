@@ -26,6 +26,7 @@ class Table(ttk.Frame):
         self.grid_rowconfigure(0, weight=1)
 
     def setup_headers(self, headers):
+        self.headers.clear()
         self.headers.extend(headers)
         self._setup_widgets()
         for i, col in enumerate(self.headers):
@@ -43,6 +44,7 @@ class Table(ttk.Frame):
 
     def reset(self):
         self.tree.delete(*self.tree.get_children())
+
 
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""

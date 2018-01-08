@@ -13,8 +13,10 @@ import matplotlib
 import configparser
 import getpass
 import visa
+import threading
 
 matplotlib.use("TkAgg")
+import asyncio
 from matplotlib import style
 from tkinter import messagebox
 import tkinter as tk
@@ -96,8 +98,6 @@ class Application(tk.Tk):
         self.running_prog = None
 
         self.device_widgets = []
-        #self.main_queue = queue.Queue()
-
         if self.use_dev:
             self.manager = visa.ResourceManager()
 
@@ -110,11 +110,14 @@ class Application(tk.Tk):
         self.laser = None
         self.switch = None
 
+        self.loop = asyncio.get_event_loop()
+
         self.conn_buttons = []
 
         self.setup_home_frame()
 
         # Make the app fullscreen
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.geometry("{0}x{1}+0+0".format(
             self.winfo_screenwidth(), self.winfo_screenheight()))
         self.attributes("-fullscreen", True)
@@ -213,7 +216,7 @@ class Application(tk.Tk):
                 if dev == constants.TEMP:
                     if self.temp_controller is None:
                         err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager)
+                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop)
                         self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                         connect = True
                     else:
@@ -222,7 +225,7 @@ class Application(tk.Tk):
                 elif dev == constants.OVEN:
                     if self.oven is None:
                         err_specifier = "GPIB address"
-                        self.oven = devices.Oven(int(loc_ent.get()), self.manager)
+                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop)
                         self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
                         connect = True
                     else:
@@ -231,7 +234,7 @@ class Application(tk.Tk):
                 elif dev == constants.SWITCH:
                     if self.switch is None:
                         err_specifier = "ethernet port"
-                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()))
+                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop)
                         self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
                         self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
                         connect = True
@@ -241,7 +244,7 @@ class Application(tk.Tk):
                 elif dev == constants.LASER:
                     if self.laser is None:
                         err_specifier = "ethernet port"
-                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()))
+                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop)
                         self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
                         self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
                         connect = True
@@ -269,6 +272,11 @@ class Application(tk.Tk):
         """Create a tab used for a calibration run."""
         self.cal = CalProgram(self)
         self.main_notebook.add(self.cal, text="Calibration")
+
+    def on_closing(self):
+        if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
+            self.loop.close()
+            self.destroy()
 
 
 def conn_warning(dev):

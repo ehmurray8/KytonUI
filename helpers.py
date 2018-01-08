@@ -1,5 +1,6 @@
 import functools
 import os
+from file_helper import check_metadata
 
 
 def flatten(list2d):
@@ -33,3 +34,28 @@ def is_unique(test_list):
     """Returns whether or not the elements of the test_list are unique."""
     seen = set()
     return not any(i in seen or seen.add(i) for i in test_list)
+
+
+def check_valid_file(fname, is_cal):
+    valid_file = True
+    csv_file = to_ext(fname.get(), "csv")
+    if os.path.exists(csv_file):
+        file_lines = (line for line in open(csv_file))
+        prog_header = next(file_lines)
+        if "Metadata" in prog_header:
+            if is_cal:
+                valid_file = False
+            else:
+                next(file_lines)
+                valid_file = check_metadata(file_lines, is_cal) and valid_file
+        elif "Caldata" in prog_header:
+            if not is_cal:
+                valid_file = False
+            else:
+                next(file_lines)
+                valid_file = check_metadata(file_lines, is_cal) and valid_file
+        else:
+            valid_file = False
+    else:
+        valid_file = False
+    return valid_file

@@ -69,26 +69,30 @@ def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         os.chmod(file_name, stat.S_IREAD)
 
 
-def update_table(table, xcel_file, is_cal, new_loop):
+def update_table(table, xcel_file, is_cal, new_loop, full_update):
     asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(add_table_data(table, xcel_file, is_cal))
+    new_loop.run_until_complete(add_table_data(table, xcel_file, is_cal, full_update))
     new_loop.close()
 
 
-async def add_table_data(table, xcel_file, is_cal):
+async def add_table_data(table, xcel_file, is_cal, full_update):
     csv_file = help.to_ext(xcel_file, "csv")
     if os.path.isfile(csv_file):
         mdata, entries_df = parse_csv_file(csv_file)
         if entries_df is not None:
             num_cols = len(mdata.serial_nums) * 3 + 5
-            workbook = xlsxwriter.Workbook(xcel_file)
-            worksheet = workbook.add_worksheet()
-            headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
+            headers = __create_headers(mdata.serial_nums, None, num_cols, is_cal, False)
             headers.insert(0, "#")
+            row_start = 0
             row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
-            table.setup_headers(headers)
+            if not full_update:
+                row_start = len(entries_df)
+                row_strs = list(row_strs[:-1])
+            else:
+                table.reset()
+                table.setup_headers(headers)
             for i, row in enumerate(row_strs):
-                row.insert(0, i)
+                row.insert(0, i+row_start)
                 table.add_data(row)
 
 
@@ -131,8 +135,9 @@ def parse_csv_file(csv_file):
     return mdata, entries_df
 
 
-def __create_headers(serial_nums, worksheet, num_cols, is_cal=False):
-    worksheet.set_column(0, num_cols, 25)
+def __create_headers(serial_nums, worksheet, num_cols, is_cal=False, creating_excel=True):
+    if creating_excel:
+        worksheet.set_column(0, num_cols, 25)
     headers = ["Date Time", u'\u0394' + "Time (hrs.)"]
     for snum in serial_nums:
         headers.append(str(snum) + " Wavelength (nm.)")

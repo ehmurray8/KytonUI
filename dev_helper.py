@@ -8,14 +8,15 @@ import socket
 import helpers as help
 
 
-async def avg_waves_amps(laser, switch, switches, num_pts, after_func):
+async def avg_waves_amps(laser, switch, switches, num_pts):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = help.flatten(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, after_func)
+    print("beginning dev_help")
+    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num)
 
 
 def __avg_arr(first, second):
@@ -27,7 +28,7 @@ def __avg_arr(first, second):
     return first
 
 
-async def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
+async def __get_data(laser, op_switch, switches_arr, switch_num):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
@@ -37,11 +38,15 @@ async def __get_data(laser, op_switch, switches_arr, switch_num, after_func):
             await __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass
+        print(wavelens, amps)
     return wavelens, amps
 
 
 async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     wavelens, amps, lens = await sm125.get_data()
+    print("Wavelengths: {}".format(wavelens))
+    print("Amplitudes: {}".format(amps))
+    print("Lengths: {}".format(lens))
     first_run = True
     if len(help.flatten(all_waves)):
         first_run = False
@@ -56,12 +61,13 @@ async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
             all_amps[i].insert(0, (temp_amp + amp) / 2.)
 
 
-async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, after_func):
+async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
+        print("Averge data iteration")
         await asyncio.sleep(1.25)
-        wavelengths, amplitudes = __get_data(laser, op_switch, switches_arr, switch_num, after_func)
+        wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
     return help.flatten(all_waves), help.flatten(all_amps)

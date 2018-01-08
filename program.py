@@ -7,6 +7,7 @@ program and baking program.
 import asyncio
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import abc
 from tkinter import ttk, messagebox as mbox
 import configparser
@@ -126,7 +127,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
 
-        self.update_table()
+        self.update_table(True)
         if is_running:
             self.start()
 
@@ -135,10 +136,10 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Main loop that the program uses to run."""
         return
 
-    def update_table(self):
+    def update_table(self, full_update=False):
         new_loop = asyncio.new_event_loop()
         t = threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
-                                                           self.program_type.prog_id == CAL, new_loop))
+                                                           self.program_type.prog_id == CAL, new_loop, full_update))
         t.start()
 
     def create_excel(self):
@@ -254,24 +255,25 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                                 self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
                             self.save_config_info()
                             if need_oven and self.program_type.prog_id == BAKING:
-                                self.master.oven.set_temp(self.options.set_temp.get())
-                                self.master.oven.heater_on()
+                                self.master.loop.run_until_complete(self.set_oven_temp())
                             self.master.running = True
                             self.master.running_prog = self.program_type.prog_id
                             # self.header.configure(text=self.program_type.in_prog_msg)
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
+                            self.update_table(True)
                             self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                                                                  self.run_program)
+                                                                  self.program_loop)
                         else:
                             self.pause_program()
                 else:
                     self.pause_program()
+        else:
+            self.pause_program()
 
-    def run_program(self):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.program_loop())
-        loop.close()
+    async def set_oven_temp(self):
+        await self.master.oven.set_temp(self.options.set_temp.get())
+        await self.master.oven.heater_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -299,7 +301,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open(os.path.join("cnfig", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
 
     def pause_program(self):
@@ -319,8 +321,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.switches = [[], [], [], []]
 
     async def get_wave_amp_data(self):
+        print("gev_wave_amp_data")
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                         self.options.num_pts.get(), self.master.after)
+                                               self.options.num_pts.get())
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""

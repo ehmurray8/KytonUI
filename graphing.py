@@ -1,4 +1,3 @@
-"""Module to help with graphing."""
 # pylint: disable=import-error, relative-import, unused-argument
 # pylint: disable=superfluous-parens
 
@@ -60,7 +59,7 @@ class Graph(object):
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
         self.sub_axis.set_ylabel(self.ylabels[0])
-        if check_valid_file(self.file_name, self.is_cal):
+        if help.check_valid_file(self.file_name, self.is_cal):
             self.animate_func(self.file_name, (self.sub_axis,))
         else:
             # Invalid File
@@ -98,12 +97,11 @@ class Graph(object):
             self.zoom_axes[1].xaxis.label.set_fontsize(16)
         else:
             self.zoom_axes[0].set_xlabel(self.xlabel)
-            print(self.zoom_axes[0].get_xlabel())
             self.zoom_axes[0].xaxis.label.set_fontsize(16)
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
             self.zoom_axes[i].yaxis.label.set_fontsize(16)
-        if check_valid_file(self.file_name, self.is_cal):
+        if help.check_valid_file(self.file_name, self.is_cal):
             self.animate_func(self.file_name, tuple(self.zoom_axes))
         else:
             # Invalid File
@@ -385,28 +383,3 @@ def __get_drift_rates_avg(f_name):
         return times, times_real, data_coll.avg_drift_rates, drates_real#, mdata.serial_nums
     else:
         return [], [], [], []
-
-
-def check_valid_file(fname, is_cal):
-    valid_file = True
-    csv_file = help.to_ext(fname.get(), "csv")
-    if os.path.exists(csv_file):
-        file_lines = (line for line in open(csv_file))
-        prog_header = next(file_lines)
-        if "Metadata" in prog_header:
-            if is_cal:
-                valid_file = False
-            else:
-                next(file_lines)
-                valid_file = fh.check_metadata(file_lines, is_cal) and valid_file
-        elif "Caldata" in prog_header:
-            if not is_cal:
-                valid_file = False
-            else:
-                next(file_lines)
-                valid_file = fh.check_metadata(file_lines, is_cal) and valid_file
-        else:
-            valid_file = False
-    else:
-        valid_file = False
-    return valid_file
