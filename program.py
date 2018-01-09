@@ -127,7 +127,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
 
-        self.update_table(True)
+        #self.update_table(True)
         if is_running:
             self.start()
 
@@ -189,7 +189,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
-        self.update_table()
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
@@ -261,7 +260,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             # self.header.configure(text=self.program_type.in_prog_msg)
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
-                            self.update_table(True)
+                            #self.update_table(True)
                             self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
                                                                   self.program_loop)
                         else:
@@ -321,7 +320,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.switches = [[], [], [], []]
 
     async def get_wave_amp_data(self):
-        print("gev_wave_amp_data")
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                                self.options.num_pts.get())
 

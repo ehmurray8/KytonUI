@@ -32,22 +32,13 @@ class BakingProgram(program.Program):
     def program_loop(self):
         """Infinite program loop."""
         if self.master.running:
-            self.loop_handler()
-
-    def loop_handler(self):
-        threading.Thread(target=self.baking_loop).start()
-        self.update_table()
-        if not self.check_stable():
-            self.master.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
-        else:
-            self.master.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)
+            threading.Thread(target=self.baking_loop).start()
 
     def baking_loop(self):
         """Runs the baking process."""
         temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_c())
         temperature = float(temperature[:-3])
 
-        print("bake loop")
         waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
 
         temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_c())
@@ -58,3 +49,8 @@ class BakingProgram(program.Program):
 
         file_helper.write_csv_file(self.options.file_name.get(), self.snums, curr_time, temperature,
                                    waves, amps, BAKING)
+        #self.update_table()
+        if not self.check_stable():
+            self.master.after(int(self.options.init_time.get() * 1000 + .5), self.program_loop)
+        else:
+            self.master.after(int(self.options.prim_time.get() * 1000 * 60 * 60 + .5), self.program_loop)

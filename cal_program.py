@@ -39,7 +39,7 @@ class CalProgram(Program):
                     # Need to write csv file init code
                     fh.write_csv_file(self.options.file_name.get(), self.snums, start_time,
                                                start_temp, waves, amps, options_frame.CAL, False, 0.0)
-                    self.update_table()
+                    #self.update_table()
                     if await self.__check_drift_rate(start_time, start_temp):
                         break
                     else:
@@ -78,11 +78,11 @@ class CalProgram(Program):
         while drift_rate > self.options.drift_rate.get():
             fh.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
                               curr_temp, waves, amps, options_frame.CAL, False, drift_rate)
-            self.update_table()
+            #self.update_table()
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
 
         # record actual point
         fh.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
                           curr_temp, waves, amps, options_frame.CAL, True, drift_rate)
-        self.update_table()
+        #self.update_table()
