@@ -83,16 +83,15 @@ def program_exists(name, cur_map, func):
 
 def create_headers(snums, is_cal):
     snum_cols = []
-    for snum in zip(snums):
-        snum_cols.append("{} Wavelength nm REAL NOT NULL\n".format(snum))
-        snum_cols.append("{} Power dBm REAL NOT NULL\n".format(snum))
-    print(*snum_cols)
-    col_list = ["ID INT PRIMARY KEY NOT NULL\n", "Time TIMESTAMP NOT NULL\n",
-                "{}Time hr REAL NOT NULL\n".format(u"\u0394"),
-                *snum_cols, "Mean Temperature K REAL NOT NULL\n"]
+    for snum in snums:
+        snum_cols.append("'{} Wavelength (nm.)' REAL NOT NULL".format(snum))
+        snum_cols.append("'{} Power (dBm.)' REAL NOT NULL".format(snum))
+    col_list = ["ID INT PRIMARY KEY NOT NULL", "Time TIMESTAMP NOT NULL",
+                "'{}Time (hrs.)' REAL NOT NULL".format(u"\u0394"),
+                *snum_cols, "'Mean Temperature (K)' REAL NOT NULL"]
     if is_cal:
-        col_list.append(r"Drift Rate mK/min REAL NOT NULL")
-        col_list.append(r"Real Point BOOL NOT NULL")
+        col_list.append("'Drift Rate (mK/min)' REAL NOT NULL")
+        col_list.append("'Real Point' BOOL NOT NULL")
     return col_list
 
 
