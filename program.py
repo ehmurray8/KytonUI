@@ -7,7 +7,6 @@ program and baking program.
 import asyncio
 import os
 import threading
-from concurrent.futures import ThreadPoolExecutor
 import abc
 from tkinter import ttk, messagebox as mbox
 import configparser
@@ -15,6 +14,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from threading import Semaphore
 import options_frame
 import file_helper as fh
 import dev_helper
@@ -65,6 +65,8 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.chan_error_been_warned = False
         self.start_btn = None
         self.delayed_prog = None
+        self.table_thread = None
+        self.table_mutex = Semaphore(2)
 
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
@@ -120,14 +122,14 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.toolbar.update()
         file_name = self.options.file_name
         self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, is_cal, self.fig,
-                                              self.canvas, self.toolbar, self.master)
+                                              self.canvas, self.toolbar, self.master, self.snums)
         self.toolbar.set_gh(self.graph_helper)
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
 
-        self.update_table(True)
+        #self.update_table()
         if is_running:
             self.start()
 
@@ -136,15 +138,21 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Main loop that the program uses to run."""
         return
 
-    def update_table(self, full_update=False):
+    def update_table(self):
         new_loop = asyncio.new_event_loop()
-        t = threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
-                                                           self.program_type.prog_id == CAL, new_loop, full_update))
-        t.start()
+        #if self.table_thread is not None:
+        #    self.table.stop_flag = True
+        #self.table_mutex.acquire()
+        self.table.stop_flag = False
+        #self.table_thread = threading.Thread(
+        threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
+                                                       self.program_type.prog_id == CAL, new_loop,
+                                                       self.table_mutex, self.snums)).start()
+            #self.table_thread.start()
 
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_name.get())
+        fh.create_excel_file(self.options.file_name.get(), self.snums)
 
     def valid_header(self, csv_file, file_lines):
         saved_snums = help.clean_str_list(next(file_lines).split(","))
@@ -157,10 +165,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         elif set(saved_snums) != set(x.get() for x in help.flatten(self.options.sn_ents)):
             file_error(csv_file, "has FBGs in it that differ from the ones you have configured the program to record "
                                  "data for. The file contains the FBGs: {}".format(str(saved_snums)))
-            return False
-
-        if not fh.check_metadata(file_lines, self.program_type.prog_id == CAL, num_conf_fbgs):
-            file_error(csv_file, "has been corrupted.")
             return False
         return True
 
@@ -189,7 +193,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def start(self):
         """Starts the recording process."""
-        self.update_table()
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
@@ -254,6 +257,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
                                 self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
                             self.save_config_info()
+                            print("Valid")
                             if need_oven and self.program_type.prog_id == BAKING:
                                 self.master.loop.run_until_complete(self.set_oven_temp())
                             self.master.running = True
@@ -261,7 +265,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             # self.header.configure(text=self.program_type.in_prog_msg)
                             ui_helper.lock_widgets(self.options)
                             self.graph_helper.show_subplots()
-                            self.update_table(True)
+                            self.update_table()
                             self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
                                                                   self.program_loop)
                         else:
@@ -321,7 +325,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.switches = [[], [], [], []]
 
     async def get_wave_amp_data(self):
-        print("gev_wave_amp_data")
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                                self.options.num_pts.get())
 

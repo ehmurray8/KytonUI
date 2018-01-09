@@ -5,7 +5,6 @@ import time
 from program import Program, ProgramType
 from constants import CAL
 import file_helper as fh
-import helpers as help
 import options_frame
 import asyncio
 
@@ -37,9 +36,8 @@ class CalProgram(Program):
                     start_time = time.time()
 
                     # Need to write csv file init code
-                    fh.write_csv_file(self.options.file_name.get(), self.snums, start_time,
-                                               start_temp, waves, amps, options_frame.CAL, False, 0.0)
-                    self.update_table()
+                    fh.write_db(self.options.file_name.get(), self.snums, start_time,
+                                start_temp, waves, amps, options_frame.CAL, self.table, False, 0.0)
                     if await self.__check_drift_rate(start_time, start_temp):
                         break
                     else:
@@ -55,10 +53,10 @@ class CalProgram(Program):
 
     async def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        temp = float(await self.master.temp_controller.get_temp_c())
+        temp = float(await self.master.temp_controller.get_temp_k())
         while temp >= float(temps_arr[0]) - .1:
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
-            temp = float(await self.master.temp_controller.get_temp_c())
+            temp = float(await self.master.temp_controller.get_temp_k())
 
     async def get_drift_rate(self, last_time, last_temp):
         waves, amps = await self.get_wave_amp_data()
@@ -76,13 +74,11 @@ class CalProgram(Program):
     async def __check_drift_rate(self, last_time, last_temp):
         drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
         while drift_rate > self.options.drift_rate.get():
-            fh.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
-                              curr_temp, waves, amps, options_frame.CAL, False, drift_rate)
-            self.update_table()
+            fh.write_db(self.options.file_name.get(), self.snums, curr_time,
+                        curr_temp, waves, amps, options_frame.CAL, self.table, False, drift_rate)
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
 
         # record actual point
-        fh.write_csv_file(self.options.file_name.get(), self.snums, curr_time,
-                          curr_temp, waves, amps, options_frame.CAL, True, drift_rate)
-        self.update_table()
+        fh.write_db(self.options.file_name.get(), self.snums, curr_time,
+                    curr_temp, waves, amps, options_frame.CAL, self.table, True, drift_rate)

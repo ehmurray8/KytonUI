@@ -10,6 +10,7 @@ class Table(ttk.Frame):
         self.headers = []
         self.tree = None
         self.func = func
+        self.stop_flag = False
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars
@@ -39,7 +40,7 @@ class Table(ttk.Frame):
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkFont.Font().measure(val)
-            if self.tree.column(self.headers[ix],width=None)<int(col_w * 1.6):
+            if self.tree.column(self.headers[ix], width=None) < int(col_w * 1.6):
                 self.tree.column(self.headers[ix], width=int(col_w * 1.6))
 
     def reset(self):

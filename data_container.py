@@ -17,7 +17,8 @@ class DataCollection(object):
     """Contains the main csv file data."""
 
     def __init__(self):
-        self.times = []  # times in seconds, removed repeat data
+        self.times = []  # delta time in hours
+        self.date_times = []  # formatted times
 
         self.temps = []  # temps in K, removed repeat data
         self.temp_diffs = []  # delta temperature from start

@@ -5,222 +5,288 @@
 import os
 import asyncio
 import time
-import platform
-import stat
-import threading
+from datetime import datetime
+import numpy as np
+import psycopg2 as pg
+import openpyxl
 from tkinter import messagebox
 import xlsxwriter
 import pandas as pd
 import data_container as datac
-import options_frame
 import helpers as help
-from constants import HEX_COLORS, CAL, BAKE_FID, CAL_FID
-
-LOCK = threading.Lock()
+from constants import HEX_COLORS, CAL, BAKING
 
 
-def write_csv_file(file_name, serial_nums, timestamp, temp, wavelengths, powers,
-                   func, drift_rate=None, real_cal_pt=False):
+def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
+             func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
 
-    file_name = help.to_ext(file_name, "csv")
-    LOCK.acquire()
-    if os.path.isfile(file_name):
-        if platform.system() != "Linux":
-            os.chmod(file_name, stat.S_IRWXU)
-        file_obj = open(file_name, "a")
+    conn_map = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+    cur_map = conn_map.cursor()
+
+    name = help.get_file_name(file_name)
+    prog_exists, last_id = program_exists(name, cur_map, func)
+
+    conn_prog = pg.connect(database=func.lower(), user="postgres", password="kyton!88")
+    cur_prog = conn_prog.cursor()
+    wave_pow = []
+    for wave, power in zip(wavelengths, powers):
+        wave_pow.append(wave)
+        wave_pow.append(power)
+    col_list = create_headers(serial_nums, func == CAL)
+    cols = ",".join(col_list)
+    if not prog_exists:
+        cur_map.execute("INSERT INTO map (id, name, type) VALUES ({}, {}, {})".format(last_id+1, "'{}'".format(name),
+                                                                                      "'{}'".format(func.lower())))
+        conn_map.commit()
+        table.setup_headers(col_list)
+        cur_prog.execute("CREATE TABLE {} ({});".format(name, cols))
+        last_id = 0
+        delta_time = 0
     else:
-        try:
-            file_obj = open(file_name, "w")
-        except FileNotFoundError:
-            os.mkdir(os.path.dirname(file_name), os.W_OK)
-            file_obj = open(file_name, "w")
-
-        if func == options_frame.BAKING:
-            header = BAKE_FID
-        else:
-            header = CAL_FID
-
-        file_obj.write(header)
-        file_obj.write(",".join(serial_nums))
-        file_obj.write("\n")
-        wave_total = sum(wavelengths)
-        file_obj.write(",".join(str(x) for x in wavelengths))
-        wave_total /= len(serial_nums)
-        file_obj.write("\n" + str(round(timestamp, 5)) + ",")
-        file_obj.write(str(wave_total) + "," + str(temp + 273.15) + "\n\n")
-
-        line = "Serial Num,Timestamp(s),Temperature(K),Wavelength(nm),Power(dBm)"
-        if func == CAL:
-            line += ",Real Point,Drift Rate(mK/min)"
-        line += "\n\n"
-        file_obj.write(line)
-
-    for snum, wave, power in zip(serial_nums, wavelengths, powers):
-        line = str(snum) + "," + str(timestamp) + "," + str(temp) + "," + str(wave) + "," + str(power)
-        if func == CAL:
-            line += ", " + str(drift_rate) + ", " + str(real_cal_pt)
-        file_obj.write("".join([line, "\n"]))
-
-    file_obj.write("\n\n")
-    file_obj.close()
-    LOCK.release()
-    if platform.system() != "Linux":
-        os.chmod(file_name, stat.S_IREAD)
+        cur_prog.execute("SELECT id from {}".format(name))
+        rows = cur_prog.fetchall()
+        last_id = rows[-1:][0] + 1
+        first_timestamp = time.mktime(datetime.strptime(rows[0][1], "%Y-%m-%d %H:%M:%S"))
+        delta_time = timestamp - first_timestamp
+    conn_map.close()
+    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+    values_list = [last_id, "'{}'".format(format_time), delta_time, *wave_pow, temp]
+    if func == CAL:
+        values_list.append(drift_rate)
+        values_list.append(real_cal_pt)
+    values = ",".join(values_list)
+    table.add_data(values_list)
+    cur_prog.execute("INSERT INTO {} ({}) VALUES ({})".format(name, cols, values))
+    conn_prog.commit()
+    conn_prog.close()
 
 
-def update_table(table, xcel_file, is_cal, new_loop, full_update):
-    asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(add_table_data(table, xcel_file, is_cal, full_update))
-    new_loop.close()
-
-
-async def add_table_data(table, xcel_file, is_cal, full_update):
-    csv_file = help.to_ext(xcel_file, "csv")
-    if os.path.isfile(csv_file):
-        mdata, entries_df = parse_csv_file(csv_file)
-        if entries_df is not None:
-            num_cols = len(mdata.serial_nums) * 3 + 5
-            headers = __create_headers(mdata.serial_nums, None, num_cols, is_cal, False)
-            headers.insert(0, "#")
-            row_start = 0
-            row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
-            if not full_update:
-                row_start = len(entries_df)
-                row_strs = list(row_strs[:-1])
-            else:
-                table.reset()
-                table.setup_headers(headers)
-            for i, row in enumerate(row_strs):
-                row.insert(0, i+row_start)
-                table.add_data(row)
-
-
-def parse_csv_file(csv_file):
-    """Parses defined csv file."""
-    LOCK.acquire()
-    if platform.system() != "Linux":
-        os.chmod(csv_file, stat.S_IWRITE)
-
-    entries_df = None
+def program_exists(name, cur_map, func):
+    cur_map.execute("SELECT id, name, type from map")
+    rows = cur_map.fetchall()
     try:
-        entries_df = pd.read_csv(csv_file, header=4, skip_blank_lines=True)
-    except pd.errors.ParserError:
+        last_id = [row[0] for row in rows][-1:][0]
+    except IndexError:
+        last_id = 0
+    names = [row[1] for row in rows]
+    types = [row[2] for row in rows]
+    prog_exists = False
+    try:
+        idx = names.index(name)
+        if types[idx] == func.lower():
+            prog_exists = True
+    except ValueError:
         pass
-        #raise IOError("Fatal error csv file has been corrupted.")
-    except KeyError:
-        pass
-
-    mdata = datac.Metadata()
-
-    # Read Metadata
-    with open(csv_file) as csv:
-        csv.readline()
-        mdata.serial_nums = csv.readline().split(",")
-        mdata.serial_nums = [snum.replace('\n', '') for snum in mdata.serial_nums]
-
-        mdata.start_wavelens = csv.readline().split(",")
-        mdata.start_wavelens = [wave.replace('\n', '') for wave in mdata.start_wavelens]
-
-        start_time_wavelen_temp = csv.readline().split(",")
-        start_time_wavelen_temp = [num.replace('\n', '') for num in start_time_wavelen_temp]
-        csv.close()
-
-    mdata.start_time = float(start_time_wavelen_temp[0])
-    mdata.start_wavelen_avg = float(start_time_wavelen_temp[1])
-    mdata.start_temp = float(start_time_wavelen_temp[2])
-    if platform.system() != "Linux":
-        os.chmod(csv_file, stat.S_IWRITE)
-    LOCK.release()
-    return mdata, entries_df
+    return prog_exists, last_id
 
 
-def __create_headers(serial_nums, worksheet, num_cols, is_cal=False, creating_excel=True):
-    if creating_excel:
-        worksheet.set_column(0, num_cols, 25)
-    headers = ["Date Time", u'\u0394' + "Time (hrs.)"]
-    for snum in serial_nums:
-        headers.append(str(snum) + " Wavelength (nm.)")
-        headers.append(str(snum) + " Power (dBm.)")
-    headers.append("Mean Temp (K)")
-    for snum in serial_nums:
-        headers.append(str(snum) + " " + u'\u0394\u03BB' + ", from start (nm.)")
-    headers.append(u'\u0394' + "T, from start (K)")
-    headers.append("Mean raw " + u'\u0394\u03BB' + ", from start (pm.)")
+def create_headers(snums, is_cal):
+    snum_cols = []
+    for snum in zip(snums):
+        snum_cols.append("{} Wavelength nm REAL NOT NULL\n".format(snum))
+        snum_cols.append("{} Power dBm REAL NOT NULL\n".format(snum))
+    print(*snum_cols)
+    col_list = ["ID INT PRIMARY KEY NOT NULL\n", "Time TIMESTAMP NOT NULL\n",
+                "{}Time hr REAL NOT NULL\n".format(u"\u0394"),
+                *snum_cols, "Mean Temperature K REAL NOT NULL\n"]
     if is_cal:
-        headers.append("Drift Rate (mK/min)")
-    return headers
+        col_list.append(r"Drift Rate mK/min REAL NOT NULL")
+        col_list.append(r"Real Point BOOL NOT NULL")
+    return col_list
 
 
-def create_data_coll(mdata, entries_df, is_cal=False, dataq=None):
-    """Gathers the data from the csv file, and stores it in a DataCollection object."""
-    data_coll = datac.DataCollection()
-
-    times = entries_df['Timestamp(s)'].values.tolist()
-    for idx, time_num in enumerate(times):
-        if idx % len(mdata.serial_nums) == 0:
-            data_coll.times.append(round(time_num, 5))
-
-    temps = entries_df['Temperature(K)'].values.tolist()
-    for idx, temp in enumerate(temps):
-        if idx % len(mdata.serial_nums) == 0:
-            data_coll.temps.append(temp + 273.15)
-            data_coll.temp_diffs.append(
-                float(temp) + 273.15 - float(mdata.start_temp))
-
-    wavelens = entries_df['Wavelength(nm)'].values.tolist()
-
-    data_coll.wavelens = [[] for _ in range(len(mdata.serial_nums))]
-    for idx, wavelen in enumerate(wavelens):
-        data_coll.wavelens[int(idx % len(mdata.serial_nums))].append(wavelen)
-
-    powers = entries_df['Power(dBm)'].values.tolist()
-    data_coll.powers = [[] for _ in range(len(mdata.serial_nums))]
-    for idx, power in enumerate(powers):
-        data_coll.powers[int(idx % len(mdata.serial_nums))].append(power)
-    start_powers = []
-    for power in data_coll.powers:
-        start_powers.append(power[0])
-
+def update_table(table, xcel_file, is_cal, new_loop, mutex, snums):
+    func = BAKING
     if is_cal:
-        data_coll.real_points = entries_df['Real Point'].values.tolist()
-        data_coll.drift_rates = [[] for _ in range(len(mdata.serial_nums))]
-        drift_rates = entries_df['Drift Rate(mK/min)']
-        for idx, drift_rate in enumerate(drift_rates):
-            data_coll.drift_rates[int(idx % len(mdata.serial_nums))].append(drift_rate)
-
-        for i in range(len(data_coll.drift_rates[0])):
-            total_dr = 0
-            for dr in data_coll.drift_rates:
-                total_dr += dr[i]
-            data_coll.avg_drift_rates.append(total_dr)
-
-    data_coll.wavelen_diffs = [[] for _ in range(len(mdata.serial_nums))]
-    data_coll.power_diffs = [[] for _ in range(len(mdata.serial_nums))]
-    for row_num, time_num in enumerate(data_coll.times):
-        total_diff_w = 0
-        total_diff_p = 0
-        for idx, (wavelen, power) in enumerate(zip(data_coll.wavelens, data_coll.powers)):
-            diff_w = round(float(wavelen[row_num]), 5) - float(mdata.start_wavelens[idx])
-            diff_p = round(float(power[row_num]), 5) - float(start_powers[idx])
-            total_diff_w += diff_w
-            total_diff_p += diff_p
-            data_coll.wavelen_diffs[idx].append(diff_w)
-            data_coll.power_diffs[idx].append(diff_p)
-
-        total_diff_w /= len(mdata.serial_nums)
-        total_diff_p /= len(mdata.serial_nums)
-
-        data_coll.mean_wavelen_diffs.append(total_diff_w * 1000)
-        data_coll.mean_power_diffs.append(total_diff_p)
-
-    if dataq is not None:
-        dataq.put(data_coll)
+        func = CAL
+    conn = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+    cur = conn.cursor()
+    name = os.path.splitext(os.path.split(xcel_file)[1])[0]
+    if program_exists(name, cur, func)[0]:
+        conn.close()
+        asyncio.set_event_loop(new_loop)
+        new_loop.run_until_complete(add_table_data(table, name, is_cal, mutex, snums))
     else:
-        return data_coll
+        conn.close()
+    new_loop.close()
+    #if table.stop_flag:
+    #    table.stop_flag = False
+    #    #mutex.release()
 
 
-# pylint: disable=unused-argument
+async def add_table_data(table, name, is_cal, mutex, snums):
+    table.reset()
+    headers = create_headers(snums, is_cal)
+    table.setup_headers(headers)
+    db = BAKING.lower()
+    if is_cal:
+        db = CAL.lower()
+    conn = pg.connect(database=db, user="postgres", password="kyton!88")
+    cur = conn.cursor()
+    headers_str = ",".join(headers)
+    cur.execute("SELECT {} from {}".format(headers_str, name))
+    rows = cur.fetchall()
+    conn.close()
+    for row in rows:
+        table.add_data(row)
+        #if table.stop_flag:
+        #    table.reset()
+        #    table.setup_headers(headers)
+        #    table.stop_flag = False
+        #    mutex.release()
+        #    break
+
+
+def db_to_df(name, snums, is_cal):
+    conn = pg.connect(database=name, user="postgres", password="kyton!88")
+    cur = conn.cursor()
+    headers = create_headers(snums, is_cal)
+    headers_str = ",".join(headers)
+    cur.execute("SELECT {} from {}".format(headers_str, name))
+    rows = cur.fetchall()
+    conn.close()
+    return pd.DataFrame(data={h: d for h, d in zip(headers, rows)}), headers
+
+
+def create_data_coll(name, snums, is_cal):
+    data_coll = datac.DataCollection()
+    df, headers = db_to_df(name, snums, is_cal)
+    data_coll.date_times = df["Time"]
+    data_coll.times = df["{}Time (hrs.)".format(u"\u0394")]
+    data_coll.temps = df["Mean Temperature (K)"]
+    first_temp = data_coll.temps[0]
+    data_coll.temp_diffs = np.array([temp - first_temp for temp in data_coll.temps])
+    wave_headers = [head for head in headers if "Wave" in head]
+    pow_headers = [head for head in headers if "Pow" in head]
+    for wave_head, pow_head in zip(wave_headers, pow_headers):
+        data_coll.wavelens.append(df[wave_head])
+        data_coll.powers.append(df[pow_head])
+    data_coll.wavelen_diffs = np.array([np.array(w - data_coll.wavelens[0]) for w in data_coll.wavelens])
+    data_coll.power_diffs = np.array([np.array(p - data_coll.powers[0] for p in data_coll.powers)])
+    data_coll.mean_wavelen_diffs = sum(data_coll.wavelen_diffs) / len(data_coll.wavelen_diffs)
+    data_coll.mean_power_diffs = sum(data_coll.power_diffs) / len(data_coll.power_diffs)
+    return data_coll
+
+
+def create_excel_file(xcel_file, snums, is_cal=False):
+    """Creates an excel file from the correspoding csv file."""
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+
+    df, headers = db_to_df(help.get_file_name(xcel_file), snums, is_cal)
+    for r in pd.dataframe_to_rows(df, index=True, header=True):
+        ws.append(r)
+
+    for cell in ws['A'] + ws[1]:
+        cell.style = 'Pandas'
+
+    wb.save(xcel_file)
+    # csv_file = help.to_ext(xcel_file, "csv")
+    # if os.path.isfile(csv_file):
+    #    mdata, entries_df = parse_csv_file(csv_file)
+    #    if entries_df is not None:
+    #        num_cols = len(mdata.serial_nums) * 3 + 5
+
+    #        workbook = xlsxwriter.Workbook(xcel_file)
+    #        worksheet = workbook.add_worksheet()
+    #        headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
+    #        row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
+
+    #        bf = workbook.add_format({"bold": True, "font_size": 16})
+    #        bf.set_bold()
+    #        row_format, row_header_format = __create_formats(mdata.serial_nums, workbook, bf, is_cal)
+
+    #        __write_headers(headers, row_header_format, bf, worksheet)
+    #        __write_rows(row_strs, row_format, worksheet, bf, data_coll, is_cal)
+    #        worksheet.set_column(0, num_cols, 37)
+    #        col_end = __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
+    #        if is_cal:
+    #            __create_chart_dr(data_coll, worksheet, workbook, col_end)
+
+    #        workbook.close()
+    #        os.system("start " + xcel_file)
+    #    else:
+    #        messagebox.showwarning("File Error",
+    #                             "Error generating the excel file, please try to wait for more data to be collected." +
+    #                               "If this error persists the csv data file may have been corrupted.")
+
+
+def num_to_excel_col(num):
+    """Converts num to excel col label, 1 indexed, only works with 1 or 2 letters"""
+    letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'
+               'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    num -= 1
+    curr_overflow_index = 0
+    if num < 26:
+        return letters[num]
+
+    num -= 26
+    while num >= 26:
+        num -= 26
+        curr_overflow_index += 1
+    return letters[curr_overflow_index] + letters[num]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def __create_row_strs(mdata, entries_df, is_cal=False):
     data_coll = create_data_coll(mdata, entries_df, is_cal)
 
@@ -365,54 +431,6 @@ def __create_chart_dr(data_coll, worksheet, workbook, col_start):
 
     chart.set_style(10)
     worksheet.insert_chart("${}$3".format(num_to_excel_col(col_start)), chart)
-
-
-def create_excel_file(xcel_file, is_cal=False):
-    """Creates an excel file from the correspoding csv file."""
-    csv_file = help.to_ext(xcel_file, "csv")
-    if os.path.isfile(csv_file):
-        mdata, entries_df = parse_csv_file(csv_file)
-        if entries_df is not None:
-            num_cols = len(mdata.serial_nums) * 3 + 5
-
-            workbook = xlsxwriter.Workbook(xcel_file)
-            worksheet = workbook.add_worksheet()
-            headers = __create_headers(mdata.serial_nums, worksheet, num_cols, is_cal)
-            row_strs, data_coll = __create_row_strs(mdata, entries_df, is_cal)
-
-            bf = workbook.add_format({"bold": True, "font_size": 16})
-            bf.set_bold()
-            row_format, row_header_format = __create_formats(mdata.serial_nums, workbook, bf, is_cal)
-
-            __write_headers(headers, row_header_format, bf, worksheet)
-            __write_rows(row_strs, row_format, worksheet, bf, data_coll, is_cal)
-            worksheet.set_column(0, num_cols, 37)
-            col_end = __create_chart(entries_df, mdata.serial_nums, num_cols, worksheet, workbook)
-            if is_cal:
-                __create_chart_dr(data_coll, worksheet, workbook, col_end)
-
-            workbook.close()
-            os.system("start " + xcel_file)
-        else:
-            messagebox.showwarning("File Error",
-                                   "Error generating the excel file, please try to wait for more data to be collected." +
-                                   "If this error persists the csv data file may have been corrupted.")
-
-
-def num_to_excel_col(num):
-    """Converts num to excel col label, 1 indexed, only works with 1 or 2 letters"""
-    letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'
-               'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    num -= 1
-    curr_overflow_index = 0
-    if num < 26:
-        return letters[num]
-
-    num -= 26
-    while num >= 26:
-        num -= 26
-        curr_overflow_index += 1
-    return letters[curr_overflow_index] + letters[num]
 
 
 def check_metadata(file_lines, is_cal, num_fbgs=None):

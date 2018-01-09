@@ -1,7 +1,5 @@
 import functools
 import os
-from file_helper import check_metadata
-
 
 def flatten(list2d):
     """Accepts a 2D list and flattens it into a 1D list. Returned list is ordered how the list is visually seen."""
@@ -36,26 +34,5 @@ def is_unique(test_list):
     return not any(i in seen or seen.add(i) for i in test_list)
 
 
-def check_valid_file(fname, is_cal):
-    valid_file = True
-    csv_file = to_ext(fname.get(), "csv")
-    if os.path.exists(csv_file):
-        file_lines = (line for line in open(csv_file))
-        prog_header = next(file_lines)
-        if "Metadata" in prog_header:
-            if is_cal:
-                valid_file = False
-            else:
-                next(file_lines)
-                valid_file = check_metadata(file_lines, is_cal) and valid_file
-        elif "Caldata" in prog_header:
-            if not is_cal:
-                valid_file = False
-            else:
-                next(file_lines)
-                valid_file = check_metadata(file_lines, is_cal) and valid_file
-        else:
-            valid_file = False
-    else:
-        valid_file = False
-    return valid_file
+def get_file_name(file_str):
+    return os.path.splitext(os.path.split(file_str)[1])[0]

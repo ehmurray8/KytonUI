@@ -4,19 +4,29 @@ import tkinter as tk
 from table import Table
 
 
-async def add_data_pt(data, lbox):
-    for d in data:
+async def add_data_pt(data, lbox, mutex):
+    for i, d in enumerate(data):
         lbox.add_data(d)
         await asyncio.sleep(1.1)
+        if i == 4:
+            print("Bye")
+            mutex.release()
+
     await asyncio.sleep(1.1)
     lbox.reset()
+    headers.pop()
     lbox.setup_headers(headers)
 
 
-def add_data_pts(data, lbox, nloop):
+def add_data_pts(data, lbox, nloop, mutex):
     asyncio.set_event_loop(nloop)
-    new_loop.run_until_complete(add_data_pt(data, lbox))
+    new_loop.run_until_complete(add_data_pt(data, lbox, mutex))
     new_loop.close()
+
+
+def test(mutex):
+    mutex.acquire()
+    print("Hello")
 
 
 if __name__ == '__main__':
@@ -32,6 +42,8 @@ if __name__ == '__main__':
     listbox.setup_headers(headers)
     listbox.pack(fill='both', expand=True)
     new_loop = asyncio.new_event_loop()
-    t = threading.Thread(target=add_data_pts, args=(d, listbox, new_loop))
+    mutex = threading.Semaphore(0)
+    t = threading.Thread(target=add_data_pts, args=(d, listbox, new_loop, mutex))
     t.start()
+    threading.Thread(target=test, args=(mutex,)).start()
     root.mainloop()

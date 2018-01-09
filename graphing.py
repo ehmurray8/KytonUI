@@ -2,7 +2,7 @@
 # pylint: disable=superfluous-parens
 
 import os
-import stat
+import psycopg2 as pg
 import platform
 from tkinter import messagebox as mbox
 import matplotlib.animation as animation
@@ -10,7 +10,7 @@ from matplotlib import style
 import matplotlib.gridspec as gridspec
 import file_helper as fh
 import helpers as help
-from constants import HEX_COLORS
+from constants import HEX_COLORS, BAKING, CAL
 style.use("kyton")
 
 
@@ -19,7 +19,7 @@ class Graph(object):
     Class describes a specific graph that can be represented as a subplot or a main plot.
     """
 
-    def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal):
+    def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal, snums):
         self.title = title
         self.is_cal = is_cal
         self.xlabel = xlabel
@@ -31,6 +31,7 @@ class Graph(object):
         self.fig = fig
         self.sub_axis = None
         self.anim = None
+        self.snums = snums
         self.zoom_axes = []
         self.show_sub()
 
@@ -59,11 +60,21 @@ class Graph(object):
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
         self.sub_axis.set_ylabel(self.ylabels[0])
-        if help.check_valid_file(self.file_name, self.is_cal):
-            self.animate_func(self.file_name, (self.sub_axis,))
+        axes_tuple = (self.sub_axis,)
+        self.check_val_file(axes_tuple)
+
+    def check_val_file(self, axes_tuple):
+        name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
+        conn = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+        cur = conn.cursor()
+        func = BAKING
+        if self.is_cal:
+            func = CAL
+        if fh.program_exists(name, cur, func)[0]:
+            conn.close()
+            self.animate_func(self.file_name, axes_tuple, self.snums, self.is_cal)
         else:
-            # Invalid File
-            pass
+            conn.close()
 
     def show_main(self):
         """Show the graph as the main plot."""
@@ -84,8 +95,7 @@ class Graph(object):
             else:
                 share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
-        self.anim = animation.FuncAnimation(
-            self.fig, self.main_graph, interval=1000)
+        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000)
 
     def main_graph(self, _):
         """Graph the main plot."""
@@ -101,17 +111,15 @@ class Graph(object):
         for i, ylabel in enumerate(self.ylabels):
             self.zoom_axes[i].set_ylabel(ylabel)
             self.zoom_axes[i].yaxis.label.set_fontsize(16)
-        if help.check_valid_file(self.file_name, self.is_cal):
-            self.animate_func(self.file_name, tuple(self.zoom_axes))
-        else:
-            # Invalid File
-            pass
+
+        axes_tuple = tuple(self.zoom_axes)
+        self.check_val_file(axes_tuple)
 
 
 class Graphing(object):
     """Class used for graphing the individual Graph objects."""
 
-    def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master):
+    def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master, snums):
         self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
@@ -156,7 +164,7 @@ class Graphing(object):
             dim_list = [self.dimensions + i + 1]
             for dim in dimen:
                 dim_list.append(dim)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, snums)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
         # Setup double click for graphs."""
@@ -197,8 +205,7 @@ class Graphing(object):
                 graph.show_sub()
 
             self.canvas.mpl_disconnect(self.cid)
-            self.cid = self.canvas.mpl_connect(
-                'button_press_event', self.show_main_plot)
+            self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
             self.canvas.draw()
             self.toolbar.update()
             if not self.is_playing:
@@ -211,33 +218,26 @@ class Graphing(object):
             if event.dblclick and axis == event.inaxes:
                 self.graphs[i].show_main()
                 self.canvas.mpl_disconnect(self.cid)
-                self.cid = self.canvas.mpl_connect(
-                    'button_press_event', self.show_subplots)
+                self.cid = self.canvas.mpl_connect('button_press_event', self.show_subplots)
                 self.canvas.draw()
                 self.toolbar.update()
                 if not self.is_playing:
                     self.master.after(1500, self.pause)
 
 
-def animate_mwt_graph(f_name, axes):
+def animate_mwt_graph(f_name, axes, snums, is_cal):
     """Animate function for the mean wavelength vs. time graph."""
-    times, wavelen_diffs = __get_mean_wave_diff_time_data(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
     axes[0].plot(times, wavelen_diffs)
 
 
-def __get_mean_wave_diff_time_data(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        return times, data_coll.mean_wavelen_diffs
-    else:
-        return [], []
-
-
-def animate_wp_graph(f_name, axis):
+def animate_wp_graph(f_name, axis, snums, is_cal):
     """Animate function for the wavelength vs. power graph."""
-    wavelens, powers, snums = __get_wave_power_graph(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    wavelens, powers = data_coll.wavelens, data_coll.powers
     idx = 0
     axes = []
     for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
@@ -253,52 +253,29 @@ def animate_wp_graph(f_name, axis):
         text.set_color("black")
 
 
-def __get_wave_power_graph(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        return data_coll.wavelens, data_coll.powers, mdata.serial_nums
-    else:
-        return [], [], []
-
-
-def animate_temp_graph(f_name, axes):
+def animate_temp_graph(f_name, axes, snums, is_cal):
     """Animate function for the temperature graph."""
-    times, temp_diffs, temps = __get_temp_time_graph(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times, temp_diffs, temps = data_coll.times, data_coll.temp_diffs, data_coll.temps
     axes[0].plot(times, temps)
     if len(axes) > 1:
         axes[1].plot(times, temp_diffs, color='b')
 
 
-def __get_temp_time_graph(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        return times, data_coll.temp_diffs, data_coll.temps
-    else:
-        return [], [], []
-
-
-def animate_mpt_graph(f_name, axis):
+def animate_mpt_graph(f_name, axis, snums, is_cal):
     """Animate function for the mean power vs. time graph."""
-    times, wavelen_diffs = __get_mean_power_diff_time_data(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
     axis[0].plot(times, wavelen_diffs)
 
 
-def __get_mean_power_diff_time_data(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        return times, data_coll.mean_power_diffs
-    else:
-        return [], []
-
-
-def animate_indiv_waves(f_name, axis):
+def animate_indiv_waves(f_name, axis, snums, is_cal):
     """Animate function for the individual wavelengths graph."""
-    times, wavelens, wavelen_diffs, snums = __get_indiv_waves_data(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times, wavelens, wavelen_diffs = data_coll.times, data_coll.wavelens, data_coll.wavelen_diffs
     idx = 0
     axes = []
     for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
@@ -317,19 +294,11 @@ def animate_indiv_waves(f_name, axis):
             text.set_color("black")
 
 
-def __get_indiv_waves_data(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        return times, data_coll.wavelens, data_coll.wavelen_diffs, mdata.serial_nums
-    else:
-        return [], [], [], []
-
-
-def animate_indiv_powers(f_name, axis):
+def animate_indiv_powers(f_name, axis, snums, is_cal):
     """Animate function for the individual powers graph."""
-    times, powers, power_diffs, snums = __get_indiv_powers_data(f_name)
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times, powers, power_diffs = data_coll.times, data_coll.powers, data_coll.power_diffs
     idx = 0
     axes = []
     for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
@@ -349,37 +318,24 @@ def animate_indiv_powers(f_name, axis):
             text.set_color("black")
 
 
-def __get_indiv_powers_data(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
-        return times, data_coll.powers, data_coll.power_diffs, mdata.serial_nums
-    else:
-        return [], [], [], []
-
-
-def animate_drift_rates_avg(f_name, axes):
+def animate_drift_rates_avg(f_name, axes, snums, is_cal):
     """Animate function for the drift rates graph."""
-    times, times_real, drates, drates_real = __get_drift_rates_avg(f_name)
+    times, times_real, drates, drates_real = __get_drift_rates_avg(f_name, snums, is_cal)
     axes[0].plot(times, drates)
     if len(axes) > 1:
         axes[1].plot(times_real, drates_real)
 
 
-def __get_drift_rates_avg(f_name):
-    mdata, entries_df = fh.parse_csv_file(help.to_ext(f_name.get(), "csv"))
-    if entries_df is not None:
-        data_coll = fh.create_data_coll(mdata, entries_df, True)
-        times = [(time - mdata.start_time) / 3600 for time in data_coll.times]
+def __get_drift_rates_avg(f_name, snums, is_cal):
+    name = help.get_file_name(f_name.get())
+    data_coll = fh.create_data_coll(name, snums, is_cal)
+    times = data_coll.times
 
-        drates_real = []
-        times_real = []
-        for time, drate, real_point in zip(times, data_coll.drift_rates, data_coll.real_points):
-            if real_point:
-                drates_real.append(drate)
-                times_real.append(time)
+    drates_real = []
+    times_real = []
+    for time, drate, real_point in zip(times, data_coll.drift_rates, data_coll.real_points):
+        if real_point:
+            drates_real.append(drate)
+            times_real.append(time)
 
-        return times, times_real, data_coll.avg_drift_rates, drates_real#, mdata.serial_nums
-    else:
-        return [], [], [], []
+    return times, times_real, data_coll.avg_drift_rates, drates_real

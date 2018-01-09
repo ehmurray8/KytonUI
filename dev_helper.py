@@ -15,7 +15,6 @@ async def avg_waves_amps(laser, switch, switches, num_pts):
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    print("beginning dev_help")
     return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num)
 
 
@@ -38,15 +37,11 @@ async def __get_data(laser, op_switch, switches_arr, switch_num):
             await __get_sm125_data(wavelens, amps, switch_num, laser)
         except socket.error:
             pass
-        print(wavelens, amps)
     return wavelens, amps
 
 
 async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     wavelens, amps, lens = await sm125.get_data()
-    print("Wavelengths: {}".format(wavelens))
-    print("Amplitudes: {}".format(amps))
-    print("Lengths: {}".format(lens))
     first_run = True
     if len(help.flatten(all_waves)):
         first_run = False
@@ -65,7 +60,6 @@ async def __get_average_data(laser, op_switch, switches_arr, num_readings, switc
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
-        print("Averge data iteration")
         await asyncio.sleep(1.25)
         wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num)
         all_waves = __avg_arr(wavelengths, all_waves)
