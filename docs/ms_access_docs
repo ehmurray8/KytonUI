@@ -11,3 +11,6 @@ cur.fetchall()
 Table name cannot have spaces
 Cannot use reserved words as column names such as Date, Time, Timestamp, Name.
 Cannot use special characthers in column names such as '(', ',', ')', '.'
+
+Download 32-bit driver if problems occur
+https://www.microsoft.com/en-US/download/details.aspx?id=13255
