@@ -7,8 +7,9 @@ import asyncio
 import time
 from datetime import datetime
 import numpy as np
-import psycopg2 as pg
 import openpyxl
+import pyodbc
+import getpass
 from tkinter import messagebox
 import xlsxwriter
 import pandas as pd
@@ -21,13 +22,13 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output csv file."""
 
-    conn_map = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+    conn_map = connect_db("bakecalmap")
     cur_map = conn_map.cursor()
 
     name = help.get_file_name(file_name)
     prog_exists, last_id = program_exists(name, cur_map, func)
 
-    conn_prog = pg.connect(database=func.lower(), user="postgres", password="kyton!88")
+    conn_prog = connect_db(func.lower())
     cur_prog = conn_prog.cursor()
     wave_pow = []
     for wave, power in zip(wavelengths, powers):
@@ -36,37 +37,43 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     col_list = create_headers(serial_nums, func == CAL)
     cols = ",".join(col_list)
     if not prog_exists:
-        cur_map.execute("INSERT INTO map (id, name, type) VALUES ({}, {}, {})".format(last_id+1, "'{}'".format(name),
-                                                                                      "'{}'".format(func.lower())))
+        cur_map.execute("INSERT INTO map VALUES ({}, {}, {})".format(last_id+1, "'{}'".format(name),
+                                                                     "'{}'".format(func.lower())))
         conn_map.commit()
         table.setup_headers(col_list)
         cur_prog.execute("CREATE TABLE {} ({});".format(name, cols))
         last_id = 0
         delta_time = 0
     else:
-        cur_prog.execute("SELECT id from {}".format(name))
+        cur_prog.execute("SELECT ID from {}".format(name))
         rows = cur_prog.fetchall()
-        last_id = rows[-1:][0] + 1
-        first_timestamp = time.mktime(datetime.strptime(rows[0][1], "%Y-%m-%d %H:%M:%S"))
+        last_id = rows[-1][0] + 1
+        first_timestamp = rows[0][1]
         delta_time = timestamp - first_timestamp
     conn_map.close()
-    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
-    values_list = [last_id, "'{}'".format(format_time), delta_time, *wave_pow, temp]
+    values_list = [last_id, timestamp, delta_time, *wave_pow, temp]
     if func == CAL:
         values_list.append(drift_rate)
         values_list.append(real_cal_pt)
     values = ",".join(values_list)
     table.add_data(values_list)
-    cur_prog.execute("INSERT INTO {} ({}) VALUES ({})".format(name, cols, values))
+    cur_prog.execute("INSERT INTO {} VALUES ({})".format(name, values))
     conn_prog.commit()
     conn_prog.close()
 
 
+def connect_db(name):
+    username = getpass.getuser()
+    conn_str = r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\Users\\' + username
+    conn_str += r'\AppData\Local\Databases\\' + name + ".accdb"
+    return pyodbc.connect(conn_str)
+
+
 def program_exists(name, cur_map, func):
-    cur_map.execute("SELECT id, name, type from map")
+    cur_map.execute("SELECT ID, ProgName, ProgType from map")
     rows = cur_map.fetchall()
     try:
-        last_id = [row[0] for row in rows][-1:][0]
+        last_id = [row[0] for row in rows][-1][0]
     except IndexError:
         last_id = 0
     names = [row[1] for row in rows]
@@ -84,14 +91,14 @@ def program_exists(name, cur_map, func):
 def create_headers(snums, is_cal):
     snum_cols = []
     for snum in snums:
-        snum_cols.append("'{} Wavelength (nm.)' REAL NOT NULL".format(snum))
-        snum_cols.append("'{} Power (dBm.)' REAL NOT NULL".format(snum))
-    col_list = ["ID INT PRIMARY KEY NOT NULL", "Time TIMESTAMP NOT NULL",
-                "'{}Time (hrs.)' REAL NOT NULL".format(u"\u0394"),
-                *snum_cols, "'Mean Temperature (K)' REAL NOT NULL"]
+        snum_cols.append("'{}_Wave DOUBLE NOT NULL".format(snum))
+        snum_cols.append("'{}_Pow DOUBLE NOT NULL".format(snum))
+    col_list = ["ID INT PRIMARY KEY NOT NULL", "ReadingTime DOUBLE NOT NULL",
+                "Delta_Time DOUBLE NOT NULL",
+                *snum_cols, "Temperature DOUBLE NOT NULL"]
     if is_cal:
-        col_list.append("'Drift Rate (mK/min)' REAL NOT NULL")
-        col_list.append("'Real Point' BOOL NOT NULL")
+        col_list.append("DriftRate DOUBLE NOT NULL")
+        col_list.append("RealPoint BOOL NOT NULL")
     return col_list
 
 
@@ -99,7 +106,7 @@ def update_table(table, xcel_file, is_cal, new_loop, mutex, snums):
     func = BAKING
     if is_cal:
         func = CAL
-    conn = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+    conn = connect_db("bakecalmap")
     cur = conn.cursor()
     name = os.path.splitext(os.path.split(xcel_file)[1])[0]
     if program_exists(name, cur, func)[0]:
@@ -121,7 +128,7 @@ async def add_table_data(table, name, is_cal, mutex, snums):
     db = BAKING.lower()
     if is_cal:
         db = CAL.lower()
-    conn = pg.connect(database=db, user="postgres", password="kyton!88")
+    conn = connect_db(db)
     cur = conn.cursor()
     headers_str = ",".join(headers)
     cur.execute("SELECT {} from {}".format(headers_str, name))
@@ -138,22 +145,22 @@ async def add_table_data(table, name, is_cal, mutex, snums):
 
 
 def db_to_df(name, snums, is_cal):
-    conn = pg.connect(database=name, user="postgres", password="kyton!88")
+    conn = connect_db(name)
     cur = conn.cursor()
-    headers = create_headers(snums, is_cal)
-    headers_str = ",".join(headers)
-    cur.execute("SELECT {} from {}".format(headers_str, name))
+    cur.execute("SELECT * from {}".format(name))
     rows = cur.fetchall()
     conn.close()
-    return pd.DataFrame(data={h: d for h, d in zip(headers, rows)}), headers
+
+    headers = [""]
+    return pd.DataFrame(data={h: d for h, d in zip(headers, rows)})
 
 
 def create_data_coll(name, snums, is_cal):
     data_coll = datac.DataCollection()
     df, headers = db_to_df(name, snums, is_cal)
-    data_coll.date_times = df["Time"]
-    data_coll.times = df["{}Time (hrs.)".format(u"\u0394")]
-    data_coll.temps = df["Mean Temperature (K)"]
+    data_coll.timestamps = df["ReadingTime"]
+    data_coll.times = df["DeltaTime"]
+    data_coll.temps = df["Temperature"]
     first_temp = data_coll.temps[0]
     data_coll.temp_diffs = np.array([temp - first_temp for temp in data_coll.temps])
     wave_headers = [head for head in headers if "Wave" in head]
@@ -174,8 +181,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     wb = openpyxl.Workbook()
     ws = wb.active
 
-    df, headers = db_to_df(help.get_file_name(xcel_file), snums, is_cal)
-    for r in pd.dataframe_to_rows(df, index=True, header=True):
+    df = db_to_df(help.get_file_name(xcel_file), snums, is_cal)
+    for r in openpyxl.utils.dataframe.dataframe_to_rows(df, index=True, header=True):
         ws.append(r)
 
     for cell in ws['A'] + ws[1]:

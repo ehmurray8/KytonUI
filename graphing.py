@@ -2,7 +2,6 @@
 # pylint: disable=superfluous-parens
 
 import os
-import psycopg2 as pg
 import platform
 from tkinter import messagebox as mbox
 import matplotlib.animation as animation
@@ -65,7 +64,7 @@ class Graph(object):
 
     def check_val_file(self, axes_tuple):
         name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = pg.connect(database="bakecalmap", user="postgres", password="kyton!88")
+        conn = fh.connect_db("bakecalmap")
         cur = conn.cursor()
         func = BAKING
         if self.is_cal:
