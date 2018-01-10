@@ -8,8 +8,6 @@ import file_helper
 from constants import BAKING
 from concurrent.futures import ThreadPoolExecutor
 
-POOL = ThreadPoolExecutor(4)
-
 
 class BakingProgram(program.Program):
     """Contains the baking_program specific logic, and gui elements."""
