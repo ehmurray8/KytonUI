@@ -227,7 +227,7 @@ class Graphing(object):
 def animate_mwt_graph(f_name, axes, snums, is_cal):
     """Animate function for the mean wavelength vs. time graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
     axes[0].plot(times, wavelen_diffs)
 
@@ -235,7 +235,7 @@ def animate_mwt_graph(f_name, axes, snums, is_cal):
 def animate_wp_graph(f_name, axis, snums, is_cal):
     """Animate function for the wavelength vs. power graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     wavelens, powers = data_coll.wavelens, data_coll.powers
     idx = 0
     axes = []
@@ -255,7 +255,7 @@ def animate_wp_graph(f_name, axis, snums, is_cal):
 def animate_temp_graph(f_name, axes, snums, is_cal):
     """Animate function for the temperature graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times, temp_diffs, temps = data_coll.times, data_coll.temp_diffs, data_coll.temps
     axes[0].plot(times, temps)
     if len(axes) > 1:
@@ -265,7 +265,7 @@ def animate_temp_graph(f_name, axes, snums, is_cal):
 def animate_mpt_graph(f_name, axis, snums, is_cal):
     """Animate function for the mean power vs. time graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
     axis[0].plot(times, wavelen_diffs)
 
@@ -273,7 +273,7 @@ def animate_mpt_graph(f_name, axis, snums, is_cal):
 def animate_indiv_waves(f_name, axis, snums, is_cal):
     """Animate function for the individual wavelengths graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times, wavelens, wavelen_diffs = data_coll.times, data_coll.wavelens, data_coll.wavelen_diffs
     idx = 0
     axes = []
@@ -296,7 +296,7 @@ def animate_indiv_waves(f_name, axis, snums, is_cal):
 def animate_indiv_powers(f_name, axis, snums, is_cal):
     """Animate function for the individual powers graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times, powers, power_diffs = data_coll.times, data_coll.powers, data_coll.power_diffs
     idx = 0
     axes = []
@@ -327,7 +327,7 @@ def animate_drift_rates_avg(f_name, axes, snums, is_cal):
 
 def __get_drift_rates_avg(f_name, snums, is_cal):
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)
+    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
     times = data_coll.times
 
     drates_real = []
