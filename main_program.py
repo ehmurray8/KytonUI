@@ -275,7 +275,15 @@ class Application(tk.Tk):
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
-            self.loop.close()
+            if self.oven is not None:
+                self.oven.close()
+            if self.temp_controller is not None:
+                self.temp_controller.close()
+            if self.switch is not None:
+                self.switch.close()
+            if self.laser is not None:
+                self.laser.close()
+            #self.loop.close()
             self.destroy()
 
 

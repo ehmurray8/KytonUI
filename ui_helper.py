@@ -31,7 +31,7 @@ def file_entry(container, label_text, row, width, def_file=""):
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
     cparser = configparser.ConfigParser()
-    cparser.read("prog_config.cfg")
+    cparser.read("config/prog_config.cfg")
     last_dir = cparser.get("Baking", "last_folder")
     try:
         os.mkdir(last_dir)
