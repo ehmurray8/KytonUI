@@ -1,4 +1,3 @@
-"""UI Helper methods."""
 # pylint: disable=import-error, relative-import, superfluous-parens
 import os
 import platform
@@ -39,7 +38,7 @@ def browse_file(file_label_var):
         pass
     file_path = filedialog.asksaveasfilename(
         initialdir=last_dir, title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
-                                                                ("all files", "*.*")))
+                                                                    ("all files", "*.*")))
     try:
         file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
     except AttributeError:

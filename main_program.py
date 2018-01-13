@@ -111,9 +111,7 @@ class Application(tk.Tk):
         self.switch = None
 
         self.loop = asyncio.get_event_loop()
-
-        self.conn_buttons = []
-
+        self.conn_buttons = {}
         self.setup_home_frame()
 
         # Make the app fullscreen
@@ -160,14 +158,9 @@ class Application(tk.Tk):
         device_frame.grid_columnconfigure(col, minsize=100)
         device_frame.grid_rowconfigure(0, minsize=10)
 
-        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(
-            row=1, column=1, sticky='ew')
-        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(
-            row=1, column=3, sticky='ew')
-        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(
-            row=1, column=5, sticky='ew')
-        ttk.Label(device_frame, text="Connection Status", style="Bold.TLabel").grid(
-            row=1, column=7, sticky='ew')
+        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='ew')
+        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='ew')
+        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='ew')
         laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
         laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
         switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
@@ -198,70 +191,70 @@ class Application(tk.Tk):
             port_ent.insert(tk.INSERT, port_str)
             port_ent.grid(row=row, sticky='ew', column=5)
 
-        conn_butt = ttk.Button(container, text="Connect",
-                               command=lambda: self.conn_dev(loc_ent, port_ent, dev_text,
-                                                             conn_butt))
-        conn_butt.grid(row=row, column=7, sticky='ew')
-        self.conn_buttons.append(conn_butt)
-        #self.device_widgets.append((loc_ent, port_ent, conn_butt))
+        self.conn_buttons[dev_text] = lambda: self.conn_dev(loc_ent, port_ent, dev_text)
 
-    def conn_dev(self, loc_ent, port_ent, dev, button):
+    def conn_dev(self, loc_ent, port_ent, dev):
         """
         Connects or Disconnects the program to a required device based on the input location params.
         """
-        connect = False
         err_specifier = "Unknown error"
-        if self.use_dev and not self.running:
-            try:
-                if dev == constants.TEMP:
-                    if self.temp_controller is None:
-                        err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop)
-                        self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
-                        connect = True
-                    else:
-                        self.temp_controller.close()
-                        self.temp_controller = None
-                elif dev == constants.OVEN:
-                    if self.oven is None:
-                        err_specifier = "GPIB address"
-                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop)
-                        self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
-                        connect = True
-                    else:
-                        self.oven.close()
-                        self.oven = None
-                elif dev == constants.SWITCH:
-                    if self.switch is None:
-                        err_specifier = "ethernet port"
-                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop)
-                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
-                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
-                        connect = True
-                    else:
-                        self.switch.close()
-                        self.switch = None
-                elif dev == constants.LASER:
-                    if self.laser is None:
-                        err_specifier = "ethernet port"
-                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop)
-                        self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
-                        self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
-                        connect = True
-                    else:
-                        self.laser.close()
-                        self.laser = None
-            except socket.error:
-                conn_warning(dev)
-            except visa.VisaIOError:
-                conn_warning(dev)
-            except ValueError:
-                loc_warning(err_specifier)
+        need_conn_warn = False
+        need_loc_warn = False
+        if self.use_dev:
+            for _ in range(3):
+                try:
+                    if dev == constants.TEMP:
+                        if self.temp_controller is None:
+                            err_specifier = "GPIB address"
+                            self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop)
+                            self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
+                        else:
+                            self.temp_controller.close()
+                            self.temp_controller = None
+                    elif dev == constants.OVEN:
+                        if self.oven is None:
+                            err_specifier = "GPIB address"
+                            self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop)
+                            self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
+                        else:
+                            self.oven.close()
+                            self.oven = None
+                    elif dev == constants.SWITCH:
+                        if self.switch is None:
+                            err_specifier = "ethernet port"
+                            self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop)
+                            self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
+                            self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
+                        else:
+                            self.switch.close()
+                            self.switch = None
+                    elif dev == constants.LASER:
+                        if self.laser is None:
+                            err_specifier = "ethernet port"
+                            self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop)
+                            self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
+                            self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
+                        else:
+                            self.laser.close()
+                            self.laser = None
 
-        if connect:
-            button['text'] = "Disconnect"
-        else:
-            button['text'] = "Connect"
+                    need_conn_warn = False
+                    need_loc_warn = False
+                    break
+                except socket.error:
+                    need_conn_warn = True
+                    conn_warning(dev)
+                except visa.VisaIOError:
+                    need_conn_warn = True
+                    conn_warning(dev)
+                except ValueError:
+                    need_loc_warn = True
+                    loc_warning(err_specifier)
+
+        if need_conn_warn:
+            conn_warning(dev)
+        elif need_loc_warn:
+            loc_warning(err_specifier)
 
     def create_bake_tab(self):
         """Create a tab used for a baking run."""
@@ -283,7 +276,6 @@ class Application(tk.Tk):
                 self.switch.close()
             if self.laser is not None:
                 self.laser.close()
-            #self.loop.close()
             self.destroy()
 
 
