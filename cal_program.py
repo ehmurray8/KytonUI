@@ -3,7 +3,7 @@
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
 from program import Program, ProgramType
-from constants import CAL
+from constants import CAL, TEMP, SWITCH, LASER, OVEN
 import file_helper as fh
 import options_frame
 import asyncio
@@ -24,9 +24,12 @@ class CalProgram(Program):
         for _ in range(self.options.num_cal_cycles.get()):
             for temp in temps_arr:
                 while True:
-                    await self.master.oven.set_temp(temp)
-                    await self.master.oven.cooling_off()
-                    await self.master.oven.heater_on()
+                    self.master.conn_buttons[OVEN]()
+                    self.master.conn_buttons[TEMP]()
+
+                    self.master.oven.set_temp(temp)
+                    self.master.oven.cooling_off()
+                    self.master.oven.heater_on()
 
                     start_temp = float(await self.master.temp_controller.get_temp_k())
                     waves, amps = await self.get_wave_amp_data()
@@ -38,30 +41,40 @@ class CalProgram(Program):
                     # Need to write csv file init code
                     fh.write_db(self.options.file_name.get(), self.snums, start_time,
                                 start_temp, waves, amps, options_frame.CAL, self.table, False, 0.0)
+                    #self.update_table()
                     if await self.__check_drift_rate(start_time, start_temp):
                         break
                     else:
                         await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
 
+            self.master.conn_buttons[OVEN]()
             await self.master.oven.heater_off()
             await self.master.oven.set_temp(temps_arr[0])
 
             if self.options.cooling.get():
                 await self.master.oven.cooling_on()
 
+            self.disconnect_devices()
             await self.reset_temp(temps_arr)
 
     async def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        temp = float(await self.master.temp_controller.get_temp_k())
+        self.master.conn_buttons[TEMP]()
+        temp = float(await self.master.temp_controller.get_temp_c())
         while temp >= float(temps_arr[0]) - .1:
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
-            temp = float(await self.master.temp_controller.get_temp_k())
+            temp = float(await self.master.temp_controller.get_temp_c())
+        self.disconnect_devices()
 
     async def get_drift_rate(self, last_time, last_temp):
+        self.master.conn_buttons[TEMP]()
+        self.master.conn_buttons[LASER]()
+        if sum(len(switch) for switch in self.switches):
+            self.master.conn_buttons[SWITCH]()
         waves, amps = await self.get_wave_amp_data()
         curr_temp = float(await self.master.temp_controller.get_temp_k())
         curr_temp += float(await self.master.temp_controller.get_temp_k())
+        self.disconnect_devices()
         curr_temp /= 2
         curr_time = time.time()
 
@@ -76,9 +89,11 @@ class CalProgram(Program):
         while drift_rate > self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                         curr_temp, waves, amps, options_frame.CAL, self.table, False, drift_rate)
+            #self.update_table()
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
 
         # record actual point
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                     curr_temp, waves, amps, options_frame.CAL, self.table, True, drift_rate)
+        #self.update_table()

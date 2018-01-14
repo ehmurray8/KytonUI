@@ -7,6 +7,7 @@ program and baking program.
 import asyncio
 import os
 import threading
+import time
 import abc
 from tkinter import ttk, messagebox as mbox
 import configparser
@@ -21,7 +22,7 @@ import dev_helper
 import graphing
 import ui_helper
 import helpers as help
-from constants import CAL, BAKING
+from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from table import Table
 
 
@@ -105,7 +106,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.table = Table(table_frame, self.create_excel)
         self.table.setup_headers([])
         self.table.pack(fill="both", expand=True)
-
 
         # Graphs need to be empty until csv is created
         self.fig = Figure(figsize=(5, 5), dpi=100)
@@ -217,7 +217,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                                "Please add fbg entries to your configuration before running the program.")
             else:
                 if self.is_valid_file():
-                    switch_chan = 0
                     for chan, snum, pos in zip(help.flatten(self.options.chan_nums), help.flatten(self.options.sn_ents),
                                                help.flatten(self.options.switch_positions)):
                         if snum.get() and snum.get() not in self.snums:
@@ -225,7 +224,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                             self.channels[chan].append(snum.get())
                             if pos.get():
                                 self.switches[chan].append(pos.get())
-                                switch_chan = chan + 1
 
                     if any(len(x) > 1 for x in self.channels) and not sum(len(x) for x in self.switches):
                         mbox.showerror("Configuration Error",
@@ -240,39 +238,56 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         mbox.showerror("Configuration Error",
                                        "Multiple FBGs are configured to use the same switch position.")
                     else:
-                        need_switch = False
-                        need_oven = False
-                        if self.master.laser is None:
-                            self.master.conn_buttons[0].invoke()
-                        if switch_chan != -1 and self.master.switch is None:
-                            need_switch = True
-                            self.master.conn_buttons[1].invoke()
-                        if self.master.temp_controller is None:
-                            self.master.conn_buttons[2].invoke()
-                        if (self.program_type.prog_id == CAL or self.options.set_temp.get()) \
-                                and self.master.oven is None:
-                            need_oven = True
-                            self.master.conn_buttons[3].invoke()
-
-                        if self.master.laser is not None and (self.master.switch is not None or not need_switch) and \
-                                self.master.temp_controller is not None and (self.master.oven is not None or not need_oven):
-                            self.save_config_info()
-                            print("Valid")
-                            if need_oven and self.program_type.prog_id == BAKING:
-                                self.master.loop.run_until_complete(self.set_oven_temp())
-                            self.master.running = True
-                            self.master.running_prog = self.program_type.prog_id
-                            # self.header.configure(text=self.program_type.in_prog_msg)
-                            ui_helper.lock_widgets(self.options)
-                            self.graph_helper.show_subplots()
-                            self.update_table()
-                            self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                                                                  self.program_loop)
-                        else:
-                            self.pause_program()
+                        self.save_config_info()
+                        self.master.running_prog = self.program_type.prog_id
+                        ui_helper.lock_widgets(self.options)
+                        self.graph_helper.show_subplots()
+                        #self.update_table(True)
+                        self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
+                                                              self.program_start)
                 else:
                     self.pause_program()
         else:
+            self.pause_program()
+
+    def program_start(self):
+        threading.Thread(target=self.connect_devices).start()
+
+    def disconnect_devices(self):
+        if self.master.oven is not None:
+            self.master.oven.close()
+            self.master.oven = None
+        if self.master.laser is not None:
+            self.master.laser.close()
+            self.master.laser = None
+        if self.master.temp_controller is not None:
+            self.master.temp_controller.close()
+            self.master.temp_controller = None
+        if self.master.switch is not None:
+            self.master.switch.close()
+            self.master.switch = None
+
+    def connect_devices(self):
+        need_oven = False
+        need_switch = False
+        self.disconnect_devices()
+        self.master.conn_buttons[LASER]()
+        self.master.conn_buttons[TEMP]()
+        if sum(len(switch) for switch in self.switches):
+            need_switch = True
+            self.master.conn_buttons[SWITCH]()
+        if (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
+            need_oven = True
+            self.master.conn_buttons[OVEN]()
+        if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
+            self.master.loop.run_until_complete(self.set_oven_temp())
+        if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
+                self.master.laser is not None and self.master.temp_controller is not None:
+            self.disconnect_devices()
+            self.master.running = True
+            self.program_loop()
+        else:
+            self.disconnect_devices()
             self.pause_program()
 
     async def set_oven_temp(self):
@@ -311,7 +326,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def pause_program(self):
         """Pauses the program."""
         self.start_btn.configure(text=self.program_type.start_title)
-        # self.header.configure(text=self.program_type.title)
         ui_helper.unlock_widgets(self.options)
         self.master.running = False
         self.master.running_prog = None
@@ -323,6 +337,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
+        time.sleep(5)
 
     async def get_wave_amp_data(self):
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,

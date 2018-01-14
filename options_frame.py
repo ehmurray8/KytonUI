@@ -172,8 +172,8 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             row_num += 1
 
             init_duration = self.conf_parser.getfloat(BAKING, "init_duration")
-            self.init_duration = uh.units_entry(self.options_grid, "Initial interval duration: ", row_num, 5,
-                                                "minutes", init_duration)
+            self.init_duration = uh.int_entry(self.options_grid, "Number of initial readings: ", row_num, 5,
+                                              init_duration)
             row_num += 1
 
             prim_interval = self.conf_parser.getfloat(BAKING, "prim_interval")
