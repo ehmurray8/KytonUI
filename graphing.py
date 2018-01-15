@@ -51,7 +51,7 @@ class Graph(object):
             axis.cla()
         self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
-        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1500)
+        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=5000)
 
     def sub_graph(self, _):
         """Graph the subplot."""
