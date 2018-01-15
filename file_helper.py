@@ -150,7 +150,6 @@ def create_data_coll(name, snums, is_cal):
         data_coll.timestamps = df["Date Time"]
         start_time = df["Date Time"][0]
         df['Date Time'] = pd.to_datetime(df['Date Time'], unit="s")
-        print(df["Date Time"].head())
         data_coll.times = [(time - start_time) / 60 / 60for time in data_coll.timestamps]
         data_coll.temps = df["Mean Temperature (K)"]
         first_temp = data_coll.temps[0]
