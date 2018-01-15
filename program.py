@@ -243,6 +243,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         ui_helper.lock_widgets(self.options)
                         self.graph_helper.show_subplots()
                         #self.update_table(True)
+                        headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
+                        headers.pop(0)
+                        self.table.setup_headers(headers, True)
                         self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
                                                               self.program_start)
                 else:

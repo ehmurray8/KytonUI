@@ -2,6 +2,7 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 from dateutil import parser
 
+
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
@@ -26,10 +27,13 @@ class Table(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-    def setup_headers(self, headers):
+    def setup_headers(self, headers, reset=False):
         self.headers.clear()
         self.headers.extend(headers)
-        self._setup_widgets()
+        if reset:
+            if self.tree is not None:
+                self.reset()
+            self._setup_widgets()
         for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: sortby(self.tree, c, 0))
             # adjust the column's width to the header string
@@ -40,8 +44,8 @@ class Table(ttk.Frame):
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkFont.Font().measure(val)
-            if self.tree.column(self.headers[ix], width=None) < int(col_w * 1.6):
-                self.tree.column(self.headers[ix], width=int(col_w * 1.6))
+            if self.tree.column(self.headers[ix], width=None) < int(col_w * 2):
+                self.tree.column(self.headers[ix], width=int(col_w * 2))
 
     def reset(self):
         self.tree.delete(*self.tree.get_children())

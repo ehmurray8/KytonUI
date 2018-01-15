@@ -64,12 +64,12 @@ class Graph(object):
 
     def check_val_file(self, axes_tuple):
         name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = fh.connect_db("bakecalmap")
+        conn = fh.sqlite3.connect("db/program_data.db")
         cur = conn.cursor()
         func = BAKING
         if self.is_cal:
             func = CAL
-        if fh.program_exists(name, cur, func)[0]:
+        if fh.program_exists(name, cur, func):
             conn.close()
             self.animate_func(self.file_name, axes_tuple, self.snums, self.is_cal)
         else:
@@ -227,102 +227,123 @@ class Graphing(object):
 def animate_mwt_graph(f_name, axes, snums, is_cal):
     """Animate function for the mean wavelength vs. time graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
-    axes[0].plot(times, wavelen_diffs)
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        times, wavelen_diffs = data_coll.times, data_coll.mean_wavelen_diffs
+        axes[0].plot(times, wavelen_diffs)
+    except RuntimeError:
+        pass
 
 
 def animate_wp_graph(f_name, axis, snums, is_cal):
     """Animate function for the wavelength vs. power graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    wavelens, powers = data_coll.wavelens, data_coll.powers
-    idx = 0
-    axes = []
-    for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
-        axes.append(axis[0].scatter(waves, powers, color=color, s=75))
-        idx += 1
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        wavelens, powers = data_coll.wavelens, data_coll.powers
+        idx = 0
+        axes = []
+        for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
+            axes.append(axis[0].scatter(waves, powers, color=color, s=75))
+            idx += 1
 
-    font_size = 8
-    if platform.system() == "Linux":
-        font_size = 10
-    legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', ncol=int(len(snums) / 2 + 0.5),
-                            fontsize=font_size, fancybox=True, shadow=True)
-    for text in legend.get_texts():
-        text.set_color("black")
+        font_size = 8
+        if platform.system() == "Linux":
+            font_size = 10
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', ncol=int(len(snums) / 2 + 0.5),
+                                fontsize=font_size, fancybox=True, shadow=True)
+        for text in legend.get_texts():
+            text.set_color("black")
+    except RuntimeError:
+        pass
 
 
 def animate_temp_graph(f_name, axes, snums, is_cal):
     """Animate function for the temperature graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    times, temp_diffs, temps = data_coll.times, data_coll.temp_diffs, data_coll.temps
-    axes[0].plot(times, temps)
-    if len(axes) > 1:
-        axes[1].plot(times, temp_diffs, color='b')
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        times, temp_diffs, temps = data_coll.times, data_coll.temp_diffs, data_coll.temps
+        axes[0].plot(times, temps)
+        if len(axes) > 1:
+            axes[1].plot(times, temp_diffs, color='b')
+    except RuntimeError:
+        pass
 
 
 def animate_mpt_graph(f_name, axis, snums, is_cal):
     """Animate function for the mean power vs. time graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    times, wavelen_diffs = data_coll.times, data_coll.wavelen_diffs
-    axis[0].plot(times, wavelen_diffs)
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        times, power_diffs = data_coll.times, data_coll.mean_power_diffs
+        axis[0].plot(times, power_diffs)
+    except RuntimeError:
+        pass
 
 
 def animate_indiv_waves(f_name, axis, snums, is_cal):
     """Animate function for the individual wavelengths graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    times, wavelens, wavelen_diffs = data_coll.times, data_coll.wavelens, data_coll.wavelen_diffs
-    idx = 0
-    axes = []
-    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
-        axes.append(axis[0].plot(times, waves, color=color)[0])
-        if len(axis) > 1:
-            axis[1].plot(times, wave_diffs, color=color)
-        idx += 1
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        times, wavelens, wavelen_diffs = data_coll.times, data_coll.wavelens, data_coll.wavelen_diffs
+        idx = 0
+        axes = []
+        for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
+            axes.append(axis[0].plot(times, waves, color=color)[0])
+            if len(axis) > 1:
+                axis[1].plot(times, wave_diffs, color=color)
+            idx += 1
 
-    if len(axis) > 1:
-        font_size = 8
-        if platform.system() == "Linux":
-            font_size = 10
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-        for text in legend.get_texts():
-            text.set_color("black")
+        if len(axis) > 1:
+            font_size = 8
+            if platform.system() == "Linux":
+                font_size = 10
+            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+            for text in legend.get_texts():
+                text.set_color("black")
+    except RuntimeError:
+        pass
 
 
 def animate_indiv_powers(f_name, axis, snums, is_cal):
     """Animate function for the individual powers graph."""
     name = help.get_file_name(f_name.get())
-    data_coll = fh.create_data_coll(name, snums, is_cal)[0]
-    times, powers, power_diffs = data_coll.times, data_coll.powers, data_coll.power_diffs
-    idx = 0
-    axes = []
-    for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
-        axes.append(axis[0].plot(times, pows, color=color)[0])
+    try:
+        data_coll = fh.create_data_coll(name, snums, is_cal)[0]
+        times, powers, power_diffs = data_coll.times, data_coll.powers, data_coll.power_diffs
+        idx = 0
+        axes = []
+        for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
+            axes.append(axis[0].plot(times, pows, color=color)[0])
+            if len(axis) > 1:
+                axis[1].plot(times, pow_diffs, color=color)
+            idx += 1
+
         if len(axis) > 1:
-            axis[1].plot(times, pow_diffs, color=color)
-        idx += 1
+            font_size = 8
+            if platform.system() == "Linux":
+                font_size = 10
 
-    if len(axis) > 1:
-        font_size = 8
-        if platform.system() == "Linux":
-            font_size = 10
-
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-        for text in legend.get_texts():
-            text.set_color("black")
+            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+            for text in legend.get_texts():
+                text.set_color("black")
+    except RuntimeError:
+        pass
 
 
 def animate_drift_rates_avg(f_name, axes, snums, is_cal):
     """Animate function for the drift rates graph."""
-    times, times_real, drates, drates_real = __get_drift_rates_avg(f_name, snums, is_cal)
-    axes[0].plot(times, drates)
-    if len(axes) > 1:
-        axes[1].plot(times_real, drates_real)
+    try:
+        times, times_real, drates, drates_real = __get_drift_rates_avg(f_name, snums, is_cal)
+        axes[0].plot(times, drates)
+        if len(axes) > 1:
+            axes[1].plot(times_real, drates_real)
+    except RuntimeError:
+        pass
 
 
 def __get_drift_rates_avg(f_name, snums, is_cal):

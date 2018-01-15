@@ -44,8 +44,7 @@ class BakingProgram(program.Program):
                 break
 
             fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
-                                       waves, amps, BAKING)
-            #self.update_table()
+                                       waves, amps, BAKING, self.table)
             if not self.check_stable():
                 self.master.loop.run_until_complete(asyncio.sleep(self.options.init_time.get()))
             else:
