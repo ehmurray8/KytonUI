@@ -28,13 +28,13 @@ class BakingProgram(program.Program):
         while self.master.running:
             self.master.conn_buttons[TEMP]()
             self.master.conn_buttons[LASER]()
-            temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_c())
+            temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
             temperature = float(temperature[:-3])
 
             if sum(len(switch) for switch in self.switches):
                 self.master.conn_buttons[SWITCH]()
             waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
-            temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_c())
+            temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
             temperature += float(temp2[:-3])
             temperature /= 2.0
             curr_time = time.time()

@@ -12,6 +12,7 @@ import pandas as pd
 import data_container as datac
 import helpers as help
 from constants import HEX_COLORS, CAL, BAKING
+from openpyxl.charts import BarChart, Series, Reference
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
@@ -31,9 +32,12 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     col_list = create_headers_init(serial_nums, func == CAL)
     cols = ",".join(col_list)
     if not prog_exists:
-        cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ({}, {})".format("'{}'".format(name),
-                                                                                     "'{}'".format(func.lower())))
-        conn.commit()
+        try:
+            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ({}, {})".format("'{}'".format(name),
+                                                                                         "'{}'".format(func.lower())))
+        except sqlite3.OperationalError:
+            cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                        "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL")
         cur.execute("CREATE TABLE {} ({});".format(name, cols))
 
     values_list = [timestamp, *wave_pow, temp]
@@ -180,23 +184,61 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
         data_coll, df = create_data_coll(help.get_file_name(xcel_file), snums, is_cal)
+        new_df = pd.DataFrame()
+        new_df["Date Time"] = df["Date Time"]
+        new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
+        del df["Date Time"]
+        for col in df.columns.values.tolist():
+            new_df[col] = df[col]
+        new_df.append(df)
         for snum, delta_wave in zip(snums, data_coll.wavelen_diffs):
-            df["{} {}{}, from start (nm).".format(snum, u"\u0394", u"\u03BB")] = delta_wave
+            new_df["{} {}{}, from start (nm).".format(snum, u"\u0394", u"\u03BB")] = delta_wave
 
-        df["{}T, from start (K)"] = data_coll.temp_diffs
-        df["Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
+        new_df["{}T, from start (K)"] = data_coll.temp_diffs
+        new_df["Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
 
         defaults = {'font_size': 14}
-        sf = StyleFrame(df, styler_obj=Styler(**defaults))
+        sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
 
         # Style the headers of the table
         header_style = Styler(bold=True, font_size=18)
+        sf.set_column_width(columns=sf.columns, width=35)
         sf.apply_headers_style(styler_obj=header_style)
 
         sf.apply_column_style(cols_to_style='Date Time',
-                              styler_obj=Styler(number_format="%a, %d %b %Y %H:%M:%S"))
+                              styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
-        sf.to_excel(xcel_file, row_to_add_filters=0).save()
+        wave_heads = [col for col in new_df.columns.values if "Wave" in col]
+        pow_heads = [col for col in new_df.columns.values if "Pow" in col]
+        for wave_head, pow_head, hex_color in zip(wave_heads, pow_heads, HEX_COLORS):
+            sf.apply_column_style(cols_to_style=[wave_head, pow_head],
+                                  styler_obj=Styler(bg_color=hex_color))
+        sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
+        sf.apply_column_style(cols_to_style="{}T, from start (K)", styler_obj=Styler(font_color=utils.colors.red))
+        sf.apply_column_style(cols_to_style="Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB"),
+                              styler_obj=Styler(font_color=utils.colors.red))
+
+        ew = StyleFrame.ExcelWriter(xcel_file)
+        sf.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name="Sheet1")
+
+        chart = BarChart()
+        worksheet = ew.book.get_sheet_by_name('Sheet1')
+        labels = Reference(worksheet, pos1=(2, 1), pos2=(4, 1))
+
+        valuesA = Reference(worksheet, pos1=(2, 2), pos2=(4, 2))
+        seriesA = Series(valuesA, title='A', labels=labels)
+        chart.append(seriesA)
+
+        valuesB = Reference(worksheet, pos1=(2, 3), pos2=(4, 3))
+        seriesB = Series(valuesB, title='B', labels=labels)
+        chart.append(seriesB)
+
+        chart.drawing.top = 100
+        chart.drawing.left = 200
+        chart.drawing.width = 300
+        chart.drawing.height = 200
+        worksheet.add_chart(chart)
+        ew.save()
         # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
         # columns_and_rows_to_freeze='A2').save()
         os.system("start " + xcel_file)

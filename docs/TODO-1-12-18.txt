@@ -5,13 +5,8 @@ Complete Master (Main requirements before DB):
     - Try to add some recovery logic to not crash if the device cannot be connected to
 
 Complete DB branch work:
-    - Finish connecting program to the DB
-        - Make sure the program can create new tables
-        - Make sure the program can read and write to the tables during execution
     - Finish adding the logic for creating the in program table is working
-    - Finish switching from xlsxwriter to openypxl
-        - Make sure the new code is working properly
-        - Add styling to match old styling
+    - Finish switching from xlsxwriter to openypxioi
         - Add chart creation
     - Add some sort of lock to prevent update_table from being called when it is currently running
 

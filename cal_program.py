@@ -59,10 +59,10 @@ class CalProgram(Program):
     async def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
         self.master.conn_buttons[TEMP]()
-        temp = float(await self.master.temp_controller.get_temp_c())
+        temp = float(await self.master.temp_controller.get_temp_k())
         while temp >= float(temps_arr[0]) - .1:
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
-            temp = float(await self.master.temp_controller.get_temp_c())
+            temp = float(await self.master.temp_controller.get_temp_k())
         self.disconnect_devices()
 
     async def get_drift_rate(self, last_time, last_temp):
