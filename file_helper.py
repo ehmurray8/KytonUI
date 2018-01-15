@@ -135,11 +135,14 @@ async def add_table_data(table, name, is_cal, mutex, snums):
 
 
 def db_to_df(name):
-    conn = sqlite3.connect("db/program_data.db")
-    df = pd.read_sql_query("SELECT * from {}".format(name), conn)
-    del df["ID"]
-    conn.close()
-    return df
+    try:
+        conn = sqlite3.connect("db/program_data.db")
+        df = pd.read_sql_query("SELECT * from {}".format(name), conn)
+        del df["ID"]
+        conn.close()
+        return df
+    except pd.io.sql.DatabaseError:
+        return pd.DataFrame()
 
 
 def create_data_coll(name, snums, is_cal):
