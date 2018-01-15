@@ -141,7 +141,7 @@ def db_to_df(name):
         del df["ID"]
         conn.close()
         return df
-    except pd.io.sql.DatabaseError:
+    except (pd.io.sql.DatabaseError, sqlite3.OperationalError):
         return pd.DataFrame()
 
 
