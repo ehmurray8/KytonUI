@@ -340,7 +340,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
-        time.sleep(5)
 
     async def get_wave_amp_data(self):
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,

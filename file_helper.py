@@ -12,7 +12,6 @@ import pandas as pd
 import data_container as datac
 import helpers as help
 from constants import HEX_COLORS, CAL, BAKING
-from openpyxl.charts import BarChart, Series, Reference
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
@@ -157,7 +156,7 @@ def create_data_coll(name, snums, is_cal):
         data_coll.timestamps = df["Date Time"]
         start_time = df["Date Time"][0]
         df['Date Time'] = pd.to_datetime(df['Date Time'], unit="s")
-        data_coll.times = [(time - start_time) / 60 / 60for time in data_coll.timestamps]
+        data_coll.times = [(time - start_time) / 60 / 60 for time in data_coll.timestamps]
         data_coll.temps = df["Mean Temperature (K)"]
         first_temp = data_coll.temps[0]
         data_coll.temp_diffs = np.array([temp - first_temp for temp in data_coll.temps])
@@ -192,6 +191,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         for col in df.columns.values.tolist():
             new_df[col] = df[col]
         new_df.append(df)
+        new_df["Date Time"] = new_df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
         for snum, delta_wave in zip(snums, data_coll.wavelen_diffs):
             new_df["{} {}{}, from start (nm).".format(snum, u"\u0394", u"\u03BB")] = delta_wave
 
@@ -215,30 +215,12 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             sf.apply_column_style(cols_to_style=[wave_head, pow_head],
                                   styler_obj=Styler(bg_color=hex_color))
         sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
-        sf.apply_column_style(cols_to_style="{}T, from start (K)", styler_obj=Styler(font_color=utils.colors.red))
+        sf.apply_column_style(cols_to_style="{}T, from start (K)".format(u"\u0394"), styler_obj=Styler(font_color=utils.colors.red))
         sf.apply_column_style(cols_to_style="Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB"),
                               styler_obj=Styler(font_color=utils.colors.red))
 
         ew = StyleFrame.ExcelWriter(xcel_file)
         sf.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name="Sheet1")
-
-        #chart = BarChart()
-        #worksheet = ew.book.get_sheet_by_name('Sheet1')
-        #labels = Reference(worksheet, pos1=(2, 1), pos2=(4, 1))
-
-        #valuesA = Reference(worksheet, pos1=(2, 2), pos2=(4, 2))
-        #seriesA = Series(valuesA, title='A', labels=labels)
-        #chart.append(seriesA)
-
-        #valuesB = Reference(worksheet, pos1=(2, 3), pos2=(4, 3))
-        #seriesB = Series(valuesB, title='B', labels=labels)
-        #chart.append(seriesB)
-
-        #chart.drawing.top = 100
-        #chart.drawing.left = 200
-        #chart.drawing.width = 300
-        #chart.drawing.height = 200
-        #worksheet.add_chart(chart)
         ew.save()
         # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
         # columns_and_rows_to_freeze='A2').save()
