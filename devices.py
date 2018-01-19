@@ -2,15 +2,16 @@
 
 # pylint:disable=missing-super-argument
 import socket
-from concurrent.futures import ThreadPoolExecutor
 from socket import AF_INET, SOCK_STREAM
-import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 import functools
+import numpy as np
+
 
 WAVELEN_SCALE_FACTOR = 10000.0
 AMP_SCALE_FACTOR = 100.0
 
-IOPool = ThreadPoolExecutor(4)
+IOPOOL = ThreadPoolExecutor(4)
 
 
 class SM125(socket.socket):
@@ -21,13 +22,13 @@ class SM125(socket.socket):
         self.loop.run_until_complete(self.connect_dev(address, port))
 
     async def connect_dev(self, address, port):
-        await self.loop.run_in_executor(IOPool, super().connect, (address, port))
+        await self.loop.run_in_executor(IOPOOL, super().connect, (address, port))
 
     async def get_data(self):
         """Returns the SM125 wavelengths, amplitudes, and lengths of each channel."""
-        await self.loop.run_in_executor(IOPool, self.send, b'#GET_PEAKS_AND_LEVELS')
-        pre_response = await self.loop.run_in_executor(IOPool, self.recv, 10)
-        response = await self.loop.run_in_executor(IOPool, self.recv, int(pre_response))
+        await self.loop.run_in_executor(IOPOOL, self.send, b'#GET_PEAKS_AND_LEVELS')
+        pre_response = await self.loop.run_in_executor(IOPOOL, self.recv, 10)
+        response = await self.loop.run_in_executor(IOPOOL, self.recv, int(pre_response))
         chan_lens = np.fromstring(response[:20], dtype='3uint32, 4uint16')[0][1]
         total_peaks = sum(chan_lens)
 
@@ -53,27 +54,27 @@ class Oven(object):
 
     async def connect_dev(self, loc, manager):
         self.device = \
-            await self.loop.run_in_executor(IOPool, functools.partial(manager.open_resource, loc, read_termination="\n"))
+            await self.loop.run_in_executor(IOPOOL, functools.partial(manager.open_resource, loc, read_termination="\n"))
 
     async def set_temp(self, temp):
         """Sets set point of delta oven."""
-        await self.loop.run_in_executor(IOPool, self.device.query, 'S {}'.format(temp))
+        await self.loop.run_in_executor(IOPOOL, self.device.query, 'S {}'.format(temp))
 
     async def heater_on(self):
         """Turns oven heater on."""
-        await self.loop.run_in_executor(IOPool, self.device.query, 'H ON')
+        await self.loop.run_in_executor(IOPOOL, self.device.query, 'H ON')
 
     async def heater_off(self):
         """Turns oven heater off."""
-        await self.loop.run_in_executor(IOPool, self.device.query, 'H OFF')
+        await self.loop.run_in_executor(IOPOOL, self.device.query, 'H OFF')
 
     async def cooling_on(self):
         """Turns oven cooling on."""
-        await self.loop.run_in_executor(IOPool, self.device.query, 'C ON')
+        await self.loop.run_in_executor(IOPOOL, self.device.query, 'C ON')
 
     async def cooling_off(self):
         """Turns oven cooling off."""
-        await self.loop.run_in_executor(IOPool, self.device.query, 'C OFF')
+        await self.loop.run_in_executor(IOPOOL, self.device.query, 'C OFF')
 
     def close(self):
         """Closes the resource."""
@@ -89,12 +90,12 @@ class OpSwitch(socket.socket):
         self.loop.run_until_complete(self.connect_dev(addr, port))
 
     async def connect_dev(self, addr, port):
-        await self.loop.run_in_executor(IOPool, self.connect, (addr, port))
+        await self.loop.run_in_executor(IOPOOL, self.connect, (addr, port))
 
     async def set_channel(self, chan):
         """Sets the channel on the optical switch."""
         msg = "<OSW{}_OUT_{}>".format(format(int(1), '02d'), format(int(chan), '02d'))
-        await self.loop.run_in_executor(IOPool, self.send, msg.encode())
+        await self.loop.run_in_executor(IOPOOL, self.send, msg.encode())
 
 
 class TempController(object):
@@ -107,16 +108,17 @@ class TempController(object):
 
     async def connect_dev(self, loc, manager):
         self.device = await \
-            self.loop.run_in_executor(IOPool, functools.partial(manager.open_resource, loc, read_termination='\n'))
+            self.loop.run_in_executor(IOPOOL, functools.partial(manager.open_resource, loc,
+                                                                read_termination='\n'))
 
     async def get_temp_c(self):
         """Return temperature reading in degrees C."""
-        query = await self.loop.run_in_executor(IOPool, self.device.query, 'CRDG? B')
+        query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'CRDG? B')
         return query[:-4]
 
     async def get_temp_k(self):
         """Return temperature reading in degrees Kelvin."""
-        query = await self.loop.run_in_executor(IOPool, self.device.query, 'KRDG? B')
+        query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'KRDG? B')
         return query[:-4]
 
     def close(self):
