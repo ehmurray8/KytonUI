@@ -214,7 +214,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             sf.apply_column_style(cols_to_style=[wave_head, pow_head],
                                   styler_obj=Styler(bg_color=hex_color))
         sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
-        sf.apply_column_style(cols_to_style="{}T, from start (K)".format(u"\u0394"), styler_obj=Styler(font_color=utils.colors.red))
+        sf.apply_column_style(cols_to_style="{}T, from start (K)".format(u"\u0394"),
+                              styler_obj=Styler(font_color=utils.colors.red))
         sf.apply_column_style(cols_to_style="Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB"),
                               styler_obj=Styler(font_color=utils.colors.red))
 
