@@ -32,12 +32,11 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     cols = ",".join(col_list)
     if not prog_exists:
         try:
-            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ({}, {})".format("'{}'".format(name),
-                                                                                         "'{}'".format(func.lower())))
+            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
         except sqlite3.OperationalError:
             cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                         "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL")
-        cur.execute("CREATE TABLE {} ({});".format(name, cols))
+        cur.execute("CREATE TABLE `{}` ({});".format(name, cols))
 
     values_list = [timestamp, *wave_pow, temp]
     if func == CAL:

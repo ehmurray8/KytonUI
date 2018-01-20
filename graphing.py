@@ -94,7 +94,7 @@ class Graph(object):
             else:
                 share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
-        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000)
+        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=5000)
 
     def main_graph(self, _):
         """Graph the main plot."""

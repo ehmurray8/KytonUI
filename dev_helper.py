@@ -45,7 +45,7 @@ async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     first_run = True
     if len(help.flatten(all_waves)):
         first_run = False
-    for i, (amp, wave) in enumerate(zip(amps, wavelens)):
+    for i, (amp, wave) in enumerate(zip(list(amps), list(wavelens))):
         if first_run or i == switch_num:
             all_waves[i].append(wave)
             all_amps[i].append(amp)

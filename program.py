@@ -7,7 +7,6 @@ program and baking program.
 import asyncio
 import os
 import threading
-import time
 import abc
 from tkinter import ttk, messagebox as mbox
 import configparser
@@ -237,6 +236,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                     elif not help.is_unique(help.flatten(self.switches)):
                         mbox.showerror("Configuration Error",
                                        "Multiple FBGs are configured to use the same switch position.")
+                        self.pause_program()
                     else:
                         self.save_config_info()
                         self.master.running_prog = self.program_type.prog_id

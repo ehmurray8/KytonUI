@@ -13,7 +13,6 @@ import matplotlib
 import configparser
 import getpass
 import visa
-import threading
 
 matplotlib.use("TkAgg")
 import asyncio
@@ -118,8 +117,8 @@ class Application(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.geometry("{0}x{1}+0+0".format(
             self.winfo_screenwidth(), self.winfo_screenheight()))
-        self.attributes("-fullscreen", True)
-        self.state = True
+        #self.attributes("-fullscreen", True)
+        self.state = False
 
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
@@ -201,6 +200,7 @@ class Application(tk.Tk):
         need_conn_warn = False
         need_loc_warn = False
         if self.use_dev:
+            # TODO: Fix this to properly warn and try forever
             for _ in range(3):
                 try:
                     if dev == constants.TEMP:

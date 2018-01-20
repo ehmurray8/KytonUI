@@ -31,6 +31,7 @@ class BakingProgram(program.Program):
             temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
             temperature = float(temperature[:-3])
 
+            #TODO: Handle error catching and warning
             if sum(len(switch) for switch in self.switches):
                 self.master.conn_buttons[SWITCH]()
             waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
@@ -44,7 +45,7 @@ class BakingProgram(program.Program):
                 break
 
             fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
-                                       waves, amps, BAKING, self.table)
+                        waves, amps, BAKING, self.table)
             if not self.check_stable():
                 self.master.loop.run_until_complete(asyncio.sleep(self.options.init_time.get()))
             else:
