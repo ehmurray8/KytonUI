@@ -2,7 +2,6 @@
 
 # pylint: disable=too-many-arguments, too-many-branches
 # pylint: disable=too-many-instance-attributes
-# pylint: disable=import-error, relative-import
 import os
 from shutil import copy2
 import socket
@@ -34,59 +33,14 @@ class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
         # pylint: disable=missing-super-argument
         super().__init__(*args, **kwargs)
-
-        # Created for development purposes --nodev runs on a computer w/o
-        # proper instruments connected
-        parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
-        parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
+        self.use_dev = arg_parse()
 
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "devices.cfg"))
-        self.use_dev = True
-        cmdargs = parser.parse_args()
-        if cmdargs.nodev:
-            self.use_dev = False
-
-        # Setup main window and styling
-        self.title("Kyton FBG UI")
-        fiber_path = os.path.join("assets", "fiber.png")
-        img = tk.PhotoImage(file=fiber_path)
-        self.tk.call('wm', 'iconphoto', self._w, img)
 
         self.style = ttk.Style()
-        parent_theme = "winnative"
-        if platform.system() == "Linux":
-            self.style = ThemedStyle(self)
-            parent_theme = "clearlooks"
-        self.style.theme_create("main", parent=parent_theme, settings={
-            ".": {"configure": {"background": constants.BG_COLOR}},
-            "TFrame": {"configure": {"background": constants.BG_COLOR, "margin": [10, 10, 10, 10]}},
-            "TButton": {"configure": {"background": constants.BUTTON_COLOR, "font": ('Helvetica', 16),
-                                      "foreground": constants.BUTTON_TEXT, "justify": "center"}},
-            "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
-            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": constants.TEXT_COLOR}},
-            "TEntry": {"configure": {"font": ('Helvetica', 14)},
-                       "map":       {"fieldbackground": [("active", constants.ENTRY_COLOR),
-                                                         ("disabled", constants.BG_COLOR)],
-                                     "foreground": [("active", "black"),
-                                                    ("disabled", constants.TEXT_COLOR)]}},
-            "Treeview" : {"configure": {"foreground" : constants.Colors.WHITE}},
-            "Treeview.Heading" : {"configure" : {"foreground" : constants.TEXT_COLOR,
-                                                 "font" : {("Helvetica", 12, "bold")}, "sticky": "ew"}},
-            "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
-            "TCheckbutton": {"configre": {"height": 40, "width": 40}},
-            "TNotebook.Tab": {
-                "configure": {"padding": [10, 4], "font": ('Helvetica', 18),
-                              "background": constants.TAB_COLOR},
-                "map":       {"background": [("selected", constants.TABS_COLOR)],
-                              "font": [("selected", ('Helvetica', 18, "bold"))],
-                              "expand": [("selected", [1, 1, 1, 0])]}}})
-
-        # Used exclusively for development purposes
-        if platform.system() == "Linux":
-            self.style.set_theme("main")
-        else:
-            self.style.theme_use("main")
+        fiber_path = os.path.join("assets", "fiber.png")
+        self.state = self.setup_window(fiber_path)
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()
@@ -113,20 +67,10 @@ class Application(tk.Tk):
         self.conn_buttons = {}
         self.setup_home_frame()
 
-        # Make the app fullscreen
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.geometry("{0}x{1}+0+0".format(
-            self.winfo_screenwidth(), self.winfo_screenheight()))
-        #self.attributes("-fullscreen", True)
-        self.state = False
-
-        # Sets up full screen key bindings
-        self.bind("<F11>", self.toggle_fullscreen)
-        self.bind("<Escape>", self.end_fullscreen)
-
         user = getpass.getuser()
-        copy2(os.path.join("install", "BakingCal.lnk"),
-              r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
+        if platform.system() == "win32":
+            copy2(os.path.join("install", "BakingCal.lnk"),
+                  r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
 
         # Create the program tabs
         self.create_bake_tab()
@@ -277,6 +221,63 @@ class Application(tk.Tk):
             if self.laser is not None:
                 self.laser.close()
             self.destroy()
+
+    def setup_window(self, fiber_path):
+        self.title("Kyton FBG UI")
+        img = tk.PhotoImage(file=fiber_path)
+        self.tk.call('wm', 'iconphoto', self._w, img)
+
+        parent_theme = "winnative"
+        if platform.system() == "Linux":
+            self.style = ThemedStyle(self)
+            parent_theme = "clearlooks"
+        self.style.theme_create("main", parent=parent_theme, settings={
+            ".": {"configure": {"background": constants.BG_COLOR}},
+            "TFrame": {"configure": {"background": constants.BG_COLOR, "margin": [10, 10, 10, 10]}},
+            "TButton": {"configure": {"background": constants.BUTTON_COLOR, "font": ('Helvetica', 16),
+                                      "foreground": constants.BUTTON_TEXT, "justify": "center"}},
+            "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
+            "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": constants.TEXT_COLOR}},
+            "TEntry": {"configure": {"font": ('Helvetica', 14)},
+                       "map":       {"fieldbackground": [("active", constants.ENTRY_COLOR),
+                                                         ("disabled", constants.BG_COLOR)],
+                                     "foreground": [("active", "black"),
+                                                    ("disabled", constants.TEXT_COLOR)]}},
+            "Treeview" : {"configure": {"foreground" : constants.Colors.WHITE}},
+            "Treeview.Heading" : {"configure" : {"foreground" : constants.TEXT_COLOR,
+                                                 "font" : {("Helvetica", 12, "bold")}, "sticky": "ew"}},
+            "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
+            "TCheckbutton": {"configre": {"height": 40, "width": 40}},
+            "TNotebook.Tab": {
+                "configure": {"padding": [10, 4], "font": ('Helvetica', 18),
+                              "background": constants.TAB_COLOR},
+                "map":       {"background": [("selected", constants.TABS_COLOR)],
+                              "font": [("selected", ('Helvetica', 18, "bold"))],
+                              "expand": [("selected", [1, 1, 1, 0])]}}})
+
+        # Used exclusively for development purposes
+        if platform.system() == "Linux":
+            self.style.set_theme("main")
+        else:
+            self.style.theme_use("main")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.geometry("{0}x{1}+0+0".format(
+        self.winfo_screenwidth(), self.winfo_screenheight()))
+        #self.attributes("-fullscreen", True)
+        # Sets up full screen key bindings
+        self.bind("<F11>", self.toggle_fullscreen)
+        self.bind("<Escape>", self.end_fullscreen)
+        return False
+
+
+def arg_parse():
+    parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
+    parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
+    use_dev = True
+    cmdargs = parser.parse_args()
+    if cmdargs.nodev:
+        use_dev = False
+    return use_dev
 
 
 def conn_warning(dev):

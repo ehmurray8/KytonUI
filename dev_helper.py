@@ -5,13 +5,13 @@ and the Optical Switch.
 # pylint: disable=import-error, relative-import, superfluous-parens
 import asyncio
 import socket
-import helpers as help
+import numpy as np
 
 
 async def avg_waves_amps(laser, switch, switches, num_pts):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
-    switches_arr = help.flatten(switches)
+    switches_arr = np.hstack(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
@@ -19,11 +19,13 @@ async def avg_waves_amps(laser, switch, switches, num_pts):
 
 
 def __avg_arr(first, second):
-    if len(help.flatten(second)):
-        for i, row in enumerate(second):
-            for j, col in enumerate(row):
-                first[i][j] += col
-                first[i][j] /= 2
+    first = np.array([np.array(x) for x in first])
+    second = np.array([np.array(y) for y in second])
+    try:
+        first += second
+        first /= 2
+    except ValueError:
+        pass
     return first
 
 
@@ -43,7 +45,7 @@ async def __get_data(laser, op_switch, switches_arr, switch_num):
 async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
     wavelens, amps, lens = await sm125.get_data()
     first_run = True
-    if len(help.flatten(all_waves)):
+    if len(np.hstack(all_waves)):
         first_run = False
     for i, (amp, wave) in enumerate(zip(list(amps), list(wavelens))):
         if first_run or i == switch_num:
@@ -64,4 +66,4 @@ async def __get_average_data(laser, op_switch, switches_arr, num_readings, switc
         wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
-    return help.flatten(all_waves), help.flatten(all_amps)
+    return np.hstack(all_waves), np.hstack(all_amps)
