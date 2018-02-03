@@ -271,27 +271,28 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             self.master.switch = None
 
     def connect_devices(self):
-        need_oven = False
-        need_switch = False
-        self.disconnect_devices()
-        self.master.conn_buttons[LASER]()
-        self.master.conn_buttons[TEMP]()
-        if sum(len(switch) for switch in self.switches):
-            need_switch = True
-            self.master.conn_buttons[SWITCH]()
-        if (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
-            need_oven = True
-            self.master.conn_buttons[OVEN]()
-        if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
-            self.master.loop.run_until_complete(self.set_oven_temp())
-        if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
-                self.master.laser is not None and self.master.temp_controller is not None:
+        if self.master.use_dev:
+            need_oven = False
+            need_switch = False
             self.disconnect_devices()
-            self.master.running = True
-            self.program_loop()
-        else:
-            self.disconnect_devices()
-            self.pause_program()
+            self.master.conn_buttons[LASER]()
+            self.master.conn_buttons[TEMP]()
+            if sum(len(switch) for switch in self.switches):
+                need_switch = True
+                self.master.conn_buttons[SWITCH]()
+            if (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
+                need_oven = True
+                self.master.conn_buttons[OVEN]()
+            if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
+                self.master.loop.run_until_complete(self.set_oven_temp())
+            if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
+                    self.master.laser is not None and self.master.temp_controller is not None:
+                self.disconnect_devices()
+                self.master.running = True
+                self.program_loop()
+            else:
+                self.disconnect_devices()
+                self.pause_program()
 
     async def set_oven_temp(self):
         await self.master.oven.set_temp(self.options.set_temp.get())
@@ -343,7 +344,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     async def get_wave_amp_data(self):
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                               self.options.num_pts.get())
+                                               self.options.num_pts.get(), self.master.use_dev)
 
     def on_closing(self):
         """Stops the user from closing if the program is running."""

@@ -6,6 +6,7 @@ from socket import AF_INET, SOCK_STREAM
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import numpy as np
+import random
 
 
 WAVELEN_SCALE_FACTOR = 10000.0
@@ -24,24 +25,40 @@ class SM125(socket.socket):
     async def connect_dev(self, address, port):
         await self.loop.run_in_executor(IOPOOL, super().connect, (address, port))
 
-    async def get_data(self):
+    async def get_data(self, dummy_value=False, num=0):
         """Returns the SM125 wavelengths, amplitudes, and lengths of each channel."""
-        await self.loop.run_in_executor(IOPOOL, self.send, b'#GET_PEAKS_AND_LEVELS')
-        pre_response = await self.loop.run_in_executor(IOPOOL, self.recv, 10)
-        response = await self.loop.run_in_executor(IOPOOL, self.recv, int(pre_response))
-        chan_lens = np.fromstring(response[:20], dtype='3uint32, 4uint16')[0][1]
-        total_peaks = sum(chan_lens)
+        if dummy_value:
+            waves = []
+            amps = []
+            wave_start_num = 0
+            wave_end_num = 25
+            amp_start_num = 0
+            amp_end_num = -.5
+            for _ in range(num):
+                waves = random.uniform(1500+wave_start_num, 1500 + wave_end_num)
+                wave_start_num += 25
+                wave_end_num += 25
+                amps = random.uniform(-10+amp_start_num, -10 + amp_end_num)
+                amp_start_num += .25
+                amp_end_num += .25
+            return waves, amps, None
+        else:
+            await self.loop.run_in_executor(IOPOOL, self.send, b'#GET_PEAKS_AND_LEVELS')
+            pre_response = await self.loop.run_in_executor(IOPOOL, self.recv, 10)
+            response = await self.loop.run_in_executor(IOPOOL, self.recv, int(pre_response))
+            chan_lens = np.fromstring(response[:20], dtype='3uint32, 4uint16')[0][1]
+            total_peaks = sum(chan_lens)
 
-        wave_start_idx = 32
-        wave_end_idx = wave_start_idx + 4 * total_peaks
-        wavelengths = np.fromstring(response[wave_start_idx:wave_end_idx], dtype=(str(total_peaks) + 'int32'))
-        amp_start_idx = wave_end_idx
-        amp_end_idx = amp_start_idx + 2 * total_peaks
-        amplitudes = np.fromstring(response[amp_start_idx:amp_end_idx], dtype=(str(total_peaks) + 'int16'))
+            wave_start_idx = 32
+            wave_end_idx = wave_start_idx + 4 * total_peaks
+            wavelengths = np.fromstring(response[wave_start_idx:wave_end_idx], dtype=(str(total_peaks) + 'int32'))
+            amp_start_idx = wave_end_idx
+            amp_end_idx = amp_start_idx + 2 * total_peaks
+            amplitudes = np.fromstring(response[amp_start_idx:amp_end_idx], dtype=(str(total_peaks) + 'int16'))
 
-        wavelengths_list = [en / WAVELEN_SCALE_FACTOR for en in wavelengths]
-        amplitudes_list = [en / AMP_SCALE_FACTOR for en in amplitudes]
-        return wavelengths_list[0], amplitudes_list[0], chan_lens
+            wavelengths_list = [en / WAVELEN_SCALE_FACTOR for en in wavelengths]
+            amplitudes_list = [en / AMP_SCALE_FACTOR for en in amplitudes]
+            return wavelengths_list[0], amplitudes_list[0], chan_lens
 
 
 class Oven(object):
@@ -116,10 +133,13 @@ class TempController(object):
         query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'CRDG? B')
         return query[:-4]
 
-    async def get_temp_k(self):
+    async def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
-        query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'KRDG? B')
-        return query[:-4]
+        if dummy_val:
+            return random.gauss(center_num - 5, center_num + 5)
+        else:
+            query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'KRDG? B')
+            return query[:-4]
 
     def close(self):
         """Close the device connection."""

@@ -25,21 +25,32 @@ class BakingProgram(program.Program):
     def program_loop(self):
         """Runs the baking process."""
         while self.master.running:
-            self.master.conn_buttons[TEMP]()
-            self.master.conn_buttons[LASER]()
-            temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
-            temperature = float(temperature[:-3])
+            if self.master.use_dev:
+                self.master.conn_buttons[TEMP]()
+                self.master.conn_buttons[LASER]()
+                temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
+                temperature = float(temperature[:-3])
+                #TODO: Handle error catching and warning
+                if sum(len(switch) for switch in self.switches):
+                    self.master.conn_buttons[SWITCH]()
+            else:
+                temperature = self.master.loop.run_until_complete(
+                    self.master.temp_controller.get_temp_k(True, self.options.set_temp.get()))
 
-            #TODO: Handle error catching and warning
-            if sum(len(switch) for switch in self.switches):
-                self.master.conn_buttons[SWITCH]()
             waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
-            temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
+
+            if self.master.use_dev:
+                temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
+            else:
+                temp2 = self.master.loop.run_until_complete(
+                    self.master.temp_controller.get_temp_k(True, self.options.set_temp.get()))
             temperature += float(temp2[:-3])
             temperature /= 2.0
             curr_time = time.time()
 
-            self.disconnect_devices()
+            if self.master.use_dev:
+                self.disconnect_devices()
+
             if not self.master.running:
                 break
 
