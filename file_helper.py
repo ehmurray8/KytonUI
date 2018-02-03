@@ -36,7 +36,10 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         except sqlite3.OperationalError:
             cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                         "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL")
-        cur.execute("CREATE TABLE `{}` ({});".format(name, cols))
+            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
+        cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+        table_id = cur.fetchall()[0][0]
+        cur.execute("CREATE TABLE `{}` ({});".format(func.lower() + str(table_id), cols))
 
     values_list = [timestamp, *wave_pow, temp]
     if func == CAL:
@@ -49,7 +52,9 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     headers.pop(0)
     table.setup_headers(headers_f)
     table.add_data(values_list)
-    cur.execute("INSERT INTO {}({}) VALUES ({})".format(name, ",".join(headers), values))
+    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+    table_id = cur.fetchall()[0][0]
+    cur.execute("INSERT INTO {}({}) VALUES ({})".format(func.lower() + str(table_id), ",".join(headers), values))
     conn.commit()
     conn.close()
 
@@ -123,7 +128,12 @@ async def add_table_data(table, name, is_cal, mutex, snums):
     conn = sqlite3.connect("db/program_data.db")
     cur = conn.cursor()
     headers_str = ",".join(headers)
-    cur.execute("SELECT {} from {}".format(headers_str, name))
+    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+    func = BAKING
+    if is_cal:
+        func = CAL
+    table_id = cur.fetchall()[0][0]
+    cur.execute("SELECT {} from {}".format(headers_str, func.lower() + str(table_id)))
     rows = cur.fetchall()
     conn.close()
     for row in rows:
@@ -136,10 +146,13 @@ async def add_table_data(table, name, is_cal, mutex, snums):
         #    break
 
 
-def db_to_df(name):
+def db_to_df(func, name):
     try:
         conn = sqlite3.connect("db/program_data.db")
-        df = pd.read_sql_query("SELECT * from {}".format(name), conn)
+        cur = conn.cursor()
+        cur.execute("SELECT {} from {} WHERE ProgName = '{}'".format("ID", "map", name))
+        table_id = cur.fetchall()[0][0]
+        df = pd.read_sql_query("SELECT * from {}".format(func.lower() + str(table_id)), conn)
         del df["ID"]
         conn.close()
         return df
@@ -149,7 +162,10 @@ def db_to_df(name):
 
 def create_data_coll(name, snums, is_cal):
     try:
-        df = db_to_df(name)
+        func = BAKING
+        if is_cal:
+            func = CAL
+        df = db_to_df(func, name)
         data_coll = datac.DataCollection()
         headers = create_headers(snums, is_cal, True)
         data_coll.timestamps = df["Date Time"]

@@ -17,7 +17,6 @@ class Graph(object):
     """
     Class describes a specific graph that can be represented as a subplot or a main plot.
     """
-
     def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal, snums):
         self.title = title
         self.is_cal = is_cal
@@ -51,7 +50,7 @@ class Graph(object):
             axis.cla()
         self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
-        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=5000)
+        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1000, save_count=0)
 
     def sub_graph(self, _):
         """Graph the subplot."""
@@ -94,7 +93,7 @@ class Graph(object):
             else:
                 share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
-        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=5000)
+        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000, save_count=0)
 
     def main_graph(self, _):
         """Graph the main plot."""

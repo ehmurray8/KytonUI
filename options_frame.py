@@ -72,10 +72,6 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                                "Please insert a proper file name that has the extension .xlsx.")
                 return False
 
-            if " " in self.file_name.get():
-                mbox.showerror("Invalid configuration",
-                               "File name cannot have a space in it.")
-
             if not os.path.exists(self.file_name.get()) and os.path.dirname(self.file_name.get()) != "" and \
                     not os.access(os.path.dirname(self.file_name.get()), os.W_OK):
                 mbox.showerror("Invalid configuration",
