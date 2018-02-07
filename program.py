@@ -146,7 +146,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def create_excel(self):
         """Creates excel file."""
-        fh.create_excel_file(self.options.file_name.get(), self.snums)
+        threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums)).start()
 
     def valid_header(self, csv_file, file_lines):
         saved_snums = help.clean_str_list(next(file_lines).split(","))

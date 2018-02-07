@@ -140,7 +140,6 @@ class TempController(object):
     async def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
         if dummy_val:
-            print(center_num)
             return random.gauss(center_num - 5, center_num + 5)
         else:
             query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'KRDG? B')
