@@ -1,16 +1,18 @@
 # pylint: disable=import-error, relative-import, unused-argument
-# pylint: disable=superfluous-parens
 
 import os
 import platform
 from tkinter import messagebox as mbox
 import matplotlib.animation as animation
 from matplotlib import style
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import file_helper as fh
 import helpers as help
 from constants import HEX_COLORS, BAKING, CAL
 style.use("kyton")
+
+plt.ion()
 
 
 class Graph(object):
@@ -54,6 +56,7 @@ class Graph(object):
 
     def sub_graph(self, _):
         """Graph the subplot."""
+        self.fig.clf()
         self.sub_axis.clear()
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
@@ -97,6 +100,7 @@ class Graph(object):
 
     def main_graph(self, _):
         """Graph the main plot."""
+        self.fig.clf()
         for axis in self.zoom_axes:
             axis.clear()
         self.zoom_axes[0].set_title(self.title, fontsize=18)

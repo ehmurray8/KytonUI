@@ -101,49 +101,40 @@ def create_headers_init(snums, is_cal):
     return col_list
 
 
-def update_table(table, xcel_file, is_cal, new_loop, mutex, snums):
+def update_table(table, xcel_file, is_cal, new_loop, snums):
     func = BAKING
     if is_cal:
         func = CAL
     conn = sqlite3.connect("db/program_data.db")
     cur = conn.cursor()
-    name = os.path.splitext(os.path.split(xcel_file)[1])[0]
+
+    name = help.get_file_name(xcel_file)
     if program_exists(name, cur, func):
         conn.close()
         asyncio.set_event_loop(new_loop)
-        new_loop.run_until_complete(add_table_data(table, name, is_cal, mutex, snums))
+        new_loop.run_until_complete(add_table_data(table, name, is_cal, snums))
     else:
         conn.close()
     new_loop.close()
-    #if table.stop_flag:
-    #    table.stop_flag = False
-    #    #mutex.release()
 
 
-async def add_table_data(table, name, is_cal, mutex, snums):
+async def add_table_data(table, name, is_cal, snums):
     table.reset()
-    headers = create_headers(snums, is_cal, True)
-    headers.pop(0)
-    table.setup_headers(headers)
     conn = sqlite3.connect("db/program_data.db")
     cur = conn.cursor()
-    headers_str = ",".join(headers)
+
+    headers_f = create_headers(snums, is_cal, True)
+    headers_f.pop(0)
+    table.setup_headers(headers_f)
     cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
     func = BAKING
     if is_cal:
         func = CAL
     table_id = cur.fetchall()[0][0]
-    cur.execute("SELECT {} from {}".format(headers_str, func.lower() + str(table_id)))
-    rows = cur.fetchall()
+    df = pd.read_sql_query("SELECT * from {}".format(func.lower() + str(table_id)), conn)
+    del df["ID"]
     conn.close()
-    for row in rows:
-        table.add_data(row)
-        #if table.stop_flag:
-        #    table.reset()
-        #    table.setup_headers(headers)
-        #    table.stop_flag = False
-        #    mutex.release()
-        #    break
+    table.add_data(df)
 
 
 def db_to_df(func, name):

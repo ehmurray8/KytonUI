@@ -14,7 +14,6 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from threading import Semaphore
 import options_frame
 import file_helper as fh
 import dev_helper
@@ -66,7 +65,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.start_btn = None
         self.delayed_prog = None
         self.table_thread = None
-        self.table_mutex = Semaphore(2)
 
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
@@ -139,14 +137,11 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
     def update_table(self):
         new_loop = asyncio.new_event_loop()
-        #if self.table_thread is not None:
-        #    self.table.stop_flag = True
-        #self.table_mutex.acquire()
         self.table.stop_flag = False
         #self.table_thread = threading.Thread(
         threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
                                                        self.program_type.prog_id == CAL, new_loop,
-                                                       self.table_mutex, self.snums)).start()
+                                                       self.snums)).start()
             #self.table_thread.start()
 
     def create_excel(self):
@@ -242,10 +237,10 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         self.master.running_prog = self.program_type.prog_id
                         ui_helper.lock_widgets(self.options)
                         self.graph_helper.show_subplots()
-                        #self.update_table(True)
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
+                        #self.update_table()
                         self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
                                                               self.program_start)
                 else:
