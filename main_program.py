@@ -53,6 +53,8 @@ class Application(tk.Tk):
         self.device_widgets = []
         if self.use_dev:
             self.manager = visa.ResourceManager()
+        else:
+            self.manager = None
 
         self.bake = None
         self.cal = None
@@ -143,14 +145,15 @@ class Application(tk.Tk):
         err_specifier = "Unknown error"
         need_conn_warn = False
         need_loc_warn = False
-        if self.use_dev:
+        if True:#self.use_dev:
             # TODO: Fix this to properly warn and try forever
             for _ in range(3):
                 try:
                     if dev == constants.TEMP:
                         if self.temp_controller is None:
                             err_specifier = "GPIB address"
-                            self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop)
+                            self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop,
+                                                                          self.use_dev)
                             self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                         else:
                             self.temp_controller.close()
@@ -158,7 +161,7 @@ class Application(tk.Tk):
                     elif dev == constants.OVEN:
                         if self.oven is None:
                             err_specifier = "GPIB address"
-                            self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop)
+                            self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop, self.use_dev)
                             self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
                         else:
                             self.oven.close()
@@ -166,7 +169,7 @@ class Application(tk.Tk):
                     elif dev == constants.SWITCH:
                         if self.switch is None:
                             err_specifier = "ethernet port"
-                            self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop)
+                            self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
                             self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
                             self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
                         else:
@@ -175,7 +178,7 @@ class Application(tk.Tk):
                     elif dev == constants.LASER:
                         if self.laser is None:
                             err_specifier = "ethernet port"
-                            self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop)
+                            self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
                             self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
                             self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
                         else:

@@ -17,10 +17,11 @@ IOPOOL = ThreadPoolExecutor(4)
 
 class SM125(socket.socket):
     """TCP socket connection for SM125 device."""
-    def __init__(self, address, port, loop):
+    def __init__(self, address, port, loop, use_dev):
         super().__init__(AF_INET, SOCK_STREAM)
         self.loop = loop
-        self.loop.run_until_complete(self.connect_dev(address, port))
+        if use_dev:
+            self.loop.run_until_complete(self.connect_dev(address, port))
 
     async def connect_dev(self, address, port):
         await self.loop.run_in_executor(IOPOOL, super().connect, (address, port))
@@ -34,11 +35,11 @@ class SM125(socket.socket):
             wave_end_num = 25
             amp_start_num = 0
             amp_end_num = -.5
-            for _ in range(num):
-                waves = random.uniform(1500+wave_start_num, 1500 + wave_end_num)
+            for _ in range(num-1):
+                waves.append(random.uniform(1500+wave_start_num, 1500 + wave_end_num))
                 wave_start_num += 25
                 wave_end_num += 25
-                amps = random.uniform(-10+amp_start_num, -10 + amp_end_num)
+                amps.append(random.uniform(-10+amp_start_num, -10 + amp_end_num))
                 amp_start_num += .25
                 amp_end_num += .25
             return waves, amps, None
@@ -63,11 +64,12 @@ class SM125(socket.socket):
 
 class Oven(object):
     """Delta oven object, uses pyvisa."""
-    def __init__(self, port, manager, loop):
+    def __init__(self, port, manager, loop, use_dev):
         self.device = None
         self.loop = loop
         loc = "GPIB0::{}::INSTR".format(port)
-        self.loop.run_until_complete(self.connect_dev(loc, manager))
+        if use_dev:
+            self.loop.run_until_complete(self.connect_dev(loc, manager))
 
     async def connect_dev(self, loc, manager):
         self.device = \
@@ -101,10 +103,11 @@ class Oven(object):
 class OpSwitch(socket.socket):
     """Object representation of the Optical Switch needed for the program."""
 
-    def __init__(self, addr, port, loop):
+    def __init__(self, addr, port, loop, use_dev):
         super().__init__(AF_INET, SOCK_STREAM)
         self.loop = loop
-        self.loop.run_until_complete(self.connect_dev(addr, port))
+        if use_dev:
+            self.loop.run_until_complete(self.connect_dev(addr, port))
 
     async def connect_dev(self, addr, port):
         await self.loop.run_in_executor(IOPOOL, self.connect, (addr, port))
@@ -117,11 +120,12 @@ class OpSwitch(socket.socket):
 
 class TempController(object):
     """Object representation of the Temperature Controller needed for the program."""
-    def __init__(self, port, manager, loop):
+    def __init__(self, port, manager, loop, use_dev):
         self.device = None
         self.loop = loop
         loc = "GPIB0::{}::INSTR".format(port)
-        self.loop.run_until_complete(self.connect_dev(loc, manager))
+        if use_dev:
+            self.loop.run_until_complete(self.connect_dev(loc, manager))
 
     async def connect_dev(self, loc, manager):
         self.device = await \
@@ -136,6 +140,7 @@ class TempController(object):
     async def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
         if dummy_val:
+            print(center_num)
             return random.gauss(center_num - 5, center_num + 5)
         else:
             query = await self.loop.run_in_executor(IOPOOL, self.device.query, 'KRDG? B')

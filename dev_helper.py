@@ -8,14 +8,14 @@ import socket
 import numpy as np
 
 
-async def avg_waves_amps(laser, switch, switches, num_pts, use_dev=True):
+async def avg_waves_amps(laser, switch, switches, num_pts, use_dev=True, num_snums=0):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = np.hstack(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, use_dev)
+    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, use_dev, num_snums)
 
 
 def __avg_arr(first, second):
@@ -29,7 +29,7 @@ def __avg_arr(first, second):
     return first
 
 
-async def __get_data(laser, op_switch, switches_arr, switch_num, use_dev=True):
+async def __get_data(laser, op_switch, switches_arr, switch_num, use_dev=True, num_snums=0):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
@@ -37,14 +37,14 @@ async def __get_data(laser, op_switch, switches_arr, switch_num, use_dev=True):
             if use_dev:
                 await op_switch.set_channel(switch)
             await asyncio.sleep(1.2)
-            await __get_sm125_data(wavelens, amps, switch_num, laser)
+            await __get_sm125_data(wavelens, amps, switch_num, laser, use_dev, num_snums)
         except socket.error:
             pass
     return wavelens, amps
 
 
-async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
-    wavelens, amps, lens = await sm125.get_data()
+async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, use_dev=True, num_snums=0):
+    wavelens, amps, lens = await sm125.get_data(not use_dev, num_snums)
     first_run = True
     if len(np.hstack(all_waves)):
         first_run = False
@@ -59,12 +59,12 @@ async def __get_sm125_data(all_waves, all_amps, switch_num, sm125):
             all_amps[i].insert(0, (temp_amp + amp) / 2.)
 
 
-async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, use_dev=True):
+async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, use_dev=True, num_snums=0):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     for _ in range(num_readings):
         await asyncio.sleep(1.25)
-        wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num, use_dev)
+        wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num, use_dev, num_snums)
         all_waves = __avg_arr(wavelengths, all_waves)
         all_amps = __avg_arr(amplitudes, all_amps)
     return np.hstack(all_waves), np.hstack(all_amps)

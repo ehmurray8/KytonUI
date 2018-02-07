@@ -56,7 +56,7 @@ class Graph(object):
 
     def sub_graph(self, _):
         """Graph the subplot."""
-        self.fig.clf()
+        #self.fig.clf()
         self.sub_axis.clear()
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
@@ -82,7 +82,6 @@ class Graph(object):
         self.anim.event_source.stop()
         if self.sub_axis is not None:
             self.sub_axis.cla()
-        self.fig.clf()
         self.zoom_axes = []
         share = None
         for dim in self.zoom_dims:
@@ -100,7 +99,6 @@ class Graph(object):
 
     def main_graph(self, _):
         """Graph the main plot."""
-        self.fig.clf()
         for axis in self.zoom_axes:
             axis.clear()
         self.zoom_axes[0].set_title(self.title, fontsize=18)
@@ -218,6 +216,7 @@ class Graphing(object):
         self.update_axes()
         for i, axis in enumerate(self.sub_axes):
             if event.dblclick and axis == event.inaxes:
+                self.figure.clf()
                 self.graphs[i].show_main()
                 self.canvas.mpl_disconnect(self.cid)
                 self.cid = self.canvas.mpl_connect('button_press_event', self.show_subplots)

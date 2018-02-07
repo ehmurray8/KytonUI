@@ -36,15 +36,15 @@ class BakingProgram(program.Program):
             else:
                 temperature = self.master.loop.run_until_complete(
                     self.master.temp_controller.get_temp_k(True, self.options.set_temp.get()))
-
             waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
 
             if self.master.use_dev:
                 temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
+                temperature += float(temp2[-3])
             else:
                 temp2 = self.master.loop.run_until_complete(
                     self.master.temp_controller.get_temp_k(True, self.options.set_temp.get()))
-            temperature += float(temp2[:-3])
+                temperature += temp2
             temperature /= 2.0
             curr_time = time.time()
 
