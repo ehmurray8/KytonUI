@@ -39,7 +39,7 @@ class Application(tk.Tk):
 
         self.style = ttk.Style()
         fiber_path = os.path.join("assets", "fiber.png")
-        self.state = self.setup_window(fiber_path)
+        self.is_fullscreen = self.setup_window(fiber_path)
 
         self.main_notebook = ttk.Notebook()
         self.main_notebook.enable_traversal()
@@ -80,13 +80,13 @@ class Application(tk.Tk):
     # Second argument is required to accept the event, unused here so renamed _
     def toggle_fullscreen(self, _=None):
         """Toggles full screen on and off."""
-        self.state = not self.state
-        self.attributes("-fullscreen", self.state)
+        self.is_fullscreen = not self.is_fullscreen
+        self.attributes("-fullscreen", self.is_fullscreen)
         return "break"
 
     def end_fullscreen(self, _=None):
         """Exit full screen"""
-        self.state = False
+        self.is_fullscreen = False
         self.attributes("-fullscreen", False)
         return "break"
 
@@ -228,6 +228,8 @@ class Application(tk.Tk):
         self.title("Kyton FBG UI")
         img = tk.PhotoImage(file=fiber_path)
         self.tk.call('wm', 'iconphoto', self._w, img)
+
+        self.state("zoomed")
 
         parent_theme = "winnative"
         if platform.system() == "Linux":
