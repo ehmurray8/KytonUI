@@ -57,8 +57,8 @@ class Graph(object):
 
     def sub_graph(self, _):
         """Graph the subplot."""
-        #self.fig.clf()
         self.sub_axis.clear()
+        gc.collect()
         self.sub_axis.set_title(self.title, fontsize=12)
         self.sub_axis.set_xlabel(self.xlabel)
         self.sub_axis.set_ylabel(self.ylabels[0])
@@ -103,6 +103,7 @@ class Graph(object):
         try:
             for axis in self.zoom_axes:
                 axis.clear()
+            gc.collect()
             self.zoom_axes[0].set_title(self.title, fontsize=18)
             if len(self.zoom_axes) > 1:
                 self.zoom_axes[1].set_xlabel(self.xlabel)
