@@ -24,7 +24,6 @@ import devices
 from baking_program import BakingProgram
 from cal_program import CalProgram
 import constants
-style.use('kyton')
 
 
 class Application(tk.Tk):
