@@ -203,7 +203,7 @@ class Graphing(object):
 
     def clean_graph(self):
         while True:
-            time.sleep(60)
+            time.sleep(36000)
             print("Cleaning...")
             gc.collect()
             Graphing.clean = True
@@ -273,6 +273,7 @@ class Graphing(object):
                     if not self.is_playing:
                         self.master.after(1500, self.pause)
                     self.main_num.val = 0
+
 
 class GraphHelper(object):
 

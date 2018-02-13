@@ -47,15 +47,15 @@ class SM125(socket.socket):
             await self.loop.run_in_executor(IOPOOL, self.send, b'#GET_PEAKS_AND_LEVELS')
             pre_response = await self.loop.run_in_executor(IOPOOL, self.recv, 10)
             response = await self.loop.run_in_executor(IOPOOL, self.recv, int(pre_response))
-            chan_lens = np.fromstring(response[:20], dtype='3uint32, 4uint16')[0][1]
+            chan_lens = np.frombuffer(response[:20], dtype='3uint32, 4uint16')[0][1]
             total_peaks = sum(chan_lens)
 
             wave_start_idx = 32
             wave_end_idx = wave_start_idx + 4 * total_peaks
-            wavelengths = np.fromstring(response[wave_start_idx:wave_end_idx], dtype=(str(total_peaks) + 'int32'))
+            wavelengths = np.frombuffer(response[wave_start_idx:wave_end_idx], dtype=(str(total_peaks) + 'int32'))
             amp_start_idx = wave_end_idx
             amp_end_idx = amp_start_idx + 2 * total_peaks
-            amplitudes = np.fromstring(response[amp_start_idx:amp_end_idx], dtype=(str(total_peaks) + 'int16'))
+            amplitudes = np.frombuffer(response[amp_start_idx:amp_end_idx], dtype=(str(total_peaks) + 'int16'))
 
             wavelengths_list = [en / WAVELEN_SCALE_FACTOR for en in wavelengths]
             amplitudes_list = [en / AMP_SCALE_FACTOR for en in amplitudes]

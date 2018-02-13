@@ -1,12 +1,9 @@
 #Output files
-*.csv
+*csv
 *.xlsx
 
 .idea/
 
-config/prog_config.cfg
-
-db/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
