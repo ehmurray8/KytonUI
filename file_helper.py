@@ -231,7 +231,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         ew.save()
         # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
         # columns_and_rows_to_freeze='A2').save()
-        os.system("start " + xcel_file)
+        os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
     except RuntimeError:
         mbox.showwarning("Error creating Excel File",
                          "No data has been recorded yet, or the database has been corrupted.")

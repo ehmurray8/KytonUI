@@ -77,6 +77,12 @@ class Application(tk.Tk):
         self.create_bake_tab()
         self.create_cal_tab()
 
+        self.keep_alive()
+
+    def keep_alive(self):
+        self.update_idletasks()
+        self.after(5000, self.keep_alive)
+
     # Second argument is required to accept the event, unused here so renamed _
     def toggle_fullscreen(self, _=None):
         """Toggles full screen on and off."""
