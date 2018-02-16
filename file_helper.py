@@ -5,6 +5,7 @@
 import os
 import asyncio
 import numpy as np
+import datetime
 from StyleFrame import Styler, utils, StyleFrame
 import sqlite3
 from tkinter import messagebox as mbox
@@ -41,11 +42,11 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         table_id = cur.fetchall()[0][0]
         cur.execute("CREATE TABLE `{}` ({});".format(func.lower() + str(table_id), cols))
 
-    values_list = [timestamp, *wave_pow, temp]
+    readable_time = datetime.datetime.fromtimestamp(int(timestamp)).strftime("%d/%m/%y %H:%M")
+    values_list = [readable_time, *wave_pow, temp]
     if func == CAL:
         values_list.append(drift_rate)
         values_list.append(real_cal_pt)
-    values = ",".join([str(val) for val in values_list])
     headers = create_headers(serial_nums, func == CAL, False)
     headers_f = create_headers(serial_nums, func == CAL, True)
     headers_f.pop(0)
@@ -54,6 +55,8 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     table.add_data(values_list)
     cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
     table_id = cur.fetchall()[0][0]
+    values_list[0] = timestamp
+    values = ",".join([str(val) for val in values_list])
     cur.execute("INSERT INTO {}({}) VALUES ({})".format(func.lower() + str(table_id), ",".join(headers), values))
     conn.commit()
     conn.close()

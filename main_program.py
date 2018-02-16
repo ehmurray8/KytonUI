@@ -1,29 +1,59 @@
 """Module contains the main entry point for the Kyton UI."""
 
-# pylint: disable=too-many-arguments, too-many-branches
-# pylint: disable=too-many-instance-attributes
+import asyncio
 import os
-from shutil import copy2
 import socket
 import argparse
 from tkinter import ttk
 import platform
 import matplotlib
 import configparser
-import getpass
 import visa
+from queue import Queue, Empty
 
-matplotlib.use("TkAgg")
-import asyncio
-from matplotlib import style
-from tkinter import messagebox
-import tkinter as tk
-if platform.system() == "Linux":
-    from ttkthemes import ThemedStyle
 import devices
 from baking_program import BakingProgram
 from cal_program import CalProgram
 import constants
+
+matplotlib.use("TkAgg")
+from tkinter import messagebox as mbox
+import tkinter as tk
+if platform.system() == "Linux":
+    from ttkthemes import ThemedStyle
+
+
+class Message(object):
+
+    def __init__(self, warning, is_warn, args):
+        self.warning_type = warning
+        self.is_warning = is_warn
+        self.args = args
+
+
+class WarningHandler(object):
+
+    def __init__(self):
+        self.warnings = {"Excel": False, "File": False, "Program Running": False, "Config": False, "Location": False,
+                         "Connection": False}
+        pass
+
+    def handle_msg(self, msg):
+        """
+        Handles showing a messagebox to the user without repeating itself.
+
+        :param msg: Message object
+        :return: A tuple of the title, and message for the message box.
+        """
+        if not self.warnings[msg.warning_type] and msg.is_warning:
+            if msg.warning_type == "Excel":
+                return ("Excel File Generation Error",
+                        "No data has been recorded yet, or the database has been corrupted.")
+            elif msg.warning_type == "File":
+                return ("File Error", )
+
+        elif not msg.is_warning:
+            self.warnings[msg.warning_type] = False
 
 
 class Application(tk.Tk):
@@ -68,22 +98,28 @@ class Application(tk.Tk):
         self.conn_buttons = {}
         self.setup_home_frame()
 
-        user = getpass.getuser()
-        if platform.system() == "win32":
-            copy2(os.path.join("install", "BakingCal.lnk"),
-                  r"C:\Users\{}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(user))
-
         # Create the program tabs
         self.create_bake_tab()
         self.create_cal_tab()
 
+        self.main_queue = Queue()
         self.keep_alive()
 
     def keep_alive(self):
         self.update_idletasks()
         self.after(5000, self.keep_alive)
 
-    # Second argument is required to accept the event, unused here so renamed _
+    def check_queue(self):
+        while True:
+            msg = ""
+            try:
+                msg = self.main_queue.get(timeout=0.1)
+            except Empty:
+                break
+            # Handle message
+
+        self.after(500, self.check_queue)
+
     def toggle_fullscreen(self, _=None):
         """Toggles full screen on and off."""
         self.is_fullscreen = not self.is_fullscreen
@@ -219,15 +255,21 @@ class Application(tk.Tk):
         self.main_notebook.add(self.cal, text="Calibration")
 
     def on_closing(self):
-        if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
-            if self.oven is not None:
-                self.oven.close()
-            if self.temp_controller is not None:
-                self.temp_controller.close()
-            if self.switch is not None:
-                self.switch.close()
-            if self.laser is not None:
-                self.laser.close()
+        if self.running:
+            if mbox.askyesno("Quit",
+                             "Program is currently running. Are you sure you want to quit?"):
+                if self.oven is not None:
+                    self.oven.close()
+                if self.temp_controller is not None:
+                    self.temp_controller.close()
+                if self.switch is not None:
+                    self.switch.close()
+                if self.laser is not None:
+                    self.laser.close()
+                self.destroy()
+            else:
+                self.master.tkraise()
+        else:
             self.destroy()
 
     def setup_window(self, fiber_path):
@@ -292,14 +334,14 @@ def arg_parse():
 
 def conn_warning(dev):
     """Warn the user that there was an error connecting to a device."""
-    messagebox.showwarning("Connection Error", "Currently unable to connect to {},".format(dev) +
+    mbox.showwarning("Connection Error", "Currently unable to connect to {},".format(dev) +
                            "make sure the device is connected to the computer and the location " +
                            "information is correct.")
 
 
 def loc_warning(loc_type):
     """Warn the user of an invalid location input."""
-    messagebox.showwarning(
+    mbox.showwarning(
         "Invalid Location", "Please import an integer corresponding to the {}.".format(loc_type))
 
 

@@ -207,7 +207,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                 else:
                     self.pause_program()
             elif not len(self.options.sn_ents):
-                mbox.showerror("Invalid configuration",
+                mbox.showerror("Configuration Error",
                                "Please add fbg entries to your configuration before running the program.")
             else:
                 if self.is_valid_file():
@@ -342,17 +342,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                                self.options.num_pts.get(), self.master.use_dev,
                                                sum(len(s) > 0 for s in self.snums))
-
-    def on_closing(self):
-        """Stops the user from closing if the program is running."""
-        if self.running:
-            if mbox.askyesno("Quit",
-                             "Program is currently running. Are you sure you want to quit?"):
-                self.master.destroy()
-            else:
-                self.master.tkraise()
-        else:
-            self.master.destroy()
 
 
 class Toolbar(NavigationToolbar2TkAgg):
