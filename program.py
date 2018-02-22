@@ -22,6 +22,7 @@ import ui_helper
 import helpers as help
 from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from table import Table
+from constants import BG_COLOR
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -100,6 +101,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
 
         # Set up table tab
         self.add(table_frame, image=self.img_table)
+        ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
         self.table = Table(table_frame, self.create_excel)
         self.table.setup_headers([])
         self.table.pack(fill="both", expand=True)
@@ -339,8 +341,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.switches = [[], [], [], []]
 
     async def get_wave_amp_data(self):
+        positions_used = [len(x) for x in self.snums]
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                               self.options.num_pts.get(), self.master.use_dev,
+                                               self.options.num_pts.get(), positions_used, self.master.use_dev,
                                                sum(len(s) > 0 for s in self.snums))
 
 

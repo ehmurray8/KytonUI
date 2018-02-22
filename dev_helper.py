@@ -6,16 +6,17 @@ and the Optical Switch.
 import asyncio
 import socket
 import numpy as np
+from collections import Iterable
 
 
-async def avg_waves_amps(laser, switch, switches, num_pts, use_dev=True, num_snums=0):
+async def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev=True, num_snums=0):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = np.hstack(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, use_dev, num_snums)
+    return await __get_average_data(laser, switch, switches_arr, num_pts, switch_num, pos_used, use_dev, num_snums)
 
 
 def __avg_arr(first, second):
@@ -29,7 +30,7 @@ def __avg_arr(first, second):
     return first
 
 
-async def __get_data(laser, op_switch, switches_arr, switch_num, use_dev=True, num_snums=0):
+async def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev=True, num_snums=0, num_readings=0):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
@@ -37,14 +38,26 @@ async def __get_data(laser, op_switch, switches_arr, switch_num, use_dev=True, n
             if use_dev:
                 await op_switch.set_channel(switch)
             await asyncio.sleep(1.2)
-            await __get_sm125_data(wavelens, amps, switch_num, laser, use_dev, num_snums)
+            await __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, use_dev, num_snums)
         except socket.error:
             pass
     return wavelens, amps
 
 
-async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, use_dev=True, num_snums=0):
+async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, use_dev=True, num_snums=0):
     wavelens, amps, lens = await sm125.get_data(not use_dev, num_snums)
+    list(wavelens)
+    list(amps)
+    pos_used = [x for x in pos_used if x]
+
+    ##
+    # TODO Add check to fill in missing readings with 0s using pos_used, and lens
+    ##
+
+    #for i, (length, use_pos) in enumerate(zip(lens, pos_used)):
+    #    if not length and use_pos:
+    #        amps.insert(i, )
+
     first_run = True
     if len(np.hstack(all_waves)):
         first_run = False
@@ -57,14 +70,14 @@ async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, use_dev=True,
             temp_amp = all_amps[i].pop(0)
             all_waves[i].insert(0, (temp_wave + wave) / 2.)
             all_amps[i].insert(0, (temp_amp + amp) / 2.)
+    print("All waves: {}, All amps: {}".format(all_waves, all_amps))
 
 
-async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, use_dev=True, num_snums=0):
+async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, pos_used, use_dev=True, num_snums=0):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
-    for _ in range(num_readings):
-        await asyncio.sleep(1.25)
-        wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num, use_dev, num_snums)
-        all_waves = __avg_arr(wavelengths, all_waves)
-        all_amps = __avg_arr(amplitudes, all_amps)
+    wavelengths, amplitudes = await __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev,
+                                               num_snums, num_readings)
+    all_waves = __avg_arr(wavelengths, all_waves)
+    all_amps = __avg_arr(amplitudes, all_amps)
     return np.hstack(all_waves), np.hstack(all_amps)

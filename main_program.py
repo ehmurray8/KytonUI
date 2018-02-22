@@ -295,9 +295,9 @@ class Application(tk.Tk):
                                                          ("disabled", constants.BG_COLOR)],
                                      "foreground": [("active", "black"),
                                                     ("disabled", constants.TEXT_COLOR)]}},
-            "Treeview" : {"configure": {"foreground" : constants.Colors.WHITE}},
-            "Treeview.Heading" : {"configure" : {"foreground" : constants.TEXT_COLOR,
-                                                 "font" : {("Helvetica", 12, "bold")}, "sticky": "ew"}},
+            "Treeview": {"configure": {"foreground": constants.Colors.WHITE, "background": constants.BG_COLOR}},
+            "Treeview.Heading": {"configure": {"foreground": constants.TEXT_COLOR,
+                                               "font": {("Helvetica", 12, "bold")}, "sticky": "ew"}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},
             "TCheckbutton": {"configre": {"height": 40, "width": 40}},
             "TNotebook.Tab": {

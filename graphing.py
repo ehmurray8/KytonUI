@@ -153,7 +153,7 @@ class Graphing(object):
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
         ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
                    ("Power (dBm)".format(u'\u0394'), "{} Power (dBm)"),
-                   ("Temperature (K)".format(u'\u0394'), "{} Temperature (K)"),
+                   ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
                    ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
                          animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
