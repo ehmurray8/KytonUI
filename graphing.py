@@ -152,8 +152,8 @@ class Graphing(object):
                   "Average {} Wavelength vs. Time from start".format(u'\u0394')]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
         ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
-                   ("Power (dBm)", "{} Power (dBm)".format(u'\u0394')),
-                   ("Temperature (K)", "{} Temperature (K)".format(u'\u0394')),
+                   ("Power (dBm)".format(u'\u0394'), "{} Power (dBm)"),
+                   ("Temperature (K)".format(u'\u0394'), "{} Temperature (K)"),
                    ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
                          animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
@@ -359,9 +359,9 @@ def animate_temp_graph(axes, _, ghelper: GraphHelper):
     if Graphing.data_coll is not None and not Graphing.clean:
         times, temp_diffs, temps = Graphing.data_coll.times, Graphing.data_coll.temp_diffs,\
                                    Graphing.data_coll.temps
-        axes[0].plot(times, temps)
+        axes[0].plot(times, temp_diffs)
         if len(axes) > 1:
-            axes[1].plot(times, temp_diffs, color='b')
+            axes[1].plot(times, temps, color='b')
 
 
 def animate_mpt_graph(axis, _, ghelper: GraphHelper):
@@ -411,9 +411,9 @@ def animate_indiv_powers( axis, snums, ghelper: GraphHelper):
         idx = 0
         axes = []
         for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, pows, color=color)[0])
+            axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
             if len(axis) > 1:
-                axis[1].plot(times, pow_diffs, color=color)
+                axis[1].plot(times, pows, color=color)
             idx += 1
 
         if len(axis) > 1:
