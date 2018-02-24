@@ -22,7 +22,6 @@ import ui_helper
 import helpers as help
 from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from table import Table
-from constants import BG_COLOR
 
 
 class ProgramType(object):  # pylint:disable=too-few-public-methods
@@ -128,7 +127,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
 
-        #self.update_table()
         if is_running:
             self.start()
 
@@ -140,11 +138,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
     def update_table(self):
         new_loop = asyncio.new_event_loop()
         self.table.stop_flag = False
-        #self.table_thread = threading.Thread(
         threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
                                                        self.program_type.prog_id == CAL, new_loop,
                                                        self.snums)).start()
-            #self.table_thread.start()
 
     def create_excel(self):
         """Creates excel file."""
@@ -341,7 +337,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.switches = [[], [], [], []]
 
     async def get_wave_amp_data(self):
-        positions_used = [len(x) for x in self.snums]
+        positions_used = [len(x) for x in self.channels]
         return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                                self.options.num_pts.get(), positions_used, self.master.use_dev,
                                                sum(len(s) > 0 for s in self.snums))

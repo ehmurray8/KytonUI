@@ -6,7 +6,6 @@ and the Optical Switch.
 import asyncio
 import socket
 import numpy as np
-from collections import Iterable
 
 
 async def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev=True, num_snums=0):
@@ -38,39 +37,50 @@ async def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_d
             if use_dev:
                 await op_switch.set_channel(switch)
             await asyncio.sleep(1.2)
-            await __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, use_dev, num_snums)
+            for i in range(num_readings):
+                add_wavelen = False
+                if not i:
+                    add_wavelen = True
+                await __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, add_wavelen, use_dev, num_snums)
         except socket.error:
+            print("Socket error")
             pass
+    wavelens = [wave for i, wave in enumerate(wavelens) if pos_used[i]]
+    amps = [amp for i, amp in enumerate(amps) if pos_used[i]]
     return wavelens, amps
 
 
-async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, use_dev=True, num_snums=0):
+async def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavelen, use_dev=True, num_snums=0):
     wavelens, amps, lens = await sm125.get_data(not use_dev, num_snums)
-    list(wavelens)
-    list(amps)
-    pos_used = [x for x in pos_used if x]
+    try:
+        wavelens = list(wavelens)
+        amps = list(amps)
+    except TypeError:
+        wavelens = [wavelens]
+        amps = [amps]
 
-    ##
-    # TODO Add check to fill in missing readings with 0s using pos_used, and lens
-    ##
-
-    #for i, (length, use_pos) in enumerate(zip(lens, pos_used)):
-    #    if not length and use_pos:
-    #        amps.insert(i, )
+    waves_list = []
+    amps_list = []
+    for i, pos in enumerate(pos_used):
+        if pos and lens[i]:
+            waves_list.append(wavelens.pop(0))
+            amps_list.append(amps.pop(0))
+        else:
+            waves_list.append(0.)
+            amps_list.append(0.)
 
     first_run = True
     if len(np.hstack(all_waves)):
         first_run = False
-    for i, (amp, wave) in enumerate(zip(list(amps), list(wavelens))):
-        if first_run or i == switch_num:
+    for i, (amp, wave) in enumerate(zip(amps_list, waves_list)):
+        if first_run or (i == switch_num and add_wavelen):
             all_waves[i].append(wave)
             all_amps[i].append(amp)
         else:
-            temp_wave = all_waves[i].pop(0)
-            temp_amp = all_amps[i].pop(0)
-            all_waves[i].insert(0, (temp_wave + wave) / 2.)
-            all_amps[i].insert(0, (temp_amp + amp) / 2.)
-    print("All waves: {}, All amps: {}".format(all_waves, all_amps))
+            temp_wave = all_waves[i].pop()
+            temp_amp = all_amps[i].pop()
+            all_waves[i].insert(len(all_waves[i]), (temp_wave + wave) / 2.)
+            all_amps[i].insert(len(all_amps[i]), (temp_amp + amp) / 2.)
 
 
 async def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, pos_used, use_dev=True, num_snums=0):
