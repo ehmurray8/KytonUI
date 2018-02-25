@@ -25,9 +25,9 @@ class Graph(object):
         self.xlabel = xlabel
         self.ylabels = ylabels
         self.file_name = fname
-        self.animate_func = animate_func
         self.sub_dims = dims[0]
         self.zoom_dims = dims[1:]
+        self.animate_func = animate_func
         self.fig = fig
         self.sub_axis = None
         self.anim = None
@@ -53,7 +53,7 @@ class Graph(object):
             axis.cla()
         self.zoom_axes = []
         self.sub_axis = self.fig.add_subplot(self.sub_dims)
-        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=1000, save_count=0)
+        self.anim = animation.FuncAnimation(self.fig, self.sub_graph, interval=7500, save_count=0)
 
     def sub_graph(self, _):
         """Graph the subplot."""
@@ -96,7 +96,7 @@ class Graph(object):
             else:
                 share = self.fig.add_subplot(dim, sharex=share)
             self.zoom_axes.append(share)
-        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=1000, save_count=0)
+        self.anim = animation.FuncAnimation(self.fig, self.main_graph, interval=7500, save_count=0)
 
     def main_graph(self, _):
         """Graph the main plot."""
@@ -152,7 +152,7 @@ class Graphing(object):
                   "Average {} Wavelength vs. Time from start".format(u'\u0394')]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
         ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
-                   ("Power (dBm)".format(u'\u0394'), "{} Power (dBm)"),
+                   ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
                    ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
@@ -199,7 +199,7 @@ class Graphing(object):
                 Graphing.data_coll = fh.create_data_coll(name, self.snums, self.is_cal)[0]
             except RuntimeError:
                 pass
-            time.sleep(1)
+            time.sleep(10)
 
     def clean_graph(self):
         while True:

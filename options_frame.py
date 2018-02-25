@@ -41,8 +41,14 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         self.target_temps_entry = None
         self.program = program
         self.options_grid = ttk.Frame(self)
-        self.options_grid.grid(column=1, sticky='w')
+
+        text = "Configure Calibration Run"
+        if self.program == BAKING:
+            text = "Configure Baking Run"
+        ttk.Label(self, text=text).pack(anchor="center", pady=20)
+        self.options_grid.pack(expand=True, fill="both", anchor="center")
         self.fbg_grid = ttk.Frame(self)
+        self.fbg_grid.pack(expand=True, fill="both", anchor="n")
 
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
@@ -114,8 +120,6 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         """Creates the grid for the user to configure options."""
 
         # Options Grid Init
-        self.options_grid.grid_columnconfigure(1, minsize=50)
-        self.options_grid.grid_columnconfigure(3, minsize=50)
         row_num = 0
 
         if self.program == CAL:
@@ -158,19 +162,19 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             row_num += 1
 
             # Time intervals entry
-            init_delay = self.conf_parser.getfloat(BAKING, "init_delay")
-            self.delay = uh.units_entry(self.options_grid, "Initial program delay: ", row_num, 5, "hours", init_delay)
-            row_num += 1
+            #init_delay = self.conf_parser.getfloat(BAKING, "init_delay")
+            #self.delay = uh.units_entry(self.options_grid, "Initial program delay: ", row_num, 5, "hours", init_delay)
+            #row_num += 1
 
-            init_interval = self.conf_parser.getfloat(BAKING, "init_interval")
-            self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ", row_num, 5,
-                                            "seconds", init_interval)
-            row_num += 1
+            #init_interval = self.conf_parser.getfloat(BAKING, "init_interval")
+            #self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ", row_num, 5,
+            #                                "seconds", init_interval)
+            #row_num += 1
 
-            init_duration = self.conf_parser.getfloat(BAKING, "init_duration")
-            self.init_duration = uh.int_entry(self.options_grid, "Number of initial readings: ", row_num, 5,
-                                              init_duration)
-            row_num += 1
+            #init_duration = self.conf_parser.getfloat(BAKING, "init_duration")
+            #self.init_duration = uh.int_entry(self.options_grid, "Number of initial readings: ", row_num, 5,
+            #                                  init_duration)
+            #row_num += 1
 
             prim_interval = self.conf_parser.getfloat(BAKING, "prim_interval")
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
@@ -187,10 +191,10 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
         start_button = ttk.Button(self)
         start_button["text"] = "Start {}".format(self.program)
         start_button["command"] = start
-        start_button.grid(row=2, column=1)
+        start_button.pack(anchor='center', pady=20)
         return start_button
 
-    def add_fbg(self, fbg_grid, col, chan, fbg_name=None, switch_pos=None):
+    def add_fbg(self, fbg_grid, chan, fbg_name=None, switch_pos=None):
         """Add an fbg input to the view."""
         most = -1
         for i, chan_num in enumerate(self.chan_nums):
@@ -206,8 +210,8 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             def_name = "FBG {}".format(sum(len(x) for x in self.chan_nums))
             if fbg_name is not None:
                 def_name = fbg_name
-            serial_num, switch_pos, frame = uh.serial_num_entry(
-                fbg_grid, len(self.chan_nums[chan])+1, col, def_name, switch_pos)
+            serial_num, switch_pos, frame = uh.serial_num_entry(fbg_grid, len(self.chan_nums[chan])+1,
+                                                                chan, def_name, switch_pos)
             self.snum_frames[chan].append(frame)
             self.sn_ents[chan].append(serial_num)
             self.switch_positions[chan].append(switch_pos)
@@ -222,32 +226,26 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
     def init_fbgs(self):
         """Initialize the fbg input section of the configuration page."""
         for i in range(4):
-            col_num = i * 2 + 1
-            ttk.Label(self.fbg_grid, text="Channel {}".format(
-                i + 1), style="Bold.TLabel").grid(sticky='ew', row=0, column=col_num)
+            title_frame = ttk.Frame(self.fbg_grid)
+            ttk.Label(title_frame, text="Channel {}".format(i + 1), style="Bold.TLabel")\
+                .pack(side='left', anchor='w')
 
-            ttk.Label(self.fbg_grid, text="Serial Number, Switch position ").grid(
-                row=1, column=col_num)
-
-            buttons_frame = ttk.Frame(self.fbg_grid)
-            buttons_frame.grid(sticky='ew', column=col_num, row=20)
-
+            buttons_frame = ttk.Frame(title_frame)
             ttk.Button(buttons_frame, image=self.img_minus, command=lambda chan=i: self.minus_fbg(chan)) \
-               .pack(expand=True, fill="both", side="left")
+                .pack(side="left", anchor='e')
             ttk.Button(buttons_frame, image=self.img_plus,
-                       command=lambda col=col_num, chan=i: self.add_fbg(self.fbg_grid, col, chan)) \
-                .pack(expand=True, fill="both", side="left")
+                       command=lambda col=i, chan=i: self.add_fbg(self.fbg_grid, chan)).pack(side='left', anchor='e')
+            buttons_frame.pack(anchor='e')
+            title_frame.grid(sticky='nsew', column=i, row=0)
 
-        self.fbg_grid.grid(row=6, column=0, columnspan=2)
         for i in range(4):
             snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
             positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
             try:
                 positions = help.list_cast(positions, int)
                 for snum, pos in zip(snums, positions):
-                    self.add_fbg(self.fbg_grid, i * 2 + 1, i, snum, pos)
+                    self.add_fbg(self.fbg_grid, i, snum, pos)
             except ValueError:
                 for snum in snums:
                     if snum:
-                        self.add_fbg(self.fbg_grid, i*2+1, i, snum)
-
+                        self.add_fbg(self.fbg_grid, i, snum)

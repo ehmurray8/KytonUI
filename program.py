@@ -51,7 +51,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
 
-        super().__init__(style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
+        super().__init__(master.main_notebook, style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
 
         self.master = master
         self.program_type = program_type
@@ -69,9 +69,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
-        self.config_frame = ttk.Frame()
-        self.graph_frame = ttk.Frame()
-        table_frame = ttk.Frame()
+        self.config_frame = ttk.Frame(self)
+        self.graph_frame = ttk.Frame(self)
+        table_frame = ttk.Frame(self)
 
         # Need images as instance variables to prevent garbage collection
         config_path = os.path.join("assets", "config.png")
@@ -90,10 +90,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.prog_id)
         self.start_btn = self.options.create_start_btn(self.start)
         self.options.init_fbgs()
-        self.options.grid_rowconfigure(1, minsize=20)
-        self.options.grid_rowconfigure(3, minsize=20)
-        self.options.grid_rowconfigure(5, minsize=20)
-        self.options.pack(expand=True, side="right", fill="both")
+        self.options.pack(expand=True, side="right", fill="both", padx=50, pady=15)
 
         # Set up graphing tab
         self.add(self.graph_frame, image=self.img_graph)
@@ -188,11 +185,11 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
-            if self.delayed_prog is not None:
-                    self.master.after_cancel(self.delayed_prog)
-                    self.delayed_prog = None
-                    self.pause_program()
-            elif self.master.running:
+            #if self.delayed_prog is not None:
+            #    self.master.after_cancel(self.delayed_prog)
+            #    self.delayed_prog = None
+            #    self.pause_program()
+            if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:
                     prog = "Baking"
                     run = "calibration"
@@ -239,8 +236,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
                         #self.update_table()
-                        self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                                                              self.program_start)
+                        #self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
+                        #                                      self.program_start)
+                        self.program_start()
                 else:
                     self.pause_program()
         else:
@@ -305,9 +303,9 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         if self.program_type.prog_id == BAKING:
             self.conf_parser.set(CAL, "running", "false")
             self.conf_parser.set(self.program_type.prog_id, "set_temp", str(self.options.set_temp.get()))
-            self.conf_parser.set(self.program_type.prog_id, "init_delay", str(self.options.delay.get()))
-            self.conf_parser.set(self.program_type.prog_id, "init_interval", str(self.options.init_time.get()))
-            self.conf_parser.set(self.program_type.prog_id, "init_duration", str(self.options.init_duration.get()))
+            #self.conf_parser.set(self.program_type.prog_id, "init_delay", str(self.options.delay.get()))
+            #self.conf_parser.set(self.program_type.prog_id, "init_interval", str(self.options.init_time.get()))
+            #self.conf_parser.set(self.program_type.prog_id, "init_duration", str(self.options.init_duration.get()))
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
         else:
             self.conf_parser.set(BAKING, "running", "false")
@@ -366,7 +364,7 @@ class Toolbar(NavigationToolbar2TkAgg):
         self.figure_canvas = figure_canvas
         self.parent = parent
         self.graphing_helper = None
-        NavigationToolbar2TkAgg.__init__(self, self.figure_canvas, self.parent)
+        super().__init__(self.figure_canvas, self.parent)
 
     def set_gh(self, graphing_helper):
         """Sets the graphing helper."""
@@ -375,7 +373,7 @@ class Toolbar(NavigationToolbar2TkAgg):
     def play(self):
         """Plays graph animation linked to play button on toolbar."""
         self.graphing_helper.play()
-        
+
     def pause(self):
         """Pauses graph animation linked to button on toolbar."""
         self.graphing_helper.pause()

@@ -50,7 +50,7 @@ class WarningHandler(object):
                 return ("Excel File Generation Error",
                         "No data has been recorded yet, or the database has been corrupted.")
             elif msg.warning_type == "File":
-                return ("File Error", )
+                return "File Error",
 
         elif not msg.is_warning:
             self.warnings[msg.warning_type] = False
@@ -71,10 +71,10 @@ class Application(tk.Tk):
         fiber_path = os.path.join("assets", "fiber.png")
         self.is_fullscreen = self.setup_window(fiber_path)
 
-        self.main_notebook = ttk.Notebook()
+        self.main_notebook = ttk.Notebook(self)
         self.main_notebook.enable_traversal()
 
-        self.home_frame = ttk.Frame()
+        self.home_frame = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.home_frame, text="Home")
         self.main_notebook.pack(side="top", fill="both", expand=True)
         self.running_prog = None
@@ -118,7 +118,7 @@ class Application(tk.Tk):
                 break
             # Handle message
 
-        self.after(500, self.check_queue)
+        self.after(10000, self.check_queue)
 
     def toggle_fullscreen(self, _=None):
         """Toggles full screen on and off."""
@@ -158,7 +158,7 @@ class Application(tk.Tk):
         for i, dev in enumerate(switch_conf):
             device_frame.grid_rowconfigure(i * 2, pad=20)
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
-        device_frame.grid(sticky='ew')
+        device_frame.grid(sticky='nsew')
 
         self.home_frame.grid_rowconfigure(1, minsize=50)
 
@@ -186,58 +186,57 @@ class Application(tk.Tk):
         err_specifier = "Unknown error"
         need_conn_warn = False
         need_loc_warn = False
-        if True:#self.use_dev:
-            # TODO: Fix this to properly warn and try forever
-            for _ in range(3):
-                try:
-                    if dev == constants.TEMP:
-                        if self.temp_controller is None:
-                            err_specifier = "GPIB address"
-                            self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop,
-                                                                          self.use_dev)
-                            self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
-                        else:
-                            self.temp_controller.close()
-                            self.temp_controller = None
-                    elif dev == constants.OVEN:
-                        if self.oven is None:
-                            err_specifier = "GPIB address"
-                            self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop, self.use_dev)
-                            self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
-                        else:
-                            self.oven.close()
-                            self.oven = None
-                    elif dev == constants.SWITCH:
-                        if self.switch is None:
-                            err_specifier = "ethernet port"
-                            self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
-                            self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
-                            self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
-                        else:
-                            self.switch.close()
-                            self.switch = None
-                    elif dev == constants.LASER:
-                        if self.laser is None:
-                            err_specifier = "ethernet port"
-                            self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
-                            self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
-                            self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
-                        else:
-                            self.laser.close()
-                            self.laser = None
+        # TODO: Fix this to properly warn and try forever
+        for _ in range(3):
+            try:
+                if dev == constants.TEMP:
+                    if self.temp_controller is None:
+                        err_specifier = "GPIB address"
+                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop,
+                                                                      self.use_dev)
+                        self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
+                    else:
+                        self.temp_controller.close()
+                        self.temp_controller = None
+                elif dev == constants.OVEN:
+                    if self.oven is None:
+                        err_specifier = "GPIB address"
+                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop, self.use_dev)
+                        self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
+                    else:
+                        self.oven.close()
+                        self.oven = None
+                elif dev == constants.SWITCH:
+                    if self.switch is None:
+                        err_specifier = "ethernet port"
+                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
+                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
+                    else:
+                        self.switch.close()
+                        self.switch = None
+                elif dev == constants.LASER:
+                    if self.laser is None:
+                        err_specifier = "ethernet port"
+                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
+                        self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
+                        self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
+                    else:
+                        self.laser.close()
+                        self.laser = None
 
-                    need_conn_warn = False
-                    need_loc_warn = False
-                    break
-                except socket.error:
-                    need_conn_warn = True
-                    conn_warning(dev)
-                except visa.VisaIOError:
-                    need_conn_warn = True
-                    conn_warning(dev)
-                except ValueError:
-                    need_loc_warn = True
-                    loc_warning(err_specifier)
+                need_conn_warn = False
+                need_loc_warn = False
+                break
+            except socket.error:
+                need_conn_warn = True
+                conn_warning(dev)
+            except visa.VisaIOError:
+                need_conn_warn = True
+                conn_warning(dev)
+            except ValueError:
+                need_loc_warn = True
+                loc_warning(err_specifier)
 
         if need_conn_warn:
             conn_warning(dev)
@@ -268,7 +267,7 @@ class Application(tk.Tk):
                     self.laser.close()
                 self.destroy()
             else:
-                self.master.tkraise()
+                self.tkraise()
         else:
             self.destroy()
 

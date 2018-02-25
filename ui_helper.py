@@ -150,25 +150,23 @@ def open_center(width, height, root):
 
 def lock_widgets(options_frame):
     """Locks the widgets to prevent the user from editing while the program is running."""
-    for child in options_frame.options_grid.winfo_children():  # .values():
-        if "Label" not in child.winfo_class():
-            child.config(state="disabled")
+    for child in options_frame.options_grid.winfo_children():
+        lock(child, "disabled")
     for child in options_frame.fbg_grid.winfo_children():
-        if "TFrame" in child.winfo_class():
-            for gchild in child.winfo_children():
-                gchild.config(state="disabled")
-        elif "Label" not in child.winfo_class():
-            child.config(state="disabled")
+        lock(child, "disabled")
+
+
+def lock(widget, state):
+    if "TFrame" in widget.winfo_class():
+        for child in widget.winfo_children():
+            lock(child, state)
+    else:
+        widget.config(state=state)
 
 
 def unlock_widgets(options_frame):
     """Unlocks the widgets."""
     for child in options_frame.options_grid.winfo_children():
-        if "Label" not in child.winfo_class():
-            child.config(state="normal")
+        lock(child, "normal")
     for child in options_frame.fbg_grid.winfo_children():
-        if "TFrame" in child.winfo_class():
-            for gchild in child.winfo_children():
-                gchild.config(state="normal")
-        elif "Label" not in child.winfo_class():
-            child.config(state="normal")
+        lock(child, "normal")
