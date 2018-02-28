@@ -5,6 +5,7 @@ program and baking program.
 
 import os
 import threading
+import sqlite3
 import abc
 from tkinter import ttk, messagebox as mbox
 import configparser
@@ -149,27 +150,27 @@ class Program(ttk.Notebook):
         return True
 
     def is_valid_file(self):
-        valid_file = True
-        csv_file = help.to_ext(self.options.file_name.get(), "csv")
-        if os.path.exists(csv_file):
-            file_lines = (line for line in open(csv_file))
-            prog_header = next(file_lines)
-            if "Metadata" in prog_header:
-                if self.program_type.prog_id != BAKING:
-                    file_error(csv_file, "was created to be used for baking.")
-                    valid_file = False
-                else:
-                    valid_file = self.valid_header(csv_file, file_lines) and valid_file
-            elif "Caldata" in prog_header:
-                if self.program_type.prog_id == BAKING:
-                    file_error(csv_file, "was created to be used for calibration.")
-                    valid_file = False
-                else:
-                    valid_file = self.valid_header(csv_file, file_lines) and valid_file
-            else:
-                file_error(csv_file, "already exists and it was not created by this program.")
-                valid_file = False
-        return valid_file
+        conn = sqlite3.connect("db/program_data.db")
+        cur = conn.cursor()
+        name = help.get_file_name(self.options.file_name.get())
+        cur.execute("SELECT ID, ProgName, ProgType from map")
+        rows = cur.fetchall()
+        names = [row[1] for row in rows]
+        types = [row[2] for row in rows]
+        valid = True
+        try:
+            idx = names.index(name)
+            if types[idx] != self.program_type.prog_id.lower():
+                valid = False
+        except ValueError:
+            pass
+        if not os.path.isdir(os.path.split(self.options.file_name.get())):
+            try:
+                os.mkdir(os.path.split(self.options.file_name.get())[0])
+            except FileNotFoundError:
+                # File Error cannot make directory
+                valid = False
+        return valid
 
     def start(self):
         """Starts the recording process."""

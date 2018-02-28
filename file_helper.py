@@ -14,11 +14,9 @@ from constants import HEX_COLORS, CAL, BAKING
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
-    """Writes the output csv file."""
-
+    """Writes the output to sqlite database."""
     conn = sqlite3.connect("db/program_data.db")
     cur = conn.cursor()
-
     name = help.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
 

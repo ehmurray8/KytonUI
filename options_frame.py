@@ -26,9 +26,6 @@ class OptionsPanel(ttk.Frame):
         # Init member widgets
         self.baking_temp = tk.DoubleVar()
         self.file_name = tk.StringVar()
-        self.delay = tk.DoubleVar()
-        self.init_time = tk.DoubleVar()
-        self.init_duration = tk.DoubleVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
         self.num_temp_readings = tk.IntVar()
@@ -83,9 +80,6 @@ class OptionsPanel(ttk.Frame):
                                "Please check the file path, the file cannot be opened or created.")
                 return False
             if self.program == BAKING:
-                float(self.delay.get())
-                float(self.init_time.get())
-                float(self.init_duration.get())
                 float(self.prim_time.get())
             else:
                 float(self.num_temp_readings.get())
