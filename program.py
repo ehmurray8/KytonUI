@@ -306,6 +306,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
             #self.conf_parser.set(self.program_type.prog_id, "init_delay", str(self.options.delay.get()))
             #self.conf_parser.set(self.program_type.prog_id, "init_interval", str(self.options.init_time.get()))
             #self.conf_parser.set(self.program_type.prog_id, "init_duration", str(self.options.init_duration.get()))
+            self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
         else:
             self.conf_parser.set(BAKING, "running", "false")

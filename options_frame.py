@@ -161,6 +161,10 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
                                             row_num, 10, set_temp)
             row_num += 1
 
+            drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
+            row_num += 1
+
             # Time intervals entry
             #init_delay = self.conf_parser.getfloat(BAKING, "init_delay")
             #self.delay = uh.units_entry(self.options_grid, "Initial program delay: ", row_num, 5, "hours", init_delay)
