@@ -19,11 +19,10 @@ class BakingProgram(program.Program):
         self.master.conn_buttons[TEMP]()
         temp1 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())[3:])
         start = time.time()
-        self.master.loop.run_until_complete(asyncio.sleep(60))
+        time.sleep(60)
         temp2 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())[3:])
         end = time.time()
-        if self.master.use_dev:
-            self.disconnect_devices()
+        self.disconnect_devices()
         drift_rate = math.fabs(temp2 - temp1) / ((end - start) / 60)
         print("Calculated Drift rate: {}, Expected Drift Rate: {}".format(drift_rate, self.options.drift_rate.get() * .001))
         if -self.options.drift_rate.get() * .001 <= drift_rate <= self.options.drift_rate.get() * .001:
@@ -33,12 +32,15 @@ class BakingProgram(program.Program):
     def program_loop(self):
         """Runs the baking process."""
         stable = False
-        while self.options.set_temp.get() and self.master.use_dev and not stable :
+        while self.options.set_temp.get() and self.master.use_dev and not stable:
+            print("Checking stable: {}".format(bool(self.options.set_temp.get() and self.master.use_dev and not stable)))
+            print("{}, {}, {}".format(self.options.set_temp.get(), self.master.use_dev, stable))
             stable = self.check_stable()
             print(stable)
-            self.master.conn_buttons[OVEN]()
-            self.master.loop.run_until_complete(self.set_oven_temp())
-            self.disconnect_devices()
+            if not stable:
+                self.master.conn_buttons[OVEN]()
+                self.master.loop.run_until_complete(self.set_oven_temp())
+                self.disconnect_devices()
 
         while self.master.running:
             if self.master.use_dev:
@@ -69,8 +71,8 @@ class BakingProgram(program.Program):
 
             fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
                         waves, amps, BAKING, self.table)
-            self.master.loop.run_until_complete(asyncio.sleep(self.options.prim_time.get() * 60 * 60))
-            if self.options.set_temp.get() and self.master.use_dev and not stable:
+            time.sleep(self.options.prim_time.get() * 60 * 60)
+            if self.options.set_temp.get() and self.master.use_dev and not self.check_stable():
                 self.master.conn_buttons[OVEN]()
                 self.master.loop.run_until_complete(self.set_oven_temp())
                 self.disconnect_devices()

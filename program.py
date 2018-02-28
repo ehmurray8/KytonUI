@@ -164,7 +164,7 @@ class Program(ttk.Notebook):
                 valid = False
         except ValueError:
             pass
-        if not os.path.isdir(os.path.split(self.options.file_name.get())):
+        if not os.path.isdir(os.path.split(self.options.file_name.get())[0]):
             try:
                 os.mkdir(os.path.split(self.options.file_name.get())[0])
             except FileNotFoundError:
