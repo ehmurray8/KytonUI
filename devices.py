@@ -1,6 +1,5 @@
 """Contains object representations of all the necessary devices."""
 
-# pylint:disable=missing-super-argument
 import socket
 from socket import AF_INET, SOCK_STREAM
 from concurrent.futures import ThreadPoolExecutor

@@ -1,9 +1,6 @@
 """Module used for helping with creating output files."""
-# pylint: disable=import-error, relative-import
-# pylint: disable-msg=too-many-arguments, too-many-branches, too-many-locals
 
 import os
-import asyncio
 import numpy as np
 import datetime
 from StyleFrame import Styler, utils, StyleFrame
@@ -102,23 +99,6 @@ def create_headers_init(snums, is_cal):
         col_list.append("'Drift Rate' REAL NOT NULL")
         col_list.append("'Real Point' INTEGER NOT NULL")
     return col_list
-
-
-def update_table(table, xcel_file, is_cal, new_loop, snums):
-    func = BAKING
-    if is_cal:
-        func = CAL
-    conn = sqlite3.connect("db/program_data.db")
-    cur = conn.cursor()
-
-    name = help.get_file_name(xcel_file)
-    if program_exists(name, cur, func):
-        conn.close()
-        asyncio.set_event_loop(new_loop)
-        new_loop.run_until_complete(add_table_data(table, name, is_cal, snums))
-    else:
-        conn.close()
-    new_loop.close()
 
 
 async def add_table_data(table, name, is_cal, snums):

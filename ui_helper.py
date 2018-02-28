@@ -1,4 +1,3 @@
-# pylint: disable=import-error, relative-import, superfluous-parens
 import os
 import platform
 import configparser
@@ -56,7 +55,6 @@ def string_entry(container, label_text, row, width, default_str=""):
 
 
 def serial_num_entry(container, row, col, def_snum, switch_pos):
-    # pylint:disable=too-many-arguments
     """Creates a serial number entry with channel number and switch position."""
     snum_frame = ttk.Frame(container)
     serial_num_ent = ttk.Entry(snum_frame, font=ENTRY_FONT, width=20)
@@ -97,7 +95,6 @@ def double_entry(container, label_text, row, width, default_double=0.0):
 
 
 def units_entry(container, label_text, row, width, unit, default_double=0.0):
-    # pylint:disable=too-many-arguments
     """Creates a time entry, and returns a reference to the entry var."""
     text_var = double_entry(container, label_text, row, width, default_double)
     ttk.Label(container, text=unit).grid(row=row, column=3, sticky='ew')
@@ -115,7 +112,6 @@ def checkbox_entry(container, label_text, row, checked=True):
     return int_var
 
 
-# pylint:disable=too-many-arguments
 def array_entry(container, label_text, row, width, height, default_arr=None):
     """Creates an entry to import multiline text."""
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
@@ -136,7 +132,6 @@ def format_selected(flag):
 
 
 def open_center(width, height, root):
-    # pylint:disable=global-statement
     """Open num fiber dialog in center of the screen."""
     width_screen = root.winfo_screenwidth()
     height_screen = root.winfo_screenheight()

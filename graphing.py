@@ -1,5 +1,3 @@
-# pylint: disable=import-error, relative-import, unused-argument
-
 import os
 import time
 import gc

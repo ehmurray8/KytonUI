@@ -3,8 +3,6 @@ Abstract class defines common functionality between calibration
 program and baking program.
 """
 
-# pylint: disable=import-error, relative-import, protected-access, superfluous-parens
-import asyncio
 import os
 import threading
 import abc
@@ -24,7 +22,7 @@ from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from table import Table
 
 
-class ProgramType(object):  # pylint:disable=too-few-public-methods
+class ProgramType(object):
     """Defines constants for each type of program."""
 
     def __init__(self, prog_id):
@@ -43,7 +41,7 @@ class ProgramType(object):  # pylint:disable=too-few-public-methods
             self.num_graphs = 7
 
 
-class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
+class Program(ttk.Notebook):
     """Definition of the abstract program page."""
     __metaclass_ = abc.ABCMeta
 
@@ -51,7 +49,7 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
 
-        super().__init__(master.main_notebook, style='InnerNB.TNotebook')  # pylint: disable=missing-super-argument
+        super().__init__(master.main_notebook, style='InnerNB.TNotebook')
 
         self.master = master
         self.program_type = program_type
@@ -132,13 +130,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         """Main loop that the program uses to run."""
         return
 
-    def update_table(self):
-        new_loop = asyncio.new_event_loop()
-        self.table.stop_flag = False
-        threading.Thread(target=fh.update_table, args=(self.table, self.options.file_name.get(),
-                                                       self.program_type.prog_id == CAL, new_loop,
-                                                       self.snums)).start()
-
     def create_excel(self):
         """Creates excel file."""
         threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums)).start()
@@ -185,10 +176,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
-            #if self.delayed_prog is not None:
-            #    self.master.after_cancel(self.delayed_prog)
-            #    self.delayed_prog = None
-            #    self.pause_program()
             if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:
                     prog = "Baking"
@@ -235,9 +222,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
-                        #self.update_table()
-                        #self.delayed_prog = self.master.after(int(self.options.delay.get() * 1000 * 60 * 60 + 1.5),
-                        #                                      self.program_start)
                         self.program_start()
                 else:
                     self.pause_program()
@@ -303,9 +287,6 @@ class Program(ttk.Notebook):  # pylint: disable=too-many-instance-attributes
         if self.program_type.prog_id == BAKING:
             self.conf_parser.set(CAL, "running", "false")
             self.conf_parser.set(self.program_type.prog_id, "set_temp", str(self.options.set_temp.get()))
-            #self.conf_parser.set(self.program_type.prog_id, "init_delay", str(self.options.delay.get()))
-            #self.conf_parser.set(self.program_type.prog_id, "init_interval", str(self.options.init_time.get()))
-            #self.conf_parser.set(self.program_type.prog_id, "init_duration", str(self.options.init_duration.get()))
             self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
         else:

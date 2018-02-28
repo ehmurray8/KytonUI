@@ -1,6 +1,5 @@
 """Class sets up the tkinter UI code for the options panel."""
 
-# pylint: disable=import-error, relative-import, missing-super-argument
 import os
 from tkinter import messagebox as mbox
 import platform
@@ -12,7 +11,7 @@ import helpers as help
 from constants import BAKING, CAL
 
 
-class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-instance-attributes
+class OptionsPanel(ttk.Frame):
     """Main Tkinter window class."""
 
     def __init__(self, parent, program):
@@ -165,21 +164,6 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
             self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
-            # Time intervals entry
-            #init_delay = self.conf_parser.getfloat(BAKING, "init_delay")
-            #self.delay = uh.units_entry(self.options_grid, "Initial program delay: ", row_num, 5, "hours", init_delay)
-            #row_num += 1
-
-            #init_interval = self.conf_parser.getfloat(BAKING, "init_interval")
-            #self.init_time = uh.units_entry(self.options_grid, "Initial time interval: ", row_num, 5,
-            #                                "seconds", init_interval)
-            #row_num += 1
-
-            #init_duration = self.conf_parser.getfloat(BAKING, "init_duration")
-            #self.init_duration = uh.int_entry(self.options_grid, "Number of initial readings: ", row_num, 5,
-            #                                  init_duration)
-            #row_num += 1
-
             prim_interval = self.conf_parser.getfloat(BAKING, "prim_interval")
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
                                             "hours", prim_interval)
@@ -191,7 +175,6 @@ class OptionsPanel(ttk.Frame):  # pylint: disable=too-many-ancestors, too-many-i
 
     def create_start_btn(self, start):
         """Creates the start button in the app."""
-        # Start button
         start_button = ttk.Button(self)
         start_button["text"] = "Start {}".format(self.program)
         start_button["command"] = start

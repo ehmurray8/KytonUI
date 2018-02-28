@@ -1,5 +1,4 @@
 """Module for baking program specific logic."""
-# pylint:disable=import-error, relative-import, missing-super-argument
 import time
 import math
 import asyncio
