@@ -1,7 +1,6 @@
 """Module for baking program specific logic."""
 import time
 import math
-import asyncio
 import program
 import file_helper as fh
 from constants import BAKING, LASER, SWITCH, TEMP, OVEN
@@ -24,7 +23,6 @@ class BakingProgram(program.Program):
         end = time.time()
         self.disconnect_devices()
         drift_rate = math.fabs(temp2 - temp1) / ((end - start) / 60)
-        print("Calculated Drift rate: {}, Expected Drift Rate: {}".format(drift_rate, self.options.drift_rate.get() * .001))
         if -self.options.drift_rate.get() * .001 <= drift_rate <= self.options.drift_rate.get() * .001:
             return True
         return False
@@ -33,10 +31,7 @@ class BakingProgram(program.Program):
         """Runs the baking process."""
         stable = False
         while self.options.set_temp.get() and self.master.use_dev and not stable:
-            print("Checking stable: {}".format(bool(self.options.set_temp.get() and self.master.use_dev and not stable)))
-            print("{}, {}, {}".format(self.options.set_temp.get(), self.master.use_dev, stable))
             stable = self.check_stable()
-            print(stable)
             if not stable:
                 self.master.conn_buttons[OVEN]()
                 self.master.loop.run_until_complete(self.set_oven_temp())
