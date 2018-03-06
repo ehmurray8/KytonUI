@@ -16,10 +16,10 @@ class BakingProgram(program.Program):
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
         self.master.conn_buttons[TEMP]()
-        temp1 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())[3:])
+        temp1 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
         start = time.time()
         time.sleep(60)
-        temp2 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())[3:])
+        temp2 = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
         end = time.time()
         self.disconnect_devices()
         drift_rate = math.fabs(temp2 - temp1) / ((end - start) / 60)
@@ -42,7 +42,7 @@ class BakingProgram(program.Program):
                 self.master.conn_buttons[TEMP]()
                 self.master.conn_buttons[LASER]()
                 temperature = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
-                temperature = float(temperature[:-3])
+                temperature = float(temperature)
                 #TODO: Handle error catching and warning
                 if sum(len(switch) for switch in self.switches):
                     self.master.conn_buttons[SWITCH]()
@@ -53,7 +53,7 @@ class BakingProgram(program.Program):
 
             if self.master.use_dev:
                 temp2 = self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k())
-                temperature += float(temp2[:-3])
+                temperature += float(temp2)
             else:
                 temp2 = self.master.loop.run_until_complete(
                     self.master.temp_controller.get_temp_k(True, self.options.set_temp.get()))
@@ -67,7 +67,7 @@ class BakingProgram(program.Program):
             fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
                         waves, amps, BAKING, self.table)
             time.sleep(self.options.prim_time.get() * 60 * 60)
-            if self.options.set_temp.get() and self.master.use_dev and not self.check_stable():
-                self.master.conn_buttons[OVEN]()
-                self.master.loop.run_until_complete(self.set_oven_temp())
-                self.disconnect_devices()
+            #if self.options.set_temp.get() and self.master.use_dev and not self.check_stable():
+            #    self.master.conn_buttons[OVEN]()
+            #    self.master.loop.run_until_complete(self.set_oven_temp())
+            #    self.disconnect_devices()

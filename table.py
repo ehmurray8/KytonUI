@@ -47,6 +47,13 @@ class Table(ttk.Frame):
         return children
 
     def add_data(self, item):
+        new_item = []
+        for i in item:
+            if isinstance(i, float):
+                new_item.append(round(i, 4))
+            else:
+                new_item.append(i)
+        item = new_item
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
         if len(self.get_all_children()) > 100:

@@ -117,7 +117,6 @@ class Graph(object):
             self.check_val_file(axes_tuple)
         except IndexError:
             # Issue with cleaning thread and double tap
-            print("idx error")
             pass
 
 
@@ -202,7 +201,6 @@ class Graphing(object):
     def clean_graph(self):
         while True:
             time.sleep(36000)
-            print("Cleaning...")
             gc.collect()
             Graphing.clean = True
 
