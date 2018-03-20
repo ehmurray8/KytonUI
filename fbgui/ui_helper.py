@@ -1,10 +1,12 @@
+import configparser
 import os
 import platform
-import configparser
-from tkinter import ttk, filedialog
 import tkinter as tk
-from constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
+from tkinter import ttk, filedialog
+
 from PIL import Image, ImageTk
+
+from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
 
 
 def file_entry(container, label_text, row, width, def_file=""):

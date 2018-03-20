@@ -1,20 +1,21 @@
 """Module contains the main entry point for the Kyton UI."""
 
-import asyncio
-import os
-import socket
 import argparse
-from tkinter import ttk
-import platform
-import matplotlib
+import asyncio
 import configparser
-import visa
+import os
+import platform
+import socket
 from queue import Queue, Empty
+from tkinter import ttk
 
-import devices
+import constants
+import matplotlib
+import visa
 from baking_program import BakingProgram
 from cal_program import CalProgram
-import constants
+
+from fbgui import devices
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
@@ -60,7 +61,6 @@ class Application(tk.Tk):
     """Main Application class."""
 
     def __init__(self, *args, **kwargs):
-        # pylint: disable=missing-super-argument
         super().__init__(*args, **kwargs)
         self.use_dev = arg_parse()
 
@@ -314,7 +314,6 @@ class Application(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.geometry("{0}x{1}+0+0".format(
         self.winfo_screenwidth(), self.winfo_screenheight()))
-        #self.attributes("-fullscreen", True)
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
@@ -334,8 +333,8 @@ def arg_parse():
 def conn_warning(dev):
     """Warn the user that there was an error connecting to a device."""
     mbox.showwarning("Connection Error", "Currently unable to connect to {},".format(dev) +
-                           "make sure the device is connected to the computer and the location " +
-                           "information is correct.")
+                     "make sure the device is connected to the computer and the location " +
+                     "information is correct.")
 
 
 def loc_warning(loc_type):

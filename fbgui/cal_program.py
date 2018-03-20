@@ -1,12 +1,14 @@
 """Containts the calibration program page."""
 
+import asyncio
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
-from program import Program, ProgramType
-from constants import CAL, TEMP, SWITCH, LASER, OVEN
+
 import file_helper as fh
 import options_frame
-import asyncio
+from constants import CAL, TEMP, SWITCH, LASER, OVEN
+
+from fbgui.program import Program, ProgramType
 
 
 class CalProgram(Program):

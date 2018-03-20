@@ -1,15 +1,18 @@
-import os
-import time
 import gc
+import os
 import platform
 import threading
+import time
 from tkinter import messagebox as mbox
-import matplotlib.animation as animation
-from matplotlib import style
-import matplotlib.gridspec as gridspec
+
 import file_helper as fh
-import helpers as help
+import matplotlib.animation as animation
+import matplotlib.gridspec as gridspec
 from constants import HEX_COLORS, BAKING, CAL
+from matplotlib import style
+
+from fbgui import helpers as help
+
 style.use("kyton")
 
 
