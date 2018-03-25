@@ -174,18 +174,31 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     try:
         data_coll, df = create_data_coll(help.get_file_name(xcel_file), snums, is_cal)
         new_df = pd.DataFrame()
-        new_df["Date Time"] = df["Date Time"]
+        new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
-        del df["Date Time"]
-        for col in df.columns.values.tolist():
+        new_df["Mean Temperature (K)"] = df["Mean Temperature (K)"]
+        headers = df.columns.values.tolist()
+        wave_headers = [head for head in headers if "Wave" in head]
+        pow_headers = [head for head in headers if "Pow" in head]
+        temp_header = [h for h in headers if "Temperature" in h][0]
+        new_df[temp_header] = df[temp_header]
+        for col in wave_headers:
             new_df[col] = df[col]
-        new_df.append(df)
-        new_df["Date Time"] = new_df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
+        for col in pow_headers:
+            new_df[col] = df[col]
+        new_df["{} Time (hr.)  ".format(u"\u0394")] = data_coll.times
+        new_df["{}T, from start (K)  ".format(u"\u0394")] = data_coll.temp_diffs
         for snum, delta_wave in zip(snums, data_coll.wavelen_diffs):
-            new_df["{} {}{}, from start (nm).".format(snum, u"\u0394", u"\u03BB")] = delta_wave
+            new_df["{} {}{}, from start (nm)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
+
+        new_df["{} Time (hr.) ".format(u"\u0394")] = data_coll.times
+        new_df["{}T, from start (K) ".format(u"\u0394")] = data_coll.temp_diffs
+        for snum, delta_pow in zip(snums, data_coll.power_diffs):
+            new_df["{} {}{}, from start (nm)".format(snum, u"\u0394", "P")] = delta_pow
 
         new_df["{}T, from start (K)".format(u"\u0394")] = data_coll.temp_diffs
         new_df["Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
+        new_df["Mean raw {}{}, from start (pm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
 
         defaults = {'font_size': 14}
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
@@ -198,13 +211,11 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         sf.apply_column_style(cols_to_style='Date Time',
                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
-        wave_heads = [col for col in new_df.columns.values if "Wave" in col]
-        pow_heads = [col for col in new_df.columns.values if "Pow" in col]
-        for wave_head, pow_head, hex_color in zip(wave_heads, pow_heads, HEX_COLORS):
-            sf.apply_column_style(cols_to_style=[wave_head, pow_head],
+        for snum, hex_color in zip(snums, HEX_COLORS):
+            sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
                                   styler_obj=Styler(bg_color=hex_color))
         sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
-        sf.apply_column_style(cols_to_style="{}T, from start (K)".format(u"\u0394"),
+        sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if "{}T, from start (K)".format(u"\u0394") in c],
                               styler_obj=Styler(font_color=utils.colors.red))
         sf.apply_column_style(cols_to_style="Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB"),
                               styler_obj=Styler(font_color=utils.colors.red))
