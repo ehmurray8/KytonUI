@@ -9,13 +9,13 @@ import socket
 from queue import Queue, Empty
 from tkinter import ttk
 
-import constants
+from fbgui import constants
 import matplotlib
 import visa
-from baking_program import BakingProgram
-from cal_program import CalProgram
-
+from fbgui.baking_program import BakingProgram
+from fbgui.cal_program import CalProgram
 from fbgui import devices
+from fbgui import create_excel
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
@@ -160,6 +160,7 @@ class Application(tk.Tk):
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
         device_frame.grid(sticky='nsew')
 
+        create_excel.Table(self.home_frame).grid(row=1)
         self.home_frame.grid_rowconfigure(1, minsize=50)
 
     def device_entry(self, container, dev_text, loc_str, row, port_str):

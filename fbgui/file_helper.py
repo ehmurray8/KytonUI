@@ -5,11 +5,11 @@ import os
 import sqlite3
 from tkinter import messagebox as mbox
 
-import data_container as datac
+import fbgui.data_container as datac
 import numpy as np
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from constants import HEX_COLORS, CAL, BAKING
+from fbgui.constants import HEX_COLORS, CAL, BAKING
 
 from fbgui import helpers as help
 
@@ -30,11 +30,13 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     cols = ",".join(col_list)
     if not prog_exists:
         try:
-            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
+            cur.execute("INSERT INTO map('ProgName', 'ProgType', 'FilePath', 'Snums') VALUES ('{}', '{}', '{}', '{}')"
+                        .format(name, func.lower(), file_name, ",".join(serial_nums)))
         except sqlite3.OperationalError:
             cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                        "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL")
-            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
+                        "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
+            cur.execute("INSERT INTO map('ProgName', 'ProgType', 'FilePath', 'Snums') VALUES ('{}', '{}', '{}', '{}')"
+                        .format(name, func.lower(), file_name, ",".join(serial_nums)))
         cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
         table_id = cur.fetchall()[0][0]
         cur.execute("CREATE TABLE `{}` ({});".format(func.lower() + str(table_id), cols))
