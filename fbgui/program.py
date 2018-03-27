@@ -11,16 +11,16 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 
-import dev_helper
-import file_helper as fh
-import graphing
-import options_frame
-import ui_helper
+import fbgui.dev_helper as dev_helper
+import fbgui.file_helper as fh
+import fbgui.graphing as graphing
+import fbgui.options_frame as options_frame
+import fbgui.ui_helper as ui_helper
 from PIL import Image, ImageTk
-from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
+from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from table import Table
+from fbgui.table import Table
 
 from fbgui import helpers as help
 
@@ -135,7 +135,8 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file."""
-        threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums)).start()
+        threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
+                                                            self.program_type.prog_id == CAL)).start()
 
     def valid_header(self, csv_file, file_lines):
         saved_snums = help.clean_str_list(next(file_lines).split(","))

@@ -134,7 +134,9 @@ class Application(tk.Tk):
 
     def setup_home_frame(self):
         """Sets up the home frame as TK frame that is displayed on launch."""
-        device_frame = ttk.Frame(self.home_frame)
+        hframe = ttk.Frame(self.home_frame)
+        hframe.pack()
+        device_frame = ttk.Frame(hframe)
         col = 0
         device_frame.grid_columnconfigure(col, minsize=10)
         col = 2
@@ -144,9 +146,9 @@ class Application(tk.Tk):
         device_frame.grid_columnconfigure(col, minsize=100)
         device_frame.grid_rowconfigure(0, minsize=10)
 
-        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='ew')
-        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='ew')
-        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='ew')
+        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='nsew')
+        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='nsew')
+        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='nsew')
         laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
         laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
         switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
@@ -158,15 +160,13 @@ class Application(tk.Tk):
         for i, dev in enumerate(switch_conf):
             device_frame.grid_rowconfigure(i * 2, pad=20)
             self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
-        device_frame.grid(sticky='nsew')
-
-        create_excel.Table(self.home_frame).grid(row=1)
-        self.home_frame.grid_rowconfigure(1, minsize=50)
+        device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
+        create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
 
     def device_entry(self, container, dev_text, loc_str, row, port_str):
         """Creates an entry in the device grid for a device."""
         dev_widg = ttk.Label(container, text=dev_text)
-        dev_widg.grid(row=row, column=1, sticky='ew')
+        dev_widg.grid(row=row, column=1, sticky='nsew')
 
         loc_ent = ttk.Entry(container, font="Helvetica 14")
         loc_ent.insert(tk.INSERT, loc_str)
@@ -295,7 +295,12 @@ class Application(tk.Tk):
                                                          ("disabled", constants.BG_COLOR)],
                                      "foreground": [("active", "black"),
                                                     ("disabled", constants.TEXT_COLOR)]}},
-            "Treeview": {"configure": {"foreground": constants.Colors.WHITE, "background": constants.BG_COLOR}},
+            "Treeview": {"configure":
+                         {"foreground": constants.Colors.WHITE, "background": constants.BG_COLOR},
+                         "map": {"background": [("selected", constants.TABS_COLOR)],
+                                 "font": [("selected", ('Helvetica', 10, "bold"))],
+                                 "foreground": [("selected", constants.Colors.BLACK)]}
+                         },
             "Treeview.Heading": {"configure": {"foreground": constants.TEXT_COLOR,
                                                "font": {("Helvetica", 12, "bold")}, "sticky": "ew"}},
             "TNotebook": {"configure": {"tabmargins": [10, 10, 10, 2]}},

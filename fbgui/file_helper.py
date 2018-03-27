@@ -11,7 +11,7 @@ import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
 from fbgui.constants import HEX_COLORS, CAL, BAKING
 
-from fbgui import helpers as help
+from fbgui import helpers
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
@@ -19,7 +19,7 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     """Writes the output to sqlite database."""
     conn = sqlite3.connect("db/program_data.db")
     cur = conn.cursor()
-    name = help.get_file_name(file_name)
+    name = helpers.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
 
     wave_pow = []
@@ -174,7 +174,7 @@ def create_data_coll(name, snums, is_cal):
 def create_excel_file(xcel_file, snums, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
-        data_coll, df = create_data_coll(help.get_file_name(xcel_file), snums, is_cal)
+        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), snums, is_cal)
         new_df = pd.DataFrame()
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times

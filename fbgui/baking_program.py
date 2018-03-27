@@ -2,8 +2,8 @@
 import math
 import time
 
-import file_helper as fh
-from constants import BAKING, LASER, SWITCH, TEMP, OVEN
+import fbgui.file_helper as fh
+from fbgui.constants import BAKING, LASER, SWITCH, TEMP, OVEN
 
 from fbgui import program
 

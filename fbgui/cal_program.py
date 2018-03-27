@@ -1,12 +1,11 @@
 """Containts the calibration program page."""
 
 import asyncio
-# pylint: disable=import-error, relative-import, missing-super-argument
 import time
 
-import file_helper as fh
-import options_frame
-from constants import CAL, TEMP, SWITCH, LASER, OVEN
+import fbgui.file_helper as fh
+import fbgui.options_frame as options_frame
+from fbgui.constants import CAL, TEMP, SWITCH, LASER, OVEN
 
 from fbgui.program import Program, ProgramType
 
@@ -42,7 +41,7 @@ class CalProgram(Program):
 
                     # Need to write csv file init code
                     fh.write_db(self.options.file_name.get(), self.snums, start_time,
-                                start_temp, waves, amps, options_frame.CAL, self.table, False, 0.0)
+                                start_temp, waves, amps, CAL, self.table, False, 0.0)
                     if await self.__check_drift_rate(start_time, start_temp):
                         break
                     else:

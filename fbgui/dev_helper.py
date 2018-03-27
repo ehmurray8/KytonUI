@@ -2,7 +2,6 @@
 Gets the amplitude and wavelength data using the Mircon Optics SM125,
 and the Optical Switch.
 """
-# pylint: disable=import-error, relative-import, superfluous-parens
 import asyncio
 import socket
 import numpy as np

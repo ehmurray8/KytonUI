@@ -7,8 +7,8 @@ import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
 
-import ui_helper as uh
-from constants import BAKING, CAL
+import fbgui.ui_helper as uh
+from fbgui.constants import BAKING, CAL
 
 from fbgui import helpers as help
 
