@@ -2,7 +2,6 @@
 
 import configparser
 import os
-import platform
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
@@ -49,19 +48,16 @@ class OptionsPanel(ttk.Frame):
         self.fbg_grid.pack(expand=True, fill="both", anchor="n")
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
+        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"))
 
         self.chan_rows = [1, 1, 1, 1]
 
         # Prevent from being garbage collected
-        path = r'assets\plus.png'
-        if platform.system() == "Linux":
-            path = "assets/plus.png"
+        assets_path = os.path.join(os.getcwd(), "fbgui", "assets")
+        path = os.path.join(assets_path, 'plus.png')
         self.img_plus = tk.PhotoImage(file=path)
 
-        path = r'assets\minus.png'
-        if platform.system() == "Linux":
-            path = "assets/minus.png"
+        path = os.path.join(assets_path, 'minus.png')
         self.img_minus = tk.PhotoImage(file=path)
 
         self.create_options_grid()

@@ -1,7 +1,6 @@
 """Module contains the main entry point for the Kyton UI."""
 
 import argparse
-import asyncio
 import configparser
 import os
 import platform
@@ -65,10 +64,10 @@ class Application(tk.Tk):
         self.use_dev = arg_parse()
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join("config", "devices.cfg"))
+        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"))
 
         self.style = ttk.Style()
-        fiber_path = os.path.join("assets", "fiber.png")
+        fiber_path = os.path.join(os.getcwd(), "fbgui", "assets", "fiber.png")
         self.is_fullscreen = self.setup_window(fiber_path)
 
         self.main_notebook = ttk.Notebook(self)
@@ -94,7 +93,13 @@ class Application(tk.Tk):
         self.laser = None
         self.switch = None
 
-        self.loop = asyncio.get_event_loop()
+        self.controller_location = tk.IntVar()
+        self.oven_location = tk.IntVar()
+        self.op_switch_address = tk.StringVar()
+        self.op_switch_port = tk.IntVar()
+        self.sm125_address = tk.StringVar()
+        self.sm125_port = tk.IntVar()
+
         self.conn_buttons = {}
         self.setup_home_frame()
 
@@ -103,11 +108,6 @@ class Application(tk.Tk):
         self.create_cal_tab()
 
         self.main_queue = Queue()
-        self.keep_alive()
-
-    def keep_alive(self):
-        self.update_idletasks()
-        self.after(5000, self.keep_alive)
 
     def check_queue(self):
         while True:
@@ -155,26 +155,30 @@ class Application(tk.Tk):
         switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
         temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
         oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
-        switch_conf = [(constants.LASER, laser_loc, laser_port), (constants.SWITCH, switch_loc, switch_port),
-                       (constants.TEMP, temp_loc, None), (constants.OVEN, oven_loc, None)]
+        switch_conf = [(constants.LASER, laser_loc, laser_port, self.sm125_address, self.sm125_port),
+                       (constants.SWITCH, switch_loc, switch_port, self.op_switch_address, self.op_switch_port),
+                       (constants.TEMP, temp_loc, None, self.controller_location, None),
+                       (constants.OVEN, oven_loc, None, self.oven_location, None)]
         for i, dev in enumerate(switch_conf):
             device_frame.grid_rowconfigure(i * 2, pad=20)
-            self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2])
+            self.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
         device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
         create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
 
-    def device_entry(self, container, dev_text, loc_str, row, port_str):
+    def device_entry(self, container, dev_text, loc_str, row, port_str, loc_var, port_var):
         """Creates an entry in the device grid for a device."""
         dev_widg = ttk.Label(container, text=dev_text)
         dev_widg.grid(row=row, column=1, sticky='nsew')
 
-        loc_ent = ttk.Entry(container, font="Helvetica 14")
+        loc_ent = ttk.Entry(container, font="Helvetica 14", textvariable=loc_var)
+        loc_ent.delete(0, tk.END)
         loc_ent.insert(tk.INSERT, loc_str)
         loc_ent.grid(row=row, column=3, sticky='ew')
 
         port_ent = None
         if port_str is not None:
-            port_ent = ttk.Entry(container, font="Helvetica 14")
+            port_ent = ttk.Entry(container, font="Helvetica 14", textvariable=port_var)
+            port_ent.delete(0, tk.END)
             port_ent.insert(tk.INSERT, port_str)
             port_ent.grid(row=row, sticky='ew', column=5)
 
@@ -193,8 +197,7 @@ class Application(tk.Tk):
                 if dev == constants.TEMP:
                     if self.temp_controller is None:
                         err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.loop,
-                                                                      self.use_dev)
+                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.use_dev)
                         self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
                     else:
                         self.temp_controller.close()
@@ -202,7 +205,7 @@ class Application(tk.Tk):
                 elif dev == constants.OVEN:
                     if self.oven is None:
                         err_specifier = "GPIB address"
-                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.loop, self.use_dev)
+                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.use_dev)
                         self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
                     else:
                         self.oven.close()
@@ -210,7 +213,7 @@ class Application(tk.Tk):
                 elif dev == constants.SWITCH:
                     if self.switch is None:
                         err_specifier = "ethernet port"
-                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
+                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.use_dev)
                         self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
                         self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
                     else:
@@ -219,7 +222,7 @@ class Application(tk.Tk):
                 elif dev == constants.LASER:
                     if self.laser is None:
                         err_specifier = "ethernet port"
-                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.loop, self.use_dev)
+                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.use_dev)
                         self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
                         self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
                     else:

@@ -10,7 +10,7 @@ import sqlite3
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
-
+from threading import Thread
 import fbgui.dev_helper as dev_helper
 import fbgui.file_helper as fh
 import fbgui.graphing as graphing
@@ -21,8 +21,7 @@ from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from fbgui.table import Table
-
-from fbgui import helpers as help
+from fbgui import helpers
 
 
 class ProgramType(object):
@@ -55,6 +54,7 @@ class Program(ttk.Notebook):
         super().__init__(master.main_notebook, style='InnerNB.TNotebook')
 
         self.master = master
+        self.connection_thread: Thread = None
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -68,16 +68,17 @@ class Program(ttk.Notebook):
         self.table_thread = None
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
+        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"))
 
         self.config_frame = ttk.Frame(self)
         self.graph_frame = ttk.Frame(self)
         table_frame = ttk.Frame(self)
 
         # Need images as instance variables to prevent garbage collection
-        config_path = os.path.join("assets", "config.png")
-        graph_path = os.path.join("assets", "graph.png")
-        file_path = os.path.join("assets", "file.png")
+        assets_path = os.path.join(os.getcwd(), "fbgui", "assets")
+        config_path = os.path.join(assets_path, "config.png")
+        graph_path = os.path.join(assets_path, "graph.png")
+        file_path = os.path.join(assets_path, "file.png")
         img_config = Image.open(config_path)
         img_graph = Image.open(graph_path)
         img_file = Image.open(file_path)
@@ -129,7 +130,7 @@ class Program(ttk.Notebook):
             self.start()
 
     @abc.abstractmethod
-    async def program_loop(self):
+    def program_loop(self):
         """Main loop that the program uses to run."""
         return
 
@@ -139,23 +140,23 @@ class Program(ttk.Notebook):
                                                             self.program_type.prog_id == CAL)).start()
 
     def valid_header(self, csv_file, file_lines):
-        saved_snums = help.clean_str_list(next(file_lines).split(","))
-        num_conf_fbgs = len(help.flatten(self.options.sn_ents))
+        saved_snums = helpers.clean_str_list(next(file_lines).split(","))
+        num_conf_fbgs = len(helpers.flatten(self.options.sn_ents))
         if len(saved_snums) != num_conf_fbgs:
             file_error(csv_file, "contains {} FBGs you are attempting to record data for {} FBGs. "
                                  .format(len(saved_snums), num_conf_fbgs) +
                                  "The file contains the FBGS: {}".format(str(saved_snums)))
             return False
-        elif set(saved_snums) != set(x.get() for x in help.flatten(self.options.sn_ents)):
+        elif set(saved_snums) != set(x.get() for x in helpers.flatten(self.options.sn_ents)):
             file_error(csv_file, "has FBGs in it that differ from the ones you have configured the program to record "
                                  "data for. The file contains the FBGs: {}".format(str(saved_snums)))
             return False
         return True
 
     def is_valid_file(self):
-        conn = sqlite3.connect("db/program_data.db")
+        conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
         cur = conn.cursor()
-        name = help.get_file_name(self.options.file_name.get())
+        name = helpers.get_file_name(self.options.file_name.get())
         cur.execute("SELECT ID, ProgName, ProgType from map")
         rows = cur.fetchall()
         names = [row[1] for row in rows]
@@ -197,8 +198,8 @@ class Program(ttk.Notebook):
                                "Please add fbg entries to your configuration before running the program.")
             else:
                 if self.is_valid_file():
-                    for chan, snum, pos in zip(help.flatten(self.options.chan_nums), help.flatten(self.options.sn_ents),
-                                               help.flatten(self.options.switch_positions)):
+                    for chan, snum, pos in zip(helpers.flatten(self.options.chan_nums), helpers.flatten(self.options.sn_ents),
+                                               helpers.flatten(self.options.switch_positions)):
                         if snum.get() and snum.get() not in self.snums:
                             self.snums.append(snum.get())
                             self.channels[chan].append(snum.get())
@@ -214,7 +215,7 @@ class Program(ttk.Notebook):
                         mbox.showerror("Configuration Error",
                                        "Can only have one channel configured to use the optical switch.")
                         self.pause_program()
-                    elif not help.is_unique(help.flatten(self.switches)):
+                    elif not helpers.is_unique(helpers.flatten(self.switches)):
                         mbox.showerror("Configuration Error",
                                        "Multiple FBGs are configured to use the same switch position.")
                         self.pause_program()
@@ -222,18 +223,22 @@ class Program(ttk.Notebook):
                         self.save_config_info()
                         self.master.running_prog = self.program_type.prog_id
                         ui_helper.lock_widgets(self.options)
+                        ui_helper.lock_main_widgets(self.master.home_frame)
                         self.graph_helper.show_subplots()
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
                         self.program_start()
                 else:
+                    self.disconnect_devices()
                     self.pause_program()
         else:
+            self.disconnect_devices()
             self.pause_program()
 
     def program_start(self):
-        threading.Thread(target=self.connect_devices).start()
+        self.connection_thread = Thread(target=self.connect_devices)
+        self.connection_thread.start()
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -264,7 +269,7 @@ class Program(ttk.Notebook):
             need_oven = True
             self.master.conn_buttons[OVEN]()
         if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
-            self.master.loop.run_until_complete(self.set_oven_temp())
+            self.set_oven_temp()
         if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
                 self.master.laser is not None and self.master.temp_controller is not None:
             self.disconnect_devices()
@@ -274,9 +279,9 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
             self.pause_program()
 
-    async def set_oven_temp(self):
-        await self.master.oven.set_temp(self.options.set_temp.get())
-        await self.master.oven.heater_on()
+    def set_oven_temp(self):
+        self.master.oven.set_temp(self.options.set_temp.get())
+        self.master.oven.heater_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -302,13 +307,27 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
+
+        dev_conf = configparser.ConfigParser()
+        dev_conf.read(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"))
+
+        dev_conf.set("Devices", "oven_location", str(self.master.oven_location.get()))
+        dev_conf.set("Devices", "controller_location", str(self.master.controller_location.get()))
+        dev_conf.set("Devices", "op_switch_address", str(self.master.op_switch_address.get()))
+        dev_conf.set("Devices", "op_switch_port", str(self.master.op_switch_port.get()))
+        dev_conf.set("Devices", "sm125_port", str(self.master.sm125_port.get()))
+        dev_conf.set("Devices", "sm125_address", str(self.master.sm125_address.get()))
+
+        with open(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"), "w") as dcfg:
+            dev_conf.write(dcfg)
 
     def pause_program(self):
         """Pauses the program."""
         self.start_btn.configure(text=self.program_type.start_title)
         ui_helper.unlock_widgets(self.options)
+        ui_helper.unlock_main_widgets(self.master.home_frame)
         self.master.running = False
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
@@ -320,11 +339,11 @@ class Program(ttk.Notebook):
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
 
-    async def get_wave_amp_data(self):
+    def get_wave_amp_data(self):
         positions_used = [len(x) for x in self.channels]
-        return await dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                               self.options.num_pts.get(), positions_used, self.master.use_dev,
-                                               sum(len(s) > 0 for s in self.snums))
+        return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                         self.options.num_pts.get(), positions_used, self.master.use_dev,
+                                         sum(len(s) > 0 for s in self.snums))
 
 
 class Toolbar(NavigationToolbar2TkAgg):

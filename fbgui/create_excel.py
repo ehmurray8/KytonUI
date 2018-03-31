@@ -1,3 +1,4 @@
+import os
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
@@ -15,7 +16,7 @@ class Table(ttk.Frame):
         self.headers = ["Id", "File name", "Program Type"]
         self.tree = None
         self.item_ids = []
-        conn = sqlite3.connect("db/program_data.db")
+        conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")
         res = cur.fetchall()

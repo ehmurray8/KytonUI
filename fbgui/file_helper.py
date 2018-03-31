@@ -17,7 +17,7 @@ from fbgui import helpers
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output to sqlite database."""
-    conn = sqlite3.connect("db/program_data.db")
+    conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
@@ -103,28 +103,9 @@ def create_headers_init(snums, is_cal):
     return col_list
 
 
-async def add_table_data(table, name, is_cal, snums):
-    table.reset()
-    conn = sqlite3.connect("db/program_data.db")
-    cur = conn.cursor()
-
-    headers_f = create_headers(snums, is_cal, True)
-    headers_f.pop(0)
-    table.setup_headers(headers_f)
-    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
-    func = BAKING
-    if is_cal:
-        func = CAL
-    table_id = cur.fetchall()[0][0]
-    df = pd.read_sql_query("SELECT * from {}".format(func.lower() + str(table_id)), conn)
-    del df["ID"]
-    conn.close()
-    table.add_data(df)
-
-
 def db_to_df(func, name):
     try:
-        conn = sqlite3.connect("db/program_data.db")
+        conn = sqlite3.connect(os.path.join("fbgui", "db", "program_data.db"))
         cur = conn.cursor()
         cur.execute("SELECT {} from {} WHERE ProgName = '{}'".format("ID", "map", name))
         table_id = cur.fetchall()[0][0]
