@@ -1,11 +1,8 @@
 """Containts the calibration program page."""
 
-import asyncio
 import time
-
 import fbgui.file_helper as fh
 from fbgui.constants import CAL, TEMP, SWITCH, LASER, OVEN
-
 from fbgui.program import Program, ProgramType
 
 
@@ -18,25 +15,24 @@ class CalProgram(Program):
     def program_loop(self):
         """Runs the calibration."""
         temps_arr = self.options.get_target_temps()
-        self.master.loop.run_until_complete(self.cal_loop(temps_arr))
+        self.cal_loop(temps_arr)
 
     def cal_loop(self, temps_arr):
         for _ in range(self.options.num_cal_cycles.get()):
             for temp in temps_arr:
                 while True:
-                    self.master.conn_buttons[OVEN]()
-                    self.master.conn_buttons[TEMP]()
-
-                    self.master.oven.set_temp(temp)
-                    self.master.oven.cooling_off()
-                    self.master.oven.heater_on()
-
-                    start_temp = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
-                    waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
-
-                    start_temp += float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
+                    self.set_oven_temp(temp)
+                    self.master.conn_dev(TEMP)
+                    self.master.conn_dev(LASER)
+                    if sum(len(switch) for switch in self.switches):
+                        self.master.conn_dev(SWITCH)
+                    start_temp = self.master.temp_controller.get_temp_k()
+                    waves, amps = self.get_wave_amp_data()
+                    start_temp += self.master.temp_controller.get_temp_k()
                     start_temp /= 2
                     start_time = time.time()
+
+                    self.disconnect_devices()
 
                     # Need to write csv file init code
                     fh.write_db(self.options.file_name.get(), self.snums, start_time,
@@ -46,33 +42,33 @@ class CalProgram(Program):
                     else:
                         time.sleep(int(self.options.temp_interval.get()*1000 + .5))
 
-            self.master.conn_buttons[OVEN]()
-            self.master.loop.run_until_complete(self.master.oven.heater_off())
-            self.master.loop.run_until_complete(self.master.oven.set_temp(temps_arr[0]))
+            self.master.conn_dev(OVEN)
+            self.master.oven.heater_off()
+            self.master.oven.set_temp(temps_arr[0])
 
             if self.options.cooling.get():
-                self.master.loop.run_until_complete(self.master.oven.cooling_on())
+                self.master.oven.cooling_on()
 
             self.disconnect_devices()
-            self.master.loop.run_until_complete(self.reset_temp(temps_arr))
+            self.reset_temp(temps_arr)
 
     def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        self.master.conn_buttons[TEMP]()
-        temp = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
-        while temp >= float(temps_arr[0]) - .1:
-            self.master.loop.run_until_complete(asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5)))
-            temp = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
+        self.master.conn_dev(TEMP)
+        temp = float((self.master.temp_controller.get_temp_k()))
+        while temp >= float(temps_arr[0]) + .1:
+            time.sleep(int(self.options.temp_interval.get()*1000 + .5))
+            temp = float(self.master.temp_controller.get_temp_k())
         self.disconnect_devices()
 
     def get_drift_rate(self, last_time, last_temp):
-        self.master.conn_buttons[TEMP]()
-        self.master.conn_buttons[LASER]()
+        self.master.conn_dev(TEMP)
+        self.master.conn_dev(LASER)
         if sum(len(switch) for switch in self.switches):
-            self.master.conn_buttons[SWITCH]()
-        waves, amps = self.master.loop.run_until_complete(self.get_wave_amp_data())
-        curr_temp = float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
-        curr_temp += float(self.master.loop.run_until_complete(self.master.temp_controller.get_temp_k()))
+            self.master.conn_dev(SWITCH)
+        waves, amps = self.get_wave_amp_data()
+        curr_temp = float(self.master.temp_controller.get_temp_k())
+        curr_temp += float((self.master.temp_controller.get_temp_k()))
         self.disconnect_devices()
         curr_temp /= 2
         curr_time = time.time()

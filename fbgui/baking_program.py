@@ -3,7 +3,7 @@ import math
 import time
 
 import fbgui.file_helper as fh
-from fbgui.constants import BAKING, LASER, SWITCH, TEMP, OVEN
+from fbgui.constants import BAKING, LASER, SWITCH, TEMP
 
 from fbgui import program
 
@@ -17,7 +17,7 @@ class BakingProgram(program.Program):
 
     def check_stable(self):
         """Check if the program is ready to move to primary interval."""
-        self.master.conn_buttons[TEMP]()
+        self.master.conn_dev(TEMP)
         temp1 = float(self.master.temp_controller.get_temp_k())
         start = time.time()
         time.sleep(60)
@@ -36,23 +36,21 @@ class BakingProgram(program.Program):
             while self.options.set_temp.get() and self.master.use_dev and not stable:
                 stable = self.check_stable()
                 if not stable:
-                    self.master.conn_buttons[OVEN]()
                     self.set_oven_temp()
                     self.disconnect_devices()
 
             while self.master.running:
                 if self.master.use_dev:
-                    self.master.conn_buttons[TEMP]()
-                    self.master.conn_buttons[LASER]()
+                    self.master.conn_dev(TEMP)
+                    self.master.conn_dev(LASER)
                     temperature = self.master.temp_controller.get_temp_k()
                     temperature = float(temperature)
                     #TODO: Handle error catching and warning
                     if sum(len(switch) for switch in self.switches):
-                        self.master.conn_buttons[SWITCH]()
+                        self.master.conn_dev(SWITCH)
                 else:
                     temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
                 waves, amps = self.get_wave_amp_data()
-
                 if self.master.use_dev:
                     temp2 = self.master.temp_controller.get_temp_k()
                     temperature += float(temp2)

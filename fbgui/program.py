@@ -66,6 +66,7 @@ class Program(ttk.Notebook):
         self.start_btn = None
         self.delayed_prog = None
         self.table_thread = None
+        self.need_oven = False
 
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"))
@@ -256,21 +257,21 @@ class Program(ttk.Notebook):
                 self.master.switch = None
 
     def connect_devices(self):
-        need_oven = False
+        self.need_oven = False
         need_switch = False
         self.disconnect_devices()
-        self.master.conn_buttons[LASER]()
-        self.master.conn_buttons[TEMP]()
+        self.master.conn_dev(LASER, try_once=True)
+        self.master.conn_dev(TEMP, try_once=True)
         if sum(len(switch) for switch in self.switches):
             need_switch = True
-            self.master.conn_buttons[SWITCH]()
+            self.master.conn_dev(SWITCH, try_once=True)
         if self.master.use_dev and (self.program_type.prog_id == CAL or self.options.set_temp.get()) \
                 and self.master.oven is None:
-            need_oven = True
-            self.master.conn_buttons[OVEN]()
-        if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
+            self.need_oven = True
+            self.master.conn_dev(OVEN, try_once=True)
+        if self.need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
             self.set_oven_temp()
-        if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
+        if self.need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
                 self.master.laser is not None and self.master.temp_controller is not None:
             self.disconnect_devices()
             self.master.running = True
@@ -279,9 +280,14 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
             self.pause_program()
 
-    def set_oven_temp(self):
-        self.master.oven.set_temp(self.options.set_temp.get())
-        self.master.oven.heater_on()
+    def set_oven_temp(self, temp: float=None):
+        if self.need_oven:
+            self.master.conn_dev(OVEN)
+            if temp is None:
+                temp = self.options.set_temp.get()
+            self.master.oven.set_temp(temp)
+            self.master.oven.cooling_off()
+            self.master.oven.heater_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
