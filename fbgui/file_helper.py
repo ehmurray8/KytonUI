@@ -5,21 +5,21 @@ import os
 import sqlite3
 from tkinter import messagebox as mbox
 
-import data_container as datac
+import fbgui.data_container as datac
 import numpy as np
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from constants import HEX_COLORS, CAL, BAKING
+from fbgui.constants import HEX_COLORS, CAL, BAKING
 
-from fbgui import helpers as help
+from fbgui import helpers
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output to sqlite database."""
-    conn = sqlite3.connect("db/program_data.db")
+    conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
     cur = conn.cursor()
-    name = help.get_file_name(file_name)
+    name = helpers.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
 
     wave_pow = []
@@ -30,11 +30,13 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     cols = ",".join(col_list)
     if not prog_exists:
         try:
-            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
+            cur.execute("INSERT INTO map('ProgName', 'ProgType', 'FilePath', 'Snums') VALUES ('{}', '{}', '{}', '{}')"
+                        .format(name, func.lower(), file_name, ",".join(serial_nums)))
         except sqlite3.OperationalError:
             cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                        "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL")
-            cur.execute("INSERT INTO map('ProgName', 'ProgType') VALUES ('{}', '{}')".format(name, func.lower()))
+                        "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
+            cur.execute("INSERT INTO map('ProgName', 'ProgType', 'FilePath', 'Snums') VALUES ('{}', '{}', '{}', '{}')"
+                        .format(name, func.lower(), file_name, ",".join(serial_nums)))
         cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
         table_id = cur.fetchall()[0][0]
         cur.execute("CREATE TABLE `{}` ({});".format(func.lower() + str(table_id), cols))
@@ -101,28 +103,9 @@ def create_headers_init(snums, is_cal):
     return col_list
 
 
-async def add_table_data(table, name, is_cal, snums):
-    table.reset()
-    conn = sqlite3.connect("db/program_data.db")
-    cur = conn.cursor()
-
-    headers_f = create_headers(snums, is_cal, True)
-    headers_f.pop(0)
-    table.setup_headers(headers_f)
-    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
-    func = BAKING
-    if is_cal:
-        func = CAL
-    table_id = cur.fetchall()[0][0]
-    df = pd.read_sql_query("SELECT * from {}".format(func.lower() + str(table_id)), conn)
-    del df["ID"]
-    conn.close()
-    table.add_data(df)
-
-
 def db_to_df(func, name):
     try:
-        conn = sqlite3.connect("db/program_data.db")
+        conn = sqlite3.connect(os.path.join("fbgui", "db", "program_data.db"))
         cur = conn.cursor()
         cur.execute("SELECT {} from {} WHERE ProgName = '{}'".format("ID", "map", name))
         table_id = cur.fetchall()[0][0]
@@ -172,7 +155,7 @@ def create_data_coll(name, snums, is_cal):
 def create_excel_file(xcel_file, snums, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
-        data_coll, df = create_data_coll(help.get_file_name(xcel_file), snums, is_cal)
+        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), snums, is_cal)
         new_df = pd.DataFrame()
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times

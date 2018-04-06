@@ -15,9 +15,7 @@ def file_entry(container, label_text, row, width, def_file=""):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, columnspan=2, sticky='ew')
-    path = r'assets\docs_icon.png'
-    if platform.system() == "Linux":
-        path = "assets/docs_icon.png"
+    path = os.path.join(os.getcwd(), "fbgui", "assets", 'docs_icon.png')
     button_image = Image.open(path)
     button_photo = ImageTk.PhotoImage(button_image)
 
@@ -31,15 +29,14 @@ def file_entry(container, label_text, row, width, def_file=""):
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
     cparser = configparser.ConfigParser()
-    cparser.read("config/prog_config.cfg")
+    cparser.read(os.path.join("fbgui", "config", "prog_config.cfg"))
     last_dir = cparser.get("Baking", "last_folder")
     try:
         os.mkdir(last_dir)
     except FileExistsError:
         pass
     file_path = filedialog.asksaveasfilename(
-        initialdir=last_dir, title="Save Excel File As", filetypes=(("excel files", "*.xlsx"),
-                                                                    ("all files", "*.*")))
+        initialdir=last_dir, title="Save Excel File As", filetypes=(("excel files", "*.xlsx"), ("all files", "*.*")))
     try:
         file_label_var.set(os.path.splitext(file_path)[0] + '.xlsx')
     except AttributeError:
@@ -50,8 +47,7 @@ def string_entry(container, label_text, row, width, default_str=""):
     """Creates a string entry, and returns a reference to the entry var."""
     text_var = tk.StringVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT) \
-       .grid(row=row, column=2, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT).grid(row=row, column=2, sticky='ew')
     text_var.set(default_str)
     return text_var
 
@@ -80,8 +76,7 @@ def int_entry(container, label_text, row, width, default_int=0):
     """Creates an int entry, and returns a reference to the entry var."""
     text_var = tk.IntVar()
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
-        .grid(row=row, column=2, sticky='ew')
+    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT).grid(row=row, column=2, sticky='ew')
     text_var.set(default_int)
     return text_var
 
@@ -141,8 +136,7 @@ def open_center(width, height, root):
     x_cord = (width_screen / 2) - (width / 2)
     y_cord = (height_screen / 2) - (height / 2)
 
-    root.geometry("{}x{}-{}+{}".format(int(width), int(height),
-                                       int(x_cord), int(y_cord)))
+    root.geometry("{}x{}-{}+{}".format(int(width), int(height), int(x_cord), int(y_cord)))
 
 
 def lock_widgets(options_frame):
@@ -151,6 +145,10 @@ def lock_widgets(options_frame):
         lock(child, "disabled")
     for child in options_frame.fbg_grid.winfo_children():
         lock(child, "disabled")
+
+
+def lock_main_widgets(main: ttk.Frame):
+    lock(main.winfo_children()[0].winfo_children()[0], "disabled")
 
 
 def lock(widget, state):
@@ -167,3 +165,7 @@ def unlock_widgets(options_frame):
         lock(child, "normal")
     for child in options_frame.fbg_grid.winfo_children():
         lock(child, "normal")
+
+
+def unlock_main_widgets(main: ttk.Frame):
+    lock(main.winfo_children()[0].winfo_children()[0], "normal")

@@ -1,5 +1,4 @@
 """Contains containers for the data stored in the csv file."""
-# pylint: disable=too-few-public-methods, too-many-instance-attributes
 
 
 class Metadata(object):

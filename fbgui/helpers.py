@@ -1,6 +1,7 @@
 import functools
 import os
 
+
 def flatten(list2d):
     """Accepts a 2D list and flattens it into a 1D list. Returned list is ordered how the list is visually seen."""
     return functools.reduce(lambda x, y: x+y, list2d)
