@@ -3,24 +3,26 @@
 import argparse
 import configparser
 import os
+import sys
 import platform
 import socket
 from queue import Queue, Empty
 from tkinter import ttk
+from shutil import copy2
 
-from fbgui import constants
+import constants
 import matplotlib
 import visa
-from fbgui.baking_program import BakingProgram
-from fbgui.cal_program import CalProgram
-from fbgui import devices
-from fbgui import create_excel
+from baking_program import BakingProgram
+from cal_program import CalProgram
+import devices
+import create_excel
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
 import tkinter as tk
-#if platform.system() == "Linux":
-#    from ttkthemes import ThemedStyle
+if platform.system() == "Linux":
+    from ttkthemes import ThemedStyle
 
 
 class Message(object):
@@ -61,13 +63,19 @@ class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        site_packs = [s for s in sys.path if 'site-packages' in s][0]
+        copy2(os.path.join("assets", "kyton.mplstyle"), os.path.join(site_packs, "matplotlib", "mpl-data", "stylelib"))
+        copy2(os.path.join("assets", "play.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
+        copy2(os.path.join("assets", "pause.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
+
         self.use_dev = arg_parse()
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"))
+        self.conf_parser.read(os.path.join("config", "devices.cfg"))
 
         self.style = ttk.Style()
-        fiber_path = os.path.join(os.getcwd(), "fbgui", "assets", "fiber.png")
+        fiber_path = os.path.join("assets", "fiber.png")
         self.is_fullscreen = self.setup_window(fiber_path)
 
         self.main_notebook = ttk.Notebook(self)

@@ -2,10 +2,10 @@
 import math
 import time
 
-import fbgui.file_helper as fh
-from fbgui.constants import BAKING, LASER, SWITCH, TEMP
+import file_helper as fh
+from constants import BAKING, LASER, SWITCH, TEMP
 
-from fbgui import program
+import program
 
 
 class BakingProgram(program.Program):

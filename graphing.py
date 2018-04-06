@@ -5,13 +5,13 @@ import threading
 import time
 from tkinter import messagebox as mbox
 
-import fbgui.file_helper as fh
+import file_helper as fh
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
-from fbgui.constants import HEX_COLORS, BAKING, CAL
+from constants import HEX_COLORS, BAKING, CAL
 from matplotlib import style
 
-from fbgui import helpers as help
+import helpers as help
 
 style.use("kyton")
 
@@ -68,7 +68,7 @@ class Graph(object):
 
     def check_val_file(self, axes_tuple):
         name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = fh.sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
+        conn = fh.sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
         func = BAKING
         if self.is_cal:

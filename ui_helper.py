@@ -1,12 +1,11 @@
 import configparser
 import os
-import platform
 import tkinter as tk
 from tkinter import ttk, filedialog
 
 from PIL import Image, ImageTk
 
-from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
+from constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
 
 
 def file_entry(container, label_text, row, width, def_file=""):
@@ -15,7 +14,7 @@ def file_entry(container, label_text, row, width, def_file=""):
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT)\
        .grid(row=row, column=2, columnspan=2, sticky='ew')
-    path = os.path.join(os.getcwd(), "fbgui", "assets", 'docs_icon.png')
+    path = os.path.join("assets", 'docs_icon.png')
     button_image = Image.open(path)
     button_photo = ImageTk.PhotoImage(button_image)
 
@@ -29,7 +28,7 @@ def file_entry(container, label_text, row, width, def_file=""):
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
     cparser = configparser.ConfigParser()
-    cparser.read(os.path.join("fbgui", "config", "prog_config.cfg"))
+    cparser.read(os.path.join("config", "prog_config.cfg"))
     last_dir = cparser.get("Baking", "last_folder")
     try:
         os.mkdir(last_dir)

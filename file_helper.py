@@ -5,19 +5,19 @@ import os
 import sqlite3
 from tkinter import messagebox as mbox
 
-import fbgui.data_container as datac
+import data_container as datac
 import numpy as np
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from fbgui.constants import HEX_COLORS, CAL, BAKING
+from constants import HEX_COLORS, CAL, BAKING
 
-from fbgui import helpers
+import helpers
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output to sqlite database."""
-    conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
+    conn = sqlite3.connect(os.path.join("db", "program_data.db"))
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
@@ -105,7 +105,7 @@ def create_headers_init(snums, is_cal):
 
 def db_to_df(func, name):
     try:
-        conn = sqlite3.connect(os.path.join("fbgui", "db", "program_data.db"))
+        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
         cur.execute("SELECT {} from {} WHERE ProgName = '{}'".format("ID", "map", name))
         table_id = cur.fetchall()[0][0]
