@@ -4,9 +4,8 @@ import asyncio
 # pylint: disable=import-error, relative-import, missing-super-argument
 import time
 
-import file_helper as fh
-import options_frame
-from constants import CAL, TEMP, SWITCH, LASER, OVEN
+import fbgui.file_helper as fh
+from fbgui.constants import CAL, TEMP, SWITCH, LASER, OVEN
 
 from fbgui.program import Program, ProgramType
 
@@ -89,10 +88,10 @@ class CalProgram(Program):
         drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
         while drift_rate > self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                        curr_temp, waves, amps, options_frame.CAL, self.table, False, drift_rate)
+                        curr_temp, waves, amps, CAL, self.table, False, drift_rate)
             await asyncio.sleep(int(self.options.temp_interval.get()*1000 + .5))
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
 
         # record actual point
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                    curr_temp, waves, amps, options_frame.CAL, self.table, True, drift_rate)
+                    curr_temp, waves, amps, CAL, self.table, True, drift_rate)
