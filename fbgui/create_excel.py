@@ -32,7 +32,8 @@ class Table(ttk.Frame):
         conn.close()
         self._setup_widgets()
         self.setup_headers()
-        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1], self.prog_info["Type"][::-1]):
+        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
+                                  self.prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):

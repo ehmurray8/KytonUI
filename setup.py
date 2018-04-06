@@ -2,8 +2,11 @@ import cx_Freeze
 import sys
 import os
 
-os.environ['TCL_LIBRARY'] = "C:\\Users\\phils\\AppData\\Local\\Programs\\Python362\\tcl\\tcl8.6"
-os.environ['TK_LIBRARY'] = "C:\\Users\\phils\\AppData\\Local\\Programs\\Python362\\tcl\\tk8.6"
+#os.environ['TCL_LIBRARY'] = "C:\\Users\\phils\\AppData\\Local\\Programs\\Python362\\tcl\\tcl8.6"
+#os.environ['TK_LIBRARY'] = "C:\\Users\\phils\\AppData\\Local\\Programs\\Python362\\tcl\\tk8.6"
+
+os.environ['TCL_LIBRARY'] = "C:\\Users\\Emmet\\AppData\\Local\\Programs\\Python36\\tcl\\tcl8.6"
+os.environ['TK_LIBRARY'] = "C:\\Users\\Emmet\\AppData\\Local\\Programs\\Python36\\tcl\\tk8.6"
 
 base = None
 if sys.platform == 'win32':

@@ -326,7 +326,7 @@ class Program(ttk.Notebook):
         dev_conf.set("Devices", "sm125_port", str(self.master.sm125_port.get()))
         dev_conf.set("Devices", "sm125_address", str(self.master.sm125_address.get()))
 
-        with open(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"), "w") as dcfg:
+        with open(os.path.join("fbgui", "config", "devices.cfg"), "w") as dcfg:
             dev_conf.write(dcfg)
 
     def pause_program(self):
@@ -338,7 +338,7 @@ class Program(ttk.Notebook):
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join("fbgui", "config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []

@@ -19,8 +19,8 @@ from fbgui import create_excel
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
 import tkinter as tk
-if platform.system() == "Linux":
-    from ttkthemes import ThemedStyle
+#if platform.system() == "Linux":
+#    from ttkthemes import ThemedStyle
 
 
 class Message(object):
@@ -174,7 +174,6 @@ class Application(tk.Tk):
         loc_ent.insert(tk.INSERT, loc_str)
         loc_ent.grid(row=row, column=3, sticky='ew')
 
-        port_ent = None
         if port_str is not None:
             port_ent = ttk.Entry(container, font="Helvetica 14", textvariable=port_var)
             port_ent.delete(0, tk.END)
@@ -326,8 +325,7 @@ class Application(tk.Tk):
         else:
             self.style.theme_use("main")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.geometry("{0}x{1}+0+0".format(
-        self.winfo_screenwidth(), self.winfo_screenheight()))
+        self.geometry("{0}x{1}+0+0".format(self.winfo_screenwidth(), self.winfo_screenheight()))
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
