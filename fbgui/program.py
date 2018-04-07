@@ -332,7 +332,7 @@ class Program(ttk.Notebook):
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join("fbgui", "config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []
