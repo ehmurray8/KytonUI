@@ -6,10 +6,10 @@ import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
 
-import fbgui.ui_helper as uh
-from fbgui.constants import BAKING, CAL
+import ui_helper as uh
+from constants import BAKING, CAL
 
-from fbgui import helpers as help
+import helpers as help
 
 
 class OptionsPanel(ttk.Frame):
@@ -48,12 +48,12 @@ class OptionsPanel(ttk.Frame):
         self.fbg_grid.pack(expand=True, fill="both", anchor="n")
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"))
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.chan_rows = [1, 1, 1, 1]
 
         # Prevent from being garbage collected
-        assets_path = os.path.join(os.getcwd(), "fbgui", "assets")
+        assets_path = os.path.join("assets")
         path = os.path.join(assets_path, 'plus.png')
         self.img_plus = tk.PhotoImage(file=path)
 

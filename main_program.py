@@ -3,18 +3,20 @@
 import argparse
 import configparser
 import os
+import sys
 import platform
 import socket
 from queue import Queue, Empty
 from tkinter import ttk
+from shutil import copy2
 
-from fbgui import constants
+import constants
 import matplotlib
 import visa
-from fbgui.baking_program import BakingProgram
-from fbgui.cal_program import CalProgram
-from fbgui import devices
-from fbgui import create_excel
+from baking_program import BakingProgram
+from cal_program import CalProgram
+import devices
+import create_excel
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
@@ -61,13 +63,19 @@ class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        site_packs = [s for s in sys.path if 'site-packages' in s][0]
+        copy2(os.path.join("assets", "kyton.mplstyle"), os.path.join(site_packs, "matplotlib", "mpl-data", "stylelib"))
+        copy2(os.path.join("assets", "play.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
+        copy2(os.path.join("assets", "pause.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
+
         self.use_dev = arg_parse()
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"))
+        self.conf_parser.read(os.path.join("config", "devices.cfg"))
 
         self.style = ttk.Style()
-        fiber_path = os.path.join(os.getcwd(), "fbgui", "assets", "fiber.png")
+        fiber_path = os.path.join("assets", "fiber.png")
         self.is_fullscreen = self.setup_window(fiber_path)
 
         self.main_notebook = ttk.Notebook(self)
@@ -100,7 +108,6 @@ class Application(tk.Tk):
         self.sm125_address = tk.StringVar()
         self.sm125_port = tk.IntVar()
 
-        self.conn_buttons = {}
         self.setup_home_frame()
 
         # Create the program tabs
@@ -175,56 +182,62 @@ class Application(tk.Tk):
         loc_ent.insert(tk.INSERT, loc_str)
         loc_ent.grid(row=row, column=3, sticky='ew')
 
-        port_ent = None
         if port_str is not None:
             port_ent = ttk.Entry(container, font="Helvetica 14", textvariable=port_var)
             port_ent.delete(0, tk.END)
             port_ent.insert(tk.INSERT, port_str)
             port_ent.grid(row=row, sticky='ew', column=5)
 
-        self.conn_buttons[dev_text] = lambda: self.conn_dev(loc_ent, port_ent, dev_text)
-
-    def conn_dev(self, loc_ent, port_ent, dev):
+    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False):
         """
         Connects or Disconnects the program to a required device based on the input location params.
         """
         err_specifier = "Unknown error"
         need_conn_warn = False
         need_loc_warn = False
+
+        num = 3
+        if try_once:
+            num = 1
+
         # TODO: Fix this to properly warn and try forever
-        for _ in range(3):
+        for _ in range(num):
             try:
                 if dev == constants.TEMP:
-                    if self.temp_controller is None:
-                        err_specifier = "GPIB address"
-                        self.temp_controller = devices.TempController(int(loc_ent.get()), self.manager, self.use_dev)
-                        self.conf_parser.set(constants.DEV_HEADER, "controller_location", loc_ent.get())
+                    if connect:
+                        if self.temp_controller is None:
+                            err_specifier = "GPIB address"
+                            temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
+                            self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
                 elif dev == constants.OVEN:
-                    if self.oven is None:
-                        err_specifier = "GPIB address"
-                        self.oven = devices.Oven(int(loc_ent.get()), self.manager, self.use_dev)
-                        self.conf_parser.set(constants.DEV_HEADER, "oven_location", loc_ent.get())
+                    if connect:
+                        if self.oven is None:
+                            err_specifier = "GPIB address"
+                            oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
+                            self.oven = devices.Oven(int(oven_loc), self.manager, self.use_dev)
                     else:
                         self.oven.close()
                         self.oven = None
                 elif dev == constants.SWITCH:
-                    if self.switch is None:
-                        err_specifier = "ethernet port"
-                        self.switch = devices.OpSwitch(loc_ent.get(), int(port_ent.get()), self.use_dev)
-                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_address", loc_ent.get())
-                        self.conf_parser.set(constants.DEV_HEADER, "op_switch_port", port_ent.get())
+                    if connect:
+                        if self.switch is None:
+                            err_specifier = "ethernet port"
+                            switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
+                            switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
+                            self.switch = devices.OpSwitch(switch_loc, int(switch_port), self.use_dev)
                     else:
                         self.switch.close()
                         self.switch = None
                 elif dev == constants.LASER:
-                    if self.laser is None:
-                        err_specifier = "ethernet port"
-                        self.laser = devices.SM125(loc_ent.get(), int(port_ent.get()), self.use_dev)
-                        self.conf_parser.set(constants.DEV_HEADER, "sm125_address", loc_ent.get())
-                        self.conf_parser.set(constants.DEV_HEADER, "sm125_port", port_ent.get())
+                    if connect:
+                        if self.laser is None:
+                            err_specifier = "ethernet port"
+                            laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
+                            laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
+                            self.laser = devices.SM125(laser_loc, int(laser_port), self.use_dev)
                     else:
                         self.laser.close()
                         self.laser = None
@@ -234,18 +247,17 @@ class Application(tk.Tk):
                 break
             except socket.error:
                 need_conn_warn = True
-                conn_warning(dev)
             except visa.VisaIOError:
                 need_conn_warn = True
-                conn_warning(dev)
             except ValueError:
                 need_loc_warn = True
-                loc_warning(err_specifier)
 
         if need_conn_warn:
-            conn_warning(dev)
+            if try_once:
+                conn_warning(dev)
         elif need_loc_warn:
-            loc_warning(err_specifier)
+            if try_once:
+                loc_warning(err_specifier)
 
     def create_bake_tab(self):
         """Create a tab used for a baking run."""
@@ -321,8 +333,7 @@ class Application(tk.Tk):
         else:
             self.style.theme_use("main")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.geometry("{0}x{1}+0+0".format(
-        self.winfo_screenwidth(), self.winfo_screenheight()))
+        self.geometry("{0}x{1}+0+0".format(self.winfo_screenwidth(), self.winfo_screenheight()))
         # Sets up full screen key bindings
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)

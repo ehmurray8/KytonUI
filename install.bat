@@ -1,0 +1,18 @@
+C:\Users\Emmet\AppData\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean -n fbgui ^
+--add-data="C:\Users\Emmet\source_code\KytonUI\config;.\config" ^
+--add-data="C:\Users\Emmet\source_code\KytonUI\assets;.\assets" ^
+--hidden-import baking_program ^
+--hidden-import cal_program ^
+--hidden-import constants ^
+--hidden-import create_excel ^
+--hidden-import data_container ^
+--hidden-import dev_helper ^
+--hidden-import devices ^
+--hidden-import file_helper ^
+--hidden-import graphing ^
+--hidden-import helpers ^
+--hidden-import options_frame ^
+--hidden-import program ^
+--hidden-import table ^
+--hidden-import ui_helper ^
+--icon "C:\Users\Emmet\source_code\KytonUI\assets\fiber.ico" main_program.py

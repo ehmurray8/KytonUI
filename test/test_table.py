@@ -2,7 +2,7 @@ import asyncio
 import threading
 import tkinter as tk
 
-from fbgui.table import Table
+from table import Table
 
 
 async def add_data_pt(data, lbox, mutex):

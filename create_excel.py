@@ -4,8 +4,8 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 from dateutil import parser
 import sqlite3
-import fbgui.file_helper as fh
-from fbgui.constants import CAL
+import file_helper as fh
+from constants import CAL
 
 
 class Table(ttk.Frame):
@@ -16,7 +16,7 @@ class Table(ttk.Frame):
         self.headers = ["Id", "File name", "Program Type"]
         self.tree = None
         self.item_ids = []
-        conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
+        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")
         res = cur.fetchall()
@@ -32,7 +32,8 @@ class Table(ttk.Frame):
         conn.close()
         self._setup_widgets()
         self.setup_headers()
-        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1], self.prog_info["Type"][::-1]):
+        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
+                                  self.prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):

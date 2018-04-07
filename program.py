@@ -11,17 +11,17 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
-import fbgui.dev_helper as dev_helper
-import fbgui.file_helper as fh
-import fbgui.graphing as graphing
-import fbgui.options_frame as options_frame
-import fbgui.ui_helper as ui_helper
+import dev_helper as dev_helper
+import file_helper as fh
+import graphing as graphing
+import options_frame as options_frame
+import ui_helper as ui_helper
 from PIL import Image, ImageTk
-from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
+from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from fbgui.table import Table
-from fbgui import helpers
+from table import Table
+import helpers
 
 
 class ProgramType(object):
@@ -66,16 +66,17 @@ class Program(ttk.Notebook):
         self.start_btn = None
         self.delayed_prog = None
         self.table_thread = None
+        self.need_oven = False
 
         self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"))
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         self.config_frame = ttk.Frame(self)
         self.graph_frame = ttk.Frame(self)
         table_frame = ttk.Frame(self)
 
         # Need images as instance variables to prevent garbage collection
-        assets_path = os.path.join(os.getcwd(), "fbgui", "assets")
+        assets_path = os.path.join("assets")
         config_path = os.path.join(assets_path, "config.png")
         graph_path = os.path.join(assets_path, "graph.png")
         file_path = os.path.join(assets_path, "file.png")
@@ -154,7 +155,7 @@ class Program(ttk.Notebook):
         return True
 
     def is_valid_file(self):
-        conn = sqlite3.connect(os.path.join(os.getcwd(), "fbgui", "db", "program_data.db"))
+        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
         name = helpers.get_file_name(self.options.file_name.get())
         cur.execute("SELECT ID, ProgName, ProgType from map")
@@ -256,21 +257,21 @@ class Program(ttk.Notebook):
                 self.master.switch = None
 
     def connect_devices(self):
-        need_oven = False
+        self.need_oven = False
         need_switch = False
         self.disconnect_devices()
-        self.master.conn_buttons[LASER]()
-        self.master.conn_buttons[TEMP]()
+        self.master.conn_dev(LASER, try_once=True)
+        self.master.conn_dev(TEMP, try_once=True)
         if sum(len(switch) for switch in self.switches):
             need_switch = True
-            self.master.conn_buttons[SWITCH]()
+            self.master.conn_dev(SWITCH, try_once=True)
         if self.master.use_dev and (self.program_type.prog_id == CAL or self.options.set_temp.get()) \
                 and self.master.oven is None:
-            need_oven = True
-            self.master.conn_buttons[OVEN]()
-        if need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
+            self.need_oven = True
+            self.master.conn_dev(OVEN, try_once=True)
+        if self.need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
             self.set_oven_temp()
-        if need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
+        if self.need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
                 self.master.laser is not None and self.master.temp_controller is not None:
             self.disconnect_devices()
             self.master.running = True
@@ -279,9 +280,14 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
             self.pause_program()
 
-    def set_oven_temp(self):
-        self.master.oven.set_temp(self.options.set_temp.get())
-        self.master.oven.heater_on()
+    def set_oven_temp(self, temp: float=None):
+        if self.need_oven:
+            self.master.conn_dev(OVEN)
+            if temp is None:
+                temp = self.options.set_temp.get()
+            self.master.oven.set_temp(temp)
+            self.master.oven.cooling_off()
+            self.master.oven.heater_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -307,11 +313,11 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open(os.path.join(os.getcwd(), "fbgui", "config", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
 
         dev_conf = configparser.ConfigParser()
-        dev_conf.read(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"))
+        dev_conf.read(os.path.join("config", "devices.cfg"))
 
         dev_conf.set("Devices", "oven_location", str(self.master.oven_location.get()))
         dev_conf.set("Devices", "controller_location", str(self.master.controller_location.get()))
@@ -320,7 +326,7 @@ class Program(ttk.Notebook):
         dev_conf.set("Devices", "sm125_port", str(self.master.sm125_port.get()))
         dev_conf.set("Devices", "sm125_address", str(self.master.sm125_address.get()))
 
-        with open(os.path.join(os.getcwd(), "fbgui", "config", "devices.cfg"), "w") as dcfg:
+        with open(os.path.join("config", "devices.cfg"), "w") as dcfg:
             dev_conf.write(dcfg)
 
     def pause_program(self):
