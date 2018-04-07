@@ -45,7 +45,7 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     values_list = [readable_time, *wave_pow, temp]
     if func == CAL:
         values_list.append(drift_rate)
-        values_list.append(real_cal_pt)
+        values_list.append("'{}'".format(real_cal_pt))
     headers = create_headers(serial_nums, func == CAL, False)
     headers_f = create_headers(serial_nums, func == CAL, True)
     headers_f.pop(0)
@@ -56,7 +56,8 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     table_id = cur.fetchall()[0][0]
     values_list[0] = timestamp
     values = ",".join([str(val) for val in values_list])
-    cur.execute("INSERT INTO {}({}) VALUES ({})".format(func.lower() + str(table_id), ",".join(headers), values))
+    sql = "INSERT INTO {}({}) VALUES ({})".format(func.lower() + str(table_id), ",".join(headers), values)
+    cur.execute(sql)
     conn.commit()
     conn.close()
 
@@ -147,6 +148,9 @@ def create_data_coll(name, snums, is_cal):
         data_coll.mean_wavelen_diffs /= len(data_coll.mean_wavelen_diffs)
         data_coll.mean_wavelen_diffs *= 1000
         data_coll.mean_power_diffs /= len(data_coll.mean_power_diffs)
+        if is_cal:
+            data_coll.avg_drift_rates = df['Drift Rate']
+            data_coll.real_points = df['Real Point'].astype('bool')
         return data_coll, df
     except (KeyError, IndexError):
         raise RuntimeError("No data has been collected yet")

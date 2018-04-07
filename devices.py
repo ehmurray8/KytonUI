@@ -119,10 +119,10 @@ class TempController(object):
     def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
         if dummy_val:
-            return random.gauss(center_num - 5, center_num + 5)
+            return float(random.gauss(center_num - 5, center_num + 5))
         else:
             query = self.device.query('KRDG? B')
-            return query[:-4]
+            return float(query[:-4])
 
     def close(self):
         """Close the device connection."""

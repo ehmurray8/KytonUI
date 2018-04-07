@@ -169,11 +169,15 @@ class Graphing(object):
         #mid_dims = (111,)
         dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
-            titles.append("Average Drift Rate vs.Time")
-            xlabels.append("Time (hr)")
-            ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
-            animate_funcs.append(animate_drift_rates_avg)
-            dimens.append(reg_dims)
+            titles[1] = "Average Drift Rate vs.Time"
+            xlabels[1] = "Time (hr)"
+            ylabels[1] = ("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394'))
+            animate_funcs[1] = animate_drift_rates_avg
+            #titles.append("Average Drift Rate vs.Time")
+            #xlabels.append("Time (hr)")
+            #ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
+            #animate_funcs.append(animate_drift_rates_avg)
+            #dimens.append(reg_dims)
 
         # Create the graph objects and sub plot objects.
         for i, (title, xlbl, ylbl, anim, dimen) in enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):

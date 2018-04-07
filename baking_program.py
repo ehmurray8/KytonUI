@@ -44,8 +44,6 @@ class BakingProgram(program.Program):
                     self.master.conn_dev(TEMP)
                     self.master.conn_dev(LASER)
                     temperature = self.master.temp_controller.get_temp_k()
-                    temperature = float(temperature)
-                    #TODO: Handle error catching and warning
                     if sum(len(switch) for switch in self.switches):
                         self.master.conn_dev(SWITCH)
                 else:
@@ -53,11 +51,11 @@ class BakingProgram(program.Program):
                 waves, amps = self.get_wave_amp_data()
                 if self.master.use_dev:
                     temp2 = self.master.temp_controller.get_temp_k()
-                    temperature += float(temp2)
+                    temperature += temp2
                 else:
                     temp2 = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
                     temperature += temp2
-                temperature /= 2.0
+                temperature /= 2.
                 curr_time = time.time()
 
                 if self.master.use_dev:

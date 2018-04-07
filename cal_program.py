@@ -29,14 +29,14 @@ class CalProgram(Program):
                     start_temp = self.master.temp_controller.get_temp_k()
                     waves, amps = self.get_wave_amp_data()
                     start_temp += self.master.temp_controller.get_temp_k()
-                    start_temp /= 2
+                    start_temp /= 2.
                     start_time = time.time()
 
                     self.disconnect_devices()
 
                     # Need to write csv file init code
                     fh.write_db(self.options.file_name.get(), self.snums, start_time,
-                                start_temp, waves, amps, CAL, self.table, False, 0.0)
+                                start_temp, waves, amps, CAL, self.table, 0.0, False)
                     if self.__check_drift_rate(start_time, start_temp):
                         break
                     else:
@@ -83,10 +83,10 @@ class CalProgram(Program):
         drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
         while drift_rate > self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                        curr_temp, waves, amps, CAL, self.table, False, drift_rate)
+                        curr_temp, waves, amps, CAL, self.table, drift_rate, False)
             time.sleep(int(self.options.temp_interval.get()*1000 + .5))
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(last_time, last_temp)
 
         # record actual point
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                    curr_temp, waves, amps, CAL, self.table, True, drift_rate)
+                    curr_temp, waves, amps, CAL, self.table, drift_rate, True)

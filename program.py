@@ -39,8 +39,8 @@ class ProgramType(object):
             self.start_title = "Start Calibration"
             self.title = "Configure Calibration"
             self.in_prog_msg = "Calibrating..."
-            self.plot_num = 240
-            self.num_graphs = 7
+            self.plot_num = 230
+            self.num_graphs = 6
 
 
 class Program(ttk.Notebook):
@@ -338,7 +338,7 @@ class Program(ttk.Notebook):
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open(os.path.join("fbgui", "config", "prog_config.cfg"), "w") as pcfg:
+        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.stable_count = 0
         self.snums = []
