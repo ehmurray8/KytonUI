@@ -169,19 +169,20 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             new_df[col] = df[col]
         for col in pow_headers:
             new_df[col] = df[col]
-        new_df["{} Time (hr.)  ".format(u"\u0394")] = data_coll.times
-        new_df["{}T, from start (K)  ".format(u"\u0394")] = data_coll.temp_diffs
+        new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
+        new_df["{}T (K)  ".format(u"\u0394")] = data_coll.temp_diffs
         for snum, delta_wave in zip(snums, data_coll.wavelen_diffs):
-            new_df["{} {}{}, from start (nm)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
+            new_df["{} {}{} (nm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
+            new_df["{} {}{} (pm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave * 1000
 
-        new_df["{} Time (hr.) ".format(u"\u0394")] = data_coll.times
-        new_df["{}T, from start (K) ".format(u"\u0394")] = data_coll.temp_diffs
+        new_df["{} Time (hr) ".format(u"\u0394")] = data_coll.times
+        new_df["{}T (K) ".format(u"\u0394")] = data_coll.temp_diffs
         for snum, delta_pow in zip(snums, data_coll.power_diffs):
-            new_df["{} {}{}, from start (nm)".format(snum, u"\u0394", "P")] = delta_pow
+            new_df["{} {}{} (dBm.)".format(snum, u"\u0394", "P")] = delta_pow
 
-        new_df["{}T, from start (K)".format(u"\u0394")] = data_coll.temp_diffs
-        new_df["Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
-        new_df["Mean raw {}{}, from start (pm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
+        new_df["{}T (K)".format(u"\u0394")] = data_coll.temp_diffs
+        new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
+        new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
 
         defaults = {'font_size': 14}
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
@@ -198,9 +199,9 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
                                   styler_obj=Styler(bg_color=hex_color))
         sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
-        sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if "{}T, from start (K)".format(u"\u0394") in c],
+        sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if "{}T (K)".format(u"\u0394") in c],
                               styler_obj=Styler(font_color=utils.colors.red))
-        sf.apply_column_style(cols_to_style="Mean raw {}{}, from start (pm.)".format(u"\u0394", u"\u03BB"),
+        sf.apply_column_style(cols_to_style="Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB"),
                               styler_obj=Styler(font_color=utils.colors.red))
 
         ew = StyleFrame.ExcelWriter(xcel_file)

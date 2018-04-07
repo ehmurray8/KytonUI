@@ -4,12 +4,13 @@ import platform
 import threading
 import time
 from tkinter import messagebox as mbox
-
+import matplotlib.ticker as mtick
 import file_helper as fh
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 from constants import HEX_COLORS, BAKING, CAL
 from matplotlib import style
+import numpy as np
 
 import helpers as help
 
@@ -147,14 +148,13 @@ class Graphing(object):
 
         threading.Thread(target=self.update_data_coll).start()
 
-        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)", "Raw Powers vs. Time",
-                  "Raw Temperature vs. Time from start", "Average Power vs. Time from start",
-                  "Average {} Wavelength vs. Time from start".format(u'\u0394')]
+        titles = ["Wavelengths vs. Time", "Power vs. Wavelength", "Powers vs. Time", "Temperature vs. Time",
+                  "Average Power vs. Time", "Average Wavelength vs. Time"]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
-        ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
+        ylabels = [("{} Wavelength (pm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
                    ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
-                   ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
+                   ("Average {} Power (dBm)".format(u"\u0394"),), ("{} Wavelength (pm)".format(u'\u0394'),)]
         animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
                          animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
 
@@ -363,10 +363,24 @@ def animate_temp_graph(axes, _, ghelper: GraphHelper):
             axes[1].plot(times, temps, color='b')
 
 
+def formatter(x, pos):
+    """Format 1 as 1, 0 as 0, and all values whose absolute values is between
+    0 and 1 without the leading "0." (e.g., 0.7 is formatted as .7 and -0.4 is
+    formatted as -.4)."""
+    val_str = '{:g}'.format(x)
+    if 0 < np.abs(x) < 1:
+        return val_str.replace("0", "", 1)
+    else:
+        return val_str
+
+
 def animate_mpt_graph(axis, _, ghelper: GraphHelper):
     """Animate function for the mean power vs. time graph."""
     if Graphing.clean:
         ghelper.show_graphs()
+
+    if ghelper.showing_sub:
+        axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
 
     if Graphing.data_coll is not None and not Graphing.clean:
         times, power_diffs = Graphing.data_coll.times, Graphing.data_coll.mean_power_diffs
@@ -381,12 +395,13 @@ def animate_indiv_waves(axis, snums, ghelper: GraphHelper):
     if Graphing.data_coll is not None and not Graphing.clean:
         times, wavelens, wavelen_diffs = Graphing.data_coll.times, Graphing.data_coll.wavelens, \
                                          Graphing.data_coll.wavelen_diffs
+        wavelen_diffs = [w * 1000 for w in wavelen_diffs]
         idx = 0
         axes = []
         for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, waves, color=color)[0])
+            axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
             if len(axis) > 1:
-                axis[1].plot(times, wave_diffs, color=color)
+                axis[1].plot(times, waves, color=color)
             idx += 1
 
         if len(axis) > 1:
