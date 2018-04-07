@@ -348,7 +348,8 @@ def animate_wp_graph(axis, snums, ghelper: GraphHelper):
         font_size = 8
         if platform.system() == "Linux":
             font_size = 10
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', ncol=int(len(snums) / 2 + 0.5),
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                ncol=int(len(snums) / 2 + 0.5),
                                 fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
