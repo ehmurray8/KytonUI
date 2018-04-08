@@ -5,13 +5,11 @@ import threading
 import time
 from tkinter import messagebox as mbox
 
-import file_helper as fh
+from fbgui import file_helper as fh, helpers as help
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
-from constants import HEX_COLORS, BAKING, CAL
+from fbgui.constants import HEX_COLORS, BAKING, CAL
 from matplotlib import style
-
-import helpers as help
 
 style.use("kyton")
 

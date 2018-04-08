@@ -11,17 +11,13 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
-import dev_helper as dev_helper
-import file_helper as fh
-import graphing as graphing
-import options_frame as options_frame
-import ui_helper as ui_helper
+from fbgui import file_helper as fh, graphing as graphing, helpers, dev_helper as dev_helper, ui_helper as ui_helper, \
+    options_frame as options_frame
 from PIL import Image, ImageTk
-from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
+from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from table import Table
-import helpers
+from fbgui.table import Table
 
 
 class ProgramType(object):

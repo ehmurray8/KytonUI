@@ -10,13 +10,11 @@ from queue import Queue, Empty
 from tkinter import ttk
 from shutil import copy2
 
-import constants
 import matplotlib
 import visa
-from baking_program import BakingProgram
-from cal_program import CalProgram
-import devices
-import create_excel
+from fbgui.baking_program import BakingProgram
+from fbgui.cal_program import CalProgram
+from fbgui import create_excel, constants, devices
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox

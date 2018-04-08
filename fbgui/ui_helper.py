@@ -5,7 +5,7 @@ from tkinter import ttk, filedialog
 
 from PIL import Image, ImageTk
 
-from constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
+from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR
 
 
 def file_entry(container, label_text, row, width, def_file=""):

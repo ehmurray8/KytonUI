@@ -4,8 +4,8 @@ import tkinter.font as tkFont
 import tkinter.ttk as ttk
 from dateutil import parser
 import sqlite3
-import file_helper as fh
-from constants import CAL
+from fbgui import file_helper as fh
+from fbgui.constants import CAL
 
 
 class Table(ttk.Frame):
