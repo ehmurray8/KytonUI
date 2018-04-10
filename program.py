@@ -280,14 +280,15 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
             self.pause_program()
 
-    def set_oven_temp(self, temp: float=None):
+    def set_oven_temp(self, temp: float=None, heat=True):
         if self.need_oven:
             self.master.conn_dev(OVEN)
             if temp is None:
                 temp = self.options.set_temp.get()
             self.master.oven.set_temp(temp)
-            self.master.oven.cooling_off()
-            self.master.oven.heater_on()
+            if heat:
+                self.master.oven.cooling_off()
+                self.master.oven.heater_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))

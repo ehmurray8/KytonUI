@@ -188,6 +188,10 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
         new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
 
+        if is_cal:
+            new_df['Drift Rate (mK/min)'] = df['Drift Rate']
+            new_df['Real Point'] = df['Real Point']
+
         defaults = {'font_size': 14}
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
 
