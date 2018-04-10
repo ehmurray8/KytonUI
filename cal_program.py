@@ -26,7 +26,7 @@ class CalProgram(Program):
             self.master.conn_dev(TEMP)
             temp = float((self.master.temp_controller.get_temp_k()))
             heat = False
-            if temp < temps_arr[0]:
+            if temp < float(temps_arr[0]) + 274.15:
                 heat = True
             self.set_oven_temp(temps_arr[0], heat)
             self.disconnect_devices()
@@ -58,7 +58,7 @@ class CalProgram(Program):
         temp = float((self.master.temp_controller.get_temp_k()))
         print("Temperature: {}".format(temp))
         self.disconnect_devices()
-        if temp < float(temps_arr[0]) + .1:
+        if float(temps_arr[0] + 274.15) - .25 < temp < float(temps_arr[0] + 274.15) + .25:
             return True
         return False
 
