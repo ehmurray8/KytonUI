@@ -150,7 +150,8 @@ def create_data_coll(name, snums, is_cal):
         data_coll.mean_power_diffs /= len(data_coll.mean_power_diffs)
         if is_cal:
             data_coll.avg_drift_rates = df['Drift Rate']
-            data_coll.real_points = df['Real Point'].astype('bool')
+            data_coll.real_points = df['Real Point']
+            print("Real points: {}".format(data_coll.real_points))
         return data_coll, df
     except (KeyError, IndexError):
         raise RuntimeError("No data has been collected yet")
@@ -191,6 +192,9 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         if is_cal:
             new_df['Drift Rate (mK/min)'] = df['Drift Rate']
             new_df['Real Point'] = df['Real Point']
+
+        new_df = new_df[new_df['Real Point'] == 'True']
+        del new_df['Real Point']
 
         defaults = {'font_size': 14}
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))

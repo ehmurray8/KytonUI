@@ -42,15 +42,6 @@ def browse_file(file_label_var):
         pass
 
 
-def string_entry(container, label_text, row, width, default_str=""):
-    """Creates a string entry, and returns a reference to the entry var."""
-    text_var = tk.StringVar()
-    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
-    ttk.Entry(container, textvariable=text_var, width=width, font=ENTRY_FONT).grid(row=row, column=2, sticky='ew')
-    text_var.set(default_str)
-    return text_var
-
-
 def serial_num_entry(container, row, col, def_snum, switch_pos):
     """Creates a serial number entry with channel number and switch position."""
     snum_frame = ttk.Frame(container)
@@ -118,24 +109,6 @@ def array_entry(container, label_text, row, width, height, default_arr=None):
     if default_arr is not None:
         text.insert(1.0, str(default_arr))
     return text
-
-
-def format_selected(flag):
-    """Format binary as on/off."""
-    if flag == 1:
-        return "On"
-    return "Off"
-
-
-def open_center(width, height, root):
-    """Open num fiber dialog in center of the screen."""
-    width_screen = root.winfo_screenwidth()
-    height_screen = root.winfo_screenheight()
-
-    x_cord = (width_screen / 2) - (width / 2)
-    y_cord = (height_screen / 2) - (height / 2)
-
-    root.geometry("{}x{}-{}+{}".format(int(width), int(height), int(x_cord), int(y_cord)))
 
 
 def lock_widgets(options_frame):

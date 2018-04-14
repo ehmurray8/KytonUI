@@ -128,7 +128,6 @@ class Graphing(object):
 
     data_coll = None
     data_coll_cal = None
-    clean = False
 
     def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master, snums):
         self.file_name = fname
@@ -220,10 +219,6 @@ class Graphing(object):
         self.is_playing = True
         for graph in self.graphs:
             graph.play()
-
-    def __file_error(self):
-        mbox.showwarning("File Error", "Inconsistency in the number of reading being" +
-                         "stored in file {}.".format(self.file_name.get()))
 
     def show_subplots(self, event=None):
         """Show all the subplots in the graphing page."""
@@ -399,7 +394,7 @@ def __get_drift_rates_avg():
     drates_real = []
     times_real = []
     for t, drate, real_point in zip(times, Graphing.data_coll_cal.drift_rates, Graphing.data_coll_cal.real_points):
-        if real_point:
+        if real_point == "True":
             drates_real.append(drate)
             times_real.append(t)
 

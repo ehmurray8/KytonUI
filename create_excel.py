@@ -58,7 +58,7 @@ class Table(ttk.Frame):
             vals = self.tree.item(item)['values']
             fname = self.file_paths[vals[0]]
             snums = self.snums[vals[0]].split(",")
-            threading.Thread(target=fh.create_excel_file, args=(fname, snums, vals[1] == CAL.lower())).start()
+            threading.Thread(target=fh.create_excel_file, args=(fname, snums, vals[2] == CAL.lower())).start()
 
     def setup_headers(self):
         for i, col in enumerate(self.headers):

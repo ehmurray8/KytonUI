@@ -11,7 +11,6 @@ class Table(ttk.Frame):
         self.headers = []
         self.tree = None
         self.func = func
-        self.stop_flag = False
         self.item_ids = []
 
     def _setup_widgets(self):

@@ -32,21 +32,15 @@ class ProgramType(object):
         if self.prog_id == BAKING:
             self.start_title = "Start Baking"
             self.title = "Configure Baking"
-            self.in_prog_msg = "Baking..."
             self.plot_num = 230
-            self.num_graphs = 6
         else:
             self.start_title = "Start Calibration"
             self.title = "Configure Calibration"
-            self.in_prog_msg = "Calibrating..."
             self.plot_num = 230
-            self.num_graphs = 6
 
 
 class Program(ttk.Notebook):
     """Definition of the abstract program page."""
-    __metaclass_ = abc.ABCMeta
-
     def __init__(self, master, program_type):
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
@@ -59,13 +53,9 @@ class Program(ttk.Notebook):
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
-        self.stable_count = 0
         self.running = False
-        self.cancel_run = False
-        self.chan_error_been_warned = False
         self.start_btn = None
         self.delayed_prog = None
-        self.table_thread = None
         self.need_oven = False
 
         self.conf_parser = configparser.ConfigParser()
@@ -140,20 +130,6 @@ class Program(ttk.Notebook):
         threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
                                                             self.program_type.prog_id == CAL)).start()
 
-    def valid_header(self, csv_file, file_lines):
-        saved_snums = helpers.clean_str_list(next(file_lines).split(","))
-        num_conf_fbgs = len(helpers.flatten(self.options.sn_ents))
-        if len(saved_snums) != num_conf_fbgs:
-            file_error(csv_file, "contains {} FBGs you are attempting to record data for {} FBGs. "
-                                 .format(len(saved_snums), num_conf_fbgs) +
-                                 "The file contains the FBGS: {}".format(str(saved_snums)))
-            return False
-        elif set(saved_snums) != set(x.get() for x in helpers.flatten(self.options.sn_ents)):
-            file_error(csv_file, "has FBGs in it that differ from the ones you have configured the program to record "
-                                 "data for. The file contains the FBGs: {}".format(str(saved_snums)))
-            return False
-        return True
-
     def is_valid_file(self):
         conn = sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
@@ -199,7 +175,8 @@ class Program(ttk.Notebook):
                                "Please add fbg entries to your configuration before running the program.")
             else:
                 if self.is_valid_file():
-                    for chan, snum, pos in zip(helpers.flatten(self.options.chan_nums), helpers.flatten(self.options.sn_ents),
+                    for chan, snum, pos in zip(helpers.flatten(self.options.chan_nums),
+                                               helpers.flatten(self.options.sn_ents),
                                                helpers.flatten(self.options.switch_positions)):
                         if snum.get() and snum.get() not in self.snums:
                             self.snums.append(snum.get())
@@ -308,11 +285,13 @@ class Program(ttk.Notebook):
         else:
             self.conf_parser.set(BAKING, "running", "false")
             self.conf_parser.set(self.program_type.prog_id, "use_cool", str(self.options.cooling.get()))
-            self.conf_parser.set(self.program_type.prog_id, "num_temp_readings", str(self.options.num_temp_readings.get()))
+            self.conf_parser.set(self.program_type.prog_id, "num_temp_readings",
+                                 str(self.options.num_temp_readings.get()))
             self.conf_parser.set(self.program_type.prog_id, "temp_interval", str(self.options.temp_interval.get()))
             self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
-            self.conf_parser.set(self.program_type.prog_id, "target_temps", ",".join(str(x) for x in self.options.get_target_temps()))
+            self.conf_parser.set(self.program_type.prog_id, "target_temps",
+                                 ",".join(str(x) for x in self.options.get_target_temps()))
 
         with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
@@ -341,7 +320,6 @@ class Program(ttk.Notebook):
         self.conf_parser.set(CAL, "running", "false")
         with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
             self.conf_parser.write(pcfg)
-        self.stable_count = 0
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -357,21 +335,21 @@ class Toolbar(NavigationToolbar2TkAgg):
     """Overrides the default Matplotlib toolbar to add play and pause animation buttons."""
     def __init__(self, figure_canvas, parent):
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
-                              ('Back', 'Back to  previous view', 'back', 'back'),
-                              ('Forward', 'Forward to next view',
-                               'forward', 'forward'),
-                              (None, None, None, None),
-                              ('Pan', 'Pan axes with left mouse, zoom with right',
-                               'move', 'pan'),
-                              ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-                              (None, None, None, None),
-                              ('Subplots', 'Configure subplots',
-                               'subplots', 'configure_subplots'),
-                              ('Save', 'Save the figure',
-                               'filesave', 'save_figure'),
-                              (None, None, None, None),
-                              ('Pause', 'Pause the animation', 'pause', 'pause'),
-                              ('Play', 'Play the animation', 'play', 'play'))
+                          ('Back', 'Back to  previous view', 'back', 'back'),
+                          ('Forward', 'Forward to next view',
+                           'forward', 'forward'),
+                          (None, None, None, None),
+                          ('Pan', 'Pan axes with left mouse, zoom with right',
+                           'move', 'pan'),
+                          ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
+                          (None, None, None, None),
+                          ('Subplots', 'Configure subplots',
+                           'subplots', 'configure_subplots'),
+                          ('Save', 'Save the figure',
+                           'filesave', 'save_figure'),
+                          (None, None, None, None),
+                          ('Pause', 'Pause the animation', 'pause', 'pause'),
+                          ('Play', 'Play the animation', 'play', 'play'))
 
         self.figure_canvas = figure_canvas
         self.parent = parent

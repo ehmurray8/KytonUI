@@ -9,9 +9,6 @@ SWITCH = "Optical Switch"
 TEMP = "LSC Temperature Controller"
 DEV_HEADER = "Devices"
 
-BAKE_FID = "Metadata\n"
-CAL_FID = "Caldata\n"
-
 
 class Colors(Enum):
     WHITE = "#f0eff4"

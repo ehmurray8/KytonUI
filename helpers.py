@@ -7,14 +7,6 @@ def flatten(list2d):
     return functools.reduce(lambda x, y: x+y, list2d)
 
 
-def to_ext(file, ext):
-    """
-    Accepts a file name and returns the file name with the specified extension.
-    Extension parameter does not contain a dot.
-    """
-    return os.path.splitext(file)[0] + "." + ext
-
-
 def clean_str_list(str_list):
     """Removes invisible characters from a list of strings, and returns a list of strings."""
     return list(map(lambda s: s.rstrip("\n\r\t"), str_list))

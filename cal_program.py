@@ -3,7 +3,7 @@
 import time
 import math
 import file_helper as fh
-from constants import CAL, TEMP, SWITCH, LASER, OVEN
+from constants import CAL, TEMP, SWITCH, LASER
 from program import Program, ProgramType
 
 
@@ -20,8 +20,6 @@ class CalProgram(Program):
         self.create_excel()
 
     def cal_loop(self, temps_arr):
-        print("Num cycles: {}".format(self.options.num_cal_cycles.get()))
-        print("Temps arr: {}".format(temps_arr))
         for _ in range(self.options.num_cal_cycles.get()):
             self.master.conn_dev(TEMP)
             temp = float((self.master.temp_controller.get_temp_k()))
@@ -35,7 +33,6 @@ class CalProgram(Program):
                 time.sleep(self.options.temp_interval.get())
 
             for temp in temps_arr:
-                print("Setting temp: {}".format(temp))
                 self.set_oven_temp(temp)
                 self.disconnect_devices()
                 time.sleep(self.options.temp_interval.get())
@@ -53,17 +50,14 @@ class CalProgram(Program):
 
     def reset_temp(self, temps_arr):
         """Checks to see if the the temperature is within the desired amount."""
-        print("Resetting temp...")
         self.master.conn_dev(TEMP)
         temp = float((self.master.temp_controller.get_temp_k()))
-        print("Temperature: {}".format(temp))
         self.disconnect_devices()
-        if float(temps_arr[0] + 274.15) - .25 < temp < float(temps_arr[0] + 274.15) + .25:
+        if temp <= float(temps_arr[0] + 274.15) - 5:
             return True
         return False
 
     def check_drift_rate(self):
-        print("Checking drift rate...")
         self.master.conn_dev(TEMP)
         self.master.conn_dev(LASER)
         if sum(len(switch) for switch in self.switches):
@@ -76,22 +70,15 @@ class CalProgram(Program):
         curr_time = time.time()
         self.disconnect_devices()
 
-        print("Start time: {}, Start temp: {}".format(start_time, start_temp))
-        print("Waves: {}, Amps: {}".format(waves, amps))
-        print("Curr time: {}, Curr temp".format(curr_time, curr_temp))
-
         drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
         drift_rate *= 60000.
 
-        print("Drift rate: {}".format(drift_rate))
-
         if drift_rate <= self.options.drift_rate.get():
-            print("Writing real point...")
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                         curr_temp, waves, amps, CAL, self.table, drift_rate, True)
+            print("Real drift rate: ".format(drift_rate))
             return True
 
-        print("Writing point...")
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                     curr_temp, waves, amps, CAL, self.table, drift_rate, False)
         return False
