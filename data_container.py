@@ -6,7 +6,9 @@ class DataCollection(object):
 
     def __init__(self):
         self.times = []  # delta time in hours
+        self.times_real = []
         self.timestamps = []  # timestamps
+        self.timestamps_real = []
 
         self.temps = []  # temps in K, removed repeat data
         self.temp_diffs = []  # delta temperature from start

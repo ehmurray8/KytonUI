@@ -111,8 +111,7 @@ def db_to_df(func, name):
         del df["ID"]
         conn.close()
         return df
-    except (pd.io.sql.DatabaseError, sqlite3.OperationalError) as e:
-        # print(e)
+    except (pd.io.sql.DatabaseError, sqlite3.OperationalError):
         return pd.DataFrame()
 
 
@@ -122,7 +121,8 @@ def create_data_coll(name, snums, is_cal):
         if is_cal:
             func = CAL
         df = db_to_df(func, name)
-        real_points_df = df["Real Point" == "True"]
+        if is_cal:
+            real_points_df = df[df['Real Point'] == 'True']
         data_coll = datac.DataCollection()
         headers = create_headers(snums, is_cal, True)
         data_coll.timestamps = df["Date Time"]
@@ -133,50 +133,55 @@ def create_data_coll(name, snums, is_cal):
         first_temp = data_coll.temps[0]
         data_coll.temp_diffs = np.array([temp - first_temp for temp in data_coll.temps])
 
-        if is_cal:
-            first_temp = real_points_df["Mean Temperature (K)"][0]
-            data_coll.temp_diffs_real = np.array([temp - first_temp for temp in real_points_df["Mean Temperature (K)"]])
-
         wave_headers = [head for head in headers if "Wave" in head]
         pow_headers = [head for head in headers if "Pow" in head]
         for wave_head, pow_head in zip(wave_headers, pow_headers):
             data_coll.wavelens.append(df[wave_head])
-            data_coll.wavelens_real.append(real_points_df[wave_head])
             data_coll.powers.append(df[pow_head])
-            data_coll.powers_real.append((real_points_df[pow_head]))
+            if is_cal:
+                data_coll.powers_real.append((real_points_df[pow_head]))
+                data_coll.wavelens_real.append(real_points_df[wave_head])
         data_coll.wavelen_diffs = np.array([np.array([w - wave[0] for w in wave]) for wave in data_coll.wavelens])
         data_coll.power_diffs = np.array([np.array([p - power[0] for p in power]) for power in data_coll.powers])
 
-        data_coll.wavelen_diffs_real = np.array([np.array([w - wave[0] for w in wave])
-                                                 for wave in data_coll.wavelens_real])
-        data_coll.power_diffs_real = np.array([np.array([p - power[0] for p in power])
-                                               for power in data_coll.powers_real])
-
         data_coll.mean_wavelen_diffs = np.array(data_coll.wavelen_diffs[0])
-        data_coll.mean_wavelen_diffs = np.array(data_coll.wavelen_diffs_real[0])
         data_coll.mean_power_diffs = np.array(data_coll.power_diffs[0])
-        data_coll.mean_power_diffs = np.array(data_coll.power_diffs_real[0])
+
         for wave_diff, pow_diff in zip(data_coll.wavelen_diffs[1:], data_coll.power_diffs[1:]):
             data_coll.mean_wavelen_diffs += wave_diff
             data_coll.mean_power_diffs += pow_diff
+
         data_coll.mean_wavelen_diffs /= len(data_coll.mean_wavelen_diffs)
         data_coll.mean_wavelen_diffs *= 1000
         data_coll.mean_power_diffs /= len(data_coll.mean_power_diffs)
 
-        for wave_diff, pow_diff in zip(data_coll.wavelen_diffs_real[1:], data_coll.power_diffs_real[1:]):
-            data_coll.mean_wavelen_diffs_real += wave_diff
-            data_coll.mean_power_diffs_real += pow_diff
-
-        data_coll.mean_wavelen_diffs_real /= len(data_coll.mean_wavelen_diffs_real)
-        data_coll.mean_wavelen_diffs_real *= 1000
-        data_coll.mean_power_diffs_real /= len(data_coll.mean_power_diffs_real)
-
         if is_cal:
+            data_coll.timestamps_real = real_points_df["Date Time"]
+            data_coll.times_real = [(time - start_time) / 60 / 60 for time in data_coll.timestamps_real]
+
+            first_temp = list(real_points_df["Mean Temperature (K)"])[0]
+            data_coll.temp_diffs_real = np.array([temp - first_temp for temp in real_points_df["Mean Temperature (K)"]])
+
+            data_coll.wavelen_diffs_real = np.array([np.array([w - list(wave)[0] for w in wave])
+                                                     for wave in data_coll.wavelens_real])
+            data_coll.power_diffs_real = np.array([np.array([p - list(power)[0] for p in power])
+                                       for power in data_coll.powers_real])
+
+            data_coll.mean_wavelen_diffs_real = np.array(data_coll.wavelen_diffs_real[0])
+            data_coll.mean_power_diffs_real = np.array(data_coll.power_diffs_real[0])
+
+            for wave_diff, pow_diff in zip(data_coll.wavelen_diffs_real[1:], data_coll.power_diffs_real[1:]):
+                data_coll.mean_wavelen_diffs_real += wave_diff
+                data_coll.mean_power_diffs_real += pow_diff
+
+            data_coll.mean_wavelen_diffs_real /= len(data_coll.mean_wavelen_diffs_real)
+            data_coll.mean_wavelen_diffs_real *= 1000
+            data_coll.mean_power_diffs_real /= len(data_coll.mean_power_diffs_real)
+
             data_coll.drift_rates = df['Drift Rate']
             data_coll.real_points = df['Real Point']
         return data_coll, df
     except (KeyError, IndexError) as e:
-        # print(e)
         raise RuntimeError("No data has been collected yet")
 
 
@@ -185,8 +190,14 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     try:
         data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), snums, is_cal)
         new_df = pd.DataFrame()
+        if is_cal:
+            df = df[df["Real Point"] == "True"]
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
-        new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
+        if is_cal:
+            new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times_real
+        else:
+            new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
+
         new_df["Mean Temperature (K)"] = df["Mean Temperature (K)"]
         headers = df.columns.values.tolist()
         wave_headers = [head for head in headers if "Wave" in head]
@@ -197,27 +208,46 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             new_df[col] = df[col]
         for col in pow_headers:
             new_df[col] = df[col]
-        new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
-        new_df["{}T (K)  ".format(u"\u0394")] = data_coll.temp_diffs
-        for snum, delta_wave in zip(snums, data_coll.wavelen_diffs):
+        if is_cal:
+            new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times_real
+            new_df["{}T (K)  ".format(u"\u0394")] = data_coll.temp_diffs_real
+        else:
+            new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
+            new_df["{}T (K)  ".format(u"\u0394")] = data_coll.temp_diffs
+
+        wave_diffs = data_coll.wavelen_diffs
+        if is_cal:
+            wave_diffs = data_coll.wavelen_diffs_real
+        for snum, delta_wave in zip(snums, wave_diffs):
             new_df["{} {}{} (nm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
             new_df["{} {}{} (pm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave * 1000
 
-        new_df["{} Time (hr) ".format(u"\u0394")] = data_coll.times
-        new_df["{}T (K) ".format(u"\u0394")] = data_coll.temp_diffs
-        for snum, delta_pow in zip(snums, data_coll.power_diffs):
+        if is_cal:
+            new_df["{} Time (hr) ".format(u"\u0394")] = data_coll.times_real
+            new_df["{}T (K) ".format(u"\u0394")] = data_coll.temp_diffs_real
+        else:
+            new_df["{} Time (hr) ".format(u"\u0394")] = data_coll.times
+            new_df["{}T (K) ".format(u"\u0394")] = data_coll.temp_diffs
+
+        power_diffs = data_coll.power_diffs
+        if is_cal:
+            power_diffs = data_coll.power_diffs_real
+        for snum, delta_pow in zip(snums, power_diffs):
             new_df["{} {}{} (dBm.)".format(snum, u"\u0394", "P")] = delta_pow
 
-        new_df["{}T (K)".format(u"\u0394")] = data_coll.temp_diffs
-        new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
-        new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
-
         if is_cal:
+            new_df["{}T (K)".format(u"\u0394")] = data_coll.temp_diffs_real
+            new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs_real
+            new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs_real
+
             # new_df['Drift Rate (mK/min)'] = df['Drift Rate']
             new_df['Real Point'] = df['Real Point']
-
-        new_df = new_df[new_df['Real Point'] == 'True']
-        del new_df['Real Point']
+            new_df = new_df[new_df['Real Point'] == 'True']
+            del new_df['Real Point']
+        else:
+            new_df["{}T (K)".format(u"\u0394")] = data_coll.temp_diffs
+            new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_wavelen_diffs
+            new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_power_diffs
 
         defaults = {'font_size': 14}
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
@@ -245,7 +275,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
         # columns_and_rows_to_freeze='A2').save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
-    except RuntimeError as e:
-        # print(e)
+    except RuntimeError:
         mbox.showwarning("Error creating Excel File",
                          "No data has been recorded yet, or the database has been corrupted.")

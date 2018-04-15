@@ -11,7 +11,6 @@ class WarningHandler(object):
     def __init__(self):
         self.warnings = {"Excel": False, "File": False, "Program Running": False, "Config": False, "Location": False,
                          "Connection": False}
-        pass
 
     def handle_msg(self, msg):
         """
