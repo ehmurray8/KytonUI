@@ -156,8 +156,8 @@ class Graphing(object):
                    ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
                    ("Average {} Power (dBm)".format(u"\u0394"),), ("{} Wavelength (pm)".format(u'\u0394'),)]
-        animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
-                         animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
+        animate_funcs = [wave_graph, wave_power_graph, power_graph,
+                         temp_graph, average_power_graph, average_wave_graph]
 
         gs1 = gridspec.GridSpec(10, 1)
         reg_dims1 = (gs1[1:7, :])
@@ -167,18 +167,12 @@ class Graphing(object):
         split_dims2 = (gs1[6:10, :])
         split_dims = (split_dims1, split_dims2)
         mid_dims = ((gs1[1:9, :]), )
-        # mid_dims = (111,)
         dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
             titles[2] = "Average Drift Rate vs.Time"
             xlabels[2] = "Time (hr)"
             ylabels[2] = ("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394'))
-            animate_funcs[2] = animate_drift_rates_avg
-            # titles.append("Average Drift Rate vs.Time")
-            # xlabels.append("Time (hr)")
-            # ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
-            # animate_funcs.append(animate_drift_rates_avg)
-            # dimens.append(reg_dims)
+            animate_funcs[2] = drift_rate_graph
 
         # Create the graph objects and sub plot objects.
         for i, (title, xlbl, ylbl, anim, dimen) in enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):
@@ -265,47 +259,118 @@ class Graphing(object):
                         self.master.after(1500, self.pause)
 
 
-def animate_mwt_graph(axes, _, is_cal: bool):
+def animate_graph(use_snums):
+    def _animate_graph(func):
+        def _wrapper(axes, snums, is_cal):
+            dc = Graphing.data_coll
+            if is_cal:
+                dc = Graphing.data_coll_cal
+            if dc is not None:
+                if use_snums:
+                    func(axes, snums, dc)
+                else:
+                    func(axes, dc)
+        return _wrapper
+    return _animate_graph
+
+
+@animate_graph(False)
+def average_wave_graph(axes, dc):
     """Animate function for the mean wavelength vs. time graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        times, wavelen_diffs = dc.times, dc.mean_wavelen_diffs
-        axes[0].plot(times, wavelen_diffs)
+    times, wavelen_diffs = dc.times, dc.mean_wavelen_diffs
+    axes[0].plot(times, wavelen_diffs)
 
 
-def animate_wp_graph(axis, snums, is_cal: bool):
+@animate_graph(True)
+def wave_power_graph(axis, snums, dc):
     """Animate function for the wavelength vs. power graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        wavelens, powers = dc.wavelens, dc.powers
-        idx = 0
-        axes = []
-        for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
-            axes.append(axis[0].scatter(waves, powers, color=color, s=75))
-            idx += 1
+    wavelens, powers = dc.wavelens, dc.powers
+    idx = 0
+    axes = []
+    for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
+        axes.append(axis[0].scatter(waves, powers, color=color, s=75))
+        idx += 1
 
+    font_size = 8
+    legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                            ncol=int(len(snums) / 2 + 0.5),
+                            fontsize=font_size, fancybox=True, shadow=True)
+    for text in legend.get_texts():
+        text.set_color("black")
+
+
+@animate_graph(True)
+def temp_graph(axes, _, dc):
+    """Animate function for the temperature graph."""
+    times, temp_diffs, temps = dc.times, dc.temp_diffs, dc.temps
+    axes[0].plot(times, temp_diffs)
+    if len(axes) > 1:
+        axes[1].plot(times, temps, color='b')
+
+
+@animate_graph(False)
+def average_power_graph(axis, dc):
+    """Animate function for the mean power vs. time graph."""
+    times, power_diffs = dc.times, dc.mean_power_diffs
+    axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
+    axis[0].plot(times, power_diffs)
+
+
+@animate_graph(True)
+def wave_graph(axis, snums, dc):
+    """Animate function for the individual wavelengths graph."""
+    times, wavelens, wavelen_diffs = dc.times, dc.wavelens, dc.wavelen_diffs
+    wavelen_diffs = [w * 1000 for w in wavelen_diffs]
+    idx = 0
+    axes = []
+    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
+        axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
+        if len(axis) > 1:
+            axis[1].plot(times, waves, color=color)
+        idx += 1
+
+    if len(axis) > 1:
         font_size = 8
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5),
-                                fontsize=font_size, fancybox=True, shadow=True)
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
 
-def animate_temp_graph(axes, _, is_cal: bool):
-    """Animate function for the temperature graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        times, temp_diffs, temps = dc.times, dc.temp_diffs, dc.temps
-        axes[0].plot(times, temp_diffs)
-        if len(axes) > 1:
-            axes[1].plot(times, temps, color='b')
+@animate_graph(True)
+def power_graph(axis, snums, dc):
+    """Animate function for the individual powers graph."""
+    times, powers, power_diffs = dc.times, dc.powers, dc.power_diffs
+    idx = 0
+    axes = []
+    for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
+        axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
+        if len(axis) > 1:
+            axis[1].plot(times, pows, color=color)
+        idx += 1
+
+    if len(axis) > 1:
+        font_size = 8
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+        for text in legend.get_texts():
+            text.set_color("black")
+
+
+@animate_graph(False)
+def drift_rate_graph(axes, _):
+    """Animate function for the drift rates graph."""
+    times, drates, drates_real = __get_drift_rates()
+    axes[0].plot(times, drates)
+    if len(axes) > 1:
+        axes[1].plot(times, drates_real)
+
+
+def __get_drift_rates():
+    times = Graphing.data_coll_cal.times
+    drates = Graphing.data_coll_cal.drift_rates
+    delta_drates = [dr - drates[0] for dr in drates]
+    return times, drates, delta_drates
 
 
 def formatter(x, _):
@@ -317,83 +382,3 @@ def formatter(x, _):
         return val_str.replace("0", "", 1)
     else:
         return val_str
-
-
-def animate_mpt_graph(axis, _, is_cal: bool):
-    """Animate function for the mean power vs. time graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        times, power_diffs = dc.times, dc.mean_power_diffs
-        axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
-        axis[0].plot(times, power_diffs)
-
-
-def animate_indiv_waves(axis, snums, is_cal: bool):
-    """Animate function for the individual wavelengths graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        times, wavelens, wavelen_diffs = dc.times, dc.wavelens, dc.wavelen_diffs
-        wavelen_diffs = [w * 1000 for w in wavelen_diffs]
-        idx = 0
-        axes = []
-        for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
-            if len(axis) > 1:
-                axis[1].plot(times, waves, color=color)
-            idx += 1
-
-        if len(axis) > 1:
-            font_size = 8
-            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-            for text in legend.get_texts():
-                text.set_color("black")
-
-
-def animate_indiv_powers(axis, snums, is_cal: bool):
-    """Animate function for the individual powers graph."""
-    dc = Graphing.data_coll
-    if is_cal:
-        dc = Graphing.data_coll_cal
-    if dc is not None:
-        times, powers, power_diffs = dc.times, dc.powers, dc.power_diffs
-        idx = 0
-        axes = []
-        for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
-            if len(axis) > 1:
-                axis[1].plot(times, pows, color=color)
-            idx += 1
-
-        if len(axis) > 1:
-            font_size = 8
-            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-            for text in legend.get_texts():
-                text.set_color("black")
-
-
-def animate_drift_rates_avg(axes, _, __):
-    """Animate function for the drift rates graph."""
-    if Graphing.data_coll_cal is not None:
-        times, times_real, drates, drates_real = __get_drift_rates_avg()
-        axes[0].plot(times, drates)
-        if len(axes) > 1:
-            axes[1].plot(times_real, drates_real)
-
-
-def __get_drift_rates_avg():
-    times = Graphing.data_coll_cal.times
-
-    drates_real = []
-    times_real = []
-    for t, drate, real_point in zip(times, Graphing.data_coll_cal.drift_rates, Graphing.data_coll_cal.real_points):
-        if real_point == "True":
-            drates_real.append(drate)
-            times_real.append(t)
-
-    return times, times_real, Graphing.data_coll_cal.avg_drift_rates, drates_real
