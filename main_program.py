@@ -16,6 +16,7 @@ from cal_program import CalProgram
 import devices
 import create_excel
 import ui_helper as uh
+from reset_config import reset_config
 
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
@@ -27,6 +28,8 @@ class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        reset_config()
 
         parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
         parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
