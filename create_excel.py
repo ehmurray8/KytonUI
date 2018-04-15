@@ -2,21 +2,21 @@ import os
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-from dateutil import parser
 import sqlite3
 import file_helper as fh
-from constants import CAL
+import ui_helper as uh
+from constants import CAL, DB_PATH
 
 
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: ttk.Frame, **kwargs):
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]
         self.tree = None
         self.item_ids = []
-        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")
         res = cur.fetchall()
@@ -62,20 +62,14 @@ class Table(ttk.Frame):
 
     def setup_headers(self):
         for i, col in enumerate(self.headers):
-            self.tree.heading(col, text=col.title(), command=lambda c=col: sortby(self.tree, c, 0))
+            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
             # adjust the column's width to the header string
             self.tree.column(col, width=tkFont.Font().measure(col.title()))
-
-    def get_all_children(self, item=""):
-        children = self.tree.get_children(item)
-        for child in children:
-            children += self.get_all_children(child)
-        return children
 
     def add_data(self, item):
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
-        if len(self.get_all_children()) > 100:
+        if len(uh.get_all_children_tree(self.tree)) > 100:
             self.tree.delete(self.item_ids.pop(0))
 
         # adjust column's width if necessary to fit each value
@@ -83,31 +77,3 @@ class Table(ttk.Frame):
             col_w = tkFont.Font().measure(val)
             if self.tree.column(self.headers[ix], width=None) < int(col_w * 3):
                 self.tree.column(self.headers[ix], width=int(col_w * 3))
-
-    def reset(self):
-        self.tree.delete(*self.tree.get_children())
-
-
-def sortby(tree, col, descending):
-    """sort tree contents when a column header is clicked on"""
-    # grab values to sort
-    data = [(tree.set(child, col), child) for child in tree.get_children('')]
-    # if the data to be sorted is numeric change to float
-    try_date = False
-    try:
-        data = [(float(d[0]), d[1]) for d in data]
-    except ValueError:
-        try_date = True
-
-    if try_date:
-        try:
-            data = [(parser.parse(d[0]), d[1]) for d in data]
-        except ValueError:
-            pass
-
-    # now sort the data in place
-    data.sort(reverse=descending)
-    for ix, item in enumerate(data):
-        tree.move(item[1], '', ix)
-    # switch the heading so it will sort in the opposite direction
-    tree.heading(col, command=lambda col=col: sortby(tree, col, int(not descending)))

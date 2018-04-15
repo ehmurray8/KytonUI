@@ -9,7 +9,7 @@ from tkinter import ttk
 import ui_helper as uh
 from constants import BAKING, CAL
 
-import helpers as help
+import helpers
 
 
 class OptionsPanel(ttk.Frame):
@@ -25,7 +25,6 @@ class OptionsPanel(ttk.Frame):
         self.snum_frames = [[], [], [], []]
 
         # Init member widgets
-        self.baking_temp = tk.DoubleVar()
         self.file_name = tk.StringVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
@@ -105,7 +104,7 @@ class OptionsPanel(ttk.Frame):
         """
         Returns the target temps as an array, doesn't catch the ValueError exception possibility.
         """
-        return help.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
+        return helpers.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
 
     def create_options_grid(self):
         """Creates the grid for the user to configure options."""
@@ -221,7 +220,7 @@ class OptionsPanel(ttk.Frame):
             snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
             positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
             try:
-                positions = help.list_cast(positions, int)
+                positions = helpers.list_cast(positions, int)
                 for snum, pos in zip(snums, positions):
                     self.add_fbg(self.fbg_grid, i, snum, pos)
             except ValueError:

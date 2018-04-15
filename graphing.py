@@ -1,18 +1,21 @@
 import gc
 import os
-import platform
 import threading
+from tkinter import StringVar
+from typing import Tuple, List, Callable, Any, Union
 import time
-from tkinter import messagebox as mbox
 import matplotlib.ticker as mtick
 import file_helper as fh
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
-from constants import HEX_COLORS, BAKING, CAL
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from constants import HEX_COLORS, BAKING, CAL, DB_PATH
 from matplotlib import style
+from matplotlib.figure import Figure
 import numpy as np
 import helpers
-
+from graph_toolbar import Toolbar
+from data_container import DataCollection
 
 style.use("kyton")
 
@@ -21,7 +24,8 @@ class Graph(object):
     """
     Class describes a specific graph that can be represented as a subplot or a main plot.
     """
-    def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal, snums):
+    def __init__(self, title: str, xlabel: str, ylabels: Tuple[str], animate_func: Callable, fig: Figure,
+                 dims: List[Union[int, Any]], fname: StringVar, is_cal: bool, snums: List[str]):
         self.title = title
         self.is_cal = is_cal
         self.xlabel = xlabel
@@ -68,7 +72,7 @@ class Graph(object):
 
     def check_val_file(self, axes_tuple):
         name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = fh.sqlite3.connect(os.path.join("db", "program_data.db"))
+        conn = fh.sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         func = BAKING
         if self.is_cal:
@@ -126,10 +130,11 @@ class Graph(object):
 class Graphing(object):
     """Class used for graphing the individual Graph objects."""
 
-    data_coll = None
-    data_coll_cal = None
+    data_coll: DataCollection = None
+    data_coll_cal: DataCollection = None
 
-    def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master, snums):
+    def __init__(self, fname: StringVar, dims: List[Union[int, Any]], is_cal: bool, figure: Figure,
+                 canvas: FigureCanvasTkAgg, toolbar: Toolbar, master, snums: List[str]):
         self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
@@ -284,8 +289,6 @@ def animate_wp_graph(axis, snums, is_cal: bool):
             idx += 1
 
         font_size = 8
-        if platform.system() == "Linux":
-            font_size = 10
         legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
                                 ncol=int(len(snums) / 2 + 0.5),
                                 fontsize=font_size, fancybox=True, shadow=True)
@@ -345,8 +348,6 @@ def animate_indiv_waves(axis, snums, is_cal: bool):
 
         if len(axis) > 1:
             font_size = 8
-            if platform.system() == "Linux":
-                font_size = 10
             legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
                                     ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
             for text in legend.get_texts():
@@ -370,9 +371,6 @@ def animate_indiv_powers(axis, snums, is_cal: bool):
 
         if len(axis) > 1:
             font_size = 8
-            if platform.system() == "Linux":
-                font_size = 10
-
             legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
                                     ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
             for text in legend.get_texts():

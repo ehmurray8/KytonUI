@@ -11,17 +11,19 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
+from PIL import ImageTk, Image
 import dev_helper as dev_helper
 import file_helper as fh
 import graphing as graphing
 import options_frame as options_frame
 import ui_helper as ui_helper
-from PIL import Image, ImageTk
-from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH,\
+    PROG_CONFIG_PATH, DB_PATH, DEV_CONFIG_PATH
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from table import Table
 import helpers
+from graph_toolbar import Toolbar
 
 
 class ProgramType(object):
@@ -41,82 +43,33 @@ class ProgramType(object):
 
 class Program(ttk.Notebook):
     """Definition of the abstract program page."""
+
     def __init__(self, master, program_type):
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
-
         super().__init__(master.main_notebook, style='InnerNB.TNotebook')
 
+        self.conf_parser = configparser.ConfigParser()
+        self.conf_parser.read(PROG_CONFIG_PATH)
         self.master = master
         self.connection_thread: Thread = None
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
         self.snums = []
-        self.running = False
         self.start_btn = None
-        self.delayed_prog = None
         self.need_oven = False
+        self.options: options_frame.OptionsPanel = None
+        self.table: Table = None
+        self.graph_helper: graphing.Graphing = None
 
-        self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
-
-        self.config_frame = ttk.Frame(self)
-        self.graph_frame = ttk.Frame(self)
-        table_frame = ttk.Frame(self)
-
-        # Need images as instance variables to prevent garbage collection
-        assets_path = os.path.join("assets")
-        config_path = os.path.join(assets_path, "config.png")
-        graph_path = os.path.join(assets_path, "graph.png")
-        file_path = os.path.join(assets_path, "file.png")
-        img_config = Image.open(config_path)
-        img_graph = Image.open(graph_path)
-        img_file = Image.open(file_path)
-
-        self.img_config = ImageTk.PhotoImage(img_config)
-        self.img_graph = ImageTk.PhotoImage(img_graph)
-        self.img_table = ImageTk.PhotoImage(img_file)
-
-        # Set up config tab
-        self.add(self.config_frame, image=self.img_config)
-        self.options = options_frame.OptionsPanel(self.config_frame, self.program_type.prog_id)
-        self.start_btn = self.options.create_start_btn(self.start)
-        self.options.init_fbgs()
-        self.options.pack(expand=True, side="right", fill="both", padx=50, pady=15)
-
-        # Set up graphing tab
-        self.add(self.graph_frame, image=self.img_graph)
-
-        # Set up table tab
-        self.add(table_frame, image=self.img_table)
-        ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
-        self.table = Table(table_frame, self.create_excel)
-        self.table.setup_headers([])
-        self.table.pack(fill="both", expand=True)
-
-        # Graphs need to be empty until csv is created
-        self.fig = Figure(figsize=(5, 5), dpi=100)
-
-        self.canvas = FigureCanvasTkAgg(self.fig, self.graph_frame)
-        self.canvas.show()
-        is_cal = False
-        if self.program_type.prog_id == CAL:
-            is_cal = True
-
-        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        self.toolbar = Toolbar(self.canvas, self.graph_frame)
-        self.toolbar.update()
-        file_name = self.options.file_name
-        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, is_cal, self.fig,
-                                              self.canvas, self.toolbar, self.master, self.snums)
-        self.toolbar.set_gh(self.graph_helper)
-        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.config_photo = ImageTk.PhotoImage(Image.open(CONFIG_IMG_PATH))
+        self.graph_photo = ImageTk.PhotoImage(Image.open(GRAPH_PATH))
+        self.file_photo = ImageTk.PhotoImage(Image.open(FILE_PATH))
+        self.setup_tabs()
 
         is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
         is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
-
         if is_running:
             self.start()
 
@@ -130,8 +83,42 @@ class Program(ttk.Notebook):
         threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
                                                             self.program_type.prog_id == CAL)).start()
 
+    def setup_tabs(self):
+        """Setup the configuration, graphing, and table tabs."""
+        config_frame = ttk.Frame(self)
+        graph_frame = ttk.Frame(self)
+        table_frame = ttk.Frame(self)
+
+        # Set up config tab
+        self.add(config_frame, image=self.config_photo)
+        self.options = options_frame.OptionsPanel(config_frame, self.program_type.prog_id)
+        self.start_btn = self.options.create_start_btn(self.start)
+        self.options.init_fbgs()
+        self.options.pack(expand=True, side="right", fill="both", padx=50, pady=15)
+
+        # Set up graphing tab
+        self.add(graph_frame, image=self.graph_photo)
+
+        # Set up table tab
+        self.add(table_frame, image=self.file_photo)
+        ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
+        self.table = Table(table_frame, self.create_excel)
+        self.table.setup_headers([])
+        self.table.pack(fill="both", expand=True)
+        fig = Figure(figsize=(5, 5), dpi=100)
+        canvas = FigureCanvasTkAgg(fig, graph_frame)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        toolbar = Toolbar(canvas, graph_frame)
+        toolbar.update()
+        file_name = self.options.file_name
+        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, self.program_type.prog_id == CAL,
+                                              fig, canvas, toolbar, self.master, self.snums)
+        toolbar.set_gh(self.graph_helper)
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
     def is_valid_file(self):
-        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         name = helpers.get_file_name(self.options.file_name.get())
         cur.execute("SELECT ID, ProgName, ProgType from map")
@@ -257,7 +244,7 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
             self.pause_program()
 
-    def set_oven_temp(self, temp: float=None, heat=True):
+    def set_oven_temp(self, temp: float = None, heat=True):
         if self.need_oven:
             self.master.conn_dev(OVEN)
             if temp is None:
@@ -274,8 +261,8 @@ class Program(ttk.Notebook):
         self.conf_parser.set(self.program_type.prog_id, "last_folder", last_folder)
         self.conf_parser.set(self.program_type.prog_id, "running", "true")
         for i, (snums, switches) in enumerate(zip(self.channels, self.switches)):
-            self.conf_parser.set(BAKING, "chan{}_fbgs".format(i+1), ",".join(snums))
-            self.conf_parser.set(BAKING, "chan{}_positions".format(i+1), ",".join(str(x) for x in switches))
+            self.conf_parser.set(BAKING, "chan{}_fbgs".format(i + 1), ",".join(snums))
+            self.conf_parser.set(BAKING, "chan{}_positions".format(i + 1), ",".join(str(x) for x in switches))
 
         if self.program_type.prog_id == BAKING:
             self.conf_parser.set(CAL, "running", "false")
@@ -293,11 +280,11 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "target_temps",
                                  ",".join(str(x) for x in self.options.get_target_temps()))
 
-        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
+        with open(PROG_CONFIG_PATH, "w") as pcfg:
             self.conf_parser.write(pcfg)
 
         dev_conf = configparser.ConfigParser()
-        dev_conf.read(os.path.join("config", "devices.cfg"))
+        dev_conf.read(DEV_CONFIG_PATH)
 
         dev_conf.set("Devices", "oven_location", str(self.master.oven_location.get()))
         dev_conf.set("Devices", "controller_location", str(self.master.controller_location.get()))
@@ -306,7 +293,7 @@ class Program(ttk.Notebook):
         dev_conf.set("Devices", "sm125_port", str(self.master.sm125_port.get()))
         dev_conf.set("Devices", "sm125_address", str(self.master.sm125_address.get()))
 
-        with open(os.path.join("config", "devices.cfg"), "w") as dcfg:
+        with open(DEV_CONFIG_PATH, "w") as dcfg:
             dev_conf.write(dcfg)
 
     def pause_program(self):
@@ -318,7 +305,7 @@ class Program(ttk.Notebook):
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
         self.conf_parser.set(CAL, "running", "false")
-        with open(os.path.join("config", "prog_config.cfg"), "w") as pcfg:
+        with open(PROG_CONFIG_PATH, "w") as pcfg:
             self.conf_parser.write(pcfg)
         self.snums = []
         self.channels = [[], [], [], []]
@@ -331,44 +318,3 @@ class Program(ttk.Notebook):
                                          sum(len(s) > 0 for s in self.snums))
 
 
-class Toolbar(NavigationToolbar2TkAgg):
-    """Overrides the default Matplotlib toolbar to add play and pause animation buttons."""
-    def __init__(self, figure_canvas, parent):
-        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
-                          ('Back', 'Back to  previous view', 'back', 'back'),
-                          ('Forward', 'Forward to next view',
-                           'forward', 'forward'),
-                          (None, None, None, None),
-                          ('Pan', 'Pan axes with left mouse, zoom with right',
-                           'move', 'pan'),
-                          ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-                          (None, None, None, None),
-                          ('Subplots', 'Configure subplots',
-                           'subplots', 'configure_subplots'),
-                          ('Save', 'Save the figure',
-                           'filesave', 'save_figure'),
-                          (None, None, None, None),
-                          ('Pause', 'Pause the animation', 'pause', 'pause'),
-                          ('Play', 'Play the animation', 'play', 'play'))
-
-        self.figure_canvas = figure_canvas
-        self.parent = parent
-        self.graphing_helper = None
-        super().__init__(self.figure_canvas, self.parent)
-
-    def set_gh(self, graphing_helper):
-        """Sets the graphing helper."""
-        self.graphing_helper = graphing_helper
-
-    def play(self):
-        """Plays graph animation linked to play button on toolbar."""
-        self.graphing_helper.play()
-
-    def pause(self):
-        """Pauses graph animation linked to button on toolbar."""
-        self.graphing_helper.pause()
-
-
-def file_error(csv_file, extra_info):
-        mbox.showerror("File Error", "The file {} cannot be used as the file for this program, this file "
-                                       .format(csv_file) + extra_info)

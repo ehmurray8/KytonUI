@@ -1,6 +1,7 @@
 """Containts the calibration program page."""
 
 import time
+from typing import List
 import math
 import file_helper as fh
 from constants import CAL, TEMP, SWITCH, LASER
@@ -19,20 +20,20 @@ class CalProgram(Program):
         self.cal_loop(temps_arr)
         self.create_excel()
 
-    def cal_loop(self, temps_arr):
+    def cal_loop(self, temps: List[float]):
         for _ in range(self.options.num_cal_cycles.get()):
             self.master.conn_dev(TEMP)
             temp = float((self.master.temp_controller.get_temp_k()))
             heat = False
-            if temp < float(temps_arr[0]) + 274.15:
+            if temp < float(temps[0]) + 274.15 - 5:
                 heat = True
-            self.set_oven_temp(temps_arr[0], heat)
+            self.set_oven_temp(temps[0] - 5, heat)
             self.disconnect_devices()
 
-            while not self.reset_temp(temps_arr):
+            while not self.reset_temp(temps):
                 time.sleep(self.options.temp_interval.get())
 
-            for temp in temps_arr:
+            for temp in temps:
                 self.set_oven_temp(temp)
                 self.disconnect_devices()
                 time.sleep(self.options.temp_interval.get())
@@ -40,24 +41,24 @@ class CalProgram(Program):
                 while not self.check_drift_rate():
                     time.sleep(self.options.temp_interval.get())
 
-            self.set_oven_temp(temps_arr[0], False)
+            self.set_oven_temp(temps[0] - 5, False)
             if self.options.cooling.get():
                 self.master.oven.cooling_on()
             self.disconnect_devices()
 
-            while not self.reset_temp(temps_arr):
+            while not self.reset_temp(temps):
                 time.sleep(self.options.temp_interval.get())
 
-    def reset_temp(self, temps_arr):
+    def reset_temp(self, temps: List[float]) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
         self.master.conn_dev(TEMP)
         temp = float((self.master.temp_controller.get_temp_k()))
         self.disconnect_devices()
-        if temp <= float(temps_arr[0] + 274.15) - 5:
+        if temp <= float(temps[0] + 274.15) - 5:
             return True
         return False
 
-    def check_drift_rate(self):
+    def check_drift_rate(self) -> bool:
         self.master.conn_dev(TEMP)
         self.master.conn_dev(LASER)
         if sum(len(switch) for switch in self.switches):
@@ -76,7 +77,9 @@ class CalProgram(Program):
         if drift_rate <= self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                         curr_temp, waves, amps, CAL, self.table, drift_rate, True)
-            print("Real drift rate: ".format(drift_rate))
+            print("Start time: {}, Start temp: {}".format(start_time, start_temp))
+            print("Curr time: {}, Curr temp: {}".format(curr_time, curr_temp))
+            print("Drift rate: {}, {}".format(drift_rate, type(drift_rate)))
             return True
 
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,

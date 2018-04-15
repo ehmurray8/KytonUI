@@ -1,23 +1,20 @@
 """Module used for helping with creating output files."""
-
 import datetime
 import os
 import sqlite3
 from tkinter import messagebox as mbox
-
 import data_container as datac
 import numpy as np
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from constants import HEX_COLORS, CAL, BAKING
-
+from constants import HEX_COLORS, CAL, BAKING, DB_PATH
 import helpers
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
              func, table, drift_rate=None, real_cal_pt=False):
     """Writes the output to sqlite database."""
-    conn = sqlite3.connect(os.path.join("db", "program_data.db"))
+    conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
     prog_exists = program_exists(name, cur, func)
@@ -106,7 +103,7 @@ def create_headers_init(snums, is_cal):
 
 def db_to_df(func, name):
     try:
-        conn = sqlite3.connect(os.path.join("db", "program_data.db"))
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT {} from {} WHERE ProgName = '{}'".format("ID", "map", name))
         table_id = cur.fetchall()[0][0]
@@ -114,7 +111,8 @@ def db_to_df(func, name):
         del df["ID"]
         conn.close()
         return df
-    except (pd.io.sql.DatabaseError, sqlite3.OperationalError):
+    except (pd.io.sql.DatabaseError, sqlite3.OperationalError) as e:
+        # print(e)
         return pd.DataFrame()
 
 
@@ -151,9 +149,9 @@ def create_data_coll(name, snums, is_cal):
         if is_cal:
             data_coll.avg_drift_rates = df['Drift Rate']
             data_coll.real_points = df['Real Point']
-            print("Real points: {}".format(data_coll.real_points))
         return data_coll, df
-    except (KeyError, IndexError):
+    except (KeyError, IndexError) as e:
+        # print(e)
         raise RuntimeError("No data has been collected yet")
 
 
@@ -222,6 +220,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
         # columns_and_rows_to_freeze='A2').save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
-    except RuntimeError:
+    except RuntimeError as e:
+        # print(e)
         mbox.showwarning("Error creating Excel File",
                          "No data has been recorded yet, or the database has been corrupted.")

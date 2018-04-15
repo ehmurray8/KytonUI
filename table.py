@@ -1,6 +1,6 @@
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-from dateutil import parser
+import ui_helper as uh
 
 
 class Table(ttk.Frame):
@@ -35,15 +35,9 @@ class Table(ttk.Frame):
                 self.reset()
             self._setup_widgets()
         for i, col in enumerate(self.headers):
-            self.tree.heading(col, text=col.title(), command=lambda c=col: sortby(self.tree, c, 0))
+            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
             # adjust the column's width to the header string
             self.tree.column(col, width=tkFont.Font().measure(col.title()))
-
-    def get_all_children(self, item=""):
-        children = self.tree.get_children(item)
-        for child in children:
-            children += self.get_all_children(child)
-        return children
 
     def add_data(self, item):
         new_item = []
@@ -55,7 +49,7 @@ class Table(ttk.Frame):
         item = new_item
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
-        if len(self.get_all_children()) > 100:
+        if len(uh.get_all_children_tree(self.tree)) > 100:
             self.tree.delete(self.item_ids.pop(0))
 
         # adjust column's width if necessary to fit each value
@@ -66,28 +60,3 @@ class Table(ttk.Frame):
 
     def reset(self):
         self.tree.delete(*self.tree.get_children())
-
-
-def sortby(tree, col, descending):
-    """sort tree contents when a column header is clicked on"""
-    # grab values to sort
-    data = [(tree.set(child, col), child) for child in tree.get_children('')]
-    # if the data to be sorted is numeric change to float
-    try_date = False
-    try:
-        data = [(float(d[0]), d[1]) for d in data]
-    except ValueError:
-        try_date = True
-
-    if try_date:
-        try:
-            data = [(parser.parse(d[0]), d[1]) for d in data]
-        except ValueError:
-            pass
-
-    # now sort the data in place
-    data.sort(reverse=descending)
-    for ix, item in enumerate(data):
-        tree.move(item[1], '', ix)
-    # switch the heading so it will sort in the opposite direction
-    tree.heading(col, command=lambda col=col: sortby(tree, col, int(not descending)))

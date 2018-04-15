@@ -1,10 +1,8 @@
 """Module for baking program specific logic."""
 import math
 import time
-
 import file_helper as fh
 from constants import BAKING, LASER, SWITCH, TEMP
-
 import program
 
 
