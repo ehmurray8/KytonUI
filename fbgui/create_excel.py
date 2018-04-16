@@ -17,24 +17,26 @@ class Table(ttk.Frame):
         self.tree = None
         self.item_ids = []
         conn = sqlite3.connect(os.path.join("db", "program_data.db"))
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM map;")
-        res = cur.fetchall()
-        ids = [tup[0] for tup in res]
-        names = [tup[1] for tup in res]
-        types = [tup[2] for tup in res]
-        paths = [tup[3] for tup in res]
-        snums = [tup[4] for tup in res]
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM map;")
+            res = cur.fetchall()
+            ids = [tup[0] for tup in res]
+            names = [tup[1] for tup in res]
+            types = [tup[2] for tup in res]
+            paths = [tup[3] for tup in res]
+            snums = [tup[4] for tup in res]
 
-        self.prog_info = {"Id": ids, "Name": names, "Type": types}
-        self.file_paths = {i: path for i, path in zip(self.prog_info["Id"], paths)}
-        self.snums = {i: snum for i, snum in zip(self.prog_info["Id"], snums)}
-        conn.close()
-        self._setup_widgets()
-        self.setup_headers()
-        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
-                                  self.prog_info["Type"][::-1]):
-            self.add_data([i, name, ptype])
+            self.prog_info = {"Id": ids, "Name": names, "Type": types}
+            self.file_paths = {i: path for i, path in zip(self.prog_info["Id"], paths)}
+            self.snums = {i: snum for i, snum in zip(self.prog_info["Id"], snums)}
+            conn.close()
+            self._setup_widgets()
+            self.setup_headers()
+            for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
+                                      self.prog_info["Type"][::-1]):
+                self.add_data([i, name, ptype])
+        except sqlite3.OperationalError: pass
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars

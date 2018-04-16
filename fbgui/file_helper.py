@@ -60,8 +60,11 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
 
 
 def program_exists(name, cur_map, func):
-    cur_map.execute("SELECT ID, ProgName, ProgType from map")
-    rows = cur_map.fetchall()
+    try:
+        cur_map.execute("SELECT ID, ProgName, ProgType from map")
+        rows = cur_map.fetchall()
+    except sqlite3.OperationalError: return False
+
     names = [row[1] for row in rows]
     types = [row[2] for row in rows]
     prog_exists = False
@@ -69,8 +72,7 @@ def program_exists(name, cur_map, func):
         idx = names.index(name)
         if types[idx] == func.lower():
             prog_exists = True
-    except ValueError:
-        pass
+    except ValueError: pass
     return prog_exists
 
 

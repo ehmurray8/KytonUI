@@ -50,7 +50,7 @@ class Program(ttk.Notebook):
         super().__init__(master.main_notebook, style='InnerNB.TNotebook')
 
         self.master = master
-        self.connection_thread: Thread = None
+        self.connection_thread = None
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -151,20 +151,21 @@ class Program(ttk.Notebook):
         return True
 
     def is_valid_file(self):
+        valid = True
         conn = sqlite3.connect(os.path.join("db", "program_data.db"))
         cur = conn.cursor()
         name = helpers.get_file_name(self.options.file_name.get())
-        cur.execute("SELECT ID, ProgName, ProgType from map")
-        rows = cur.fetchall()
-        names = [row[1] for row in rows]
-        types = [row[2] for row in rows]
-        valid = True
         try:
+            cur.execute("SELECT ID, ProgName, ProgType from map")
+            rows = cur.fetchall()
+            names = [row[1] for row in rows]
+            types = [row[2] for row in rows]
             idx = names.index(name)
             if types[idx] != self.program_type.prog_id.lower():
                 valid = False
-        except ValueError:
-            pass
+        except ValueError: pass
+        except sqlite3.OperationalError: pass
+
         if not os.path.isdir(os.path.split(self.options.file_name.get())[0]):
             try:
                 os.mkdir(os.path.split(self.options.file_name.get())[0])

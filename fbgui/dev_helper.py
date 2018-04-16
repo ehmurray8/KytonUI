@@ -60,7 +60,7 @@ def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavel
     waves_list = []
     amps_list = []
     for i, pos in enumerate(pos_used):
-        if pos and lens[i]:
+        if pos and lens is not None and lens[i]:
             waves_list.append(wavelens.pop(0))
             amps_list.append(amps.pop(0))
         else:

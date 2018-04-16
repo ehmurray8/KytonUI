@@ -3,12 +3,10 @@
 import argparse
 import configparser
 import os
-import sys
 import platform
 import socket
 from queue import Queue, Empty
 from tkinter import ttk
-from shutil import copy2
 
 import matplotlib
 import visa
@@ -19,6 +17,7 @@ from fbgui import create_excel, constants, devices
 matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
 import tkinter as tk
+from fbgui import install
 if platform.system() == "Linux":
     from ttkthemes import ThemedStyle
 
@@ -62,10 +61,7 @@ class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        site_packs = [s for s in sys.path if 'site-packages' in s][0]
-        copy2(os.path.join("assets", "kyton.mplstyle"), os.path.join(site_packs, "matplotlib", "mpl-data", "stylelib"))
-        copy2(os.path.join("assets", "play.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
-        copy2(os.path.join("assets", "pause.gif"), os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
+        install.install()
 
         self.use_dev = arg_parse()
 
