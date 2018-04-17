@@ -194,9 +194,9 @@ class Graphing(object):
             try:
                 name = helpers.get_file_name(self.file_name.get())
                 if self.is_cal:
-                    Graphing.data_coll_cal = fh.create_data_coll(name, self.snums, self.is_cal)[0]
+                    Graphing.data_coll_cal = fh.create_data_coll(name, self.is_cal)[0]
                 else:
-                    Graphing.data_coll = fh.create_data_coll(name, self.snums, self.is_cal)[0]
+                    Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
             except RuntimeError:
                 pass
             time.sleep(10)

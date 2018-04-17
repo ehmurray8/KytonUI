@@ -193,6 +193,7 @@ class Program(ttk.Notebook):
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
+
                         self.program_start()
                 else:
                     self.disconnect_devices()

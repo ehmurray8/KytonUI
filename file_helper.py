@@ -7,8 +7,9 @@ import data_container as datac
 import numpy as np
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from constants import HEX_COLORS, CAL, BAKING, DB_PATH
+from constants import HEX_COLORS, CAL, BAKING, DB_PATH, PROG_CONFIG_PATH
 import helpers
+import configparser
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
@@ -115,7 +116,9 @@ def db_to_df(func, name):
         return pd.DataFrame()
 
 
-def create_data_coll(name, snums, is_cal):
+def create_data_coll(name, is_cal, snums=None):
+    if snums is None:
+        snums = get_snums(is_cal)
     try:
         func = BAKING
         if is_cal:
@@ -138,7 +141,7 @@ def create_data_coll(name, snums, is_cal):
         for wave_head, pow_head in zip(wave_headers, pow_headers):
             data_coll.wavelens.append(df[wave_head])
             data_coll.powers.append(df[pow_head])
-            if is_cal:
+            if is_cal and len(real_points_df):
                 data_coll.powers_real.append((real_points_df[pow_head]))
                 data_coll.wavelens_real.append(real_points_df[wave_head])
         data_coll.wavelen_diffs = np.array([np.array([w - wave[0] for w in wave]) for wave in data_coll.wavelens])
@@ -156,6 +159,9 @@ def create_data_coll(name, snums, is_cal):
         data_coll.mean_power_diffs /= len(data_coll.mean_power_diffs)
 
         if is_cal:
+            data_coll.drift_rates = df['Drift Rate']
+
+        if is_cal and len(real_points_df):
             data_coll.timestamps_real = real_points_df["Date Time"]
             data_coll.times_real = [(time - start_time) / 60 / 60 for time in data_coll.timestamps_real]
 
@@ -165,7 +171,7 @@ def create_data_coll(name, snums, is_cal):
             data_coll.wavelen_diffs_real = np.array([np.array([w - list(wave)[0] for w in wave])
                                                      for wave in data_coll.wavelens_real])
             data_coll.power_diffs_real = np.array([np.array([p - list(power)[0] for p in power])
-                                       for power in data_coll.powers_real])
+                                                   for power in data_coll.powers_real])
 
             data_coll.mean_wavelen_diffs_real = np.array(data_coll.wavelen_diffs_real[0])
             data_coll.mean_power_diffs_real = np.array(data_coll.power_diffs_real[0])
@@ -178,7 +184,6 @@ def create_data_coll(name, snums, is_cal):
             data_coll.mean_wavelen_diffs_real *= 1000
             data_coll.mean_power_diffs_real /= len(data_coll.mean_power_diffs_real)
 
-            data_coll.drift_rates = df['Drift Rate']
             data_coll.real_points = df['Real Point']
         return data_coll, df
     except (KeyError, IndexError) as e:
@@ -294,3 +299,16 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     except RuntimeError:
         mbox.showwarning("Error creating Excel File",
                          "No data has been recorded yet, or the database has been corrupted.")
+
+
+def get_snums(is_cal):
+    prog = BAKING
+    if is_cal:
+        prog = CAL
+    cparser = configparser.ConfigParser()
+    cparser.read(PROG_CONFIG_PATH)
+    snums = []
+    for i in range(4):
+        snums.extend(cparser.get(prog, "chan{}_fbgs".format(i+1)).split(","))
+    snums = [s for s in snums if s != '']
+    return snums
