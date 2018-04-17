@@ -169,9 +169,9 @@ class Graphing(object):
         mid_dims = ((gs1[1:9, :]), )
         dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
-            titles[2] = "Average Drift Rate vs.Time"
+            titles[2] = "Drift Rate vs.Time"
             xlabels[2] = "Time (hr)"
-            ylabels[2] = ("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394'))
+            ylabels[2] = ("Drift Rate (mK/min)", "{} Drift Rate (mK/min)".format(u'\u0394'))
             animate_funcs[2] = drift_rate_graph
 
         # Create the graph objects and sub plot objects.

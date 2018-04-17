@@ -19,6 +19,7 @@ class CalProgram(Program):
         temps_arr = self.options.get_target_temps()
         self.cal_loop(temps_arr)
         self.create_excel()
+        self.pause_program()
 
     def cal_loop(self, temps: List[float]):
         for _ in range(self.options.num_cal_cycles.get()):
@@ -77,9 +78,6 @@ class CalProgram(Program):
         if drift_rate <= self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                         curr_temp, waves, amps, CAL, self.table, drift_rate, True)
-            print("Start time: {}, Start temp: {}".format(start_time, start_temp))
-            print("Curr time: {}, Curr temp: {}".format(curr_time, curr_temp))
-            print("Drift rate: {}, {}".format(drift_rate, type(drift_rate)))
             return True
 
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
