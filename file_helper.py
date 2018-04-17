@@ -193,7 +193,7 @@ def create_data_coll(name, is_cal, snums=None):
 def create_excel_file(xcel_file, snums, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
-        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), snums, is_cal)
+        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), is_cal, snums)
         new_df = pd.DataFrame()
         small_df = pd.DataFrame()
         df_cal = pd.DataFrame()
