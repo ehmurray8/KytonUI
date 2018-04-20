@@ -18,7 +18,7 @@ def file_entry(container, label_text, row, width, def_file=""):
     button_image = Image.open(path)
     button_photo = ImageTk.PhotoImage(button_image)
 
-    browse_button = ttk.Button( container, image=button_photo, command=lambda: browse_file(text_var), width=10)
+    browse_button = ttk.Button(container, image=button_photo, command=lambda: browse_file(text_var), width=10)
     browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
     browse_button.image = button_photo
     text_var.set(def_file)
@@ -28,7 +28,7 @@ def file_entry(container, label_text, row, width, def_file=""):
 def browse_file(file_label_var):
     """Updates the excel text entry for the selected file."""
     cparser = configparser.ConfigParser()
-    cparser.read(os.path.join("config", "prog_config.cfg")
+    cparser.read(os.path.join("config", "prog_config.cfg"))
     last_dir = cparser.get("Baking", "last_folder")
     try:
         os.mkdir(last_dir)

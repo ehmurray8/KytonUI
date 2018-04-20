@@ -1,6 +1,6 @@
 import os, winshell
 from win32com.client import Dispatch
-from shutil import copytree, rmtree
+from shutil import copytree, rmtree, copy2
 from pathlib import Path
 import configparser
 import sys
@@ -25,6 +25,7 @@ if __name__ == "__main__":
         CParser.write(dcfg)
 
     copytree("fbgui", target)
+    copy2("NIVISA541full.exe", target)
     try:
         rmtree("fbgui")
     except PermissionError: pass
