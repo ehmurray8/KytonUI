@@ -1,7 +1,6 @@
 """Module for baking program specific logic."""
 import math
 import time
-
 from fbgui import file_helper as fh, program
 from fbgui.constants import BAKING, LASER, SWITCH, TEMP
 
@@ -47,13 +46,13 @@ class BakingProgram(program.Program):
                     if sum(len(switch) for switch in self.switches):
                         self.master.conn_dev(SWITCH)
                 else:
-                    temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
+                    temperature = self.master.temp_controller.get_temp_k(self.options.set_temp.get())
                 waves, amps = self.get_wave_amp_data()
                 if self.master.use_dev:
                     temp2 = self.master.temp_controller.get_temp_k()
                     temperature += float(temp2)
                 else:
-                    temp2 = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
+                    temp2 = self.master.temp_controller.get_temp_k(self.options.set_temp.get())
                     temperature += temp2
                 temperature /= 2.0
                 curr_time = time.time()

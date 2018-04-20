@@ -82,7 +82,13 @@ class Application(tk.Tk):
 
         self.device_widgets = []
         if self.use_dev:
-            self.manager = visa.ResourceManager()
+            try:
+                self.manager = visa.ResourceManager()
+            except OSError as e:
+                if "VISA" in str(e):
+                    mbox.showerror("NIVisa not installed",
+                                   "Need to install NIVisa to run the program, a copy of NIVisa should be included" +
+                                   "in the zip file.")
         else:
             self.manager = None
 

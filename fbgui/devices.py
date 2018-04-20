@@ -107,7 +107,8 @@ class TempController(object):
     def __init__(self, port, manager, use_dev):
         self.device = None
         loc = "GPIB0::{}::INSTR".format(port)
-        if use_dev:
+        self.use_dev = use_dev
+        if self.use_dev:
             self.device = manager.open_resource(loc, read_termination='\n')
             self.device.timeout = 10000
 
@@ -116,9 +117,9 @@ class TempController(object):
         query = self.device.query('CRDG? B')
         return query[:-4]
 
-    def get_temp_k(self, dummy_val=False, center_num=0):
+    def get_temp_k(self, center_num=0):
         """Return temperature reading in degrees Kelvin."""
-        if dummy_val:
+        if not self.use_dev:
             return random.gauss(center_num - 5, center_num + 5)
         else:
             query = self.device.query('KRDG? B')

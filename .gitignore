@@ -4,6 +4,7 @@
 
 .idea/
 
+fbgui.wxs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -104,3 +105,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+NIVISA541full.exe
