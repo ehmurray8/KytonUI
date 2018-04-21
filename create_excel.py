@@ -1,7 +1,8 @@
-import os
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+from tkinter import LEFT, E
+import tkinter
 import sqlite3
 import file_helper as fh
 import ui_helper as uh
@@ -16,6 +17,16 @@ class Table(ttk.Frame):
         self.headers = ["Id", "File name", "Program Type"]
         self.tree = None
         self.item_ids = []
+        self.prog_info = None
+        self.file_paths = None
+        self.snums = None
+        self._setup_widgets()
+        self.setup_headers()
+        self.refresh()
+
+    def refresh(self):
+        for child in uh.get_all_children_tree(self.tree):
+            self.tree.delete(child)
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")
@@ -30,15 +41,16 @@ class Table(ttk.Frame):
         self.file_paths = {i: path for i, path in zip(self.prog_info["Id"], paths)}
         self.snums = {i: snum for i, snum in zip(self.prog_info["Id"], snums)}
         conn.close()
-        self._setup_widgets()
-        self.setup_headers()
         for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
                                   self.prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars
-        ttk.Label(self, text="Create Spreadsheet For a Recent Program").grid(sticky="nsew", pady=10)
+        top_frame = ttk.Frame(self)
+        top_frame.grid(sticky="nsew", pady=10)
+        ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor='w')
+        ttk.Button(top_frame, command=self.refresh, text="Refresh").pack(side=LEFT, anchor=E, padx=120)
 
         self.tree = ttk.Treeview(self, columns=self.headers, show="headings")
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
@@ -70,7 +82,10 @@ class Table(ttk.Frame):
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
         if len(uh.get_all_children_tree(self.tree)) > 100:
-            self.tree.delete(self.item_ids.pop(0))
+            try:
+                self.tree.delete(self.item_ids.pop(0))
+            except tkinter.TclError:
+                pass
 
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):

@@ -188,7 +188,7 @@ class Program(ttk.Notebook):
                         self.save_config_info()
                         self.master.running_prog = self.program_type.prog_id
                         ui_helper.lock_widgets(self.options)
-                        ui_helper.lock_main_widgets(self.master.home_frame)
+                        ui_helper.lock_main_widgets(self.master.device_frame)
                         self.graph_helper.show_subplots()
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)

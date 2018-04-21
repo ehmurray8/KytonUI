@@ -1,6 +1,7 @@
 import configparser
 import os
 import tkinter as tk
+from typing import List
 from tkinter import ttk, filedialog, messagebox as mbox
 from dateutil import parser
 from constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
@@ -120,7 +121,8 @@ def lock_widgets(options_frame):
 
 
 def lock_main_widgets(main: ttk.Frame):
-    lock(main.winfo_children()[0].winfo_children()[0], "disabled")
+    for child in main.winfo_children():
+        lock(child, "disabled")
 
 
 def lock(widget, state):
@@ -140,7 +142,8 @@ def unlock_widgets(options_frame):
 
 
 def unlock_main_widgets(main: ttk.Frame):
-    lock(main.winfo_children()[0].winfo_children()[0], "normal")
+    for child in main.winfo_children():
+        lock(child, "normal")
 
 
 def browse_file(file_label_var):
@@ -185,7 +188,7 @@ def sort_column(tree, col, descending):
     tree.heading(col, command=lambda c=col: sort_column(tree, c, int(not descending)))
 
 
-def get_all_children_tree(tree: ttk.Treeview, item=""):
+def get_all_children_tree(tree: ttk.Treeview, item="") -> List:
     children = tree.get_children(item)
     for child in children:
         children += get_all_children_tree(tree, child)
@@ -203,6 +206,7 @@ def loc_warning(loc_type):
     """Warn the user of an invalid location input."""
     mbox.showwarning(
         "Invalid Location", "Please import an integer corresponding to the {}.".format(loc_type))
+
 
 def setup_style():
     style = ttk.Style()

@@ -299,6 +299,9 @@ def create_excel_file(xcel_file, snums, is_cal=False):
     except RuntimeError:
         mbox.showwarning("Error creating Excel File",
                          "No data has been recorded yet, or the database has been corrupted.")
+    except PermissionError:
+        mbox.showwarning("Excel file is already opened",
+                         "Please close {}, before attempting to create a new copy of it.".format(xcel_file))
 
 
 def get_snums(is_cal):

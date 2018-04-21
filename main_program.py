@@ -71,6 +71,7 @@ class Application(tk.Tk):
         self.main_notebook = ttk.Notebook(self)
         self.main_notebook.enable_traversal()
         self.home_frame: ttk.Frame = None
+        self.device_frame: ttk.Frame = None
         self.setup_home_frame()
         bake = BakingProgram(self)
         self.main_notebook.add(bake, text="Bake")
@@ -108,19 +109,19 @@ class Application(tk.Tk):
 
         hframe = ttk.Frame(self.home_frame)
         hframe.pack()
-        device_frame = ttk.Frame(hframe)
+        self.device_frame = ttk.Frame(hframe)
         col = 0
-        device_frame.grid_columnconfigure(col, minsize=10)
+        self.device_frame.grid_columnconfigure(col, minsize=10)
         col = 2
         while col < 8:
-            device_frame.grid_columnconfigure(col, minsize=20)
+            self.device_frame.grid_columnconfigure(col, minsize=20)
             col += 2
-        device_frame.grid_columnconfigure(col, minsize=100)
-        device_frame.grid_rowconfigure(0, minsize=10)
+        self.device_frame.grid_columnconfigure(col, minsize=100)
+        self.device_frame.grid_rowconfigure(0, minsize=10)
 
-        ttk.Label(device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='nsew')
-        ttk.Label(device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='nsew')
-        ttk.Label(device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='nsew')
+        ttk.Label(self.device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='nsew')
+        ttk.Label(self.device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='nsew')
+        ttk.Label(self.device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='nsew')
         laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
         laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
         switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
@@ -132,9 +133,9 @@ class Application(tk.Tk):
                        (constants.TEMP, temp_loc, None, self.controller_location, None),
                        (constants.OVEN, oven_loc, None, self.oven_location, None)]
         for i, dev in enumerate(switch_conf):
-            device_frame.grid_rowconfigure(i * 2, pad=20)
-            uh.device_entry(device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
-        device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
+            self.device_frame.grid_rowconfigure(i * 2, pad=20)
+            uh.device_entry(self.device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
+        self.device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
         create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False):
