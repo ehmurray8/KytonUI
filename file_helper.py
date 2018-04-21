@@ -55,9 +55,14 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     values_list[0] = timestamp
     values = ",".join([str(val) for val in values_list])
     sql = "INSERT INTO {}({}) VALUES ({})".format(func.lower() + str(table_id), ",".join(headers), values)
-    cur.execute(sql)
-    conn.commit()
+    try:
+        cur.execute(sql)
+        conn.commit()
+    except sqlite3.OperationalError as e:  # TODO: Log this issue, column names have changed
+        if "column" in e:
+            return False
     conn.close()
+    return True
 
 
 def program_exists(name, cur_map, func):

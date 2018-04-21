@@ -73,10 +73,10 @@ class Application(tk.Tk):
         self.home_frame: ttk.Frame = None
         self.device_frame: ttk.Frame = None
         self.setup_home_frame()
-        bake = BakingProgram(self)
-        self.main_notebook.add(bake, text="Bake")
-        cal = CalProgram(self)
-        self.main_notebook.add(cal, text="Calibration")
+        self.bake_program = BakingProgram(self)
+        self.main_notebook.add(self.bake_program, text="Bake")
+        self.cal_program = CalProgram(self)
+        self.main_notebook.add(self.cal_program, text="Calibration")
 
     def check_queue(self):
         while True:
@@ -221,6 +221,10 @@ class Application(tk.Tk):
                     self.switch.close()
                 if self.laser is not None:
                     self.laser.close()
+                if self.bake_program.connection_thread is not None:
+                    self.bake_program.connection_thread.terminate()
+                if self.cal_program.connection_thread is not None:
+                    self.cal_program.connection_thread.terminate()
                 self.destroy()
             else:
                 self.tkraise()

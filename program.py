@@ -7,10 +7,11 @@ import abc
 import configparser
 import os
 import sqlite3
-import threading
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
+from multiprocessing import Process
+import visa
 from PIL import ImageTk, Image
 import dev_helper as dev_helper
 import file_helper as fh
@@ -52,7 +53,7 @@ class Program(ttk.Notebook):
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(PROG_CONFIG_PATH)
         self.master = master
-        self.connection_thread: Thread = None
+        self.connection_thread: Process = None
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -80,8 +81,8 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file."""
-        threading.Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
-                                                            self.program_type.prog_id == CAL)).start()
+        Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
+                                                  self.program_type.prog_id == CAL)).start()
 
     def setup_tabs(self):
         """Setup the configuration, graphing, and table tabs."""
@@ -155,6 +156,7 @@ class Program(ttk.Notebook):
                     mbox.showerror("{} program is already running".format(prog),
                                    "Please stop the {} program before starting the {}."
                                    .format(prog, run))
+                    self.start_btn.configure(text=self.program_type.start_title)
                 else:
                     self.pause_program()
             elif not len(self.options.sn_ents):
@@ -193,7 +195,6 @@ class Program(ttk.Notebook):
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
-
                         self.program_start()
                 else:
                     self.disconnect_devices()
@@ -250,7 +251,11 @@ class Program(ttk.Notebook):
             self.master.conn_dev(OVEN)
             if temp is None:
                 temp = self.options.set_temp.get()
-            self.master.oven.set_temp(temp)
+            try:
+                self.master.oven.set_temp(temp)
+            except visa.VisaIOError:
+                # TODO: Log this issue, cannot connect to oven.. Seems impossible but may happen somehow
+                pass
             if heat:
                 self.master.oven.cooling_off()
                 self.master.oven.heater_on()
@@ -311,11 +316,13 @@ class Program(ttk.Notebook):
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
+        if self.connection_thread is not None:
+            self.connection_thread.terminate()
+            self.connection_thread = None
 
     def get_wave_amp_data(self):
         positions_used = [len(x) for x in self.channels]
         return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                          self.options.num_pts.get(), positions_used, self.master.use_dev,
                                          sum(len(s) > 0 for s in self.snums))
-
 

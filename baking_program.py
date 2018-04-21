@@ -59,8 +59,9 @@ class BakingProgram(program.Program):
                 if self.master.use_dev:
                     self.disconnect_devices()
 
-                fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
-                            waves, amps, BAKING, self.table)
+                if not fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
+                                   waves, amps, BAKING, self.table):
+                    self.pause_program()
                 time.sleep(self.options.prim_time.get() * 60 * 60)
         except AttributeError:  # Program has been paused
             pass
