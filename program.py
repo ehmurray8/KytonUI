@@ -10,7 +10,6 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
-from multiprocessing import Process
 import visa
 from PIL import ImageTk, Image
 import dev_helper as dev_helper
@@ -53,7 +52,7 @@ class Program(ttk.Notebook):
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(PROG_CONFIG_PATH)
         self.master = master
-        self.connection_thread: Process = None
+        self.connection_thread: Thread = None
         self.program_type = program_type
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
@@ -137,7 +136,7 @@ class Program(ttk.Notebook):
             try:
                 os.mkdir(os.path.split(self.options.file_name.get())[0])
             except FileNotFoundError:
-                # File Error cannot make directory
+                # TODO: File Error cannot make directory, log this
                 valid = False
         return valid
 
