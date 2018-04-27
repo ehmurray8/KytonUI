@@ -7,14 +7,22 @@ import time
 import numpy as np
 
 
-def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev=True, num_snums=0):
+def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev, num_snums, thread_id, thread_map):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = np.hstack(switches)
     switch_num = -1
     if len(switches_arr):
         switch_num = lens.index(max(lens))
-    return __get_average_data(laser, switch, switches_arr, num_pts, switch_num, pos_used, use_dev, num_snums)
+    if thread_map[thread_id]:
+        ret = __get_average_data(laser, switch, switches_arr, num_pts, switch_num, pos_used, use_dev, num_snums,
+                                 thread_id, thread_map)
+        if thread_map[thread_id]:
+            return ret
+        else:
+            return [], []
+    else:
+        return [], []
 
 
 def __avg_arr(first, second):
@@ -28,7 +36,8 @@ def __avg_arr(first, second):
     return first
 
 
-def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev=True, num_snums=0, num_readings=0):
+def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev, num_snums, num_readings, thread_id,
+               thread_map):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
@@ -40,7 +49,9 @@ def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev=Tru
                 add_wavelen = False
                 if not i:
                     add_wavelen = True
-                __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, add_wavelen, use_dev, num_snums)
+                if thread_map[thread_id]:
+                    __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, add_wavelen, use_dev, num_snums,
+                                     thread_id, thread_map)
         except socket.error:
             pass
     wavelens = [wave for i, wave in enumerate(wavelens) if pos_used[i]]
@@ -48,8 +59,13 @@ def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev=Tru
     return wavelens, amps
 
 
-def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavelen, use_dev=True, num_snums=0):
-    wavelens, amps, lens = sm125.get_data(not use_dev, num_snums)
+def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavelen, use_dev, num_snums, thread_id,
+                     thread_map):
+    if thread_map[thread_id]:
+        wavelens, amps, lens = sm125.get_data(not use_dev, num_snums)
+    else:
+        return
+
     try:
         wavelens = list(wavelens)
         amps = list(amps)
@@ -81,11 +97,12 @@ def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavel
             all_amps[i].insert(len(all_amps[i]), (temp_amp + amp) / 2.)
 
 
-def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, pos_used, use_dev=True, num_snums=0):
+def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, pos_used, use_dev, num_snums,
+                       thread_id, thread_map):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     wavelengths, amplitudes = __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev,
-                                         num_snums, num_readings)
+                                         num_snums, num_readings, thread_id, thread_map)
     all_waves = __avg_arr(wavelengths, all_waves)
     all_amps = __avg_arr(amplitudes, all_amps)
     return np.hstack(all_waves), np.hstack(all_amps)

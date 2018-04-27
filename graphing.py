@@ -1,5 +1,6 @@
 import gc
 import os
+import uuid
 import threading
 from tkinter import StringVar
 from typing import Tuple, List, Callable, Any, Union
@@ -190,7 +191,11 @@ class Graphing(object):
         self.toolbar.update()
 
     def update_data_coll(self):
-        while True:
+        thread_id = uuid.uuid4()
+        print("Opening new graph thread: {}".format(thread_id))
+        self.master.thread_map[thread_id] = True
+        self.master.open_threads.append(thread_id)
+        while self.master.thread_map[thread_id]:
             try:
                 name = helpers.get_file_name(self.file_name.get())
                 if self.is_cal:
@@ -200,6 +205,8 @@ class Graphing(object):
             except RuntimeError:
                 pass
             time.sleep(10)
+        else:
+            print("Killing thread {}".format(thread_id))
 
     def update_axes(self):
         """Update the axes to include the sub plots on the graphing page."""
@@ -267,6 +274,8 @@ def animate_graph(use_snums):
                 dc = Graphing.data_coll_cal
             if dc is not None:
                 if use_snums:
+                    if snums is not None and not len(snums):
+                        snums = fh.get_snums(is_cal)
                     func(axes, snums, dc)
                 else:
                     func(axes, dc)

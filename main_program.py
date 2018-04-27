@@ -46,6 +46,8 @@ class Application(tk.Tk):
         copy2(constants.PAUSE_PATH, os.path.join(site_packs, "matplotlib", "mpl-data", "images"))
 
         self.main_queue = Queue()
+        self.thread_map = {}
+        self.open_threads = []
         self.running = False
         self.running_prog = None
         self.temp_controller: devices.TempController = None
@@ -210,6 +212,8 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
+        for tid in self.open_threads:
+            self.thread_map[tid] = False
         if self.running:
             if mbox.askyesno("Quit",
                              "Program is currently running. Are you sure you want to quit?"):
@@ -221,10 +225,6 @@ class Application(tk.Tk):
                     self.switch.close()
                 if self.laser is not None:
                     self.laser.close()
-                if self.bake_program.connection_thread is not None:
-                    self.bake_program.connection_thread.terminate()
-                if self.cal_program.connection_thread is not None:
-                    self.cal_program.connection_thread.terminate()
                 self.destroy()
             else:
                 self.tkraise()

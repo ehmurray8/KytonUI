@@ -27,17 +27,20 @@ class BakingProgram(program.Program):
             return True
         return False
 
-    def program_loop(self):
+    def program_loop(self, thread_id):
         """Runs the baking process."""
         stable = False
         try:
-            while self.options.set_temp.get() and self.master.use_dev and not stable:
+            while self.master.thread_map[thread_id] and self.options.set_temp.get() and \
+                    self.master.use_dev and not stable:
                 stable = self.check_stable()
                 if not stable:
                     self.set_oven_temp()
                     self.disconnect_devices()
+            else:
+                self.disconnect_devices()
 
-            while self.master.running:
+            while self.master.thread_map[thread_id] and self.master.running:
                 if self.master.use_dev:
                     self.master.conn_dev(TEMP)
                     self.master.conn_dev(LASER)
@@ -46,22 +49,39 @@ class BakingProgram(program.Program):
                         self.master.conn_dev(SWITCH)
                 else:
                     temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
-                waves, amps = self.get_wave_amp_data()
+
+                if not self.master.thread_map[thread_id]:
+                    self.disconnect_devices()
+                    return
+
+                waves, amps = self.get_wave_amp_data(thread_id)
+
+                if not self.master.thread_map[thread_id]:
+                    self.disconnect_devices()
+                    return
+
                 if self.master.use_dev:
                     temp2 = self.master.temp_controller.get_temp_k()
                     temperature += temp2
                 else:
                     temp2 = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
                     temperature += temp2
+
                 temperature /= 2.
                 curr_time = time.time()
 
                 if self.master.use_dev:
                     self.disconnect_devices()
 
+                if not self.master.thread_map[thread_id]:
+                    self.disconnect_devices()
+                    return
+
                 if not fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
                                    waves, amps, BAKING, self.table):
                     self.pause_program()
                 time.sleep(self.options.prim_time.get() * 60 * 60)
+            else:
+                self.disconnect_devices()
         except AttributeError:  # Program has been paused
-            pass
+            self.disconnect_devices()

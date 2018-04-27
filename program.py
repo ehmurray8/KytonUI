@@ -2,8 +2,8 @@
 Abstract class defines common functionality between calibration
 program and baking program.
 """
-
 import abc
+import uuid
 import configparser
 import os
 import sqlite3
@@ -74,7 +74,7 @@ class Program(ttk.Notebook):
             self.start()
 
     @abc.abstractmethod
-    def program_loop(self):
+    def program_loop(self, thread_id):
         """Main loop that the program uses to run."""
         return
 
@@ -194,17 +194,11 @@ class Program(ttk.Notebook):
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
-                        self.program_start()
+                        Thread(target=self.connect_devices).start()
                 else:
-                    self.disconnect_devices()
-                    self.pause_program()
+                    self.start_btn.configure(text=self.program_type.start_title)
         else:
-            self.disconnect_devices()
-            self.pause_program()
-
-    def program_start(self):
-        self.connection_thread = Thread(target=self.connect_devices)
-        self.connection_thread.start()
+            self.start_btn.configure(text=self.program_type.start_title)
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -222,28 +216,39 @@ class Program(ttk.Notebook):
                 self.master.switch = None
 
     def connect_devices(self):
+        thread_id = uuid.uuid4()
+        print("Opening new {} data thread: {}".format(self.program_type.prog_id, thread_id))
+        self.master.thread_map[thread_id] = True
+        self.master.open_threads.append(thread_id)
+
         self.need_oven = False
         need_switch = False
         self.disconnect_devices()
         self.master.conn_dev(LASER, try_once=True)
         self.master.conn_dev(TEMP, try_once=True)
-        if sum(len(switch) for switch in self.switches):
+
+        if self.master.thread_map[thread_id] and sum(len(switch) for switch in self.switches):
             need_switch = True
             self.master.conn_dev(SWITCH, try_once=True)
-        if self.master.use_dev and (self.program_type.prog_id == CAL or self.options.set_temp.get()) \
-                and self.master.oven is None:
+
+        if self.master.thread_map[thread_id] and self.master.use_dev \
+                and (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
             self.need_oven = True
             self.master.conn_dev(OVEN, try_once=True)
-        if self.need_oven and self.master.oven is not None and self.program_type.prog_id == BAKING:
+
+        if self.master.thread_map[thread_id] and self.need_oven and self.master.oven is not None \
+                and self.program_type.prog_id == BAKING:
             self.set_oven_temp()
-        if self.need_oven == (self.master.oven is not None) and (self.master.switch is not None) == need_switch and \
-                self.master.laser is not None and self.master.temp_controller is not None:
+
+        if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and\
+                (self.master.switch is not None) == need_switch and self.master.laser is not None and \
+                self.master.temp_controller is not None:
             self.disconnect_devices()
             self.master.running = True
-            self.program_loop()
+            self.program_loop(thread_id)
         else:
             self.disconnect_devices()
-            self.pause_program()
+            self.start_btn.configure(text=self.program_type.start_title)
 
     def set_oven_temp(self, temp: float = None, heat=True):
         if self.need_oven:
@@ -303,9 +308,12 @@ class Program(ttk.Notebook):
 
     def pause_program(self):
         """Pauses the program."""
+        for tid in self.master.open_threads:
+            self.master.thread_map[tid] = False
+        self.master.open_threads.clear()
         self.start_btn.configure(text=self.program_type.start_title)
         ui_helper.unlock_widgets(self.options)
-        ui_helper.unlock_main_widgets(self.master.home_frame)
+        ui_helper.unlock_main_widgets(self.master.device_frame)
         self.master.running = False
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
@@ -315,13 +323,9 @@ class Program(ttk.Notebook):
         self.snums = []
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
-        if self.connection_thread is not None:
-            self.connection_thread.terminate()
-            self.connection_thread = None
 
-    def get_wave_amp_data(self):
+    def get_wave_amp_data(self, thread_id):
         positions_used = [len(x) for x in self.channels]
         return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                          self.options.num_pts.get(), positions_used, self.master.use_dev,
-                                         sum(len(s) > 0 for s in self.snums))
-
+                                         sum(len(s) > 0 for s in self.snums), thread_id, self.master.thread_map)
