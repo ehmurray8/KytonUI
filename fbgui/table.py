@@ -1,6 +1,6 @@
-import tkinter.font as tkFont
+import tkinter.font as tkfont
 import tkinter.ttk as ttk
-import ui_helper as uh
+import fbgui.ui_helper as uh
 
 
 class Table(ttk.Frame):
@@ -37,7 +37,7 @@ class Table(ttk.Frame):
         for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
             # adjust the column's width to the header string
-            self.tree.column(col, width=tkFont.Font().measure(col.title()))
+            self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
     def add_data(self, item):
         new_item = []
@@ -54,7 +54,7 @@ class Table(ttk.Frame):
 
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
-            col_w = tkFont.Font().measure(val)
+            col_w = tkfont.Font().measure(val)
             if self.tree.column(self.headers[ix], width=None) < int(col_w * 2):
                 self.tree.column(self.headers[ix], width=int(col_w * 2))
 

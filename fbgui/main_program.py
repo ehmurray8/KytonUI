@@ -1,21 +1,19 @@
 """Module contains the main entry point for the Kyton UI."""
-
+from tkinter import messagebox as mbox
 import argparse
 import configparser
 import os
 import socket
 from queue import Queue, Empty
-from tkinter import ttk
-import matplotlib
 import visa
 from fbgui.baking_program import BakingProgram
 from fbgui.cal_program import CalProgram
 from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh
 from fbgui import install
-
+import matplotlib
 matplotlib.use("TkAgg")
-from tkinter import messagebox as mbox
 import tkinter as tk
+from tkinter import ttk
 
 
 class Application(tk.Tk):

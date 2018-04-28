@@ -1,8 +1,10 @@
 """Containts the calibration program page."""
 
+from typing import List
+import math
 import time
 from fbgui import file_helper as fh
-from fbgui.constants import CAL, TEMP, SWITCH, LASER, OVEN
+from fbgui.constants import CAL, TEMP, SWITCH, LASER
 from fbgui.program import Program, ProgramType
 
 

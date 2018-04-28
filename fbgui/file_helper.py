@@ -79,7 +79,8 @@ def program_exists(name, cur_map, func):
         idx = names.index(name)
         if types[idx] == func.lower():
             prog_exists = True
-    except ValueError: pass
+    except ValueError:
+        pass
     return prog_exists
 
 
@@ -293,9 +294,9 @@ def create_excel_file(xcel_file, snums, is_cal=False):
 
         sf.apply_column_style(cols_to_style='Date Time',
                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
-        #if is_cal:
-        #    sf_cal.apply_column_style(cols_to_style='Date Time',
-        #                              styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
+        # if is_cal:
+        #     sf_cal.apply_column_style(cols_to_style='Date Time',
+        #                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
         for snum, hex_color in zip(snums, HEX_COLORS):
             sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
@@ -316,7 +317,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         if is_cal:
             sf_cal.apply_column_style(cols_to_style=[col for col in small_df.columns.values if "Temperature" in col],
                                       styler_obj=Styler(font_color=utils.colors.red))
-            sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values if "{}T (K)".format(u"\u0394") in c],
+            sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values
+                                                     if "{}T (K)".format(u"\u0394") in c],
                                       styler_obj=Styler(font_color=utils.colors.red))
 
         ew = StyleFrame.ExcelWriter(xcel_file)

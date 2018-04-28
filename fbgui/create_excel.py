@@ -1,5 +1,5 @@
 import threading
-import tkinter.font as tkFont
+import tkinter.font as tkfont
 import tkinter.ttk as ttk
 from tkinter import LEFT, E
 import tkinter
@@ -76,7 +76,7 @@ class Table(ttk.Frame):
         for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
             # adjust the column's width to the header string
-            self.tree.column(col, width=tkFont.Font().measure(col.title()))
+            self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
     def add_data(self, item):
         self.item_ids.append(self.tree.insert('', 'end', values=item))
@@ -89,6 +89,6 @@ class Table(ttk.Frame):
 
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
-            col_w = tkFont.Font().measure(val)
+            col_w = tkfont.Font().measure(val)
             if self.tree.column(self.headers[ix], width=None) < int(col_w * 3):
                 self.tree.column(self.headers[ix], width=int(col_w * 3))

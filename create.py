@@ -1,4 +1,5 @@
-import os, winshell
+import os
+import winshell
 from win32com.client import Dispatch
 from shutil import copytree, rmtree, copy2
 from pathlib import Path
@@ -12,8 +13,8 @@ if __name__ == "__main__":
     if os.path.isdir(target):
         try:
             rmtree(target)
-        except PermissionError: pass
-
+        except PermissionError:
+            pass
 
     CParser = configparser.ConfigParser()
     CParser.read(os.path.join("fbgui", "config.cfg"))
@@ -28,7 +29,8 @@ if __name__ == "__main__":
     copy2("NIVISA541full.exe", target)
     try:
         rmtree("fbgui")
-    except PermissionError: pass
+    except PermissionError:
+        pass
 
     desktop = winshell.desktop()
     path = os.path.join(desktop, "FbgUI.lnk")
@@ -36,11 +38,12 @@ if __name__ == "__main__":
     if os.path.isfile(path):
         try:
             os.remove(path)
-        except PermissionError: pass
+        except PermissionError:
+            pass
 
     exe = os.path.join(target, "fbgui.exe")
     wDir = target
-    #icon = os.path.join(target, "assets", "fiber.bmp")
+    # icon = os.path.join(target, "assets", "fiber.bmp")
     icon = os.path.join(target, "fbgui.exe")
 
     shell = Dispatch('WScript.Shell')
@@ -56,14 +59,15 @@ if __name__ == "__main__":
     if os.path.isfile(path):
         try:
             os.remove(path)
-        except PermissionError: pass
+        except PermissionError:
+            pass
 
     if not os.path.isdir(os.path.join(start_menu, "Programs", "Kyton")):
         os.mkdir(os.path.join(start_menu, "Programs", "Kyton"))
 
     exe = os.path.join(target, "fbgui.exe")
     wDir = target
-    #icon = os.path.join(target, "assets", "fiber.bmp")
+    # icon = os.path.join(target, "assets", "fiber.bmp")
     icon = os.path.join(target, "fbgui.exe")
 
     shortcut = shell.CreateShortCut(path)

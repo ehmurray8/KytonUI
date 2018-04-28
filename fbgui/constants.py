@@ -1,6 +1,6 @@
 from enum import Enum
 import os
-from PIL import Image, ImageTk
+from PIL import Image
 
 BAKING = "Baking"
 CAL = "Cal"
