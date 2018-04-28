@@ -142,6 +142,7 @@ class Program(ttk.Notebook):
 
     def start(self):
         """Starts the recording process."""
+        self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
         can_start = self.options.check_config()
         if can_start:
@@ -195,10 +196,13 @@ class Program(ttk.Notebook):
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
                         Thread(target=self.connect_devices).start()
+                        self.start_btn.configure(state=tk.NORMAL)
                 else:
                     self.start_btn.configure(text=self.program_type.start_title)
+                    self.start_btn.configure(state=tk.NORMAL)
         else:
             self.start_btn.configure(text=self.program_type.start_title)
+            self.start_btn.configure(state=tk.NORMAL)
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -247,8 +251,7 @@ class Program(ttk.Notebook):
             self.master.running = True
             self.program_loop(thread_id)
         else:
-            self.disconnect_devices()
-            self.start_btn.configure(text=self.program_type.start_title)
+            self.pause_program()
 
     def set_oven_temp(self, temp: float = None, heat=True):
         if self.need_oven:
@@ -312,6 +315,7 @@ class Program(ttk.Notebook):
             self.master.thread_map[tid] = False
         self.master.open_threads.clear()
         self.start_btn.configure(text=self.program_type.start_title)
+        self.start_btn.configure(state=tk.NORMAL)
         ui_helper.unlock_widgets(self.options)
         ui_helper.unlock_main_widgets(self.master.device_frame)
         self.master.running = False

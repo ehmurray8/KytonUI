@@ -8,12 +8,11 @@ import random
 WAVELEN_SCALE_FACTOR = 10000.0
 AMP_SCALE_FACTOR = 100.0
 
-socket.setdefaulttimeout(10)
-
 
 class SM125(socket.socket):
     """TCP socket connection for SM125 device."""
     def __init__(self, address, port, use_dev):
+        socket.setdefaulttimeout(3)
         super().__init__(AF_INET, SOCK_STREAM)
         if use_dev:
             super().connect((address, port))
@@ -60,8 +59,8 @@ class Oven(object):
         self.device = None
         loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination="\n")
-            self.device.timeout = 10000
+            self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
+            self.device.timeout = 3
 
     def set_temp(self, temp):
         """Sets set point of delta oven."""
@@ -92,6 +91,7 @@ class OpSwitch(socket.socket):
     """Object representation of the Optical Switch needed for the program."""
 
     def __init__(self, addr, port, use_dev):
+        socket.setdefaulttimeout(3)
         super().__init__(AF_INET, SOCK_STREAM)
         if use_dev:
             super().connect((addr, port))
@@ -108,8 +108,8 @@ class TempController(object):
         self.device = None
         loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination='\n')
-            self.device.timeout = 10000
+            self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
+            self.device.timeout = 2
 
     def get_temp_c(self):
         """Return temperature reading in degrees C."""

@@ -22,7 +22,7 @@ class CalProgram(Program):
         self.pause_program()
 
     def cal_loop(self, temps: List[float], thread_id):
-        for _ in range(self.options.num_cal_cycles.get()):
+        for cycle_num in range(self.options.num_cal_cycles.get()):
             if not self.master.thread_map[thread_id]:
                 self.disconnect_devices()
                 print("Closing thread: {}".format(thread_id))
@@ -55,7 +55,7 @@ class CalProgram(Program):
                     return
                 time.sleep(self.options.temp_interval.get())
 
-                while not self.check_drift_rate(thread_id):
+                while not self.check_drift_rate(thread_id, cycle_num + 1):
                     time.sleep(self.options.temp_interval.get())
                     if not self.master.thread_map[thread_id]:
                         print("Closing thread: {}".format(thread_id))
@@ -84,7 +84,7 @@ class CalProgram(Program):
             return True
         return False
 
-    def check_drift_rate(self, thread_id) -> bool:
+    def check_drift_rate(self, thread_id, cycle_num) -> bool:
         self.master.conn_dev(TEMP)
         self.master.conn_dev(LASER)
         if sum(len(switch) for switch in self.switches):
@@ -111,12 +111,12 @@ class CalProgram(Program):
             return False
         if drift_rate <= self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                        curr_temp, waves, amps, CAL, self.table, drift_rate, True)
+                        curr_temp, waves, amps, CAL, self.table, drift_rate, True, cycle_num)
             return True
 
         if not self.master.thread_map[thread_id]:
             print("Closing thread: {}".format(thread_id))
             return False
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                    curr_temp, waves, amps, CAL, self.table, drift_rate, False)
+                    curr_temp, waves, amps, CAL, self.table, drift_rate, False, cycle_num)
         return False

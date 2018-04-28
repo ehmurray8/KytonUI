@@ -13,7 +13,7 @@ import configparser
 
 
 def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
-             func, table, drift_rate=None, real_cal_pt=False):
+             func, table, drift_rate=None, real_cal_pt=False, cycle_num=0):
     """Writes the output to sqlite database."""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -44,6 +44,7 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     if func == CAL:
         values_list.append(drift_rate)
         values_list.append("'{}'".format(real_cal_pt))
+        values_list.append(cycle_num)
     headers = create_headers(serial_nums, func == CAL, False)
     headers_f = create_headers(serial_nums, func == CAL, True)
     headers_f.pop(0)
@@ -89,6 +90,7 @@ def create_headers(snums, is_cal, formatted):
     if is_cal:
         col_list.append("'Drift Rate'")
         col_list.append("'Real Point'")
+        col_list.append("'Cycle Num'")
     if formatted:
         col_list = [s.replace("'", "") for s in col_list]
     return col_list
@@ -104,6 +106,7 @@ def create_headers_init(snums, is_cal):
     if is_cal:
         col_list.append("'Drift Rate' REAL NOT NULL")
         col_list.append("'Real Point' INTEGER NOT NULL")
+        col_list.append("'Cycle Num' INTEGER NOT NULL")
     return col_list
 
 
@@ -202,9 +205,12 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         new_df = pd.DataFrame()
         small_df = pd.DataFrame()
         df_cal = pd.DataFrame()
+        cycles = []
         if is_cal:
             df_cal = df[df["Real Point"] == "True"]
-            small_df["Date Time"] = df_cal["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
+            # small_df["Date Time"] = df_cal["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
+            cycles = list(set(df_cal["Cycle Num"]))
+            cycles.sort()
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
 
         headers = df.columns.values.tolist()
@@ -213,20 +219,38 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         temp_header = [h for h in headers if "Temperature" in h][0]
 
         if is_cal:
-            small_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times_real
-            small_df[temp_header] = df_cal[temp_header]
+            # small_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times_real
+            pass
 
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
         new_df[temp_header] = df[temp_header]
 
         for col in wave_headers:
             new_df[col] = df[col]
-            if is_cal:
-                small_df[col] = df_cal[col]
+            #if is_cal:
+            #    small_df[col] = df_cal[col]
         for col in pow_headers:
             new_df[col] = df[col]
-            if is_cal:
-                small_df[col] = df_cal[col]
+            #if is_cal:
+            #    small_df[col] = df_cal[col]
+
+        temps_avg = []
+        if is_cal:
+            for cycle_num in cycles:
+                temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
+                if not len(temps_avg):
+                    temps_avg = temps
+                else:
+                    temps_avg = [(t + new_t)/2. for t, new_t in zip(temps_avg, temps)]
+                small_df["Temperature (K) {}".format(int(cycle_num)+1)] = list(temps)
+                for col in wave_headers:
+                    waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
+                    small_df[col + " {}".format(int(cycle_num)+1)] = list(waves)
+                for col in pow_headers:
+                    pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
+                    small_df[col + " {}".format(int(cycle_num)+1)] = list(pows)
+
+        small_df["Mean Temperature (K)"] = temps_avg
 
         if not is_cal:
             new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
@@ -261,14 +285,14 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         sf.set_column_width(columns=sf.columns, width=35)
         sf.apply_headers_style(styler_obj=header_style)
         if is_cal:
-            sf_cal.set_column_width(columns=sf.columns, width=35)
+            sf_cal.set_column_width(columns=sf_cal.columns, width=35)
             sf_cal.apply_headers_style(styler_obj=header_style)
 
         sf.apply_column_style(cols_to_style='Date Time',
                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
-        if is_cal:
-            sf_cal.apply_column_style(cols_to_style='Date Time',
-                                      styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
+        #if is_cal:
+        #    sf_cal.apply_column_style(cols_to_style='Date Time',
+        #                              styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
         for snum, hex_color in zip(snums, HEX_COLORS):
             sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
@@ -277,7 +301,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                 sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values if snum in c],
                                           styler_obj=Styler(bg_color=hex_color))
 
-        sf.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
+        sf.apply_column_style(cols_to_style=[col for col in df.columns.values if "Temperature" in col],
+                              styler_obj=Styler(font_color=utils.colors.red))
         sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if "{}T (K)".format(u"\u0394") in c],
                               styler_obj=Styler(font_color=utils.colors.red))
 
@@ -286,7 +311,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                                   styler_obj=Styler(font_color=utils.colors.red))
 
         if is_cal:
-            sf_cal.apply_column_style(cols_to_style="Mean Temperature (K)", styler_obj=Styler(font_color=utils.colors.red))
+            sf_cal.apply_column_style(cols_to_style=[col for col in small_df.columns.values if "Temperature" in col],
+                                      styler_obj=Styler(font_color=utils.colors.red))
             sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values if "{}T (K)".format(u"\u0394") in c],
                                       styler_obj=Styler(font_color=utils.colors.red))
 
@@ -296,10 +322,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             sf.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name="Full Cal")
         else:
             sf.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name="Sheet 1")
-            sf.to_excel(excel_writer=ew, row_to_add_filters=0)
         ew.save()
-        # Freeze the columns before column 'A' (=None) and rows above '2' (=1).
-        # columns_and_rows_to_freeze='A2').save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
     except RuntimeError:
         mbox.showwarning("Error creating Excel File",

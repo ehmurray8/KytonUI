@@ -160,7 +160,11 @@ class Application(tk.Tk):
                         if self.temp_controller is None:
                             err_specifier = "GPIB address"
                             temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
-                            self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
+                            full_loc = "GPIB0::{}::INSTR".format(temp_loc)
+                            if full_loc not in self.manager.list_resources():
+                                continue
+                            else:
+                                self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
@@ -169,7 +173,11 @@ class Application(tk.Tk):
                         if self.oven is None:
                             err_specifier = "GPIB address"
                             oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
-                            self.oven = devices.Oven(int(oven_loc), self.manager, self.use_dev)
+                            full_loc = "GPIB0::{}::INSTR".format(oven_loc)
+                            if full_loc not in self.manager.list_resources():
+                                continue
+                            else:
+                                self.oven = devices.Oven(int(oven_loc), self.manager, self.use_dev)
                     else:
                         self.oven.close()
                         self.oven = None
