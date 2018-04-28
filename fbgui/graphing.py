@@ -1,15 +1,22 @@
 import gc
 import os
-import platform
+import uuid
 import threading
+from tkinter import StringVar
+from typing import Tuple, List, Callable, Any, Union
 import time
-from tkinter import messagebox as mbox
-
-from fbgui import file_helper as fh, helpers as help
+from fbgui import file_helper as fh
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
-from fbgui.constants import HEX_COLORS, BAKING, CAL
+from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
+import matplotlib.ticker as mtick
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import style
+from matplotlib.figure import Figure
+import numpy as np
+from graph_toolbar import Toolbar
+from fbgui.data_container import DataCollection
+from fbgui import helpers
 
 style.use("kyton")
 
@@ -18,7 +25,8 @@ class Graph(object):
     """
     Class describes a specific graph that can be represented as a subplot or a main plot.
     """
-    def __init__(self, title, xlabel, ylabels, animate_func, fig, dims, fname, is_cal, snums, ghelper):
+    def __init__(self, title: str, xlabel: str, ylabels: Tuple[str], animate_func: Callable, fig: Figure,
+                 dims: List[Union[int, Any]], fname: StringVar, is_cal: bool, snums: List[str]):
         self.title = title
         self.is_cal = is_cal
         self.xlabel = xlabel
@@ -32,7 +40,6 @@ class Graph(object):
         self.anim = None
         self.snums = snums
         self.zoom_axes = []
-        self.ghelper = ghelper
         self.show_sub()
 
     def pause(self):
@@ -66,14 +73,14 @@ class Graph(object):
 
     def check_val_file(self, axes_tuple):
         name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = fh.sqlite3.connect(os.path.join("db", "program_data.db"))
+        conn = fh.sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         func = BAKING
         if self.is_cal:
             func = CAL
         if fh.program_exists(name, cur, func):
             conn.close()
-            self.animate_func(axes_tuple, self.snums, self.ghelper)
+            self.animate_func(axes_tuple, self.snums, self.is_cal)
         else:
             conn.close()
 
@@ -124,10 +131,11 @@ class Graph(object):
 class Graphing(object):
     """Class used for graphing the individual Graph objects."""
 
-    data_coll = None
-    clean = False
+    data_coll: DataCollection = None
+    data_coll_cal: DataCollection = None
 
-    def __init__(self, fname, dims, is_cal, figure, canvas, toolbar, master, snums):
+    def __init__(self, fname: StringVar, dims: List[Union[int, Any]], is_cal: bool, figure: Figure,
+                 canvas: FigureCanvasTkAgg, toolbar: Toolbar, master, snums: List[str]):
         self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
@@ -139,22 +147,18 @@ class Graphing(object):
         self.is_playing = True
         self.master = master
         self.snums = snums
-        self.showing_sub = Bool()
-        self.main_num = Int()
-        ghelper = GraphHelper(self.show_subplots, self.show_main_plot, self.main_num, self.showing_sub, self.figure)
 
         threading.Thread(target=self.update_data_coll).start()
 
-        titles = ["Raw Wavelengths vs. Time", "Power (dBm) vs. Wavelength (nm)", "Raw Powers vs. Time",
-                  "Raw Temperature vs. Time from start", "Average Power vs. Time from start",
-                  "Average {} Wavelength vs. Time from start".format(u'\u0394')]
+        titles = ["Wavelengths vs. Time", "Power vs. Wavelength", "Powers vs. Time", "Temperature vs. Time",
+                  "Average Power vs. Time", "Average Wavelength vs. Time"]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
-        ylabels = [("Wavelength (pm)", "{} Wavelength (pm)".format(u'\u0394')), ("Power (dBm)",),
+        ylabels = [("{} Wavelength (pm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
                    ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
-                   ("Power (dBm)",), ("{} Wavelength (pm)".format(u'\u0394'),)]
-        animate_funcs = [animate_indiv_waves, animate_wp_graph, animate_indiv_powers,
-                         animate_temp_graph, animate_mpt_graph, animate_mwt_graph]
+                   ("Average {} Power (dBm)".format(u"\u0394"),), ("{} Wavelength (pm)".format(u'\u0394'),)]
+        animate_funcs = [wave_graph, wave_power_graph, power_graph,
+                         temp_graph, average_power_graph, average_wave_graph]
 
         gs1 = gridspec.GridSpec(10, 1)
         reg_dims1 = (gs1[1:7, :])
@@ -164,22 +168,19 @@ class Graphing(object):
         split_dims2 = (gs1[6:10, :])
         split_dims = (split_dims1, split_dims2)
         mid_dims = ((gs1[1:9, :]), )
-        #mid_dims = (111,)
         dimens = [reg_dims, mid_dims, reg_dims, split_dims, (111,), (111,)]
         if self.is_cal:
-            titles.append("Average Drift Rate vs.Time")
-            xlabels.append("Time (hr)")
-            ylabels.append(("Average Drift Rate (mK/min)", "{} Average Drift Rate (mK/min)".format(u'\u0394')))
-            animate_funcs.append(animate_drift_rates_avg)
-            dimens.append(reg_dims)
+            titles[2] = "Drift Rate vs.Time"
+            xlabels[2] = "Time (hr)"
+            ylabels[2] = ("Drift Rate (mK/min)", "{} Drift Rate (mK/min)".format(u'\u0394'))
+            animate_funcs[2] = drift_rate_graph
 
         # Create the graph objects and sub plot objects.
         for i, (title, xlbl, ylbl, anim, dimen) in enumerate(zip(titles, xlabels, ylabels, animate_funcs, dimens)):
             dim_list = [self.dimensions + i + 1]
             for dim in dimen:
                 dim_list.append(dim)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, self.snums,
-                         ghelper)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, self.snums)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
         # Setup double click for graphs."""
@@ -188,22 +189,24 @@ class Graphing(object):
         # Display the canvas and toolbar
         self.canvas.draw()
         self.toolbar.update()
-        threading.Thread(target=self.clean_graph).start()
 
     def update_data_coll(self):
-        while True:
+        thread_id = uuid.uuid4()
+        print("Opening new graph thread: {}".format(thread_id))
+        self.master.thread_map[thread_id] = True
+        self.master.open_threads.append(thread_id)
+        while self.master.thread_map[thread_id]:
             try:
-                name = help.get_file_name(self.file_name.get())
-                Graphing.data_coll = fh.create_data_coll(name, self.snums, self.is_cal)[0]
-            except RuntimeError as r:
+                name = helpers.get_file_name(self.file_name.get())
+                if self.is_cal:
+                    Graphing.data_coll_cal = fh.create_data_coll(name, self.is_cal)[0]
+                else:
+                    Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
+            except RuntimeError:
                 pass
             time.sleep(10)
-
-    def clean_graph(self):
-        while True:
-            time.sleep(36000)
-            gc.collect()
-            Graphing.clean = True
+        else:
+            print("Killing thread {}".format(thread_id))
 
     def update_axes(self):
         """Update the axes to include the sub plots on the graphing page."""
@@ -223,15 +226,10 @@ class Graphing(object):
         for graph in self.graphs:
             graph.play()
 
-    def __file_error(self):
-        mbox.showwarning("File Error", "Inconsistency in the number of reading being" +
-                         "stored in file {}.".format(self.file_name.get()))
-
     def show_subplots(self, event=None):
         """Show all the subplots in the graphing page."""
-        # Need to check to make sure Csv is populated, if it is then get axes from graph_helper
+        # Need to check to make sure Csv is populated
         if event is None or event.dblclick:
-            self.showing_sub.val = True
             self.figure.clf()
             for graph in self.graphs:
                 graph.show_sub()
@@ -247,7 +245,6 @@ class Graphing(object):
         """Show the main plot on the graphing page."""
         self.update_axes()
         if isinstance(event, int):
-            self.showing_sub.val = False
             self.figure.clf()
             self.graphs[event].show_main()
             self.canvas.mpl_disconnect(self.cid)
@@ -256,11 +253,9 @@ class Graphing(object):
             self.toolbar.update()
             if not self.is_playing:
                 self.master.after(1500, self.pause)
-            self.main_num.val = event
         else:
             for i, axis in enumerate(self.sub_axes):
                 if event.dblclick and axis == event.inaxes:
-                    self.showing_sub.val = False
                     self.figure.clf()
                     self.graphs[i].show_main()
                     self.canvas.mpl_disconnect(self.cid)
@@ -269,181 +264,130 @@ class Graphing(object):
                     self.toolbar.update()
                     if not self.is_playing:
                         self.master.after(1500, self.pause)
-                    self.main_num.val = 0
 
 
-class GraphHelper(object):
-
-    def __init__(self, sub_func, main_func, main_num, showing_sub, figure):
-        self.sub_func = sub_func
-        self.main_func = main_func
-        self.showing_sub = showing_sub
-        self.main_num = main_num
-        self.figure = figure
-
-    def show_graphs(self):
-        if Graphing.clean:
-            Graphing.clean = False
-            self.figure.clf()
-            gc.collect()
-            if self.showing_sub.val:
-                self.sub_func()
-            else:
-                self.main_func(self.main_num.val)
+def animate_graph(use_snums):
+    def _animate_graph(func):
+        def _wrapper(axes, snums, is_cal):
+            dc = Graphing.data_coll
+            if is_cal:
+                dc = Graphing.data_coll_cal
+            if dc is not None:
+                if use_snums:
+                    if snums is not None and not len(snums):
+                        snums = fh.get_snums(is_cal)
+                    func(axes, snums, dc)
+                else:
+                    func(axes, dc)
+        return _wrapper
+    return _animate_graph
 
 
-class Int(object):
-
-    def __init__(self, num=0):
-        self.val = num
-
-    def __get__(self, instance, owner):
-        return self.val
-
-    def __set__(self, instance, num):
-        self.val = num
-
-
-class Bool(object):
-
-    def __init__(self, boolean=True):
-        self.val = boolean
-
-    def __get__(self, instance, owner):
-        return self.val
-
-    def __set__(self, instance, boolean):
-        self.val = boolean
-
-
-def animate_mwt_graph(axes, _, ghelper: GraphHelper):
+@animate_graph(False)
+def average_wave_graph(axes, dc):
     """Animate function for the mean wavelength vs. time graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None:
-        times, wavelen_diffs = Graphing.data_coll.times, Graphing.data_coll.mean_wavelen_diffs
-        axes[0].plot(times, wavelen_diffs)
+    times, wavelen_diffs = dc.times, dc.mean_wavelen_diffs
+    axes[0].plot(times, wavelen_diffs)
 
 
-def animate_wp_graph(axis, snums, ghelper: GraphHelper):
+@animate_graph(True)
+def wave_power_graph(axis, snums, dc):
     """Animate function for the wavelength vs. power graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
+    wavelens, powers = dc.wavelens, dc.powers
+    idx = 0
+    axes = []
+    for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
+        axes.append(axis[0].scatter(waves, powers, color=color, s=75))
+        idx += 1
 
-    if Graphing.data_coll is not None:
-        wavelens, powers = Graphing.data_coll.wavelens, Graphing.data_coll.powers
-        idx = 0
-        axes = []
-        for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
-            axes.append(axis[0].scatter(waves, powers, color=color, s=75))
-            idx += 1
+    font_size = 8
+    legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                            ncol=int(len(snums) / 2 + 0.5),
+                            fontsize=font_size, fancybox=True, shadow=True)
+    for text in legend.get_texts():
+        text.set_color("black")
 
+
+@animate_graph(True)
+def temp_graph(axes, _, dc):
+    """Animate function for the temperature graph."""
+    times, temp_diffs, temps = dc.times, dc.temp_diffs, dc.temps
+    axes[0].plot(times, temp_diffs)
+    if len(axes) > 1:
+        axes[1].plot(times, temps, color='b')
+
+
+@animate_graph(False)
+def average_power_graph(axis, dc):
+    """Animate function for the mean power vs. time graph."""
+    times, power_diffs = dc.times, dc.mean_power_diffs
+    axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
+    axis[0].plot(times, power_diffs)
+
+
+@animate_graph(True)
+def wave_graph(axis, snums, dc):
+    """Animate function for the individual wavelengths graph."""
+    times, wavelens, wavelen_diffs = dc.times, dc.wavelens, dc.wavelen_diffs
+    wavelen_diffs = [w * 1000 for w in wavelen_diffs]
+    idx = 0
+    axes = []
+    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
+        axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
+        if len(axis) > 1:
+            axis[1].plot(times, waves, color=color)
+        idx += 1
+
+    if len(axis) > 1:
         font_size = 8
-        if platform.system() == "Linux":
-            font_size = 10
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center', ncol=int(len(snums) / 2 + 0.5),
-                                fontsize=font_size, fancybox=True, shadow=True)
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
         for text in legend.get_texts():
             text.set_color("black")
 
 
-def animate_temp_graph(axes, _, ghelper: GraphHelper):
-    """Animate function for the temperature graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None and not Graphing.clean:
-        times, temp_diffs, temps = Graphing.data_coll.times, Graphing.data_coll.temp_diffs,\
-                                   Graphing.data_coll.temps
-        axes[0].plot(times, temp_diffs)
-        if len(axes) > 1:
-            axes[1].plot(times, temps, color='b')
-
-
-def animate_mpt_graph(axis, _, ghelper: GraphHelper):
-    """Animate function for the mean power vs. time graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None and not Graphing.clean:
-        times, power_diffs = Graphing.data_coll.times, Graphing.data_coll.mean_power_diffs
-        axis[0].plot(times, power_diffs)
-
-
-def animate_indiv_waves(axis, snums, ghelper: GraphHelper):
-    """Animate function for the individual wavelengths graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None and not Graphing.clean:
-        times, wavelens, wavelen_diffs = Graphing.data_coll.times, Graphing.data_coll.wavelens, \
-                                         Graphing.data_coll.wavelen_diffs
-        idx = 0
-        axes = []
-        for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, waves, color=color)[0])
-            if len(axis) > 1:
-                axis[1].plot(times, wave_diffs, color=color)
-            idx += 1
-
-        if len(axis) > 1:
-            font_size = 8
-            if platform.system() == "Linux":
-                font_size = 10
-            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-            for text in legend.get_texts():
-                text.set_color("black")
-
-
-def animate_indiv_powers( axis, snums, ghelper: GraphHelper):
+@animate_graph(True)
+def power_graph(axis, snums, dc):
     """Animate function for the individual powers graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None and not Graphing.clean:
-        times, powers, power_diffs = Graphing.data_coll.times, Graphing.data_coll.powers, \
-                                     Graphing.data_coll.power_diffs
-        idx = 0
-        axes = []
-        for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
-            axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
-            if len(axis) > 1:
-                axis[1].plot(times, pows, color=color)
-            idx += 1
-
+    times, powers, power_diffs = dc.times, dc.powers, dc.power_diffs
+    idx = 0
+    axes = []
+    for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
+        axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
         if len(axis) > 1:
-            font_size = 8
-            if platform.system() == "Linux":
-                font_size = 10
+            axis[1].plot(times, pows, color=color)
+        idx += 1
 
-            legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                    ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-            for text in legend.get_texts():
-                text.set_color("black")
+    if len(axis) > 1:
+        font_size = 8
+        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+        for text in legend.get_texts():
+            text.set_color("black")
 
 
-def animate_drift_rates_avg(axes, _, ghelper: GraphHelper):
+@animate_graph(False)
+def drift_rate_graph(axes, _):
     """Animate function for the drift rates graph."""
-    if Graphing.clean:
-        ghelper.show_graphs()
-
-    if Graphing.data_coll is not None and not Graphing.clean:
-        times, times_real, drates, drates_real = __get_drift_rates_avg()
-        axes[0].plot(times, drates)
-        if len(axes) > 1:
-            axes[1].plot(times_real, drates_real)
+    times, drates, drates_real = __get_drift_rates()
+    axes[0].plot(times, drates)
+    if len(axes) > 1:
+        axes[1].plot(times, drates_real)
 
 
-def __get_drift_rates_avg():
-    times = Graphing.data_coll.times
+def __get_drift_rates():
+    times = Graphing.data_coll_cal.times
+    drates = Graphing.data_coll_cal.drift_rates
+    delta_drates = [dr - drates[0] for dr in drates]
+    return times, drates, delta_drates
 
-    drates_real = []
-    times_real = []
-    for time, drate, real_point in zip(times, Graphing.data_coll.drift_rates, Graphing.data_coll.real_points):
-        if real_point:
-            drates_real.append(drate)
-            times_real.append(time)
 
-    return times, times_real, Graphing.data_coll.avg_drift_rates, drates_real
+def formatter(x, _):
+    """Format 1 as 1, 0 as 0, and all values whose absolute values is between
+    0 and 1 without the leading "0." (e.g., 0.7 is formatted as .7 and -0.4 is
+    formatted as -.4)."""
+    val_str = '{:g}'.format(x)
+    if 0 < np.abs(x) < 1:
+        return val_str.replace("0", "", 1)
+    else:
+        return val_str

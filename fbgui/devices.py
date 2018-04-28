@@ -8,12 +8,11 @@ import random
 WAVELEN_SCALE_FACTOR = 10000.0
 AMP_SCALE_FACTOR = 100.0
 
-socket.setdefaulttimeout(10)
-
 
 class SM125(socket.socket):
     """TCP socket connection for SM125 device."""
     def __init__(self, address, port, use_dev):
+        socket.setdefaulttimeout(3)
         super().__init__(AF_INET, SOCK_STREAM)
         if use_dev:
             super().connect((address, port))
@@ -60,8 +59,7 @@ class Oven(object):
         self.device = None
         loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination="\n")
-            self.device.timeout = 10000
+            self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
 
     def set_temp(self, temp):
         """Sets set point of delta oven."""
@@ -92,6 +90,7 @@ class OpSwitch(socket.socket):
     """Object representation of the Optical Switch needed for the program."""
 
     def __init__(self, addr, port, use_dev):
+        socket.setdefaulttimeout(3)
         super().__init__(AF_INET, SOCK_STREAM)
         if use_dev:
             super().connect((addr, port))
@@ -107,23 +106,21 @@ class TempController(object):
     def __init__(self, port, manager, use_dev):
         self.device = None
         loc = "GPIB0::{}::INSTR".format(port)
-        self.use_dev = use_dev
-        if self.use_dev:
-            self.device = manager.open_resource(loc, read_termination='\n')
-            self.device.timeout = 10000
+        if use_dev:
+            self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
 
     def get_temp_c(self):
         """Return temperature reading in degrees C."""
         query = self.device.query('CRDG? B')
         return query[:-4]
 
-    def get_temp_k(self, center_num=0):
+    def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
-        if not self.use_dev:
-            return random.gauss(center_num - 5, center_num + 5)
+        if dummy_val:
+            return float(random.gauss(center_num - 5, center_num + 5))
         else:
             query = self.device.query('KRDG? B')
-            return query[:-4]
+            return float(query[:-4])
 
     def close(self):
         """Close the device connection."""

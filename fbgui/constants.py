@@ -1,4 +1,6 @@
 from enum import Enum
+import os
+from PIL import Image, ImageTk
 
 BAKING = "Baking"
 CAL = "Cal"
@@ -8,9 +10,6 @@ LASER = "Micron Optics SM125"
 SWITCH = "Optical Switch"
 TEMP = "LSC Temperature Controller"
 DEV_HEADER = "Devices"
-
-BAKE_FID = "Metadata\n"
-CAL_FID = "Caldata\n"
 
 
 class Colors(Enum):
@@ -46,3 +45,22 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
               "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
               "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
+
+ASSETS_PATH = os.path.join("assets")
+CONFIG_PATH = os.path.join("config")
+DB_PATH = os.path.join("db", "program_data.db")
+
+FIBER_PATH = os.path.join(ASSETS_PATH, "fiber.png")
+MPL_STYLE_PATH = os.path.join(ASSETS_PATH, "kyton.mplstyle")
+PLAY_PATH = os.path.join(ASSETS_PATH, "play.gif")
+PAUSE_PATH = os.path.join(ASSETS_PATH, "pause.gif")
+
+PROG_CONFIG_PATH = os.path.join(CONFIG_PATH, "prog_config.cfg")
+DEV_CONFIG_PATH = os.path.join(CONFIG_PATH, "devices.cfg")
+
+# Need images as instance variables to prevent garbage collection
+CONFIG_IMG_PATH = os.path.join(ASSETS_PATH, "config.png")
+GRAPH_PATH = os.path.join(ASSETS_PATH, "graph.png")
+FILE_PATH = os.path.join(ASSETS_PATH, "file.png")
+DOCS_ICON_PATH = os.path.join(ASSETS_PATH, 'docs_icon.png')
+DOCS_ICON = Image.open(DOCS_ICON_PATH)

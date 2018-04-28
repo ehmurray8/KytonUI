@@ -1,10 +1,13 @@
-#Output files
-*csv
+# Output files
+*.csv
 *.xlsx
 
 .idea/
 
 fbgui.wxs
+db/
+config/
+test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
