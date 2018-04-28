@@ -242,13 +242,13 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                     temps_avg = temps
                 else:
                     temps_avg = [(t + new_t)/2. for t, new_t in zip(temps_avg, temps)]
-                small_df["Temperature (K) {}".format(int(cycle_num)+1)] = list(temps)
+                small_df["Temperature (K) {}".format(cycle_num)] = list(temps)
                 for col in wave_headers:
                     waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
-                    small_df[col + " {}".format(int(cycle_num)+1)] = list(waves)
+                    small_df[col + " {}".format(cycle_num)] = list(waves)
                 for col in pow_headers:
                     pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
-                    small_df[col + " {}".format(int(cycle_num)+1)] = list(pows)
+                    small_df[col + " {}".format(cycle_num)] = list(pows)
 
         small_df["Mean Temperature (K)"] = temps_avg
 

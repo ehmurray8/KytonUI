@@ -60,7 +60,6 @@ class Oven(object):
         loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
             self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
-            self.device.timeout = 3
 
     def set_temp(self, temp):
         """Sets set point of delta oven."""
@@ -109,7 +108,6 @@ class TempController(object):
         loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
             self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
-            self.device.timeout = 2
 
     def get_temp_c(self):
         """Return temperature reading in degrees C."""
