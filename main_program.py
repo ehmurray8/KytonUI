@@ -11,14 +11,14 @@ from shutil import copy2
 import matplotlib
 import visa
 import constants
+matplotlib.use("TkAgg")
+
 from baking_program import BakingProgram
 from cal_program import CalProgram
 import devices
 import create_excel
 import ui_helper as uh
 from reset_config import reset_config
-
-matplotlib.use("TkAgg")
 from tkinter import messagebox as mbox
 import tkinter as tk
 
@@ -162,7 +162,7 @@ class Application(tk.Tk):
                             err_specifier = "GPIB address"
                             temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
                             full_loc = "GPIB0::{}::INSTR".format(temp_loc)
-                            if full_loc not in self.manager.list_resources():
+                            if self.use_dev and full_loc not in self.manager.list_resources():
                                 continue
                             else:
                                 self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
@@ -221,9 +221,11 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
-        for tid, gid in zip(self.open_threads, self.graph_threads):
+        for tid in self.open_threads:
             self.thread_map[tid] = False
+        for gid in self.graph_threads:
             self.thread_map[gid] = False
+
         if self.running:
             if mbox.askyesno("Quit",
                              "Program is currently running. Are you sure you want to quit?"):

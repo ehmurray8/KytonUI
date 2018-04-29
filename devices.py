@@ -33,7 +33,7 @@ class SM125(socket.socket):
                 amps.append(random.uniform(-10+amp_start_num, -10 + amp_end_num))
                 amp_start_num += .25
                 amp_end_num += .25
-            return waves, amps, None
+            return waves, amps, [1, 2, 0, 0]
         else:
             self.send(b'#GET_PEAKS_AND_LEVELS')
             pre_response = self.recv(10)
