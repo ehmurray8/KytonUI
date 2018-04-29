@@ -204,7 +204,7 @@ class Graphing(object):
                     Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
             except RuntimeError:
                 pass
-            time.sleep(10)
+            time.sleep(8)
 
     def update_axes(self):
         """Update the axes to include the sub plots on the graphing page."""
