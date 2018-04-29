@@ -48,6 +48,7 @@ class Application(tk.Tk):
         self.main_queue = Queue()
         self.thread_map = {}
         self.open_threads = []
+        self.graph_threads = []
         self.running = False
         self.running_prog = None
         self.temp_controller: devices.TempController = None
@@ -220,8 +221,9 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
-        for tid in self.open_threads:
+        for tid, gid in zip(self.open_threads, self.graph_threads):
             self.thread_map[tid] = False
+            self.thread_map[gid] = False
         if self.running:
             if mbox.askyesno("Quit",
                              "Program is currently running. Are you sure you want to quit?"):

@@ -25,7 +25,6 @@ class CalProgram(Program):
         for cycle_num in range(self.options.num_cal_cycles.get()):
             if not self.master.thread_map[thread_id]:
                 self.disconnect_devices()
-                print("Closing thread: {}".format(thread_id))
                 return
 
             self.master.conn_dev(TEMP)
@@ -36,7 +35,6 @@ class CalProgram(Program):
 
             if not self.master.thread_map[thread_id]:
                 self.disconnect_devices()
-                print("Closing thread: {}".format(thread_id))
                 return
 
             self.set_oven_temp(temps[0] - 5, heat)
@@ -44,21 +42,18 @@ class CalProgram(Program):
             while not self.reset_temp(temps):
                 time.sleep(self.options.temp_interval.get())
                 if not self.master.thread_map[thread_id]:
-                    print("Closing thread: {}".format(thread_id))
                     return
 
             for temp in temps:
                 self.set_oven_temp(temp)
                 self.disconnect_devices()
                 if not self.master.thread_map[thread_id]:
-                    print("Closing thread: {}".format(thread_id))
                     return
                 time.sleep(self.options.temp_interval.get())
 
                 while not self.check_drift_rate(thread_id, cycle_num + 1):
                     time.sleep(self.options.temp_interval.get())
                     if not self.master.thread_map[thread_id]:
-                        print("Closing thread: {}".format(thread_id))
                         return
 
             self.set_oven_temp(temps[0] - 5, False)
@@ -67,12 +62,10 @@ class CalProgram(Program):
             self.disconnect_devices()
 
             if not self.master.thread_map[thread_id]:
-                print("Closing thread: {}".format(thread_id))
                 return
             while not self.reset_temp(temps):
                 time.sleep(self.options.temp_interval.get())
                 if not self.master.thread_map[thread_id]:
-                    print("Closing thread: {}".format(thread_id))
                     return
 
     def reset_temp(self, temps: List[float]) -> bool:
@@ -92,12 +85,10 @@ class CalProgram(Program):
 
         start_time = time.time()
         if not self.master.thread_map[thread_id]:
-            print("Closing thread: {}".format(thread_id))
             return False
         start_temp = float(self.master.temp_controller.get_temp_k())
         waves, amps = self.get_wave_amp_data(thread_id)
         if not self.master.thread_map[thread_id]:
-            print("Closing thread: {}".format(thread_id))
             return False
         curr_temp = float(self.master.temp_controller.get_temp_k())
         curr_time = time.time()
@@ -107,7 +98,6 @@ class CalProgram(Program):
         drift_rate *= 60000.
 
         if not self.master.thread_map[thread_id]:
-            print("Closing thread: {}".format(thread_id))
             return False
         if drift_rate <= self.options.drift_rate.get():
             fh.write_db(self.options.file_name.get(), self.snums, curr_time,
@@ -115,7 +105,6 @@ class CalProgram(Program):
             return True
 
         if not self.master.thread_map[thread_id]:
-            print("Closing thread: {}".format(thread_id))
             return False
         fh.write_db(self.options.file_name.get(), self.snums, curr_time,
                     curr_temp, waves, amps, CAL, self.table, drift_rate, False, cycle_num)
