@@ -14,7 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import style
 from matplotlib.figure import Figure
 import numpy as np
-from graph_toolbar import Toolbar
+from fbgui.graph_toolbar import Toolbar
 from fbgui.data_container import DataCollection
 from fbgui import helpers
 

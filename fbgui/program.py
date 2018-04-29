@@ -19,7 +19,7 @@ import visa
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from graph_toolbar import Toolbar
+from fbgui.graph_toolbar import Toolbar
 
 
 class ProgramType(object):
