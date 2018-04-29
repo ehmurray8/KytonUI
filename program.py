@@ -206,7 +206,6 @@ class Program(ttk.Notebook):
 
     def run_program(self):
         thread_id = uuid.uuid4()
-        print("Opening new {} data thread: {}".format(self.program_type.prog_id, thread_id))
         self.master.thread_map[thread_id] = True
         self.master.open_threads.append(thread_id)
         if self.connect_devices(thread_id):
@@ -214,7 +213,6 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
         else:
             self.pause_program()
-        print("Killing thread: {}".format(thread_id))
 
     def disconnect_devices(self):
         if self.master.use_dev:

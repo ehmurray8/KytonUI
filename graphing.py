@@ -192,7 +192,6 @@ class Graphing(object):
 
     def update_data_coll(self):
         thread_id = uuid.uuid4()
-        print("Opening new graph thread: {}".format(thread_id))
         self.master.thread_map[thread_id] = True
         self.master.graph_threads.append(thread_id)
         while self.master.thread_map[thread_id]:

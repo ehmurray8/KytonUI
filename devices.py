@@ -83,7 +83,8 @@ class Oven(object):
 
     def close(self):
         """Closes the resource."""
-        self.device.close()
+        if self.device is not None:
+            self.device.close()
 
 
 class OpSwitch(socket.socket):
@@ -124,4 +125,5 @@ class TempController(object):
 
     def close(self):
         """Close the device connection."""
-        self.device.close()
+        if self.device is not None:
+            self.device.close()

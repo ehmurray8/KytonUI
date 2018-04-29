@@ -60,8 +60,11 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
         cur.execute(sql)
         conn.commit()
     except sqlite3.OperationalError as e:  # TODO: Log this issue, column names have changed
-        if "column" in e:
-            return False
+        try:
+            if "column" in e:
+                return False
+        except TypeError:
+            pass
     conn.close()
     return True
 

@@ -221,10 +221,7 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
-        for tid in self.open_threads:
-            self.thread_map[tid] = False
-        for gid in self.graph_threads:
-            self.thread_map[gid] = False
+
 
         if self.running:
             if mbox.askyesno("Quit",
@@ -237,10 +234,18 @@ class Application(tk.Tk):
                     self.switch.close()
                 if self.laser is not None:
                     self.laser.close()
+                for tid in self.open_threads:
+                    self.thread_map[tid] = False
+                for gid in self.graph_threads:
+                    self.thread_map[gid] = False
                 self.destroy()
             else:
                 self.tkraise()
         else:
+            for tid in self.open_threads:
+                self.thread_map[tid] = False
+            for gid in self.graph_threads:
+                self.thread_map[gid] = False
             self.destroy()
 
     def setup_window(self):
