@@ -194,7 +194,7 @@ class Graphing(object):
         thread_id = uuid.uuid4()
         print("Opening new graph thread: {}".format(thread_id))
         self.master.thread_map[thread_id] = True
-        self.master.open_threads.append(thread_id)
+        self.master.graph_threads.append(thread_id)
         while self.master.thread_map[thread_id]:
             try:
                 name = helpers.get_file_name(self.file_name.get())
@@ -204,9 +204,7 @@ class Graphing(object):
                     Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
             except RuntimeError:
                 pass
-            time.sleep(10)
-        else:
-            print("Killing thread {}".format(thread_id))
+            time.sleep(8)
 
     def update_axes(self):
         """Update the axes to include the sub plots on the graphing page."""

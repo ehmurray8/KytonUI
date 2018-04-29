@@ -194,7 +194,7 @@ class Program(ttk.Notebook):
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
                         self.table.setup_headers(headers, True)
-                        Thread(target=self.connect_devices).start()
+                        Thread(target=self.run_program).start()
                         self.start_btn.configure(state=tk.NORMAL)
                 else:
                     self.start_btn.configure(text=self.program_type.start_title)
@@ -202,6 +202,18 @@ class Program(ttk.Notebook):
         else:
             self.start_btn.configure(text=self.program_type.start_title)
             self.start_btn.configure(state=tk.NORMAL)
+
+    def run_program(self):
+        thread_id = uuid.uuid4()
+        print("Opening new {} data thread: {}".format(self.program_type.prog_id, thread_id))
+        self.master.thread_map[thread_id] = True
+        self.master.open_threads.append(thread_id)
+        if self.connect_devices(thread_id):
+            self.program_loop(thread_id)
+            self.disconnect_devices()
+        else:
+            self.pause_program()
+        print("Killing thread: {}".format(thread_id))
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -218,12 +230,7 @@ class Program(ttk.Notebook):
                 self.master.switch.close()
                 self.master.switch = None
 
-    def connect_devices(self):
-        thread_id = uuid.uuid4()
-        print("Opening new {} data thread: {}".format(self.program_type.prog_id, thread_id))
-        self.master.thread_map[thread_id] = True
-        self.master.open_threads.append(thread_id)
-
+    def connect_devices(self, thread_id):
         self.need_oven = False
         need_switch = False
         self.disconnect_devices()
@@ -248,9 +255,8 @@ class Program(ttk.Notebook):
                 self.master.temp_controller is not None:
             self.disconnect_devices()
             self.master.running = True
-            self.program_loop(thread_id)
-        else:
-            self.pause_program()
+            return True
+        return False
 
     def set_oven_temp(self, temp: float = None, heat=True):
         if self.need_oven:
@@ -310,6 +316,7 @@ class Program(ttk.Notebook):
 
     def pause_program(self):
         """Pauses the program."""
+        self.disconnect_devices()
         for tid in self.master.open_threads:
             self.master.thread_map[tid] = False
         self.master.open_threads.clear()
