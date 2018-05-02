@@ -28,6 +28,7 @@ class Colors(Enum):
         return self.color
 
 
+LOG_BACKGROUND_COLOR = "#38383d"
 DISABLED_COLOR = str(Colors.GRAY)
 BG_COLOR = str(Colors.BLACK)
 TAB_COLOR = str(Colors.SKY_BLUE)

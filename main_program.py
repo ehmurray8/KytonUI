@@ -11,6 +11,7 @@ from shutil import copy2
 import matplotlib
 import visa
 import constants
+import messages
 matplotlib.use("TkAgg")
 
 from baking_program import BakingProgram
@@ -75,6 +76,7 @@ class Application(tk.Tk):
         self.main_notebook.enable_traversal()
         self.home_frame: ttk.Frame = None
         self.device_frame: ttk.Frame = None
+        self.log_view: messages.LogView = None
         self.setup_home_frame()
         self.bake_program = BakingProgram(self)
         self.main_notebook.add(self.bake_program, text="Bake")
@@ -139,6 +141,9 @@ class Application(tk.Tk):
             self.device_frame.grid_rowconfigure(i * 2, pad=20)
             uh.device_entry(self.device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
         self.device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
+        # self.log_view = messages.LogView(hframe)
+        # self.log_view.pack(expand=True, fill=tk.BOTH)
+
         create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False):

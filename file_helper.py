@@ -320,8 +320,8 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         if is_cal:
             sf_cal.apply_column_style(cols_to_style=[col for col in small_df.columns.values if "Temperature" in col],
                                       styler_obj=Styler(font_color=utils.colors.red))
-            sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values if "{}T (K)".format(u"\u0394") in c],
-                                      styler_obj=Styler(font_color=utils.colors.red))
+            sf_cal.apply_column_style(cols_to_style=[c for c in small_df.columns.values if "{}T (K)"
+                                      .format(u"\u0394") in c], styler_obj=Styler(font_color=utils.colors.red))
 
         ew = StyleFrame.ExcelWriter(xcel_file)
         if is_cal:
@@ -340,13 +340,13 @@ def create_excel_file(xcel_file, snums, is_cal=False):
 
 
 def get_snums(is_cal):
-    prog = BAKING
+    program = BAKING
     if is_cal:
-        prog = CAL
-    cparser = configparser.ConfigParser()
-    cparser.read(PROG_CONFIG_PATH)
-    snums = []
+        program = CAL
+    parser = configparser.ConfigParser()
+    parser.read(PROG_CONFIG_PATH)
+    serial_nums = []
     for i in range(4):
-        snums.extend(cparser.get(prog, "chan{}_fbgs".format(i+1)).split(","))
-    snums = [s for s in snums if s != '']
-    return snums
+        serial_nums.extend(parser.get(program, "chan{}_fbgs".format(i+1)).split(","))
+    serial_nums = [s for s in serial_nums if s != '']
+    return serial_nums

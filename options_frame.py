@@ -167,7 +167,10 @@ class OptionsPanel(ttk.Frame):
     def create_start_btn(self, start):
         """Creates the start button in the app."""
         start_button = ttk.Button(self)
-        start_button["text"] = "Start {}".format(self.program)
+        title = self.program
+        if title == CAL:
+            title = "Calibration"
+        start_button["text"] = "Start {}".format(title)
         start_button["command"] = start
         start_button.pack(anchor='center', pady=20)
         return start_button

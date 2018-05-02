@@ -21,10 +21,17 @@ class CalProgram(Program):
         self.create_excel()
         self.pause_program()
 
+    def sleep(self, thread_id):
+        start_time = time.time()
+        while time.time() - start_time < self.options.temp_interval.get():
+            time.sleep(.5)
+            if not self.master.thread_map[thread_id]:
+                return False
+        return True
+
     def cal_loop(self, temps: List[float], thread_id):
         for cycle_num in range(self.options.num_cal_cycles.get()):
             if not self.master.thread_map[thread_id]:
-                self.disconnect_devices()
                 return
 
             self.master.conn_dev(TEMP)
@@ -34,26 +41,21 @@ class CalProgram(Program):
                 heat = True
 
             if not self.master.thread_map[thread_id]:
-                self.disconnect_devices()
                 return
 
             self.set_oven_temp(temps[0] - 5, heat)
             self.disconnect_devices()
             while not self.reset_temp(temps):
-                time.sleep(self.options.temp_interval.get())
-                if not self.master.thread_map[thread_id]:
+                if not self.sleep(thread_id):
                     return
 
             for temp in temps:
                 self.set_oven_temp(temp)
                 self.disconnect_devices()
-                if not self.master.thread_map[thread_id]:
+                if not self.sleep(thread_id):
                     return
-                time.sleep(self.options.temp_interval.get())
-
                 while not self.check_drift_rate(thread_id, cycle_num + 1):
-                    time.sleep(self.options.temp_interval.get())
-                    if not self.master.thread_map[thread_id]:
+                    if not self.sleep(thread_id):
                         return
 
             self.set_oven_temp(temps[0] - 5, False)
@@ -64,8 +66,7 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
             while not self.reset_temp(temps):
-                time.sleep(self.options.temp_interval.get())
-                if not self.master.thread_map[thread_id]:
+                if not self.sleep(thread_id):
                     return
 
     def reset_temp(self, temps: List[float]) -> bool:

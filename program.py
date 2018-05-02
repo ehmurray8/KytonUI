@@ -22,6 +22,7 @@ from constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN, CONFIG_IMG_PATH, G
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from table import Table
+import messages
 import helpers
 from graph_toolbar import Toolbar
 
@@ -153,6 +154,7 @@ class Program(ttk.Notebook):
                     raise TypeError
             except (ValueError, TypeError):
                 raise TypeError
+            return True
         except tk.TclError:
             mbox.showerror("Device Configuration Error",
                            "Please fill in all the device configuration inputs on the home screen before starting.")
@@ -164,12 +166,12 @@ class Program(ttk.Notebook):
             mbox.showerror("Device Configuration Error",
                            "Please make sure the optical switch, and sm125 addresses are valid IP addresses on the " +
                            "home screen inputs.")
+        return False
 
     def start(self):
         """Starts the recording process."""
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
-
         can_start = self.check_device_config() and self.options.check_config()
         if can_start:
             if self.master.running:
