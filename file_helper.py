@@ -249,11 +249,15 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                 for col in wave_headers:
                     waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
                     small_df[col + " {}".format(cycle_num)] = list(waves)
+            small_df["Mean Temperature (K)"] = list(temps_avg)
+            for cycle_num in cycles:
+                temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
+                small_df["Temperature (K) {} ".format(cycle_num)] = list(temps)
                 for col in pow_headers:
                     pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
                     small_df[col + " {}".format(cycle_num)] = list(pows)
 
-        small_df["Mean Temperature (K)"] = temps_avg
+        small_df["Mean Temperature (K) "] = list(temps_avg)
 
         if not is_cal:
             new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times

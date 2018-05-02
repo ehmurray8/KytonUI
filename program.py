@@ -140,11 +140,37 @@ class Program(ttk.Notebook):
                 valid = False
         return valid
 
+    def check_device_config(self):
+        try:
+            int(self.master.controller_location.get())
+            int(self.master.oven_location.get())
+            int(self.master.op_switch_port.get())
+            int(self.master.sm125_port.get())
+            try:
+                if sum(bool(int(x)) for x in self.master.op_switch_address.get().split(".")) != 4:
+                    raise TypeError
+                if sum(bool(int(x)) for x in self.master.sm125_address.get().split(".")) != 4:
+                    raise TypeError
+            except (ValueError, TypeError):
+                raise TypeError
+        except tk.TclError:
+            mbox.showerror("Device Configuration Error",
+                           "Please fill in all the device configuration inputs on the home screen before starting.")
+        except ValueError:
+            mbox.showerror("Device Configuration Error",
+                           "Please make sure the temperature controller, oven, and port device inputs on " +
+                           "the home screen are integer values.")
+        except TypeError:
+            mbox.showerror("Device Configuration Error",
+                           "Please make sure the optical switch, and sm125 addresses are valid IP addresses on the " +
+                           "home screen inputs.")
+
     def start(self):
         """Starts the recording process."""
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
-        can_start = self.options.check_config()
+
+        can_start = self.check_device_config() and self.options.check_config()
         if can_start:
             if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:

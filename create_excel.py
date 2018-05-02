@@ -27,6 +27,7 @@ class Table(ttk.Frame):
     def refresh(self):
         for child in uh.get_all_children_tree(self.tree):
             self.tree.delete(child)
+        self.item_ids.clear()
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")

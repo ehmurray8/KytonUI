@@ -1,5 +1,6 @@
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+import tkinter as tk
 import ui_helper as uh
 
 
@@ -50,7 +51,10 @@ class Table(ttk.Frame):
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
         if len(uh.get_all_children_tree(self.tree)) > 100:
-            self.tree.delete(self.item_ids.pop(0))
+            try:
+                self.tree.delete(self.item_ids.pop(0))
+            except tk.TclError:
+                pass
 
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
@@ -59,4 +63,5 @@ class Table(ttk.Frame):
                 self.tree.column(self.headers[ix], width=int(col_w * 2))
 
     def reset(self):
+        self.item_ids.clear()
         self.tree.delete(*self.tree.get_children())

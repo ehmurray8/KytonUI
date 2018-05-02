@@ -221,8 +221,6 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
-
-
         if self.running:
             if mbox.askyesno("Quit",
                              "Program is currently running. Are you sure you want to quit?"):
