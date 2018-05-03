@@ -82,14 +82,6 @@ class Application(tk.Tk):
         self.cal_program = CalProgram(self)
         self.main_notebook.add(self.cal_program, text="Calibration")
         self.check_queue()
-        self.main_queue.put(messages.Message(messages.MessageType.ERROR, "TEST", "test123"))
-        import time
-        time.sleep(1)
-        self.main_queue.put(messages.Message(messages.MessageType.WARNING, "TEST2", "test1234"))
-        time.sleep(1)
-        self.main_queue.put(messages.Message(messages.MessageType.INFO, "TEST2", "test12345"))
-        time.sleep(1)
-        self.main_queue.put(messages.Message(messages.MessageType.DEVELOPER, "TEST4", "test123455"))
 
     def check_queue(self):
         while True:
