@@ -219,7 +219,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         cycles = []
         if is_cal:
             df_cal = df[df["Real Point"] == "True"]
-            # small_df["Date Time"] = df_cal["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
             cycles = list(set(df_cal["Cycle Num"]))
             cycles.sort()
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
@@ -229,21 +228,13 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         pow_headers = [head for head in headers if "Pow" in head]
         temp_header = [h for h in headers if "Temperature" in h][0]
 
-        if is_cal:
-            # small_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times_real
-            pass
-
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
         new_df[temp_header] = df[temp_header]
 
         for col in wave_headers:
             new_df[col] = df[col]
-            #if is_cal:
-            #    small_df[col] = df_cal[col]
         for col in pow_headers:
             new_df[col] = df[col]
-            #if is_cal:
-            #    small_df[col] = df_cal[col]
 
         temps_avg = []
         if is_cal:
@@ -252,6 +243,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                 if not len(temps_avg):
                     temps_avg = temps
                 else:
+                    temps += [0] * (len(temps_avg) - len(temps))
                     temps_avg = [(t + new_t)/2. for t, new_t in zip(temps_avg, temps)]
                 small_df["Temperature (K) {}".format(cycle_num)] = list(temps)
                 for col in wave_headers:
@@ -260,6 +252,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
             small_df["Mean Temperature (K)"] = list(temps_avg)
             for cycle_num in cycles:
                 temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
+                temps += [0] * (len(temps_avg) - len(temps))
                 small_df["Temperature (K) {} ".format(cycle_num)] = list(temps)
                 for col in pow_headers:
                     pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
@@ -274,7 +267,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         wave_diffs = data_coll.wavelen_diffs
         if not is_cal:
             for snum, delta_wave in zip(snums, wave_diffs):
-                # new_df["{} {}{} (nm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
                 new_df["{} {}{} (pm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave * 1000
 
         if not is_cal:
@@ -305,9 +297,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
 
         sf.apply_column_style(cols_to_style='Date Time',
                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
-        #if is_cal:
-        #    sf_cal.apply_column_style(cols_to_style='Date Time',
-        #                              styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
         for snum, hex_color in zip(snums, HEX_COLORS):
             sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
