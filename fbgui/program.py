@@ -324,8 +324,14 @@ class Program(ttk.Notebook):
 
         if self.program_type.prog_id == BAKING:
             self.conf_parser.set(CAL, "running", "false")
-            self.conf_parser.set(self.program_type.prog_id, "set_temp", str(self.options.set_temp.get()))
-            self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
+            try:
+                self.conf_parser.set(self.program_type.prog_id, "set_temp", str(self.options.set_temp.get()))
+            except tk.TclError:
+                pass
+            try:
+                self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
+            except tk.TclError:
+                pass
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
         else:
             self.conf_parser.set(BAKING, "running", "false")
