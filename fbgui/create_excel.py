@@ -1,7 +1,8 @@
+from queue import Queue
 import threading
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
-from tkinter import LEFT, E
+from tkinter import LEFT, E, RIGHT, W
 import tkinter
 import sqlite3
 from fbgui import file_helper as fh
@@ -12,9 +13,10 @@ from fbgui import ui_helper as uh
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, master: ttk.Frame, **kwargs):
+    def __init__(self, master: ttk.Frame, main_queue: Queue, **kwargs):
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]
+        self.main_queue = main_queue
         self.tree = None
         self.item_ids = []
         self.prog_info = None
@@ -27,6 +29,7 @@ class Table(ttk.Frame):
     def refresh(self):
         for child in uh.get_all_children_tree(self.tree):
             self.tree.delete(child)
+        self.item_ids.clear()
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT * FROM map;")
@@ -49,8 +52,8 @@ class Table(ttk.Frame):
         # create a treeview with dual scrollbars
         top_frame = ttk.Frame(self)
         top_frame.grid(sticky="nsew", pady=10)
-        ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor='w')
-        ttk.Button(top_frame, command=self.refresh, text="Refresh").pack(side=LEFT, anchor=E, padx=120)
+        ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor=W)
+        ttk.Button(top_frame, command=self.refresh, text="Refresh").pack(side=RIGHT, anchor=E)
 
         self.tree = ttk.Treeview(self, columns=self.headers, show="headings")
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
@@ -70,7 +73,8 @@ class Table(ttk.Frame):
             vals = self.tree.item(item)['values']
             fname = self.file_paths[vals[0]]
             snums = self.snums[vals[0]].split(",")
-            threading.Thread(target=fh.create_excel_file, args=(fname, snums, vals[2] == CAL.lower())).start()
+            threading.Thread(target=fh.create_excel_file, args=(fname, snums, self.main_queue,
+                                                                vals[2] == CAL.lower())).start()
 
     def setup_headers(self):
         for i, col in enumerate(self.headers):
@@ -90,5 +94,5 @@ class Table(ttk.Frame):
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkfont.Font().measure(val)
-            if self.tree.column(self.headers[ix], width=None) < int(col_w * 3):
-                self.tree.column(self.headers[ix], width=int(col_w * 3))
+            if self.tree.column(self.headers[ix], width=None) < int(col_w):
+                self.tree.column(self.headers[ix], width=int(col_w))

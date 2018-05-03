@@ -28,6 +28,7 @@ class Colors(Enum):
         return self.color
 
 
+LOG_BACKGROUND_COLOR = "#38383d"
 DISABLED_COLOR = str(Colors.GRAY)
 BG_COLOR = str(Colors.BLACK)
 TAB_COLOR = str(Colors.SKY_BLUE)
@@ -48,7 +49,8 @@ HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
 
 ASSETS_PATH = os.path.join("assets")
 CONFIG_PATH = os.path.join("config")
-DB_PATH = os.path.join("db", "program_data.db")
+DB_DIR = os.path.join("db")
+DB_PATH = os.path.join(DB_DIR, "program_data.db")
 
 FIBER_PATH = os.path.join(ASSETS_PATH, "fiber.png")
 MPL_STYLE_PATH = os.path.join(ASSETS_PATH, "kyton.mplstyle")

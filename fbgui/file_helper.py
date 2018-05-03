@@ -7,12 +7,16 @@ import configparser
 from fbgui import data_container as datac, helpers
 import numpy as np
 import pandas as pd
+import queue
 from StyleFrame import Styler, utils, StyleFrame
 from fbgui.constants import HEX_COLORS, CAL, BAKING, PROG_CONFIG_PATH, DB_PATH
+from fbgui.messages import Message, MessageType
+from typing import List
 
 
-def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
-             func, table, drift_rate=None, real_cal_pt=False, cycle_num=0):
+def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: float, wavelengths: List[float],
+             powers: List[float], func: str, table, main_queue: queue.Queue, drift_rate: float=None,
+             real_cal_pt: bool=False, cycle_num: int=0):
     """Writes the output to sqlite database."""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -58,11 +62,33 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     try:
         cur.execute(sql)
         conn.commit()
-    except sqlite3.OperationalError as e:  # TODO: Log this issue, column names have changed
-        if "column" in e:
-            return False
+    except sqlite3.OperationalError as e:
+        try:
+            if "column" in e:
+                msg = Message(MessageType.ERROR, "Configuration Error",
+                              "Serial numbers have changed from the first time this program was run. Please "
+                              "use a new file name.")
+                main_queue.put(msg)
+                return False
+        except TypeError:
+            pass
     conn.close()
     return True
+
+
+def get_last_cycle_num(file_name: str, func: str) -> int:
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    name = helpers.get_file_name(file_name)
+    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+    table_id = cur.fetchall()[0][0]
+    table_name = func.lower() + str(table_id)
+    cur.execute("SELECT {}.'Cycle Num' FROM {};".format(table_name, table_name))
+    last_cycle_num = cur.fetchall()
+    last_cycle_num = last_cycle_num[-1][0]
+    cur.close()
+    conn.close()
+    return int(last_cycle_num)
 
 
 def program_exists(name, cur_map, func):
@@ -202,7 +228,7 @@ def create_data_coll(name, is_cal, snums=None):
         raise RuntimeError("No data has been collected yet")
 
 
-def create_excel_file(xcel_file, snums, is_cal=False):
+def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
         data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), is_cal, snums)
@@ -212,7 +238,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         cycles = []
         if is_cal:
             df_cal = df[df["Real Point"] == "True"]
-            # small_df["Date Time"] = df_cal["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
             cycles = list(set(df_cal["Cycle Num"]))
             cycles.sort()
         new_df["Date Time"] = df["Date Time"].apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
@@ -221,10 +246,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         wave_headers = [head for head in headers if "Wave" in head]
         pow_headers = [head for head in headers if "Pow" in head]
         temp_header = [h for h in headers if "Temperature" in h][0]
-
-        if is_cal:
-            # small_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times_real
-            pass
 
         new_df["{} Time (hr.)".format(u"\u0394")] = data_coll.times
         new_df[temp_header] = df[temp_header]
@@ -245,16 +266,22 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                 if not len(temps_avg):
                     temps_avg = temps
                 else:
-                    temps_avg = [(t + new_t)/2. for t, new_t in zip(temps_avg, temps)]
+                    temps += [0] * (len(temps_avg) - len(temps))
+                    temps_avg = [(t + new_t)/2. if new_t != 0 else t for t, new_t in zip(temps_avg, temps)]
                 small_df["Temperature (K) {}".format(cycle_num)] = list(temps)
                 for col in wave_headers:
                     waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
                     small_df[col + " {}".format(cycle_num)] = list(waves)
+            small_df["Mean Temperature (K)"] = list(temps_avg)
+            for cycle_num in cycles:
+                temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
+                temps += [0] * (len(temps_avg) - len(temps))
+                small_df["Temperature (K) {} ".format(cycle_num)] = list(temps)
                 for col in pow_headers:
                     pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
                     small_df[col + " {}".format(cycle_num)] = list(pows)
 
-        small_df["Mean Temperature (K)"] = temps_avg
+        small_df["Mean Temperature (K) "] = list(temps_avg)
 
         if not is_cal:
             new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
@@ -263,7 +290,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         wave_diffs = data_coll.wavelen_diffs
         if not is_cal:
             for snum, delta_wave in zip(snums, wave_diffs):
-                # new_df["{} {}{} (nm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
                 new_df["{} {}{} (pm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave * 1000
 
         if not is_cal:
@@ -294,9 +320,6 @@ def create_excel_file(xcel_file, snums, is_cal=False):
 
         sf.apply_column_style(cols_to_style='Date Time',
                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
-        # if is_cal:
-        #     sf_cal.apply_column_style(cols_to_style='Date Time',
-        #                               styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
 
         for snum, hex_color in zip(snums, HEX_COLORS):
             sf.apply_column_style(cols_to_style=[c for c in new_df.columns.values if snum in c],
@@ -330,21 +353,23 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         ew.save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
     except RuntimeError:
-        mbox.showwarning("Error creating Excel File",
-                         "No data has been recorded yet, or the database has been corrupted.")
+        main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
+                               "No data has been recorded yet, or the database has been corrupted."))
     except PermissionError:
+        main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
+                               "Please close {}, before attempting to create a new copy of it.".format(xcel_file)))
         mbox.showwarning("Excel file is already opened",
                          "Please close {}, before attempting to create a new copy of it.".format(xcel_file))
 
 
-def get_snums(is_cal):
-    prog = BAKING
+def get_snums(is_cal: bool) -> List[str]:
+    program = BAKING
     if is_cal:
-        prog = CAL
-    cparser = configparser.ConfigParser()
-    cparser.read(PROG_CONFIG_PATH)
-    snums = []
+        program = CAL
+    parser = configparser.ConfigParser()
+    parser.read(PROG_CONFIG_PATH)
+    serial_nums = []
     for i in range(4):
-        snums.extend(cparser.get(prog, "chan{}_fbgs".format(i+1)).split(","))
-    snums = [s for s in snums if s != '']
-    return snums
+        serial_nums.extend(parser.get(program, "chan{}_fbgs".format(i+1)).split(","))
+    serial_nums = [s for s in serial_nums if s != '']
+    return serial_nums

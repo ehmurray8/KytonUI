@@ -10,7 +10,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from threading import Thread
-from fbgui import file_helper as fh, graphing as graphing, helpers, dev_helper as dev_helper, ui_helper as ui_helper, \
+from fbgui import file_helper as fh, graphing as graphing, dev_helper as dev_helper, ui_helper as ui_helper, \
     options_frame as options_frame
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH
 from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
@@ -20,6 +20,7 @@ from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from fbgui.graph_toolbar import Toolbar
+from fbgui import messages, helpers
 
 
 class ProgramType(object):
@@ -76,7 +77,7 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file."""
-        Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
+        Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums, self.master.main_queue,
                                                   self.program_type.prog_id == CAL)).start()
 
     def setup_tabs(self):
@@ -132,18 +133,47 @@ class Program(ttk.Notebook):
             pass
 
         if not os.path.isdir(os.path.split(self.options.file_name.get())[0]):
+            dirname = os.path.split(self.options.file_name.get())[0]
             try:
-                os.mkdir(os.path.split(self.options.file_name.get())[0])
+                os.mkdir(dirname)
             except FileNotFoundError:
-                # TODO: File Error cannot make directory, log this
                 valid = False
+                self.master.main_queue.put(messages.Message(messages.MessageType.ERROR, "File Error",
+                                                            "Cannot put write file to {}.".format(dirname)))
         return valid
+
+    def check_device_config(self):
+        try:
+            int(self.master.controller_location.get())
+            int(self.master.oven_location.get())
+            int(self.master.op_switch_port.get())
+            int(self.master.sm125_port.get())
+            try:
+                if sum(bool(int(x)) for x in self.master.op_switch_address.get().split(".")) != 4:
+                    raise TypeError
+                if sum(bool(int(x)) for x in self.master.sm125_address.get().split(".")) != 4:
+                    raise TypeError
+            except (ValueError, TypeError):
+                raise TypeError
+            return True
+        except tk.TclError:
+            mbox.showerror("Device Configuration Error",
+                           "Please fill in all the device configuration inputs on the home screen before starting.")
+        except ValueError:
+            mbox.showerror("Device Configuration Error",
+                           "Please make sure the temperature controller, oven, and port device inputs on " +
+                           "the home screen are integer values.")
+        except TypeError:
+            mbox.showerror("Device Configuration Error",
+                           "Please make sure the optical switch, and sm125 addresses are valid IP addresses on the " +
+                           "home screen inputs.")
+        return False
 
     def start(self):
         """Starts the recording process."""
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
-        can_start = self.options.check_config()
+        can_start = self.check_device_config() and self.options.check_config()
         if can_start:
             if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:
@@ -205,7 +235,6 @@ class Program(ttk.Notebook):
 
     def run_program(self):
         thread_id = uuid.uuid4()
-        print("Opening new {} data thread: {}".format(self.program_type.prog_id, thread_id))
         self.master.thread_map[thread_id] = True
         self.master.open_threads.append(thread_id)
         if self.connect_devices(thread_id):
@@ -213,7 +242,6 @@ class Program(ttk.Notebook):
             self.disconnect_devices()
         else:
             self.pause_program()
-        print("Killing thread: {}".format(thread_id))
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -248,7 +276,7 @@ class Program(ttk.Notebook):
 
         if self.master.thread_map[thread_id] and self.need_oven and self.master.oven is not None \
                 and self.program_type.prog_id == BAKING:
-            self.set_oven_temp()
+            self.set_oven_temp(force_connect=True, thread_id=thread_id)
 
         if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and\
                 (self.master.switch is not None) == need_switch and self.master.laser is not None and \
@@ -258,19 +286,30 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float = None, heat=True):
+    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
         if self.need_oven:
-            self.master.conn_dev(OVEN)
+            self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
             if temp is None:
                 temp = self.options.set_temp.get()
             try:
                 self.master.oven.set_temp(temp)
             except visa.VisaIOError:
-                # TODO: Log this issue, cannot connect to oven.. Seems impossible but may happen somehow
-                pass
+                self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                            "Failed to set temperature of oven to {}".format(temp)))
+            self.master.oven.heater_off()
+            self.master.oven.cooling_off()
             if heat:
-                self.master.oven.cooling_off()
-                self.master.oven.heater_on()
+                try:
+                    self.master.oven.heater_on()
+                except visa.VisaIOError:
+                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                "Failed to turn oven heater on."))
+            if cooling:
+                try:
+                    self.master.oven.cooling_on()
+                except visa.VisaIOError:
+                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                "Failed to turn oven cooling on."))
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))

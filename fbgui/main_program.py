@@ -8,10 +8,11 @@ from queue import Queue, Empty
 import visa
 from fbgui.baking_program import BakingProgram
 from fbgui.cal_program import CalProgram
-from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh
+from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh, messages
 from fbgui import install
 import matplotlib
 matplotlib.use("TkAgg")
+
 import tkinter as tk
 from tkinter import ttk
 
@@ -21,10 +22,8 @@ class Application(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         install.install()
         reset_config.reset_config()
-
         parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
         parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
         self.use_dev = True
@@ -75,22 +74,23 @@ class Application(tk.Tk):
         self.main_notebook.enable_traversal()
         self.home_frame: ttk.Frame = None
         self.device_frame: ttk.Frame = None
+        self.log_view: messages.LogView = None
         self.setup_home_frame()
         self.bake_program = BakingProgram(self)
         self.main_notebook.add(self.bake_program, text="Bake")
         self.cal_program = CalProgram(self)
         self.main_notebook.add(self.cal_program, text="Calibration")
+        self.check_queue()
 
     def check_queue(self):
         while True:
-            msg = ""
             try:
-                msg = self.main_queue.get(timeout=0.1)
+                msg = self.main_queue.get(timeout=0.1)  # type: messages.Message
+                self.log_view.add_msg(msg)
             except Empty:
                 break
-            # Handle message
 
-        self.after(10000, self.check_queue)
+        self.after(1000, self.check_queue)
 
     def toggle_full(self, _=None):
         """Toggles full screen on and off."""
@@ -139,9 +139,12 @@ class Application(tk.Tk):
             self.device_frame.grid_rowconfigure(i * 2, pad=20)
             uh.device_entry(self.device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
         self.device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
-        create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
+        self.log_view = messages.LogView(hframe)
+        self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
 
-    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False):
+        create_excel.Table(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
+
+    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id=None):
         """
         Connects or Disconnects the program to a required device based on the input location params.
         """
@@ -149,12 +152,13 @@ class Application(tk.Tk):
         need_conn_warn = False
         need_loc_warn = False
 
-        num = 3
-        if try_once:
+        num = sys.maxsize
+        if try_once or thread_id is None:
             num = 1
 
-        # TODO: Fix this to properly warn and try forever
         for _ in range(num):
+            if thread_id is not None and not self.thread_map[thread_id]:
+                return
             try:
                 if dev == constants.TEMP:
                     if connect:
@@ -162,7 +166,7 @@ class Application(tk.Tk):
                             err_specifier = "GPIB address"
                             temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
                             full_loc = "GPIB0::{}::INSTR".format(temp_loc)
-                            if full_loc not in self.manager.list_resources():
+                            if self.use_dev and full_loc not in self.manager.list_resources():
                                 continue
                             else:
                                 self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
@@ -208,10 +212,17 @@ class Application(tk.Tk):
                 break
             except socket.error:
                 need_conn_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Connection Error",
+                                                     "Failed to connect to {}, ".format(dev)))
             except visa.VisaIOError:
                 need_conn_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Connection Error",
+                                                     "Failed to connect to {}, ".format(dev)))
             except ValueError:
                 need_loc_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Invalid Location",
+                                                     "{} needs an integer input for its {}."
+                                                     .format(dev, err_specifier)))
 
         if need_conn_warn:
             if try_once:
@@ -221,9 +232,6 @@ class Application(tk.Tk):
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
-        for tid, gid in zip(self.open_threads, self.graph_threads):
-            self.thread_map[tid] = False
-            self.thread_map[gid] = False
         if self.running:
             if mbox.askyesno("Quit",
                              "Program is currently running. Are you sure you want to quit?"):
@@ -235,10 +243,18 @@ class Application(tk.Tk):
                     self.switch.close()
                 if self.laser is not None:
                     self.laser.close()
+                for tid in self.open_threads:
+                    self.thread_map[tid] = False
+                for gid in self.graph_threads:
+                    self.thread_map[gid] = False
                 self.destroy()
             else:
                 self.tkraise()
         else:
+            for tid in self.open_threads:
+                self.thread_map[tid] = False
+            for gid in self.graph_threads:
+                self.thread_map[gid] = False
             self.destroy()
 
     def setup_window(self):
