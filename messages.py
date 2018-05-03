@@ -1,4 +1,5 @@
 import enum
+import os
 import time
 import datetime
 from tkinter.font import Font
@@ -28,6 +29,7 @@ class Message(object):
         self.time = time.time()
         self.timestamp = datetime.datetime.fromtimestamp(self.time).strftime("%x %X")
         self.text = "{}: {}({})\n".format(self.timestamp, title, text)
+        self.msg = '{}({})\n'.format(title, text)
 
 
 class LogView(ttk.Frame):
@@ -37,6 +39,8 @@ class LogView(ttk.Frame):
         self.message_types = [MessageType.INFO, MessageType.WARNING, MessageType.ERROR]
         self.all_types = self.message_types + [MessageType.CRITICAL, MessageType.DEVELOPER]
         self.messages = {}
+        self.message_time = {}
+        self.message_time_filter = {}
         self.current_filter = MessageType.INFO
         for t in self.all_types:
             self.messages[t.name.title()] = []
@@ -56,6 +60,21 @@ class LogView(ttk.Frame):
         for t in self.all_types:
             self.log_view.tag_configure(t.name, font=Font(family="Helvetica", size=10), foreground=t.color)
         self.log_view.pack(expand=True, fill=tk.BOTH)
+        ttk.Button(self, text="Export", command=self.export).pack(anchor=tk.CENTER)
+
+    def export(self):
+        t = time.time()
+        timestamp = datetime.datetime.fromtimestamp(t).strftime("%Y%m%dT%H%M%S")
+        if not os.path.isdir("log"):
+            os.mkdir("log")
+        with open(os.path.join("log", "{}_log.txt".format(str(timestamp))), "w") as f:
+            selection = self.filter.current()
+            mtype = MessageType.INFO.filter_num
+            if self.all_types[selection].name.title() == MessageType.DEVELOPER.name.title():
+                mtype = MessageType.DEVELOPER.filter_num
+            msgs = self.get_msgs(mtype)
+            for t, (text, tag) in msgs.items():
+                f.write(text)
 
     def clear(self):
         self.log_view.config(state='normal')
@@ -67,6 +86,9 @@ class LogView(ttk.Frame):
         self.log_view.delete("1.0", tk.END)
 
     def add_msg(self, msg: Message):
+        if msg.msg in self.message_time:
+            pass
+        self.message_time[msg.msg] = msg.time
         self.messages[msg.type.name.title()].append((msg.time, msg.text))
         if  msg.type.filter_num <= self.current_filter.filter_num:
             self.write_msg(msg.text, msg.type.name)
@@ -99,18 +121,20 @@ class LogView(ttk.Frame):
             self.log_view.mark_set("matchEnd", "%s+%sc" % (index, count.get()))
             self.log_view.tag_add(tag, "matchStart", "matchEnd")
 
+    def get_msgs(self, filter_num):
+        msgs = {}
+        for t in self.all_types:
+            if t.filter_num <= filter_num:
+                for msg in self.messages[t.name.title()]:
+                    msgs[msg[0]] = (msg[1], t.name)
+        return collections.OrderedDict(msgs.items())
+
     def filter_msg(self, _):
         for t in self.all_types:
             selection = self.filter.current()
             if t.name.title() == self.message_types[selection].name.title():
                 self.current_filter = t
-        msgs = {}
-        for t in self.all_types:
-            if t.filter_num <= self.current_filter.filter_num:
-                for msg in self.messages[t.name.title()]:
-                    msgs[msg[0]] = (msg[1], t.name)
-
+        msgs = self.get_msgs(self.current_filter.filter_num)
         self.clear()
-        msgs = collections.OrderedDict(msgs.items())
-        for time, (text, tag) in msgs.items():
+        for t, (text, tag) in msgs.items():
             self.write_msg(text, tag)

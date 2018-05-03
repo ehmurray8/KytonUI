@@ -82,6 +82,13 @@ class Application(tk.Tk):
         self.main_notebook.add(self.bake_program, text="Bake")
         self.cal_program = CalProgram(self)
         self.main_notebook.add(self.cal_program, text="Calibration")
+        self.check_queue()
+        self.main_queue.put(messages.Message(messages.MessageType.ERROR, "TEST", "test123"))
+        import time
+        time.sleep(.2)
+        self.main_queue.put(messages.Message(messages.MessageType.WARNING, "TEST2", "test1234"))
+        time.sleep(.2)
+        self.main_queue.put(messages.Message(messages.MessageType.INFO, "TEST2", "test12345"))
 
     def check_queue(self):
         while True:
@@ -142,12 +149,7 @@ class Application(tk.Tk):
         self.device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
         self.log_view = messages.LogView(hframe)
         self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
-        self.log_view.add_msg(messages.Message(messages.MessageType.ERROR, "TEST", "test123"))
-        import time
-        time.sleep(.2)
-        self.log_view.add_msg(messages.Message(messages.MessageType.WARNING, "TEST2", "test1234"))
-        time.sleep(.2)
-        self.log_view.add_msg(messages.Message(messages.MessageType.INFO, "TEST2", "test12345"))
+
         create_excel.Table(hframe).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id=None):
