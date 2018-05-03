@@ -1,7 +1,7 @@
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
-from tkinter import LEFT, E
+from tkinter import LEFT, E, RIGHT, W
 import tkinter
 import sqlite3
 import file_helper as fh
@@ -50,8 +50,8 @@ class Table(ttk.Frame):
         # create a treeview with dual scrollbars
         top_frame = ttk.Frame(self)
         top_frame.grid(sticky="nsew", pady=10)
-        ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor='w')
-        ttk.Button(top_frame, command=self.refresh, text="Refresh").pack(side=LEFT, anchor=E, padx=120)
+        ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor=W)
+        ttk.Button(top_frame, command=self.refresh, text="Refresh").pack(side=RIGHT, anchor=E)
 
         self.tree = ttk.Treeview(self, columns=self.headers, show="headings")
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)

@@ -205,7 +205,7 @@ def conn_warning(dev):
 def loc_warning(loc_type):
     """Warn the user of an invalid location input."""
     mbox.showwarning(
-        "Invalid Location", "Please import an integer corresponding to the {}.".format(loc_type))
+        "Invalid Location", "Please input an integer corresponding to the {}.".format(loc_type))
 
 
 def setup_style():

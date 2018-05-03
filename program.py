@@ -134,11 +134,13 @@ class Program(ttk.Notebook):
         except ValueError:
             pass
         if not os.path.isdir(os.path.split(self.options.file_name.get())[0]):
+            dirname = os.path.split(self.options.file_name.get())[0]
             try:
-                os.mkdir(os.path.split(self.options.file_name.get())[0])
+                os.mkdir(dirname)
             except FileNotFoundError:
-                # TODO: File Error cannot make directory, log this
                 valid = False
+                self.master.main_queue.put(messages.Message(messages.MessageType.ERROR, "File Error",
+                                                            "Cannot put write file to {}.".format(dirname)))
         return valid
 
     def check_device_config(self):
@@ -275,7 +277,7 @@ class Program(ttk.Notebook):
 
         if self.master.thread_map[thread_id] and self.need_oven and self.master.oven is not None \
                 and self.program_type.prog_id == BAKING:
-            self.set_oven_temp()
+            self.set_oven_temp(force_connect=True, thread_id=thread_id)
 
         if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and\
                 (self.master.switch is not None) == need_switch and self.master.laser is not None and \
@@ -285,22 +287,30 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float = None, heat=True, cooling=False):
+    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
         if self.need_oven:
-            self.master.conn_dev(OVEN)
+            self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
             if temp is None:
                 temp = self.options.set_temp.get()
             try:
                 self.master.oven.set_temp(temp)
             except visa.VisaIOError:
-                # TODO: Log this issue, cannot connect to oven.. Seems impossible but may happen somehow
-                pass
+                self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                            "Failed to set temperature of oven to {}".format(temp)))
             self.master.oven.heater_off()
             self.master.oven.cooling_off()
             if heat:
-                self.master.oven.heater_on()
+                try:
+                    self.master.oven.heater_on()
+                except visa.VisaIOError:
+                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                "Failed to turn oven heater on."))
             if cooling:
-                self.master.oven.cooling_on()
+                try:
+                    self.master.oven.cooling_on()
+                except visa.VisaIOError:
+                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                "Failed to turn oven cooling on."))
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
