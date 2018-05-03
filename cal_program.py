@@ -4,7 +4,7 @@ import time
 from typing import List
 import math
 import file_helper as fh
-from constants import CAL, TEMP, SWITCH, LASER
+from constants import CAL, TEMP, SWITCH, LASER, OVEN
 from program import Program, ProgramType
 
 
@@ -36,21 +36,22 @@ class CalProgram(Program):
 
             self.master.conn_dev(TEMP)
             temp = float((self.master.temp_controller.get_temp_k()))
-            heat = False
             if temp < float(temps[0]) + 274.15 - 5:
-                heat = True
+                kwargs = {"heat": True}
+            else:
+                kwargs = {"cooling": True}
 
             if not self.master.thread_map[thread_id]:
                 return
 
-            self.set_oven_temp(temps[0] - 5, heat)
+            self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             while not self.reset_temp(temps):
                 if not self.sleep(thread_id):
                     return
 
             for temp in temps:
-                self.set_oven_temp(temp)
+                self.set_oven_temp(temp, heat=True)
                 self.disconnect_devices()
                 if not self.sleep(thread_id):
                     return
@@ -58,7 +59,7 @@ class CalProgram(Program):
                     if not self.sleep(thread_id):
                         return
 
-            self.set_oven_temp(temps[0] - 5, False)
+            self.set_oven_temp(temps[0] - 5, cooling=True)
             if self.options.cooling.get():
                 self.master.oven.cooling_on()
             self.disconnect_devices()

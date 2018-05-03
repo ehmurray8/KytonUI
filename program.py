@@ -285,7 +285,7 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float = None, heat=True):
+    def set_oven_temp(self, temp: float = None, heat=True, cooling=False):
         if self.need_oven:
             self.master.conn_dev(OVEN)
             if temp is None:
@@ -295,9 +295,12 @@ class Program(ttk.Notebook):
             except visa.VisaIOError:
                 # TODO: Log this issue, cannot connect to oven.. Seems impossible but may happen somehow
                 pass
+            self.master.oven.heater_off()
+            self.master.oven.cooling_off()
             if heat:
-                self.master.oven.cooling_off()
                 self.master.oven.heater_on()
+            if cooling:
+                self.master.oven.cooling_on()
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
