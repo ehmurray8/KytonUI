@@ -52,7 +52,7 @@ chan3_positions =
 chan4_fbgs = 
 chan4_positions = 
 
-[Calibration]
+[Cal]
 running = false
 use_cool = 0
 num_scans = 5

@@ -26,7 +26,10 @@ if __name__ == "__main__":
         CParser.write(dcfg)
 
     copytree("fbgui", target)
-    copy2("NIVISA541full.exe", target)
+    try:
+        copy2("NIVISA541full.exe", target)
+    except FileNotFoundError:
+        pass
     try:
         rmtree("fbgui")
     except PermissionError:
