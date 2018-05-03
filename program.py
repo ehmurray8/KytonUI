@@ -81,7 +81,7 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file."""
-        Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums,
+        Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums, self.master.main_queue,
                                                   self.program_type.prog_id == CAL)).start()
 
     def setup_tabs(self):

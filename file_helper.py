@@ -11,7 +11,7 @@ from StyleFrame import Styler, utils, StyleFrame
 from constants import HEX_COLORS, CAL, BAKING, DB_PATH, PROG_CONFIG_PATH
 import helpers
 import configparser
-import messages
+from messages import Message, MessageType
 from typing import List
 
 
@@ -66,15 +66,30 @@ def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: flo
     except sqlite3.OperationalError as e:
         try:
             if "column" in e:
-                msg = messages.Message(messages.MessageType.ERROR, "Configuration Error",
-                                       "Serial numbers have changed from the first time this program was run. Please "
-                                       "use a new file name.")
+                msg = Message(MessageType.ERROR, "Configuration Error",
+                              "Serial numbers have changed from the first time this program was run. Please "
+                              "use a new file name.")
                 main_queue.put(msg)
                 return False
         except TypeError:
             pass
     conn.close()
     return True
+
+
+def get_last_cycle_num(file_name: str, func: str) -> int:
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    name = helpers.get_file_name(file_name)
+    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+    table_id = cur.fetchall()[0][0]
+    table_name = func.lower() + str(table_id)
+    cur.execute("SELECT {}.'Cycle Num' FROM {};".format(table_name, table_name))
+    last_cycle_num = cur.fetchall()
+    last_cycle_num = last_cycle_num[-1][0]
+    cur.close()
+    conn.close()
+    return int(last_cycle_num)
 
 
 def program_exists(name, cur_map, func):
@@ -209,7 +224,7 @@ def create_data_coll(name, is_cal, snums=None):
         raise RuntimeError("No data has been collected yet")
 
 
-def create_excel_file(xcel_file, snums, is_cal=False):
+def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
         data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), is_cal, snums)
@@ -244,7 +259,7 @@ def create_excel_file(xcel_file, snums, is_cal=False):
                     temps_avg = temps
                 else:
                     temps += [0] * (len(temps_avg) - len(temps))
-                    temps_avg = [(t + new_t)/2. for t, new_t in zip(temps_avg, temps)]
+                    temps_avg = [(t + new_t)/2. if new_t != 0 else t for t, new_t in zip(temps_avg, temps)]
                 small_df["Temperature (K) {}".format(cycle_num)] = list(temps)
                 for col in wave_headers:
                     waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
@@ -329,14 +344,16 @@ def create_excel_file(xcel_file, snums, is_cal=False):
         ew.save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
     except RuntimeError:
-        mbox.showwarning("Error creating Excel File",
-                         "No data has been recorded yet, or the database has been corrupted.")
+        main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
+                               "No data has been recorded yet, or the database has been corrupted."))
     except PermissionError:
+        main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
+                               "Please close {}, before attempting to create a new copy of it.".format(xcel_file)))
         mbox.showwarning("Excel file is already opened",
                          "Please close {}, before attempting to create a new copy of it.".format(xcel_file))
 
 
-def get_snums(is_cal):
+def get_snums(is_cal: bool) -> List[str]:
     program = BAKING
     if is_cal:
         program = CAL

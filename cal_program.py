@@ -6,6 +6,7 @@ import math
 import file_helper as fh
 from constants import CAL, TEMP, SWITCH, LASER
 from program import Program, ProgramType
+from messages import MessageType, Message
 
 
 class CalProgram(Program):
@@ -18,8 +19,9 @@ class CalProgram(Program):
         """Runs the calibration."""
         temps_arr = self.options.get_target_temps()
         self.cal_loop(temps_arr, thread_id)
-        self.create_excel()
-        self.pause_program()
+        if self.master.thread_map[thread_id]:
+            self.create_excel()
+            self.pause_program()
 
     def sleep(self, thread_id):
         start_time = time.time()
@@ -30,7 +32,13 @@ class CalProgram(Program):
         return True
 
     def cal_loop(self, temps: List[float], thread_id):
-        for cycle_num in range(self.options.num_cal_cycles.get()):
+        last_cycle_num = fh.get_last_cycle_num(self.options.file_name.get(), CAL)
+        if last_cycle_num == self.options.num_cal_cycles.get():
+            self.master.main_queue.put(Message(MessageType.WARNING, "Calibration Program Complete",
+                                               "The calibration program has already completed the specified {} cycles"
+                                               .format(self.options.num_cal_cycles.get())))
+        for cycle_num in range(self.options.num_cal_cycles.get() - last_cycle_num):
+            cycle_num += last_cycle_num
             if not self.master.thread_map[thread_id]:
                 return
 

@@ -1,3 +1,4 @@
+from queue import Queue
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
@@ -12,9 +13,10 @@ from constants import CAL, DB_PATH
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, master: ttk.Frame, **kwargs):
+    def __init__(self, master: ttk.Frame, main_queue: Queue, **kwargs):
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]
+        self.main_queue = main_queue
         self.tree = None
         self.item_ids = []
         self.prog_info = None
@@ -71,7 +73,8 @@ class Table(ttk.Frame):
             vals = self.tree.item(item)['values']
             fname = self.file_paths[vals[0]]
             snums = self.snums[vals[0]].split(",")
-            threading.Thread(target=fh.create_excel_file, args=(fname, snums, vals[2] == CAL.lower())).start()
+            threading.Thread(target=fh.create_excel_file, args=(fname, snums, self.main_queue,
+                                                                vals[2] == CAL.lower())).start()
 
     def setup_headers(self):
         for i, col in enumerate(self.headers):
@@ -91,5 +94,5 @@ class Table(ttk.Frame):
         # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkFont.Font().measure(val)
-            if self.tree.column(self.headers[ix], width=None) < int(col_w * 3):
-                self.tree.column(self.headers[ix], width=int(col_w * 3))
+            if self.tree.column(self.headers[ix], width=None) < int(col_w):
+                self.tree.column(self.headers[ix], width=int(col_w))

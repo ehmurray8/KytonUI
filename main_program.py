@@ -12,7 +12,6 @@ import matplotlib
 import visa
 import constants
 import messages
-import math
 matplotlib.use("TkAgg")
 
 from baking_program import BakingProgram
@@ -85,10 +84,12 @@ class Application(tk.Tk):
         self.check_queue()
         self.main_queue.put(messages.Message(messages.MessageType.ERROR, "TEST", "test123"))
         import time
-        time.sleep(.2)
+        time.sleep(1)
         self.main_queue.put(messages.Message(messages.MessageType.WARNING, "TEST2", "test1234"))
-        time.sleep(.2)
+        time.sleep(1)
         self.main_queue.put(messages.Message(messages.MessageType.INFO, "TEST2", "test12345"))
+        time.sleep(1)
+        self.main_queue.put(messages.Message(messages.MessageType.DEVELOPER, "TEST4", "test123455"))
 
     def check_queue(self):
         while True:
@@ -150,7 +151,7 @@ class Application(tk.Tk):
         self.log_view = messages.LogView(hframe)
         self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
 
-        create_excel.Table(hframe).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
+        create_excel.Table(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id=None):
         """
@@ -160,8 +161,8 @@ class Application(tk.Tk):
         need_conn_warn = False
         need_loc_warn = False
 
-        num = math.inf
-        if try_once or thread_id == None:
+        num = sys.maxsize
+        if try_once or thread_id is None:
             num = 1
 
         for _ in range(num):
