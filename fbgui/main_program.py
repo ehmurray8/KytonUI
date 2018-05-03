@@ -165,7 +165,7 @@ class Application(tk.Tk):
                     if connect:
                         if self.temp_controller is None:
                             err_specifier = "GPIB address"
-                            temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
+                            temp_loc = self.controller_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(temp_loc)
                             if self.use_dev and full_loc not in self.manager.list_resources():
                                 continue
@@ -178,7 +178,7 @@ class Application(tk.Tk):
                     if connect:
                         if self.oven is None:
                             err_specifier = "GPIB address"
-                            oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
+                            oven_loc = self.oven_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(oven_loc)
                             if full_loc not in self.manager.list_resources():
                                 continue
@@ -191,9 +191,8 @@ class Application(tk.Tk):
                     if connect:
                         if self.switch is None:
                             err_specifier = "ethernet port"
-                            switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
-                            switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
-                            self.switch = devices.OpSwitch(switch_loc, int(switch_port), self.use_dev)
+                            self.switch = devices.OpSwitch(self.op_switch_address.get(),
+                                                           int(self.op_switch_port.get()), self.use_dev)
                     else:
                         self.switch.close()
                         self.switch = None
@@ -201,9 +200,8 @@ class Application(tk.Tk):
                     if connect:
                         if self.laser is None:
                             err_specifier = "ethernet port"
-                            laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
-                            laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
-                            self.laser = devices.SM125(laser_loc, int(laser_port), self.use_dev)
+                            self.laser = devices.SM125(self.sm125_address.get(), int(self.sm125_port.get()),
+                                                       self.use_dev)
                     else:
                         self.laser.close()
                         self.laser = None
