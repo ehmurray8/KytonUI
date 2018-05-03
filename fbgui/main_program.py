@@ -4,6 +4,7 @@ import argparse
 import configparser
 import os
 import socket
+import sys
 from queue import Queue, Empty
 import visa
 from fbgui.baking_program import BakingProgram
@@ -50,10 +51,10 @@ class Application(tk.Tk):
         self.graph_threads = []
         self.running = False
         self.running_prog = None
-        self.temp_controller: devices.TempController = None
-        self.oven: devices.Oven = None
-        self.laser: devices.SM125 = None
-        self.switch: devices.OpSwitch = None
+        self.temp_controller = None
+        self.oven = None
+        self.laser = None
+        self.switch = None
         self.is_full_screen = False
 
         self.controller_location = tk.IntVar()
@@ -72,9 +73,9 @@ class Application(tk.Tk):
 
         self.main_notebook = ttk.Notebook(self)
         self.main_notebook.enable_traversal()
-        self.home_frame: ttk.Frame = None
-        self.device_frame: ttk.Frame = None
-        self.log_view: messages.LogView = None
+        self.home_frame = None
+        self.device_frame = None
+        self.log_view = None
         self.setup_home_frame()
         self.bake_program = BakingProgram(self)
         self.main_notebook.add(self.bake_program, text="Bake")

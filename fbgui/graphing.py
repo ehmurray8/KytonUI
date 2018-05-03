@@ -1,5 +1,4 @@
-import gc
-import os
+
 import uuid
 import threading
 from tkinter import StringVar
@@ -15,8 +14,9 @@ from matplotlib import style
 from matplotlib.figure import Figure
 import numpy as np
 from fbgui.graph_toolbar import Toolbar
-from fbgui.data_container import DataCollection
 from fbgui import helpers
+import gc
+import os
 
 style.use("kyton")
 
@@ -131,8 +131,8 @@ class Graph(object):
 class Graphing(object):
     """Class used for graphing the individual Graph objects."""
 
-    data_coll: DataCollection = None
-    data_coll_cal: DataCollection = None
+    data_coll = None
+    data_coll_cal = None
 
     def __init__(self, fname: StringVar, dims: List[Union[int, Any]], is_cal: bool, figure: Figure,
                  canvas: FigureCanvasTkAgg, toolbar: Toolbar, master, snums: List[str]):

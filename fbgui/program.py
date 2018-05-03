@@ -56,9 +56,9 @@ class Program(ttk.Notebook):
         self.snums = []
         self.start_btn = None
         self.need_oven = False
-        self.options: options_frame.OptionsPanel = None
-        self.table: Table = None
-        self.graph_helper: graphing.Graphing = None
+        self.options = None
+        self.table = None
+        self.graph_helper = None
 
         self.config_photo = ImageTk.PhotoImage(Image.open(CONFIG_IMG_PATH))
         self.graph_photo = ImageTk.PhotoImage(Image.open(GRAPH_PATH))
@@ -286,7 +286,8 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
+    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
+                      cooling=False):
         if self.need_oven:
             self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
             if temp is None:

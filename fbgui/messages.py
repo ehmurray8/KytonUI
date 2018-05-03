@@ -7,7 +7,7 @@ import tkinter as tk
 import collections
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
-from constants import LOG_BACKGROUND_COLOR
+from fbgui.constants import LOG_BACKGROUND_COLOR
 
 FILTER_TIME = 300.
 
