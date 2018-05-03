@@ -269,10 +269,13 @@ class Program(ttk.Notebook):
             need_switch = True
             self.master.conn_dev(SWITCH, try_once=True)
 
-        if self.master.thread_map[thread_id] and self.master.use_dev \
-                and (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
-            self.need_oven = True
-            self.master.conn_dev(OVEN, try_once=True)
+        try:
+            if self.master.thread_map[thread_id] and self.master.use_dev \
+                    and (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
+                self.need_oven = True
+                self.master.conn_dev(OVEN, try_once=True)
+        except tk.TclError:
+            self.need_oven = False
 
         if self.master.thread_map[thread_id] and self.need_oven and self.master.oven is not None \
                 and self.program_type.prog_id == BAKING:
