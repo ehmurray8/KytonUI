@@ -34,7 +34,7 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            self.master.conn_dev(TEMP)
+            self.master.conn_dev(TEMP, thread_id)
             temp = float((self.master.temp_controller.get_temp_k()))
             heat = False
             if temp < float(temps[0]) + 274.15 - 5:
@@ -43,14 +43,14 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            self.set_oven_temp(temps[0] - 5, heat)
+            self.set_oven_temp(temps[0] - 5, heat, force_connect=True)
             self.disconnect_devices()
-            while not self.reset_temp(temps):
+            while not self.reset_temp(temps, thread_id):
                 if not self.sleep(thread_id):
                     return
 
             for temp in temps:
-                self.set_oven_temp(temp)
+                self.set_oven_temp(temp, force_connect=True)
                 self.disconnect_devices()
                 if not self.sleep(thread_id):
                     return
@@ -58,20 +58,20 @@ class CalProgram(Program):
                     if not self.sleep(thread_id):
                         return
 
-            self.set_oven_temp(temps[0] - 5, False)
+            self.set_oven_temp(temps[0] - 5, False, force_connect=True)
             if self.options.cooling.get():
                 self.master.oven.cooling_on()
             self.disconnect_devices()
 
             if not self.master.thread_map[thread_id]:
                 return
-            while not self.reset_temp(temps):
+            while not self.reset_temp(temps, thread_id):
                 if not self.sleep(thread_id):
                     return
 
-    def reset_temp(self, temps: List[float]) -> bool:
+    def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
-        self.master.conn_dev(TEMP)
+        self.master.conn_dev(TEMP, thread_id)
         temp = float((self.master.temp_controller.get_temp_k()))
         self.disconnect_devices()
         if temp <= float(temps[0] + 274.15) - 5:
@@ -79,10 +79,10 @@ class CalProgram(Program):
         return False
 
     def check_drift_rate(self, thread_id, cycle_num) -> bool:
-        self.master.conn_dev(TEMP)
-        self.master.conn_dev(LASER)
+        self.master.conn_dev(TEMP, thread_id)
+        self.master.conn_dev(LASER, thread_id)
         if sum(len(switch) for switch in self.switches):
-            self.master.conn_dev(SWITCH)
+            self.master.conn_dev(SWITCH, thread_id)
 
         start_time = time.time()
         if not self.master.thread_map[thread_id]:
@@ -101,12 +101,12 @@ class CalProgram(Program):
         if not self.master.thread_map[thread_id]:
             return False
         if drift_rate <= self.options.drift_rate.get():
-            fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                        curr_temp, waves, amps, CAL, self.table, drift_rate, True, cycle_num)
+            fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
+                        self.table, self.master.main_queue, drift_rate, True, cycle_num)
             return True
 
         if not self.master.thread_map[thread_id]:
             return False
-        fh.write_db(self.options.file_name.get(), self.snums, curr_time,
-                    curr_temp, waves, amps, CAL, self.table, drift_rate, False, cycle_num)
+        fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
+                    self.table, self.master.main_queue, drift_rate, False, cycle_num)
         return False

@@ -6,14 +6,18 @@ from tkinter import messagebox as mbox
 import data_container as datac
 import numpy as np
 import pandas as pd
+import queue
 from StyleFrame import Styler, utils, StyleFrame
 from constants import HEX_COLORS, CAL, BAKING, DB_PATH, PROG_CONFIG_PATH
 import helpers
 import configparser
+import messages
+from typing import List
 
 
-def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
-             func, table, drift_rate=None, real_cal_pt=False, cycle_num=0):
+def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: float, wavelengths: List[float],
+             powers: List[float], func: str, table, main_queue: queue.Queue, drift_rate: float=None,
+             real_cal_pt: bool=False, cycle_num: int=0):
     """Writes the output to sqlite database."""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -59,9 +63,13 @@ def write_db(file_name, serial_nums, timestamp, temp, wavelengths, powers,
     try:
         cur.execute(sql)
         conn.commit()
-    except sqlite3.OperationalError as e:  # TODO: Log this issue, column names have changed
+    except sqlite3.OperationalError as e:
         try:
             if "column" in e:
+                msg = messages.Message(messages.MessageType.ERROR, "Configuration Error",
+                                       "Serial numbers have changed from the first time this program was run. Please "
+                                       "use a new file name.")
+                main_queue.put(msg)
                 return False
         except TypeError:
             pass

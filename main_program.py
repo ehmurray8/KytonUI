@@ -12,6 +12,7 @@ import matplotlib
 import visa
 import constants
 import messages
+import math
 matplotlib.use("TkAgg")
 
 from baking_program import BakingProgram
@@ -31,7 +32,6 @@ class Application(tk.Tk):
         super().__init__(*args, **kwargs)
 
         reset_config()
-
         parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
         parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
         self.use_dev = True
@@ -85,14 +85,13 @@ class Application(tk.Tk):
 
     def check_queue(self):
         while True:
-            msg = ""
             try:
-                msg = self.main_queue.get(timeout=0.1)
+                msg = self.main_queue.get(timeout=0.1)  # type: messages.Message
+                self.log_view.add_msg(msg)
             except Empty:
                 break
-            # Handle message
 
-        self.after(10000, self.check_queue)
+        self.after(1000, self.check_queue)
 
     def toggle_full(self, _=None):
         """Toggles full screen on and off."""
@@ -141,12 +140,17 @@ class Application(tk.Tk):
             self.device_frame.grid_rowconfigure(i * 2, pad=20)
             uh.device_entry(self.device_frame, dev[0], dev[1], i + 2, dev[2], dev[3], dev[4])
         self.device_frame.pack(anchor=tk.CENTER, expand=True, pady=15)
-        # self.log_view = messages.LogView(hframe)
-        # self.log_view.pack(expand=True, fill=tk.BOTH)
+        self.log_view = messages.LogView(hframe)
+        self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
+        self.log_view.add_msg(messages.Message(messages.MessageType.ERROR, "TEST", "test123"))
+        import time
+        time.sleep(.2)
+        self.log_view.add_msg(messages.Message(messages.MessageType.WARNING, "TEST2", "test1234"))
+        time.sleep(.2)
+        self.log_view.add_msg(messages.Message(messages.MessageType.INFO, "TEST2", "test12345"))
+        create_excel.Table(hframe).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
-        create_excel.Table(hframe).pack(pady=175, anchor=tk.S, expand=True)
-
-    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False):
+    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id=None):
         """
         Connects or Disconnects the program to a required device based on the input location params.
         """
@@ -154,12 +158,13 @@ class Application(tk.Tk):
         need_conn_warn = False
         need_loc_warn = False
 
-        num = 3
-        if try_once:
+        num = math.inf
+        if try_once or thread_id == None:
             num = 1
 
-        # TODO: Fix this to properly warn and try forever
         for _ in range(num):
+            if thread_id is not None and not self.thread_map[thread_id]:
+                return
             try:
                 if dev == constants.TEMP:
                     if connect:
@@ -213,10 +218,17 @@ class Application(tk.Tk):
                 break
             except socket.error:
                 need_conn_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Connection Error",
+                                                     "Failed to connect to {}, ".format(dev)))
             except visa.VisaIOError:
                 need_conn_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Connection Error",
+                                                     "Failed to connect to {}, ".format(dev)))
             except ValueError:
                 need_loc_warn = True
+                self.main_queue.put(messages.Message(messages.MessageType.ERROR, "Invalid Location",
+                                                     "{} needs an integer input for its {}."
+                                                     .format(dev, err_specifier)))
 
         if need_conn_warn:
             if try_once:

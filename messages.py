@@ -10,8 +10,8 @@ from constants import LOG_BACKGROUND_COLOR
 
 
 class MessageType(enum.Enum):
-    DEVELOPER = (5, "#0011FF")
-    INFO = (4, "#000000")
+    DEVELOPER = (5, "#170ad3")
+    INFO = (4, "#FFFFFF")
     WARNING = (3, "#FFCC00")
     ERROR = (2, "#FF0000")
     CRITICAL = (1, "#FF8800")
@@ -40,21 +40,25 @@ class LogView(ttk.Frame):
         self.current_filter = MessageType.INFO
         for t in self.all_types:
             self.messages[t.name.title()] = []
-        self.pack(expand=True, fill=tk.BOTH)
+        self.pack()
         header_frame = ttk.Frame(self)
         header_frame.pack(expand=True, fill=tk.BOTH)
-        ttk.Label(header_frame, text="Program Log").pack(anchor=tk.W)
-        self.filter = tk.Listbox(header_frame)
-        for t in [MessageType.INFO, MessageType.WARNING, MessageType.ERROR]:
-            self.filter.insert(tk.END, t.name.title())
-        self.filter.bind("<<ListboxSelect>>", self.filter_msg)
+        ttk.Label(header_frame, text="Program Log").pack(anchor=tk.W, side=tk.LEFT)
+
+        self.filter = ttk.Combobox(header_frame, values=[mtype.name.title() for mtype in self.message_types])
+        self.filter.config(state="readonly")
+        self.filter.set(MessageType.INFO.name.title())
+        self.filter.pack(anchor=tk.E, side=tk.RIGHT)
+
+        self.filter.bind("<<ComboboxSelected>>", self.filter_msg)
         self.filter.pack(anchor=tk.E)
         self.log_view = ScrolledText(self, wrap=tk.WORD, background=LOG_BACKGROUND_COLOR)
         for t in self.all_types:
-            self.log_view.tag_configure(t.name, font=Font(family="Helvetica", size=12), foreground=t.color)
+            self.log_view.tag_configure(t.name, font=Font(family="Helvetica", size=10), foreground=t.color)
         self.log_view.pack(expand=True, fill=tk.BOTH)
 
     def clear(self):
+        self.log_view.config(state='normal')
         for t in self.all_types:
             try:
                 self.log_view.tag_remove(t.name, "1.0", tk.END)
@@ -64,12 +68,14 @@ class LogView(ttk.Frame):
 
     def add_msg(self, msg: Message):
         self.messages[msg.type.name.title()].append((msg.time, msg.text))
-        if self.current_filter.filter_num <= msg.type.filter_num:
+        if  msg.type.filter_num <= self.current_filter.filter_num:
             self.write_msg(msg.text, msg.type.name)
 
     def write_msg(self, text: str, tag: str):
+        self.log_view.config(state='normal')
         self.log_view.insert(tk.END, text)
         self.highlight_pattern(text, tag)
+        self.log_view.config(state='disabled')
 
     def highlight_pattern(self, pattern, tag, start="1.0", end="end", regexp=False):
         '''Apply the given tag to all text that matches the given pattern
@@ -95,7 +101,8 @@ class LogView(ttk.Frame):
 
     def filter_msg(self, _):
         for t in self.all_types:
-            if t.name.title() == self.message_types[int(self.filter.curselection()[0])]:
+            selection = self.filter.current()
+            if t.name.title() == self.message_types[selection].name.title():
                 self.current_filter = t
         msgs = {}
         for t in self.all_types:
@@ -103,8 +110,7 @@ class LogView(ttk.Frame):
                 for msg in self.messages[t.name.title()]:
                     msgs[msg[0]] = (msg[1], t.name)
 
-        msgs = collections.OrderedDict(msgs.items())
-        for msg in msgs.items():
-            self.write_msg(msg[0], msg[1])
-
         self.clear()
+        msgs = collections.OrderedDict(msgs.items())
+        for time, (text, tag) in msgs.items():
+            self.write_msg(text, tag)
