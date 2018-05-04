@@ -3,6 +3,7 @@
 from typing import List
 import math
 import time
+import visa
 from fbgui import file_helper as fh
 from fbgui.constants import CAL, TEMP, SWITCH, LASER
 from fbgui.program import Program, ProgramType
@@ -42,8 +43,14 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            self.master.conn_dev(TEMP, thread_id=thread_id)
-            temp = float((self.master.temp_controller.get_temp_k()))
+            temp = None
+            while temp is None:
+                try:
+                    self.master.conn_dev(TEMP, thread_id=thread_id)
+                    temp = float((self.master.temp_controller.get_temp_k()))
+                except (AttributeError, visa.VisaIOError):
+                    pass
+
             kwargs = {"force_connect": True, "thread_id": thread_id}
             if temp < float(temps[0]) + 274.15 - 5:
                 kwargs["heat"] = True
@@ -80,42 +87,46 @@ class CalProgram(Program):
 
     def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
-        self.master.conn_dev(TEMP, thread_id=thread_id)
-        temp = float((self.master.temp_controller.get_temp_k()))
-        self.disconnect_devices()
-        if temp <= float(temps[0] + 274.15) - 5:
-            return True
-        return False
+        while True:
+            try:
+                self.master.conn_dev(TEMP, thread_id=thread_id)
+                temp = float((self.master.temp_controller.get_temp_k()))
+                self.disconnect_devices()
+                if temp <= float(temps[0] + 274.15) - 5:
+                    return True
+                return False
+            except (AttributeError, visa.VisaIOError):
+                pass
 
     def check_drift_rate(self, thread_id, cycle_num) -> bool:
-        self.master.conn_dev(TEMP, thread_id=thread_id)
-        self.master.conn_dev(LASER, thread_id=thread_id)
-        if sum(len(switch) for switch in self.switches):
-            self.master.conn_dev(SWITCH, thread_id=thread_id)
+        while True:
+            try:
+                self.master.conn_dev(TEMP, thread_id)
+                start_time = time.time()
+                if not self.master.thread_map[thread_id]:
+                    return False
+                start_temp = float(self.master.temp_controller.get_temp_k())
+                waves, amps = self.get_wave_amp_data(thread_id)
+                if not self.master.thread_map[thread_id]:
+                    return False
+                curr_temp = float(self.master.temp_controller.get_temp_k())
+                curr_time = time.time()
+                self.disconnect_devices()
 
-        start_time = time.time()
-        if not self.master.thread_map[thread_id]:
-            return False
-        start_temp = float(self.master.temp_controller.get_temp_k())
-        waves, amps = self.get_wave_amp_data(thread_id)
-        if not self.master.thread_map[thread_id]:
-            return False
-        curr_temp = float(self.master.temp_controller.get_temp_k())
-        curr_time = time.time()
-        self.disconnect_devices()
+                drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
+                drift_rate *= 60000.
 
-        drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
-        drift_rate *= 60000.
+                if not self.master.thread_map[thread_id]:
+                    return False
+                if drift_rate <= self.options.drift_rate.get():
+                    fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
+                                self.table, self.master.main_queue, drift_rate, True, cycle_num)
+                    return True
 
-        if not self.master.thread_map[thread_id]:
-            return False
-        if drift_rate <= self.options.drift_rate.get():
-            fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
-                        self.table, self.master.main_queue, drift_rate, True, cycle_num)
-            return True
-
-        if not self.master.thread_map[thread_id]:
-            return False
-        fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
-                    self.table, self.master.main_queue, drift_rate, False, cycle_num)
-        return False
+                if not self.master.thread_map[thread_id]:
+                    return False
+                fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
+                            self.table, self.master.main_queue, drift_rate, False, cycle_num)
+                return False
+            except (AttributeError, visa.VisaIOError):
+                pass

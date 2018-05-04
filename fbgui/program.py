@@ -5,6 +5,7 @@ program and baking program.
 import abc
 import uuid
 import configparser
+import socket
 import os
 import sqlite3
 import tkinter as tk
@@ -289,31 +290,36 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
-                      cooling=False):
-        if self.need_oven:
-            self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
-            if temp is None:
-                temp = self.options.set_temp.get()
+    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
+        temp_set = False
+        while not temp_set:
             try:
-                self.master.oven.set_temp(temp)
-            except visa.VisaIOError:
-                self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                            "Failed to set temperature of oven to {}".format(temp)))
-            self.master.oven.heater_off()
-            self.master.oven.cooling_off()
-            if heat:
-                try:
-                    self.master.oven.heater_on()
-                except visa.VisaIOError:
-                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                                "Failed to turn oven heater on."))
-            if cooling:
-                try:
-                    self.master.oven.cooling_on()
-                except visa.VisaIOError:
-                    self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                                "Failed to turn oven cooling on."))
+                if self.need_oven:
+                    self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
+                    if temp is None:
+                        temp = self.options.set_temp.get()
+                    try:
+                        self.master.oven.set_temp(temp)
+                    except visa.VisaIOError:
+                        self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                    "Failed to set temperature of oven to {}".format(temp)))
+                    self.master.oven.heater_off()
+                    self.master.oven.cooling_off()
+                    if heat:
+                        try:
+                            self.master.oven.heater_on()
+                        except visa.VisaIOError:
+                            self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                        "Failed to turn oven heater on."))
+                    if cooling:
+                        try:
+                            self.master.oven.cooling_on()
+                        except visa.VisaIOError:
+                            self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
+                                                                        "Failed to turn oven cooling on."))
+                temp_set = True
+            except (AttributeError, visa.VisaIOError):
+                pass
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -385,6 +391,14 @@ class Program(ttk.Notebook):
 
     def get_wave_amp_data(self, thread_id):
         positions_used = [len(x) for x in self.channels]
-        return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                         self.options.num_pts.get(), positions_used, self.master.use_dev,
-                                         sum(len(s) > 0 for s in self.snums), thread_id, self.master.thread_map)
+        while True:
+            try:
+                if sum(len(switch) for switch in self.switches):
+                    self.master.conn_dev(SWITCH, thread_id=thread_id)
+                self.master.conn_dev(LASER, thread_id=thread_id)
+                return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                                 self.options.num_pts.get(), positions_used, self.master.use_dev,
+                                                 sum(len(s) > 0 for s in self.snums), thread_id, self.master.thread_map)
+            except (AttributeError, visa.VisaIOError, socket.error):
+                pass
+
