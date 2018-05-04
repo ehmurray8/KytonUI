@@ -60,7 +60,9 @@ class Vidia(object):
             self.device = manager.open_resource(loc)
 
     def start_scan(self):
+        self.device.query(":OUTP ON")
         self.device.query(":OUTP:TRAC OFF")
+        self.device.query(":OUTP:SCAN:STAR -1")
 
     def scan_state(self):
         return self.device.query(":OUTP:SCAN:STAT?")
@@ -132,14 +134,3 @@ class TempController(object):
         """Close the device connection."""
         if self.device is not None:
             self.device.close()
-
-
-if __name__ == '__main__':
-    import visa
-    import time
-    man = visa.ResourceManager()
-    time.sleep(.2)
-    DEV = Vidia("GPIB1::8::INSTR", man, True)
-    DEV.start_scan()
-    print(DEV.scan_state())
-    man.close()
