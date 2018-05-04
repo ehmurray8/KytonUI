@@ -234,6 +234,12 @@ def create_data_coll(name, is_cal, snums=None, main_queue=None):
         raise RuntimeError("No data has been collected yet")
 
 
+def make_length(values: List, length: int) -> List:
+    values = values[:length]
+    values += [0] * (length - len(values))
+    return values
+
+
 def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
@@ -268,24 +274,23 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
         temps_avg = []
         if is_cal and "Cycle Num" in df_cal.columns.values:
             for cycle_num in cycles:
-                temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
+                temps = list(df_cal[df_cal["Cycle Num"] == cycle_num][temp_header])
                 if not len(temps_avg):
                     temps_avg = temps
                 else:
                     temps += [0] * (len(temps_avg) - len(temps))
                     temps_avg = [(t + new_t)/2. if new_t != 0 else t for t, new_t in zip(temps_avg, temps)]
-                small_df["Temperature (K) {}".format(cycle_num)] = list(temps)
+                small_df["Temperature (K) {}".format(cycle_num)] = make_length(list(temps), len(temps_avg))
                 for col in wave_headers:
                     waves = df_cal[df_cal["Cycle Num"] == cycle_num][col]
-                    small_df[col + " {}".format(cycle_num)] = list(waves)
-            small_df["Mean Temperature (K)"] = list(temps_avg)
+                    small_df[col + " {}".format(cycle_num)] = make_length(list(waves), len(temps_avg))
+            small_df["Mean Temperature (K)"] = make_length(list(temps_avg), len(temps_avg))
             for cycle_num in cycles:
-                temps = df_cal[df_cal["Cycle Num"] == cycle_num][temp_header]
-                temps += [0] * (len(temps_avg) - len(temps))
-                small_df["Temperature (K) {} ".format(cycle_num)] = list(temps)
+                temps = list(df_cal[df_cal["Cycle Num"] == cycle_num][temp_header])
+                small_df["Temperature (K) {} ".format(cycle_num)] = make_length(list(temps), len(temps_avg))
                 for col in pow_headers:
                     pows = df_cal[df_cal["Cycle Num"] == cycle_num][col]
-                    small_df[col + " {}".format(cycle_num)] = list(pows)
+                    small_df[col + " {}".format(cycle_num)] = make_length(list(pows), len(temps_avg))
 
         small_df["Mean Temperature (K) "] = list(temps_avg)
 
