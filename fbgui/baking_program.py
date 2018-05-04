@@ -4,7 +4,7 @@ import time
 import visa
 import socket
 from fbgui import file_helper as fh, program
-from fbgui.constants import BAKING, LASER, SWITCH, TEMP
+from fbgui.constants import BAKING, TEMP
 
 
 class BakingProgram(program.Program):
@@ -30,7 +30,7 @@ class BakingProgram(program.Program):
                     return True
                 return False
             except (AttributeError, visa.VisaIOError):
-                pass
+                self.temp_controller_error()
 
     def program_loop(self, thread_id):
         """Runs the baking process."""
@@ -52,7 +52,7 @@ class BakingProgram(program.Program):
                         self.master.conn_dev(TEMP, thread_id=thread_id)
                         temperature = self.master.temp_controller.get_temp_k()
                     except (visa.VisaIOError, AttributeError, socket.error):
-                        pass
+                        self.temp_controller_error()
             else:
                 temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
 
@@ -72,7 +72,7 @@ class BakingProgram(program.Program):
                         temp2 = self.master.temp_controller.get_temp_k()
                         temperature += temp2
                     except (AttributeError, visa.VisaIOError):
-                        pass
+                        self.temp_controller_error()
             else:
                 temp2 = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
                 temperature += temp2

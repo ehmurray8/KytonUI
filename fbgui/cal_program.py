@@ -4,8 +4,9 @@ from typing import List
 import math
 import time
 import visa
+import datetime
 from fbgui import file_helper as fh
-from fbgui.constants import CAL, TEMP, SWITCH, LASER
+from fbgui.constants import CAL, TEMP
 from fbgui.program import Program, ProgramType
 from fbgui.messages import MessageType, Message
 
@@ -57,6 +58,10 @@ class CalProgram(Program):
             else:
                 kwargs["cooling"] = True
 
+            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {}K."
+                                               .format(cycle_num, temps[0]+274.15-5), title=None))
+            start_init_time = time.time()
+
             if not self.master.thread_map[thread_id]:
                 return
             self.set_oven_temp(temps[0] - 5, **kwargs)
@@ -65,6 +70,15 @@ class CalProgram(Program):
                 if not self.sleep(thread_id):
                     return
 
+            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}."
+                                               .format(cycle_num,
+                                                       str(datetime.timedelta(seconds=
+                                                                              int(time.time()-start_init_time)))),
+                                               title=None))
+
+            self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num),
+                                               title=None))
+            start_cycle_time = time.time()
             for temp in temps:
                 self.set_oven_temp(temp, heat=True, force_connect=True)
                 self.disconnect_devices()
@@ -73,17 +87,11 @@ class CalProgram(Program):
                 while not self.check_drift_rate(thread_id, cycle_num + 1):
                     if not self.sleep(thread_id):
                         return
-
-            self.set_oven_temp(temps[0] - 5, cooling=True, force_connect=True)
-            if self.options.cooling.get():
-                self.master.oven.cooling_on()
-            self.disconnect_devices()
-
-            if not self.master.thread_map[thread_id]:
-                return
-            while not self.reset_temp(temps, thread_id):
-                if not self.sleep(thread_id):
-                    return
+            self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}."
+                                               .format(cycle_num,
+                                                       str(datetime.timedelta(seconds=
+                                                                              int(time.time()-start_cycle_time)))),
+                                               title=None))
 
     def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
@@ -96,7 +104,7 @@ class CalProgram(Program):
                     return True
                 return False
             except (AttributeError, visa.VisaIOError):
-                pass
+                self.temp_controller_error()
 
     def check_drift_rate(self, thread_id, cycle_num) -> bool:
         while True:
@@ -129,4 +137,4 @@ class CalProgram(Program):
                             self.table, self.master.main_queue, drift_rate, False, cycle_num)
                 return False
             except (AttributeError, visa.VisaIOError):
-                pass
+                self.temp_controller_error()

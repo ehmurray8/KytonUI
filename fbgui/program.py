@@ -7,21 +7,21 @@ import uuid
 import configparser
 import socket
 import os
+from threading import Thread
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
-from threading import Thread
-from fbgui import file_helper as fh, graphing as graphing, dev_helper as dev_helper, ui_helper as ui_helper, \
-    options_frame as options_frame
-from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH
-from fbgui.constants import CAL, BAKING, LASER, SWITCH, TEMP, OVEN
-from fbgui.table import Table
-import visa
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import visa
+from fbgui import file_helper as fh, graphing as graphing, dev_helper as dev_helper, ui_helper as ui_helper, \
+    options_frame as options_frame, helpers
+from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
+    CAL, BAKING, LASER, SWITCH, TEMP, OVEN
+from fbgui.table import Table
 from fbgui.graph_toolbar import Toolbar
-from fbgui import messages, helpers
+from fbgui.messages import MessageType, Message
 
 
 class ProgramType(object):
@@ -139,8 +139,8 @@ class Program(ttk.Notebook):
                 os.mkdir(dirname)
             except FileNotFoundError:
                 valid = False
-                self.master.main_queue.put(messages.Message(messages.MessageType.ERROR, "File Error",
-                                                            "Cannot put write file to {}.".format(dirname)))
+                self.master.main_queue.put(Message(MessageType.ERROR, "File Error",
+                                                   "Cannot put write file to {}.".format(dirname)))
         return valid
 
     def check_device_config(self):
@@ -238,11 +238,17 @@ class Program(ttk.Notebook):
         thread_id = uuid.uuid4()
         self.master.thread_map[thread_id] = True
         self.master.open_threads.append(thread_id)
+        self.master.main_queue.put(Message(MessageType.INFO, text="Starting data collection for {} program."
+                                           .format(self.program_type.prog_id), title=None))
         if self.connect_devices(thread_id):
             self.program_loop(thread_id)
             self.disconnect_devices()
+            self.master.main_queue.put(Message(MessageType.INFO, text="{} program is finished."
+                                               .format(self.program_type.prog_id), title=None))
         else:
             self.pause_program()
+            self.master.main_queue.put(Message(MessageType.INFO, text="Pausing data collection for {} program."
+                                               .format(self.program_type.prog_id), title=None))
 
     def disconnect_devices(self):
         if self.master.use_dev:
@@ -293,33 +299,35 @@ class Program(ttk.Notebook):
     def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
         temp_set = False
         while not temp_set:
+            if temp is None:
+                temp = self.options.set_temp.get()
             try:
                 if self.need_oven:
                     self.master.conn_dev(OVEN, try_once=not force_connect, thread_id=thread_id)
-                    if temp is None:
-                        temp = self.options.set_temp.get()
                     try:
                         self.master.oven.set_temp(temp)
                     except visa.VisaIOError:
-                        self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                                    "Failed to set temperature of oven to {}".format(temp)))
+                        self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
+                                                           "Failed to set temperature of oven to {}".format(temp)))
                     self.master.oven.heater_off()
                     self.master.oven.cooling_off()
                     if heat:
                         try:
                             self.master.oven.heater_on()
                         except visa.VisaIOError:
-                            self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                                        "Failed to turn oven heater on."))
+                            self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
+                                                               "Failed to turn oven heater on."))
                     if cooling:
                         try:
                             self.master.oven.cooling_on()
                         except visa.VisaIOError:
-                            self.master.main_queue.put(messages.Message(messages.MessageType.WARNING, "Connection Error",
-                                                                        "Failed to turn oven cooling on."))
+                            self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
+                                                               "Failed to turn oven cooling on."))
                 temp_set = True
             except (AttributeError, visa.VisaIOError):
-                pass
+                self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
+                                                   "Failed to set the oven temperature to {} C. Trying to set the "
+                                                   "temperature again."))
 
     def save_config_info(self):
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
@@ -389,6 +397,11 @@ class Program(ttk.Notebook):
         self.channels = [[], [], [], []]
         self.switches = [[], [], [], []]
 
+    def temp_controller_error(self):
+        self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
+                                           "Failed to collect power and wavelength data from the laser and the "
+                                           "switch. Trying to collect data again."))
+
     def get_wave_amp_data(self, thread_id):
         positions_used = [len(x) for x in self.channels]
         while True:
@@ -400,5 +413,4 @@ class Program(ttk.Notebook):
                                                  self.options.num_pts.get(), positions_used, self.master.use_dev,
                                                  sum(len(s) > 0 for s in self.snums), thread_id, self.master.thread_map)
             except (AttributeError, visa.VisaIOError, socket.error):
-                pass
-
+                self.temp_controller_error()

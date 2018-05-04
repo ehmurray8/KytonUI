@@ -2,11 +2,12 @@ import enum
 import os
 import time
 import datetime
-from tkinter.font import Font
-import tkinter as tk
 import collections
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
+from tkinter.font import Font
+import tkinter as tk
+from typing import Union
 from fbgui.constants import LOG_BACKGROUND_COLOR
 
 FILTER_TIME = 300.
@@ -65,10 +66,12 @@ class SizeDict(collections.MutableMapping):
 
 class Message(object):
 
-    def __init__(self, msg_type: MessageType, title: str, text: str):
+    def __init__(self, msg_type: MessageType, title: Union[str, None], text: str):
         self.type = msg_type
         self.time = time.time()
         self.timestamp = datetime.datetime.fromtimestamp(self.time).strftime("%x %X")
+        if title is None:
+            self.text = "{}: {}".format(self.timestamp, text)
         self.text = "{}: {}({})\n".format(self.timestamp, title, text)
         self.msg = '{}({})\n'.format(title, text)
 
