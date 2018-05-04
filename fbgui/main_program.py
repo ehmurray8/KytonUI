@@ -7,13 +7,14 @@ import socket
 import sys
 from queue import Queue, Empty
 import visa
+
+import matplotlib
+matplotlib.use("TkAgg")
+
 from fbgui.baking_program import BakingProgram
 from fbgui.cal_program import CalProgram
 from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh, messages
 from fbgui import install
-import matplotlib
-matplotlib.use("TkAgg")
-
 import tkinter as tk
 from tkinter import ttk
 
@@ -168,6 +169,14 @@ class Application(tk.Tk):
                             temp_loc = self.controller_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(temp_loc)
                             if self.use_dev and full_loc not in self.manager.list_resources():
+                                if try_once:
+                                    mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
+                                                                              "controller, check the "
+                                                                              "configured settings on the home screen.")
+                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                     "Device Connection Error",
+                                                                     "Failed to connect to the temperature controller."
+                                                                     ))
                                 continue
                             else:
                                 self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
@@ -180,7 +189,13 @@ class Application(tk.Tk):
                             err_specifier = "GPIB address"
                             oven_loc = self.oven_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(oven_loc)
-                            if full_loc not in self.manager.list_resources():
+                            if self.use_dev and full_loc not in self.manager.list_resources():
+                                if try_once:
+                                    mbox.showerror("Device Connection Error", "Cannot connect to the oven, check the "
+                                                                              "configured settings on the home screen.")
+                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                     "Device Connection Error",
+                                                                     "Failed to connect to the oven."))
                                 continue
                             else:
                                 self.oven = devices.Oven(int(oven_loc), self.manager, self.use_dev)

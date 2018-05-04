@@ -14,7 +14,7 @@ class BakingProgram(program.Program):
 
     def check_stable(self, thread_id):
         """Check if the program is ready to move to primary interval."""
-        self.master.conn_dev(TEMP, thread_id)
+        self.master.conn_dev(TEMP, connect=True, thread_id=thread_id)
         temp1 = float(self.master.temp_controller.get_temp_k())
         start = time.time()
         time.sleep(60)
@@ -41,11 +41,11 @@ class BakingProgram(program.Program):
 
             while self.master.thread_map[thread_id] and self.master.running:
                 if self.master.use_dev:
-                    self.master.conn_dev(TEMP, thread_id)
-                    self.master.conn_dev(LASER, thread_id)
+                    self.master.conn_dev(TEMP, thread_id=thread_id)
+                    self.master.conn_dev(LASER, thread_id=thread_id)
                     temperature = self.master.temp_controller.get_temp_k()
                     if sum(len(switch) for switch in self.switches):
-                        self.master.conn_dev(SWITCH, thread_id)
+                        self.master.conn_dev(SWITCH, thread_id=thread_id)
                 else:
                     temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
 

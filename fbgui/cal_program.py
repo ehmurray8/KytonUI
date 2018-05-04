@@ -42,7 +42,7 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            self.master.conn_dev(TEMP, thread_id)
+            self.master.conn_dev(TEMP, thread_id=thread_id)
             temp = float((self.master.temp_controller.get_temp_k()))
             kwargs = {"force_connect": True, "thread_id": thread_id}
             if temp < float(temps[0]) + 274.15 - 5:
@@ -80,7 +80,7 @@ class CalProgram(Program):
 
     def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
-        self.master.conn_dev(TEMP, thread_id)
+        self.master.conn_dev(TEMP, thread_id=thread_id)
         temp = float((self.master.temp_controller.get_temp_k()))
         self.disconnect_devices()
         if temp <= float(temps[0] + 274.15) - 5:
@@ -88,10 +88,10 @@ class CalProgram(Program):
         return False
 
     def check_drift_rate(self, thread_id, cycle_num) -> bool:
-        self.master.conn_dev(TEMP, thread_id)
-        self.master.conn_dev(LASER, thread_id)
+        self.master.conn_dev(TEMP, thread_id=thread_id)
+        self.master.conn_dev(LASER, thread_id=thread_id)
         if sum(len(switch) for switch in self.switches):
-            self.master.conn_dev(SWITCH, thread_id)
+            self.master.conn_dev(SWITCH, thread_id=thread_id)
 
         start_time = time.time()
         if not self.master.thread_map[thread_id]:
