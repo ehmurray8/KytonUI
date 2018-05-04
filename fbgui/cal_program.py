@@ -59,7 +59,7 @@ class CalProgram(Program):
                 kwargs["cooling"] = True
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {}K."
-                                               .format(cycle_num, temps[0]+274.15-5), title=None))
+                                               .format(cycle_num+1, temps[0]+274.15-5), title=None))
             start_init_time = time.time()
 
             if not self.master.thread_map[thread_id]:
@@ -73,9 +73,9 @@ class CalProgram(Program):
                 self.set_oven_temp(temps[0] - 5, **kwargs)
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
-                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
+                cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
 
-            self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num),
+            self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num+1),
                                                title=None))
             start_cycle_time = time.time()
             for temp in temps:
@@ -85,12 +85,12 @@ class CalProgram(Program):
                 if not self.sleep(thread_id):
                     return
                 kwargs["force_connect"] = False
-                while not self.check_drift_rate(thread_id, cycle_num + 1):
+                while not self.check_drift_rate(thread_id, cycle_num+1):
                     if not self.sleep(thread_id):
                         return
                     self.set_oven_temp(**kwargs)
             self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
-                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
+                cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
 
     def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""
