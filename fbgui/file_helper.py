@@ -86,7 +86,7 @@ def get_last_cycle_num(file_name: str, func: str) -> int:
         table_id = cur.fetchall()[0][0]
     except (sqlite3.OperationalError, IndexError):
         conn.close()
-        return 1
+        return 0
     table_name = func.lower() + str(table_id)
     cur.execute("SELECT {}.'Cycle Num' FROM {};".format(table_name, table_name))
     last_cycle_num = cur.fetchall()
