@@ -53,11 +53,22 @@ class SM125(socket.socket):
             return wavelengths_list[0], amplitudes_list[0], chan_lens
 
 
+class Vidia(object):
+    def __init__(self, loc, manager, use_dev):
+        self.device = None
+        if use_dev:
+            self.device = manager.open_resource(loc)
+
+    def start_scan(self):
+        self.device.query(":OUTP:TRAC OFF")
+
+    def scan_state(self):
+        return self.device.query(":OUTP:SCAN:STAT?")
+
+
 class Oven(object):
     """Delta oven object, uses pyvisa."""
-    def __init__(self, port, manager, use_dev):
-        self.device = None
-        loc = "GPIB0::{}::INSTR".format(port)
+    def __init__(self, loc, manager, use_dev):
         if use_dev:
             self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
 
@@ -104,9 +115,8 @@ class OpSwitch(socket.socket):
 
 class TempController(object):
     """Object representation of the Temperature Controller needed for the program."""
-    def __init__(self, port, manager, use_dev):
+    def __init__(self, loc, manager, use_dev):
         self.device = None
-        loc = "GPIB0::{}::INSTR".format(port)
         if use_dev:
             self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
 
@@ -122,3 +132,14 @@ class TempController(object):
         """Close the device connection."""
         if self.device is not None:
             self.device.close()
+
+
+if __name__ == '__main__':
+    import visa
+    import time
+    man = visa.ResourceManager()
+    time.sleep(.2)
+    DEV = Vidia("GPIB1::8::INSTR", man, True)
+    DEV.start_scan()
+    print(DEV.scan_state())
+    man.close()

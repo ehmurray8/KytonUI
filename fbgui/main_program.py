@@ -169,17 +169,22 @@ class Application(tk.Tk):
                             temp_loc = self.controller_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(temp_loc)
                             if self.use_dev and full_loc not in self.manager.list_resources():
-                                if try_once:
-                                    mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
-                                                                              "controller, check the "
-                                                                              "configured settings on the home screen.")
-                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
-                                                                     "Device Connection Error",
-                                                                     "Failed to connect to the temperature controller."
-                                                                     ))
-                                continue
+                                full_loc = [x for x in self.manager.list_resources() if str(temp_loc) in x]
+                                if not len(full_loc):
+                                    if try_once:
+                                        mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
+                                                                                  "controller, check the configured "
+                                                                                  "settings on the home screen.")
+                                    self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                         "Device Connection Error",
+                                                                         "Failed to connect to the temperature "
+                                                                         "controller."))
+                                    continue
+                                else:
+                                    self.temp_controller = devices.TempController(full_loc[0], self.manager,
+                                                                                  self.use_dev)
                             else:
-                                self.temp_controller = devices.TempController(int(temp_loc), self.manager, self.use_dev)
+                                self.temp_controller = devices.TempController(full_loc, self.manager, self.use_dev)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
@@ -190,15 +195,20 @@ class Application(tk.Tk):
                             oven_loc = self.oven_location.get()
                             full_loc = "GPIB0::{}::INSTR".format(oven_loc)
                             if self.use_dev and full_loc not in self.manager.list_resources():
-                                if try_once:
-                                    mbox.showerror("Device Connection Error", "Cannot connect to the oven, check the "
-                                                                              "configured settings on the home screen.")
-                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
-                                                                     "Device Connection Error",
-                                                                     "Failed to connect to the oven."))
-                                continue
+                                full_loc = [x for x in self.manager.list_resources() if str(oven_loc) in x]
+                                if not len(full_loc):
+                                    if try_once:
+                                        mbox.showerror("Device Connection Error", "Cannot connect to the oven, "
+                                                                                  "check the configured settings on "
+                                                                                  "the home screen.")
+                                    self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                         "Device Connection Error",
+                                                                         "Failed to connect to the oven."))
+                                    continue
+                                else:
+                                    self.oven = devices.Oven(full_loc[0], self.manager, self.use_dev)
                             else:
-                                self.oven = devices.Oven(int(oven_loc), self.manager, self.use_dev)
+                                self.oven = devices.Oven(full_loc, self.manager, self.use_dev)
                     else:
                         self.oven.close()
                         self.oven = None
@@ -257,6 +267,8 @@ class Application(tk.Tk):
                     self.switch.close()
                 if self.laser is not None:
                     self.laser.close()
+                if self.manager is not None:
+                    self.manager.close()
                 for tid in self.open_threads:
                     self.thread_map[tid] = False
                 for gid in self.graph_threads:
@@ -269,6 +281,8 @@ class Application(tk.Tk):
                 self.thread_map[tid] = False
             for gid in self.graph_threads:
                 self.thread_map[gid] = False
+            if self.manager is not None:
+                self.manager.close()
             self.destroy()
 
     def setup_window(self):
