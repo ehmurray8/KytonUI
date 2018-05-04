@@ -81,8 +81,11 @@ def get_last_cycle_num(file_name: str, func: str) -> int:
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
-    cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
-    table_id = cur.fetchall()[0][0]
+    try:
+        cur.execute("SELECT ID FROM map WHERE ProgName = '{}';".format(name))
+        table_id = cur.fetchall()[0][0]
+    except (sqlite3.OperationalError, IndexError):
+        return 1
     table_name = func.lower() + str(table_id)
     cur.execute("SELECT {}.'Cycle Num' FROM {};".format(table_name, table_name))
     last_cycle_num = cur.fetchall()
