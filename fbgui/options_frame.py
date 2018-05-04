@@ -143,7 +143,7 @@ class OptionsPanel(ttk.Frame):
                                                      .format(u'\u00B0'), row_num, 10, 4, target_temps)
             row_num += 1
         else:
-            set_temp = self.conf_parser.getfloat(BAKING, "set_temp")
+            set_temp = self.conf_parser.getfloat(self.program, "set_temp")
             self.set_temp = uh.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
                                             row_num, 10, set_temp)
             row_num += 1
@@ -152,7 +152,7 @@ class OptionsPanel(ttk.Frame):
             self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
-            prim_interval = self.conf_parser.getfloat(BAKING, "prim_interval")
+            prim_interval = self.conf_parser.getfloat(self.program, "prim_interval")
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
                                             "hours", prim_interval)
             row_num += 1
