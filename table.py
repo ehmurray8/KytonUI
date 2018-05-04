@@ -48,7 +48,7 @@ class Table(ttk.Frame):
             else:
                 new_item.append(i)
         item = new_item
-        self.item_ids.append(self.tree.insert('', 'end', values=item))
+        self.item_ids.append(self.tree.insert('', 0, values=item))
 
         if len(uh.get_all_children_tree(self.tree)) > 100:
             try:
