@@ -64,8 +64,8 @@ class Vidia(object):
         self.device.query(":OUTP:TRAC OFF")
         self.device.query(":OUTP:SCAN:STAR -1")
 
-    def scan_state(self):
-        return self.device.query(":OUTP:SCAN:STAT?")
+    def wave_info(self):
+        return self.device.query(":WAVE MIN?"), self.device.query(":WAVE?"), self.device.query(":WAVE MAX?")
 
 
 class Oven(object):

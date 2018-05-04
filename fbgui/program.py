@@ -323,7 +323,7 @@ class Program(ttk.Notebook):
                         except visa.VisaIOError:
                             self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
                                                                "Failed to turn oven heater on."))
-                    if cooling:
+                    if cooling and self.options.cooling.get():
                         try:
                             self.master.oven.cooling_on()
                         except visa.VisaIOError:
@@ -342,8 +342,9 @@ class Program(ttk.Notebook):
         self.conf_parser.set(self.program_type.prog_id, "last_folder", last_folder)
         self.conf_parser.set(self.program_type.prog_id, "running", "true")
         for i, (snums, switches) in enumerate(zip(self.channels, self.switches)):
-            self.conf_parser.set(BAKING, "chan{}_fbgs".format(i + 1), ",".join(snums))
-            self.conf_parser.set(BAKING, "chan{}_positions".format(i + 1), ",".join(str(x) for x in switches))
+            self.conf_parser.set(self.program_type.prog_id, "chan{}_fbgs".format(i + 1), ",".join(snums))
+            self.conf_parser.set(self.program_type.prog_id, "chan{}_positions".format(i + 1),
+                                 ",".join(str(x) for x in switches))
 
         if self.program_type.prog_id == BAKING:
             self.conf_parser.set(CAL, "running", "false")
