@@ -72,7 +72,8 @@ class Message(object):
         self.timestamp = datetime.datetime.fromtimestamp(self.time).strftime("%x %X")
         if title is None:
             self.text = "{}: {}".format(self.timestamp, text)
-        self.text = "{}: {}({})\n".format(self.timestamp, title, text)
+        else:
+            self.text = "{}: {}({})\n".format(self.timestamp, title, text)
         self.msg = '{}({})\n'.format(title, text)
 
 
