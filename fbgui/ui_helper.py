@@ -166,9 +166,7 @@ def browse_file(file_label_var):
 
 def sort_column(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
-    # grab values to sort
     data = [(tree.set(child, col), child) for child in tree.get_children('')]
-    # if the data to be sorted is numeric change to float
     try_date = False
     try:
         data = [(float(d[0]), d[1]) for d in data]
@@ -181,11 +179,9 @@ def sort_column(tree, col, descending):
         except ValueError:
             pass
 
-    # now sort the data in place
     data.sort(reverse=descending)
     for ix, item in enumerate(data):
         tree.move(item[1], '', ix)
-    # switch the heading so it will sort in the opposite direction
     tree.heading(col, command=lambda c=col: sort_column(tree, c, int(not descending)))
 
 

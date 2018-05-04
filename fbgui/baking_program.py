@@ -94,5 +94,6 @@ class BakingProgram(program.Program):
             while self.master.thread_map[thread_id] and time.time() - start_time < self.options.prim_time.get() \
                     * 60 * 60:
                 time.sleep(.5)
+                self.set_oven_temp()
         else:
             self.disconnect_devices()

@@ -100,7 +100,7 @@ class Program(ttk.Notebook):
         # Set up table tab
         self.add(table_frame, image=self.file_photo)
         ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
-        self.table = Table(table_frame, self.create_excel)
+        self.table = Table(table_frame, self.create_excel, self.master.main_queue)
         self.table.setup_headers([])
         self.table.pack(fill="both", expand=True)
         fig = Figure(figsize=(5, 5), dpi=100)
@@ -111,7 +111,7 @@ class Program(ttk.Notebook):
         toolbar.update()
         file_name = self.options.file_name
         self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, self.program_type.prog_id == CAL,
-                                              fig, canvas, toolbar, self.master, self.snums)
+                                              fig, canvas, toolbar, self.master, self.snums, self.master.main_queue)
         toolbar.set_gh(self.graph_helper)
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -296,10 +296,11 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None, cooling=False):
+    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
+                      cooling=False):
         temp_set = False
         while not temp_set:
-            if temp is None:
+            if temp is None and self.need_oven:
                 temp = self.options.set_temp.get()
             try:
                 if self.need_oven:
@@ -309,8 +310,13 @@ class Program(ttk.Notebook):
                     except visa.VisaIOError:
                         self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
                                                            "Failed to set temperature of oven to {}".format(temp)))
-                    self.master.oven.heater_off()
-                    self.master.oven.cooling_off()
+                    try:
+                        self.master.oven.heater_off()
+                        self.master.oven.cooling_off()
+                    except visa.VisaIOError:
+                        self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
+                                                           "Failed to turn off oven cooling and heating."))
+
                     if heat:
                         try:
                             self.master.oven.heater_on()
@@ -411,6 +417,7 @@ class Program(ttk.Notebook):
                 self.master.conn_dev(LASER, thread_id=thread_id)
                 return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
                                                  self.options.num_pts.get(), positions_used, self.master.use_dev,
-                                                 sum(len(s) > 0 for s in self.snums), thread_id, self.master.thread_map)
+                                                 sum(len(s) > 0 for s in self.snums), thread_id,
+                                                 self.master.thread_map, self.master.main_queue)
             except (AttributeError, visa.VisaIOError, socket.error):
                 self.temp_controller_error()

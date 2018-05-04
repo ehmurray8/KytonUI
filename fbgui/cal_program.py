@@ -50,7 +50,7 @@ class CalProgram(Program):
                     self.master.conn_dev(TEMP, thread_id=thread_id)
                     temp = float((self.master.temp_controller.get_temp_k()))
                 except (AttributeError, visa.VisaIOError):
-                    pass
+                    self.temp_controller_error()
 
             kwargs = {"force_connect": True, "thread_id": thread_id}
             if temp < float(temps[0]) + 274.15 - 5:
@@ -66,32 +66,31 @@ class CalProgram(Program):
                 return
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
+            kwargs["force_connect"] = False
             while not self.reset_temp(temps, thread_id):
                 if not self.sleep(thread_id):
                     return
+                self.set_oven_temp(temps[0] - 5, **kwargs)
 
-            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}."
-                                               .format(cycle_num,
-                                                       str(datetime.timedelta(seconds=
-                                                                              int(time.time()-start_init_time)))),
-                                               title=None))
+            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
+                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num),
                                                title=None))
             start_cycle_time = time.time()
             for temp in temps:
-                self.set_oven_temp(temp, heat=True, force_connect=True)
+                kwargs = {"temp": temp, "heat": True, "force_connect": True}
+                self.set_oven_temp(**kwargs)
                 self.disconnect_devices()
                 if not self.sleep(thread_id):
                     return
+                kwargs["force_connect"] = False
                 while not self.check_drift_rate(thread_id, cycle_num + 1):
                     if not self.sleep(thread_id):
                         return
-            self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}."
-                                               .format(cycle_num,
-                                                       str(datetime.timedelta(seconds=
-                                                                              int(time.time()-start_cycle_time)))),
-                                               title=None))
+                    self.set_oven_temp(**kwargs)
+            self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
+                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
 
     def reset_temp(self, temps: List[float], thread_id) -> bool:
         """Checks to see if the the temperature is within the desired amount."""

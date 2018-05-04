@@ -1,22 +1,23 @@
-
+import gc
+import os
+import time
 import uuid
 import threading
+from queue import Queue
 from tkinter import StringVar
 from typing import Tuple, List, Callable, Any, Union
-import time
-from fbgui import file_helper as fh
-import matplotlib.animation as animation
-import matplotlib.gridspec as gridspec
-from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
-import matplotlib.ticker as mtick
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import style
 from matplotlib.figure import Figure
-import numpy as np
+import matplotlib.ticker as mtick
+import matplotlib.animation as animation
+import matplotlib.gridspec as gridspec
+from fbgui import file_helper as fh
+from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
 from fbgui.graph_toolbar import Toolbar
 from fbgui import helpers
-import gc
-import os
+from fbgui.messages import MessageType, Message
 
 style.use("kyton")
 
@@ -26,7 +27,7 @@ class Graph(object):
     Class describes a specific graph that can be represented as a subplot or a main plot.
     """
     def __init__(self, title: str, xlabel: str, ylabels: Tuple[str], animate_func: Callable, fig: Figure,
-                 dims: List[Union[int, Any]], fname: StringVar, is_cal: bool, snums: List[str]):
+                 dims: List[Union[int, Any]], fname: StringVar, is_cal: bool, snums: List[str], main_queue: Queue):
         self.title = title
         self.is_cal = is_cal
         self.xlabel = xlabel
@@ -34,6 +35,7 @@ class Graph(object):
         self.file_name = fname
         self.sub_dims = dims[0]
         self.zoom_dims = dims[1:]
+        self.main_queue = main_queue
         self.animate_func = animate_func
         self.fig = fig
         self.sub_axis = None
@@ -123,9 +125,8 @@ class Graph(object):
 
             axes_tuple = tuple(self.zoom_axes)
             self.check_val_file(axes_tuple)
-        except IndexError:
-            # Issue with cleaning thread and double tap
-            pass
+        except IndexError as i:
+            self.main_queue.put(Message(MessageType.DEVELOPER, "Main Graph Error Dump", str(i)))
 
 
 class Graphing(object):
@@ -135,7 +136,7 @@ class Graphing(object):
     data_coll_cal = None
 
     def __init__(self, fname: StringVar, dims: List[Union[int, Any]], is_cal: bool, figure: Figure,
-                 canvas: FigureCanvasTkAgg, toolbar: Toolbar, master, snums: List[str]):
+                 canvas: FigureCanvasTkAgg, toolbar: Toolbar, master, snums: List[str], main_queue: Queue):
         self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
@@ -147,6 +148,7 @@ class Graphing(object):
         self.is_playing = True
         self.master = master
         self.snums = snums
+        self.main_queue = main_queue
 
         threading.Thread(target=self.update_data_coll).start()
 
@@ -180,7 +182,8 @@ class Graphing(object):
             dim_list = [self.dimensions + i + 1]
             for dim in dimen:
                 dim_list.append(dim)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, self.snums)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, self.snums,
+                         self.main_queue)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
         # Setup double click for graphs."""
@@ -201,8 +204,8 @@ class Graphing(object):
                     Graphing.data_coll_cal = fh.create_data_coll(name, self.is_cal)[0]
                 else:
                     Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
-            except RuntimeError:
-                pass
+            except RuntimeError as r:
+                self.main_queue.put(Message(MessageType.DEVELOPER, "Graphing Update Data Coll Error Dump", str(r)))
             time.sleep(8)
 
     def update_axes(self):

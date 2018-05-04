@@ -70,8 +70,9 @@ def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: flo
                               "use a new file name.")
                 main_queue.put(msg)
                 return False
-        except TypeError:
-            pass
+        except TypeError as t:
+            main_queue.put(Message(MessageType.DEVELOPER, "Write DB sqlite3 Error Dump", str(e)))
+            main_queue.put(Message(MessageType.DEVELOPER, "Write DB Type Error Dump", str(t)))
     conn.close()
     return True
 
@@ -156,7 +157,7 @@ def db_to_df(func, name):
         return pd.DataFrame()
 
 
-def create_data_coll(name, is_cal, snums=None):
+def create_data_coll(name, is_cal, snums=None, main_queue=None):
     if snums is None:
         snums = get_snums(is_cal)
     try:
@@ -228,13 +229,15 @@ def create_data_coll(name, is_cal, snums=None):
             data_coll.real_points = df['Real Point']
         return data_coll, df
     except (KeyError, IndexError) as e:
+        if main_queue is not None:
+            main_queue.put(Message(MessageType.DEVELOPER, "File Helper Create Data Coll Error Dump", str(e)))
         raise RuntimeError("No data has been collected yet")
 
 
 def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue, is_cal=False):
     """Creates an excel file from the correspoding csv file."""
     try:
-        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), is_cal, snums)
+        data_coll, df = create_data_coll(helpers.get_file_name(xcel_file), is_cal, snums, main_queue)
         new_df = pd.DataFrame()
         small_df = pd.DataFrame()
         df_cal = pd.DataFrame()

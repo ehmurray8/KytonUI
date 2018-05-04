@@ -8,6 +8,7 @@ import sqlite3
 from fbgui import file_helper as fh
 from fbgui.constants import CAL, DB_PATH
 from fbgui import ui_helper as uh
+from fbgui.messages import MessageType, Message
 
 
 class Table(ttk.Frame):
@@ -49,7 +50,6 @@ class Table(ttk.Frame):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):
-        # create a treeview with dual scrollbars
         top_frame = ttk.Frame(self)
         top_frame.grid(sticky="nsew", pady=10)
         ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor=W)
@@ -79,7 +79,6 @@ class Table(ttk.Frame):
     def setup_headers(self):
         for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
-            # adjust the column's width to the header string
             self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
     def add_data(self, item):
@@ -89,9 +88,9 @@ class Table(ttk.Frame):
             try:
                 self.tree.delete(self.item_ids.pop(0))
             except tkinter.TclError:
-                pass
+                self.master.main_queue.put(Message(MessageType.DEVELOPER, "Tree Deletion Error",
+                                                   "Failed to delete item from the create excel view."))
 
-        # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkfont.Font().measure(val)
             if self.tree.column(self.headers[ix], width=None) < int(col_w):

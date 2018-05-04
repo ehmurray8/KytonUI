@@ -1,18 +1,21 @@
+from queue import Queue
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
-import fbgui.ui_helper as uh
 import tkinter as tk
+import fbgui.ui_helper as uh
+from fbgui.messages import MessageType, Message
 
 
 class Table(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-    def __init__(self, master=None, func=None):
+    def __init__(self, master=None, func=None, main_queue: Queue=None):
         super().__init__(master)
         self.headers = []
         self.tree = None
         self.func = func
         self.item_ids = []
+        self.main_queue = main_queue
 
     def _setup_widgets(self):
         # create a treeview with dual scrollbars
@@ -53,10 +56,10 @@ class Table(ttk.Frame):
         if len(uh.get_all_children_tree(self.tree)) > 100:
             try:
                 self.tree.delete(self.item_ids.pop(0))
-            except tk.TclError:
-                pass
+            except tk.TclError as t:
+                self.master.main_queue.put(Message(MessageType.DEVELOPER, "Tree Deletion Error",
+                                                   "Failed to delete item from the table view."))
 
-        # adjust column's width if necessary to fit each value
         for ix, val in enumerate(item):
             col_w = tkfont.Font().measure(val)
             if self.tree.column(self.headers[ix], width=None) < int(col_w * 2):

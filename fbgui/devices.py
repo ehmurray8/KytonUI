@@ -110,11 +110,6 @@ class TempController(object):
         if use_dev:
             self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
 
-    def get_temp_c(self):
-        """Return temperature reading in degrees C."""
-        query = self.device.query('CRDG? B')
-        return query[:-4]
-
     def get_temp_k(self, dummy_val=False, center_num=0):
         """Return temperature reading in degrees Kelvin."""
         if dummy_val:

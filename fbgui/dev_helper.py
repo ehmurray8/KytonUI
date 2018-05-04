@@ -5,9 +5,10 @@ and the Optical Switch.
 import socket
 import time
 import numpy as np
+from fbgui.messages import MessageType, Message
 
 
-def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev, num_snums, thread_id, thread_map):
+def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev, num_snums, thread_id, thread_map, main_queue):
     """Gets the average wavelengths and powers, updates data_pts."""
     lens = [len(x) for x in switches]
     switches_arr = np.hstack(switches)
@@ -16,7 +17,7 @@ def avg_waves_amps(laser, switch, switches, num_pts, pos_used, use_dev, num_snum
         switch_num = lens.index(max(lens))
     if thread_map[thread_id]:
         ret = __get_average_data(laser, switch, switches_arr, num_pts, switch_num, pos_used, use_dev, num_snums,
-                                 thread_id, thread_map)
+                                 thread_id, thread_map, main_queue)
         if thread_map[thread_id]:
             return ret
         else:
@@ -37,7 +38,7 @@ def __avg_arr(first, second):
 
 
 def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev, num_snums, num_readings, thread_id,
-               thread_map):
+               thread_map, main_queue):
     wavelens = [[], [], [], []]
     amps = [[], [], [], []]
     for switch in switches_arr:
@@ -53,7 +54,8 @@ def __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev, nu
                     __get_sm125_data(wavelens, amps, switch_num, laser, pos_used, add_wavelen, use_dev, num_snums,
                                      thread_id, thread_map)
         except socket.error:
-            pass
+            main_queue.put(Message(MessageType.DEVELOPER, "Socket Error", "Error communicating with the laser in "
+                                                                          "dev_helper."))
     wavelens = [wave for i, wave in enumerate(wavelens) if pos_used[i]]
     amps = [amp for i, amp in enumerate(amps) if pos_used[i]]
     return wavelens, amps
@@ -98,11 +100,11 @@ def __get_sm125_data(all_waves, all_amps, switch_num, sm125, pos_used, add_wavel
 
 
 def __get_average_data(laser, op_switch, switches_arr, num_readings, switch_num, pos_used, use_dev, num_snums,
-                       thread_id, thread_map):
+                       thread_id, thread_map, main_queue):
     all_waves = [[], [], [], []]
     all_amps = [[], [], [], []]
     wavelengths, amplitudes = __get_data(laser, op_switch, switches_arr, switch_num, pos_used, use_dev,
-                                         num_snums, num_readings, thread_id, thread_map)
+                                         num_snums, num_readings, thread_id, thread_map, main_queue)
     all_waves = __avg_arr(wavelengths, all_waves)
     all_amps = __avg_arr(amplitudes, all_amps)
     return np.hstack(all_waves), np.hstack(all_amps)
