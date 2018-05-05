@@ -41,8 +41,9 @@ class Application(tk.Tk):
             except OSError as e:
                 if "VISA" in str(e):
                     mbox.showerror("NIVisa not installed",
-                                   "Need to install NIVisa to run the program, a copy of NIVisa should be included" +
-                                   "in the zip file.")
+                                   "Need to install NIVisa to run the program.")
+                    self.destroy()
+                    raise RuntimeError("NIVisa not installed.")
         else:
             self.manager = None
 
@@ -67,10 +68,6 @@ class Application(tk.Tk):
 
         uh.setup_style()
         self.setup_window()
-
-        self.manager = None
-        if self.use_dev:
-            self.manager = visa.ResourceManager()
 
         self.main_notebook = ttk.Notebook(self)
         self.main_notebook.enable_traversal()
@@ -296,9 +293,12 @@ class Application(tk.Tk):
 
 
 if __name__ == "__main__":
-    APP = Application()
-    APP.bake_program = BakingProgram(APP)
-    APP.main_notebook.add(APP.bake_program, text="Bake")
-    APP.cal_program = CalProgram(APP)
-    APP.main_notebook.add(APP.cal_program, text="Calibration")
-    APP.mainloop()
+    try:
+        APP = Application()
+        APP.bake_program = BakingProgram(APP)
+        APP.main_notebook.add(APP.bake_program, text="Bake")
+        APP.cal_program = CalProgram(APP)
+        APP.main_notebook.add(APP.cal_program, text="Calibration")
+        APP.mainloop()
+    except RuntimeError:
+        pass

@@ -12,10 +12,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 import sys
-sys.path.insert(0, "C:\\Users\\Emmet\\source_code\\KytonUI")
-sys.path.insert(0, "C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui")
+sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI")
+sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI\fbgui")
 
 
 # -- Project information -----------------------------------------------------
@@ -25,7 +25,7 @@ copyright = '2018, Emmet Murray'
 author = 'Emmet Murray'
 
 # The short X.Y version
-version = '1.0'
+version = ''
 # The full version, including alpha/beta/rc tags
 release = '1.0.0'
 
@@ -44,8 +44,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 ]
@@ -56,7 +54,8 @@ templates_path = ['.templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
+# source_suffix = ['.rst', '.md']
+source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -82,7 +81,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'nature'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

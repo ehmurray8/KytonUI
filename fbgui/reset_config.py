@@ -1,3 +1,4 @@
+"""Makes sure configuration files are setup."""
 import os
 import fbgui.constants as constants
 import sqlite3
@@ -5,6 +6,9 @@ from typing import IO
 
 
 def reset_config():
+    """
+    Ensures the configuration files, and database exist. Writes default config files if they do not exist
+    """
     if not os.path.isdir(constants.CONFIG_PATH):
         os.mkdir(constants.CONFIG_PATH)
     if not os.path.isdir(constants.DB_DIR):
@@ -19,6 +23,7 @@ def reset_config():
     except sqlite3.OperationalError:
         cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                     "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
+    conn.close()
 
     if not os.path.isfile(constants.DEV_CONFIG_PATH):
         with open(constants.DEV_CONFIG_PATH, "w") as f:  # type: IO[str]

@@ -1,6 +1,7 @@
 # Output files
 *.csv
 *.xlsx
+.output/
 
 .idea/
 
@@ -74,6 +75,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/build/
 
 # PyBuilder
 target/

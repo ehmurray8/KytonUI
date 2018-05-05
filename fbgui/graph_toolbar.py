@@ -1,3 +1,4 @@
+"""Overrides the default matplotlib tkinter toolbar to add play and pause to the graph animation."""
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from tkinter.ttk import Frame
 
