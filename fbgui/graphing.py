@@ -210,6 +210,8 @@ class Graphing(object):
                     Graphing.data_coll.create(self.is_cal, df)
             except RuntimeError as r:
                 self.main_queue.put(Message(MessageType.DEVELOPER, "Graphing Update Data Coll Error Dump", str(r)))
+            except IndexError as i:
+                self.main_queue.put(Message(MessageType.DEVELOPER, "Graphing Update Data Coll Error Dump", str(i)))
             time.sleep(8)
 
     def update_axes(self):

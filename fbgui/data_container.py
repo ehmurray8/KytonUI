@@ -3,7 +3,7 @@ from queue import Queue
 import pandas as pd
 import numpy as np
 from fbgui.messages import MessageType, Message
-from fbgui.file_helper import get_snums, create_headers
+from fbgui import file_helper as fh
 from typing import List, Optional
 
 
@@ -50,9 +50,9 @@ class DataCollection(object):
         :raises RuntimeError: If the table has not been created or populated yet
         """
         if snums is None:
-            snums = get_snums(is_cal)
+            snums = fh.get_snums(is_cal)
         try:
-            headers = create_headers(snums, is_cal, True)
+            headers = fh.create_headers(snums, is_cal, True)
             timestamps = df["Date Time"]
             start_time = df["Date Time"][0]
             df['Date Time'] = pd.to_datetime(df['Date Time'], unit="s")

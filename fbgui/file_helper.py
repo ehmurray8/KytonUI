@@ -144,7 +144,14 @@ def create_headers_init(snums, is_cal):
     return col_list
 
 
-def db_to_df(func, name):
+def db_to_df(func: str, name: str) -> pd.DataFrame:
+    """
+
+    :param func:
+    :param name:
+    :return:
+    :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
@@ -289,7 +296,7 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
             sf.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name="Sheet 1")
         ew.save()
         os.startfile('"{}"'.format(xcel_file.replace("\\", "\\\\")))
-    except RuntimeError:
+    except (RuntimeError, IndexError):
         main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
                                "No data has been recorded yet, or the database has been corrupted."))
     except PermissionError:

@@ -78,10 +78,8 @@ class Application(tk.Tk):
         self.device_frame = None
         self.log_view = None
         self.setup_home_frame()
-        self.bake_program = BakingProgram(self)
-        self.main_notebook.add(self.bake_program, text="Bake")
-        self.cal_program = CalProgram(self)
-        self.main_notebook.add(self.cal_program, text="Calibration")
+        self.bake_program = None  # type: BakingProgram
+        self.cal_program = None   # type: CalProgram
         self.check_queue()
 
     def check_queue(self):
@@ -299,4 +297,8 @@ class Application(tk.Tk):
 
 if __name__ == "__main__":
     APP = Application()
+    APP.bake_program = BakingProgram(APP)
+    APP.main_notebook.add(APP.bake_program, text="Bake")
+    APP.cal_program = CalProgram(APP)
+    APP.main_notebook.add(APP.cal_program, text="Calibration")
     APP.mainloop()
