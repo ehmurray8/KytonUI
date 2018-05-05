@@ -144,7 +144,7 @@ class Application(tk.Tk):
         self.log_view = messages.LogView(hframe)
         self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
 
-        create_excel.Table(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
+        create_excel.ExcelTable(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id=None):
         """

@@ -1,10 +1,11 @@
-"""Containts the calibration program page."""
+"""Contains the calibration program specific logic."""
 
 from typing import List
 import math
 import time
 import visa
 import datetime
+from uuid import UUID
 from fbgui import file_helper as fh
 from fbgui.constants import CAL, TEMP
 from fbgui.program import Program, ProgramType
@@ -12,20 +13,35 @@ from fbgui.messages import MessageType, Message
 
 
 class CalProgram(Program):
-    """Object representation of the Calibration Program page."""
+    """Contains the logic specific for running a calibration program."""
     def __init__(self, master):
+        """
+        Creates a new CalProgram object that overrides the Program class with the CAl program type.
+
+        :param master: Application object representing the main gui.
+        """
         cal_type = ProgramType(CAL)
         super().__init__(master, cal_type)
 
-    def program_loop(self, thread_id):
-        """Runs the calibration."""
+    def program_loop(self, thread_id: UUID):
+        """
+        Runs the calibration main loop.
+
+        :param thread_id: UUID of the thread this code is running in
+        """
         temps_arr = self.options.get_target_temps()
         self.cal_loop(temps_arr, thread_id)
         if self.master.thread_map[thread_id]:
             self.create_excel()
             self.pause_program()
 
-    def sleep(self, thread_id):
+    def sleep(self, thread_id: UUID) -> bool:
+        """
+        Sleeps for the configured temp_interval on the home screen.
+
+        :param thread_id: UUID of the thread this code is running in
+        :return: False if the program was paused, True otherwise
+        """
         start_time = time.time()
         while time.time() - start_time < self.options.temp_interval.get():
             time.sleep(.5)
@@ -33,7 +49,13 @@ class CalProgram(Program):
                 return False
         return True
 
-    def cal_loop(self, temps: List[float], thread_id):
+    def cal_loop(self, temps: List[float], thread_id: UUID):
+        """
+        Runs the main calibration loop.
+
+        :param temps: the list of temperatures to set the oven to
+        :param thread_id: UUID of the code the thread is currently running in
+        """
         last_cycle_num = fh.get_last_cycle_num(self.options.file_name.get(), CAL)
         if last_cycle_num == self.options.num_cal_cycles.get():
             self.master.main_queue.put(Message(MessageType.WARNING, "Calibration Program Complete",
@@ -61,13 +83,13 @@ class CalProgram(Program):
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {}K."
                                                .format(cycle_num+1, temps[0]+274.15-5), title=None))
             start_init_time = time.time()
-
             if not self.master.thread_map[thread_id]:
                 return
+
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
-            while not self.reset_temp(temps, thread_id):
+            while not self.reset_temp(temps[0], thread_id):
                 if not self.sleep(thread_id):
                     return
                 self.set_oven_temp(temps[0] - 5, **kwargs)
@@ -79,7 +101,10 @@ class CalProgram(Program):
                                                title=None))
             start_cycle_time = time.time()
             for temp in temps:
-                kwargs = {"temp": temp, "heat": True, "force_connect": True}
+                if temp >= temps[0]:
+                    kwargs = {"temp": temp, "heat": True, "force_connect": True}
+                else:
+                    kwargs = {"temp": temp, "heat": False, "cooling": True, "force_connect": True}
                 self.set_oven_temp(**kwargs)
                 self.disconnect_devices()
                 if not self.sleep(thread_id):
@@ -92,20 +117,32 @@ class CalProgram(Program):
             self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
                 cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
 
-    def reset_temp(self, temps: List[float], thread_id) -> bool:
-        """Checks to see if the the temperature is within the desired amount."""
+    def reset_temp(self, start_temp: float, thread_id: UUID) -> bool:
+        """
+        Checks to see if the temperature is 5K below the starting temperature.
+
+        :param start_temp: The first temperature the oven is set to
+        :param thread_id: UUID of the thread the code is currently running in
+        """
         while True:
             try:
                 self.master.conn_dev(TEMP, thread_id=thread_id)
                 temp = float((self.master.temp_controller.get_temp_k()))
                 self.disconnect_devices()
-                if temp <= float(temps[0] + 274.15) - 5:
+                if temp <= float(start_temp + 274.15) - 5:
                     return True
                 return False
             except (AttributeError, visa.VisaIOError):
                 self.temp_controller_error()
 
-    def check_drift_rate(self, thread_id, cycle_num) -> bool:
+    def check_drift_rate(self, thread_id: UUID, cycle_num: int) -> bool:
+        """
+        Checks if the drift rate is below the configured drift.
+
+        :param thread_id: UUID of the thread the code is curretnly running in
+        :param cycle_num: The number of the current calibration cycle
+        :return: True if the drift rate is below the configured drift rate, otherwise False
+        """
         while True:
             try:
                 self.master.conn_dev(TEMP, thread_id)

@@ -19,7 +19,7 @@ from fbgui import file_helper as fh, graphing as graphing, dev_helper as dev_hel
     options_frame as options_frame, helpers
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
     CAL, BAKING, LASER, SWITCH, TEMP, OVEN
-from fbgui.table import Table
+from fbgui.datatable import DataTable
 from fbgui.graph_toolbar import Toolbar
 from fbgui.messages import MessageType, Message
 
@@ -100,7 +100,7 @@ class Program(ttk.Notebook):
         # Set up table tab
         self.add(table_frame, image=self.file_photo)
         ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
-        self.table = Table(table_frame, self.create_excel, self.master.main_queue)
+        self.table = DataTable(table_frame, self.create_excel, self.master.main_queue)
         self.table.setup_headers([])
         self.table.pack(fill="both", expand=True)
         fig = Figure(figsize=(5, 5), dpi=100)

@@ -1,10 +1,13 @@
+"""Constants used throughout the program."""
 from enum import Enum
 import os
 from PIL import Image
 
+# Program identifiers
 BAKING = "Baking"
 CAL = "Cal"
 
+# Device identifiers
 OVEN = "Delta Oven"
 LASER = "Micron Optics SM125"
 SWITCH = "Optical Switch"
@@ -13,6 +16,7 @@ DEV_HEADER = "Devices"
 
 
 class Colors(Enum):
+    """Colors used in the GUI styling."""
     WHITE = "#f0eff4"
     AZ_WHITE = "#dcedff"
     MED_BLUE = "#0B3C5D"
@@ -21,7 +25,12 @@ class Colors(Enum):
     BLACK = "#1D2731"
     GRAY = "#2b2a29"
 
-    def __init__(self, hex_color):
+    def __init__(self, hex_color: str):
+        """
+        Defines a color.
+
+        :param hex_color: Contains the hex value string representing the color.
+        """
         self.color = hex_color
 
     def __str__(self):
@@ -41,26 +50,35 @@ ARRAY_ENTRY_COLOR = str(Colors.WHITE)
 
 ENTRY_FONT = ('Helvetica', 14)
 
+# Excel column colors
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
               "#40E0D0", "#FFA500", "#00FF00", "#468499",
               "#66CDAA", "#FF7F50", "#FF4040", "#B4EEB4",
               "#DAA520", "#FFFF00", "#C0C0C0", "#F0F8FF",
-              "#E6E6FA", "#008000", "#FF00FF", "#0099CC"]
+              "#E6E6FA", "#008000", "#FF00FF", "#0099CC",
+              "#FAD1D1", "#A3928F", "#BF6A40", "#FFAA00",
+              "#AD961F", "#DDFF33", "#66CC00", "#94E085",
+              "#94D1B2", "#40AABF", "#4D7FB2", "#9540BF"]
 
+# Main folder paths
 ASSETS_PATH = os.path.join("assets")
 CONFIG_PATH = os.path.join("config")
 DB_DIR = os.path.join("db")
+
+# Database path
 DB_PATH = os.path.join(DB_DIR, "program_data.db")
 
-FIBER_PATH = os.path.join(ASSETS_PATH, "fiber.png")
+# Matplotlib images, and style
 MPL_STYLE_PATH = os.path.join(ASSETS_PATH, "kyton.mplstyle")
 PLAY_PATH = os.path.join(ASSETS_PATH, "play.gif")
 PAUSE_PATH = os.path.join(ASSETS_PATH, "pause.gif")
 
+# Config file paths
 PROG_CONFIG_PATH = os.path.join(CONFIG_PATH, "prog_config.cfg")
 DEV_CONFIG_PATH = os.path.join(CONFIG_PATH, "devices.cfg")
 
-# Need images as instance variables to prevent garbage collection
+# Gui Images
+FIBER_PATH = os.path.join(ASSETS_PATH, "fiber.png")
 CONFIG_IMG_PATH = os.path.join(ASSETS_PATH, "config.png")
 GRAPH_PATH = os.path.join(ASSETS_PATH, "graph.png")
 FILE_PATH = os.path.join(ASSETS_PATH, "file.png")

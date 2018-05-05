@@ -2,20 +2,31 @@
 import math
 import time
 import visa
+from uuid import UUID
 import socket
 from fbgui import file_helper as fh, program
 from fbgui.constants import BAKING, TEMP
 
 
 class BakingProgram(program.Program):
-    """Contains the baking_program specific logic, and gui elements."""
+    """Contains the Baking Program specific logic, extends the Program abstract class."""
 
     def __init__(self, master):
+        """
+        Creates a program with the Baking Program Type.
+
+        :param master: Application object of the main gui
+        """
         baking_type = program.ProgramType(BAKING)
         super().__init__(master, baking_type)
 
-    def check_stable(self, thread_id):
-        """Check if the program is ready to move to primary interval."""
+    def check_stable(self, thread_id: UUID) -> bool:
+        """
+        Check if the program is ready to move to primary interval.
+
+        :param thread_id: UUID of the thread this code is running in
+        :returns: True if the drift rate is stable otherwise returns false
+        """
         while True:
             try:
                 self.master.conn_dev(TEMP, thread_id=thread_id)
@@ -32,8 +43,12 @@ class BakingProgram(program.Program):
             except (AttributeError, visa.VisaIOError):
                 self.temp_controller_error()
 
-    def program_loop(self, thread_id):
-        """Runs the baking process."""
+    def program_loop(self, thread_id: UUID):
+        """
+        Runs the baking process.
+
+        :param thread_id: UUID of the thread this code is running in
+        """
         stable = False
         while self.master.thread_map[thread_id] and self.options.set_temp.get() and \
                 self.master.use_dev and not stable:
@@ -82,7 +97,6 @@ class BakingProgram(program.Program):
 
             if self.master.use_dev:
                 self.disconnect_devices()
-
             if not self.master.thread_map[thread_id]:
                 return
 
@@ -91,9 +105,13 @@ class BakingProgram(program.Program):
                 self.pause_program()
 
             start_time = time.time()
+            count = 0
             while self.master.thread_map[thread_id] and time.time() - start_time < self.options.prim_time.get() \
                     * 60 * 60:
                 time.sleep(.5)
-                self.set_oven_temp()
+                count += 1
+                if count > 360:
+                    count = 0
+                    self.set_oven_temp()
         else:
             self.disconnect_devices()
