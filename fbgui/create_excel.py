@@ -1,9 +1,11 @@
+"""Home page table used for creating excel spreadsheets of program runs."""
 from queue import Queue
+from typing import List
 import threading
+import tkinter
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
 from tkinter import LEFT, E, RIGHT, W
-import tkinter
 import sqlite3
 from fbgui import file_helper as fh
 from fbgui.constants import CAL, DB_PATH
@@ -11,23 +13,37 @@ from fbgui import ui_helper as uh
 from fbgui.messages import MessageType, Message
 
 
-class Table(ttk.Frame):
-    """use a ttk.TreeView as a multicolumn ListBox"""
+class ExcelTable(ttk.Frame):
+    """Tkinter frame containing widgets for creating excel spreadsheets."""
 
     def __init__(self, master: ttk.Frame, main_queue: Queue, **kwargs):
+        """
+        Create the widgets, populate the table, and pack into the master frame.
+
+        :param master: parent frame for this class
+        :param main_queue: queue used for writing log messages
+        :param kwargs: additional parameters to pass to the ttk Frame super constructor
+
+        :ivar headers: the treeview table headers
+        :ivar main_queue: main_queue parameter
+        :ivar tree: ttk tree displaying information about the program runs
+        :ivar item_ids: ids of the items currently stored in the tree
+        :ivar file_paths: list of file paths of the programs being stored in the database
+        :ivar s_nums: map of program database ids to comma separated strings of serial numbers for that program
+        """
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]
         self.main_queue = main_queue
         self.tree = None
         self.item_ids = []
-        self.prog_info = None
         self.file_paths = None
-        self.snums = None
+        self.s_nums = None
         self._setup_widgets()
-        self.setup_headers()
+        self._setup_headers()
         self.refresh()
 
     def refresh(self):
+        """Refreshes the table and loads all of the programs from the map database table."""
         for child in uh.get_all_children_tree(self.tree):
             self.tree.delete(child)
         self.item_ids.clear()
@@ -41,15 +57,15 @@ class Table(ttk.Frame):
         paths = [tup[3] for tup in res]
         snums = [tup[4] for tup in res]
 
-        self.prog_info = {"Id": ids, "Name": names, "Type": types}
-        self.file_paths = {i: path for i, path in zip(self.prog_info["Id"], paths)}
-        self.snums = {i: snum for i, snum in zip(self.prog_info["Id"], snums)}
+        prog_info = {"Id": ids, "Name": names, "Type": types}
+        self.file_paths = {i: path for i, path in zip(prog_info["Id"], paths)}
+        self.s_nums = {i: snum for i, snum in zip(prog_info["Id"], snums)}
         conn.close()
-        for i, name, ptype in zip(self.prog_info["Id"][::-1], self.prog_info["Name"][::-1],
-                                  self.prog_info["Type"][::-1]):
+        for i, name, ptype in zip(prog_info["Id"][::-1], prog_info["Name"][::-1], prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):
+        """Initializes the widgets for this frame."""
         top_frame = ttk.Frame(self)
         top_frame.grid(sticky="nsew", pady=10)
         ttk.Label(top_frame, text="Create Spreadsheet For a Recent Program").pack(side=LEFT, anchor=W)
@@ -69,19 +85,26 @@ class Table(ttk.Frame):
         self.grid_rowconfigure(1, weight=1)
 
     def create_spreadsheet(self):
+        """Create the spreadsheet(s) for the selected elements of the tree view."""
         for item in self.tree.selection():
-            vals = self.tree.item(item)['values']
-            fname = self.file_paths[vals[0]]
-            snums = self.snums[vals[0]].split(",")
-            threading.Thread(target=fh.create_excel_file, args=(fname, snums, self.main_queue,
-                                                                vals[2] == CAL.lower())).start()
+            values = self.tree.item(item)['values']
+            f_name = self.file_paths[values[0]]
+            s_nums = self.s_nums[values[0]].split(",")
+            threading.Thread(target=fh.create_excel_file, args=(f_name, s_nums, self.main_queue,
+                                                                values[2] == CAL.lower())).start()
 
-    def setup_headers(self):
+    def _setup_headers(self):
+        """Sets up the tree view headers."""
         for i, col in enumerate(self.headers):
             self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
             self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
-    def add_data(self, item):
+    def add_data(self, item: List[str]):
+        """
+        Adds data to the tree view for a program stored in the map database table.
+
+        :param item: list of strings for the program id, program name, and program type respectively
+        """
         self.item_ids.append(self.tree.insert('', 'end', values=item))
 
         if len(uh.get_all_children_tree(self.tree)) > 100:

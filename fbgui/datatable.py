@@ -6,7 +6,7 @@ import fbgui.ui_helper as uh
 from fbgui.messages import MessageType, Message
 
 
-class Table(ttk.Frame):
+class DataTable(ttk.Frame):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
     def __init__(self, master=None, func=None, main_queue: Queue=None):
