@@ -1,10 +1,8 @@
 import os
 import winshell
 from win32com.client import Dispatch
-from shutil import copytree, rmtree, copy2
+from shutil import copytree, rmtree
 from pathlib import Path
-import configparser
-import sys
 
 
 if __name__ == "__main__":
@@ -16,20 +14,8 @@ if __name__ == "__main__":
         except PermissionError:
             pass
 
-    CParser = configparser.ConfigParser()
-    CParser.read(os.path.join("fbgui", "config.cfg"))
-
-    CParser.add_section("Location")
-    CParser.set("Location", "directory", str(os.path.dirname(sys.executable)))
-
-    with open(os.path.join("fbgui", "config.cfg"), "w") as dcfg:
-        CParser.write(dcfg)
-
     copytree("fbgui", target)
-    try:
-        copy2("NIVISA541full.exe", target)
-    except FileNotFoundError:
-        pass
+
     try:
         rmtree("fbgui")
     except PermissionError:
