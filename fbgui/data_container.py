@@ -1,34 +1,85 @@
-"""Contains containers for the data stored in the csv file."""
+"""Data container for database data."""
+from queue import Queue
+import pandas as pd
+import numpy as np
+from fbgui.messages import MessageType, Message
+from fbgui.file_helper import get_snums, create_headers
+from typing import List, Optional
 
 
 class DataCollection(object):
-    """Contains the main csv file data."""
+    """
+    Data container class for data stored in the database for the program
+
+    **Create must be called in order to instantiate the object properly based on a dataframe object.**
+
+    :ivar times: list of delta times in hours, from the start
+    :ivar temps: list of temperatures in Kelvin
+    :ivar delta_temps: list of delta temperatures in Kelvin, from the start
+    :ivar powers: 2D list of powers by serial number in dBm.
+    :ivar delta_powers: 2D list of delta powers, from the start, by serial number, in dBm.
+    :ivar mean_delta_powers: list of average delta power in dBm, from the start
+    :ivar wavelengths: 2D list of wavelengths by serial number in nm.
+    :ivar delta_wavelengths: 2D list of delta wavelengths, from the start, by serial number, in pm.
+    :ivar mean_delta_wavelengths: list of average delta wavelengths in pm.
+    """
 
     def __init__(self):
-        self.times = []  # delta time in hours
-        self.times_real = []
-        self.timestamps = []  # timestamps
-        self.timestamps_real = []
-
-        self.temps = []  # temps in K, removed repeat data
-        self.temp_diffs = []  # delta temperature from start
-        self.temp_diffs_real = []
-
-        self.powers = []  # powers broken into lists by Serial Numbers
-        self.powers_real = []
-        # 2D,  power delta from start broken into lists by Serial Numbers
-        self.power_diffs = []
-        self.mean_power_diffs = []  # average power delta from start
-        self.power_diffs_real = []
-        self.mean_power_diffs_real = []
-
-        self.wavelens = []  # 2D, wavelengths broken into lists by Serial Numbers
-        self.wavelens_real = []
-        # 2D, wavelength delta from start broken into lists by Serial Numbers
-        self.wavelen_diffs = []
-        self.wavelen_diffs_real = []
-        self.mean_wavelen_diffs = []  # average wavelength delta from start
-        self.mean_wavelen_diffs_real = []
+        self.times = []
+        self.temps = []
+        self.delta_temps = []
+        self.powers = []
+        self.delta_powers = []
+        self.mean_delta_powers = []
+        self.wavelengths = []
+        self.delta_wavelengths = []
+        self.mean_delta_wavelengths = []
         self.drift_rates = []  # 2D, drift rates in mk/min
-        self.real_points = []  # list of which points are the "real" cal points
-        self.avg_drift_rates = []  # average drift rates in mK/min
+
+
+    def create(self, is_cal, df: pd.DataFrame, snums: Optional[List[str]]=None, main_queue: Optional[Queue]=None):
+        """
+        Creates a data collection from the given dataframe, updates the instance variables to match how they are
+        specified in the class docstring, numpy arrays are used instead of lists however.
+
+        :param is_cal: boolean for whether or not the program is a calibration program
+        :param df: dataframe representing the sql table for the program
+        :param snums: list of serial numbers that are in use for the program, if None the serial numbers will be found
+                      using file_helper get_snums function
+        :param main_queue: if present used for writing messages to the program log
+        :raises RuntimeError: If the table has not been created or populated yet
+        """
+        if snums is None:
+            snums = get_snums(is_cal)
+        try:
+            headers = create_headers(snums, is_cal, True)
+            timestamps = df["Date Time"]
+            start_time = df["Date Time"][0]
+            df['Date Time'] = pd.to_datetime(df['Date Time'], unit="s")
+            self.times = [(time - start_time) / 60 / 60 for time in timestamps]
+            self.temps = df["Mean Temperature (K)"]
+            first_temp = self.temps[0]
+            self.delta_temps = np.array([temp - first_temp for temp in self.temps])
+
+            wave_headers = [head for head in headers if "Wave" in head]
+            pow_headers = [head for head in headers if "Pow" in head]
+            for wave_head, pow_head in zip(wave_headers, pow_headers):
+                self.wavelengths.append(df[wave_head])
+                self.powers.append(df[pow_head])
+            self.delta_wavelengths = np.array([np.array([(w - wave[0]) * 1000 for w in wave])
+                                                    for wave in self.wavelengths])
+            self.delta_powers = np.array([np.array([p - power[0] for p in power]) for power in self.powers])
+
+            self.mean_delta_wavelengths = np.array(self.delta_wavelengths[0])
+            self.mean_delta_powers = np.array(self.delta_powers[0])
+
+            for wave_diff, pow_diff in zip(self.delta_wavelengths[1:], self.delta_powers[1:]):
+                self.mean_delta_wavelengths += wave_diff
+                self.mean_delta_powers += pow_diff
+
+            self.mean_delta_wavelengths /= len(self.mean_delta_wavelengths)
+            self.mean_delta_powers /= len(self.mean_delta_powers)
+        except (KeyError, IndexError) as e:
+            if main_queue is not None:
+                main_queue.put(Message(MessageType.DEVELOPER, "File Helper Create Data Coll Error Dump", str(e)))
+            raise RuntimeError("No data has been collected yet")

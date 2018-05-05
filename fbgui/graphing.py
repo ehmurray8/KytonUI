@@ -18,6 +18,7 @@ from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
 from fbgui.graph_toolbar import Toolbar
 from fbgui import helpers
 from fbgui.messages import MessageType, Message
+from fbgui.data_container import DataCollection
 
 style.use("kyton")
 
@@ -200,10 +201,13 @@ class Graphing(object):
         while self.master.thread_map[thread_id]:
             try:
                 name = helpers.get_file_name(self.file_name.get())
+                df = fh.db_to_df(CAL if self.is_cal else BAKING, name)
                 if self.is_cal:
-                    Graphing.data_coll_cal = fh.create_data_coll(name, self.is_cal)[0]
+                    Graphing.data_coll_cal = DataCollection()
+                    Graphing.data_coll_cal.create(self.is_cal, df)
                 else:
-                    Graphing.data_coll = fh.create_data_coll(name, self.is_cal)[0]
+                    Graphing.data_coll = DataCollection()
+                    Graphing.data_coll.create(self.is_cal, df)
             except RuntimeError as r:
                 self.main_queue.put(Message(MessageType.DEVELOPER, "Graphing Update Data Coll Error Dump", str(r)))
             time.sleep(8)
@@ -266,9 +270,9 @@ class Graphing(object):
                         self.master.after(1500, self.pause)
 
 
-def animate_graph(use_snums):
-    def _animate_graph(func):
-        def _wrapper(axes, snums, is_cal):
+def animate_graph(use_snums: bool):
+    def _animate_graph(func: Callable):
+        def _wrapper(axes, snums: List[str], is_cal: bool):
             dc = Graphing.data_coll
             if is_cal:
                 dc = Graphing.data_coll_cal
@@ -286,14 +290,14 @@ def animate_graph(use_snums):
 @animate_graph(False)
 def average_wave_graph(axes, dc):
     """Animate function for the mean wavelength vs. time graph."""
-    times, wavelen_diffs = dc.times, dc.mean_wavelen_diffs
+    times, wavelen_diffs = dc.times, dc.mean_delta_wavelengths
     axes[0].plot(times, wavelen_diffs)
 
 
 @animate_graph(True)
 def wave_power_graph(axis, snums, dc):
     """Animate function for the wavelength vs. power graph."""
-    wavelens, powers = dc.wavelens, dc.powers
+    wavelens, powers = dc.wavelenghts, dc.powers
     idx = 0
     axes = []
     for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
@@ -311,7 +315,7 @@ def wave_power_graph(axis, snums, dc):
 @animate_graph(True)
 def temp_graph(axes, _, dc):
     """Animate function for the temperature graph."""
-    times, temp_diffs, temps = dc.times, dc.temp_diffs, dc.temps
+    times, temp_diffs, temps = dc.times, dc.delta_temps, dc.temps
     axes[0].plot(times, temp_diffs)
     if len(axes) > 1:
         axes[1].plot(times, temps, color='b')
@@ -320,7 +324,7 @@ def temp_graph(axes, _, dc):
 @animate_graph(False)
 def average_power_graph(axis, dc):
     """Animate function for the mean power vs. time graph."""
-    times, power_diffs = dc.times, dc.mean_power_diffs
+    times, power_diffs = dc.times, dc.mean_delta_powers
     axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
     axis[0].plot(times, power_diffs)
 
@@ -328,7 +332,7 @@ def average_power_graph(axis, dc):
 @animate_graph(True)
 def wave_graph(axis, snums, dc):
     """Animate function for the individual wavelengths graph."""
-    times, wavelens, wavelen_diffs = dc.times, dc.wavelens, dc.wavelen_diffs
+    times, wavelens, wavelen_diffs = dc.times, dc.wavelengths, dc.delta_wavelengths
     wavelen_diffs = [w * 1000 for w in wavelen_diffs]
     idx = 0
     axes = []
@@ -349,7 +353,7 @@ def wave_graph(axis, snums, dc):
 @animate_graph(True)
 def power_graph(axis, snums, dc):
     """Animate function for the individual powers graph."""
-    times, powers, power_diffs = dc.times, dc.powers, dc.power_diffs
+    times, powers, power_diffs = dc.times, dc.powers, dc.delta_powers
     idx = 0
     axes = []
     for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
@@ -369,10 +373,10 @@ def power_graph(axis, snums, dc):
 @animate_graph(False)
 def drift_rate_graph(axes, _):
     """Animate function for the drift rates graph."""
-    times, drates, drates_real = __get_drift_rates()
+    times, drates, delta_drates = __get_drift_rates()
     axes[0].plot(times, drates)
     if len(axes) > 1:
-        axes[1].plot(times, drates_real)
+        axes[1].plot(times, delta_drates)
 
 
 def __get_drift_rates():
