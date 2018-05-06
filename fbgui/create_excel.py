@@ -14,7 +14,16 @@ from fbgui.messages import MessageType, Message
 
 
 class ExcelTable(ttk.Frame):
-    """Tkinter frame containing widgets for creating excel spreadsheets."""
+    """
+    Tkinter frame containing widgets for creating excel spreadsheets.
+
+    :ivar List[str] headers: the treeview table headers
+    :ivar Queue main_queue: main_queue parameter
+    :ivar ttk.Treeview tree: ttk tree displaying information about the program runs
+    :ivar List[int] item_ids: ids of the items currently stored in the tree
+    :ivar Dict[int, str] file_paths: mapping of map table ids to file paths
+    :ivar List[str] s_nums: map of program database ids to comma separated strings of serial numbers for that program
+    """
 
     def __init__(self, master: ttk.Frame, main_queue: Queue, **kwargs):
         """
@@ -23,13 +32,6 @@ class ExcelTable(ttk.Frame):
         :param master: parent frame for this class
         :param main_queue: queue used for writing log messages
         :param kwargs: additional parameters to pass to the ttk Frame super constructor
-
-        :ivar headers: the treeview table headers
-        :ivar main_queue: main_queue parameter
-        :ivar tree: ttk tree displaying information about the program runs
-        :ivar item_ids: ids of the items currently stored in the tree
-        :ivar file_paths: list of file paths of the programs being stored in the database
-        :ivar s_nums: map of program database ids to comma separated strings of serial numbers for that program
         """
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]

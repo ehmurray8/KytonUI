@@ -13,29 +13,30 @@ class DataCollection(object):
 
     **Create must be called in order to instantiate the object properly based on a dataframe object.**
 
-    :ivar times: list of delta times in hours, from the start
-    :ivar temps: list of temperatures in Kelvin
-    :ivar delta_temps: list of delta temperatures in Kelvin, from the start
-    :ivar powers: 2D list of powers by serial number in dBm.
-    :ivar delta_powers: 2D list of delta powers, from the start, by serial number, in dBm.
-    :ivar mean_delta_powers: list of average delta power in dBm, from the start
-    :ivar wavelengths: 2D list of wavelengths by serial number in nm.
-    :ivar delta_wavelengths: 2D list of delta wavelengths, from the start, by serial number, in pm.
-    :ivar mean_delta_wavelengths: list of average delta wavelengths in pm.
-    :ivar drift_rates: list of calibration drift rates mK/min
+    :ivar List[float] times: list of delta times in hours, from the start
+    :ivar List[float] temps: list of temperatures in Kelvin
+    :ivar List[delta_temps: list of delta temperatures in Kelvin, from the start
+    :ivar List[List[float]] powers: 2D list of powers by serial number in dBm.
+    :ivar List[List[float]] delta_powers: 2D list of delta powers, from the start, by serial number, in dBm.
+    :ivar List[float] mean_delta_powers: list of average delta power in dBm, from the start
+    :ivar List[List[float]] wavelengths: 2D list of wavelengths by serial number in nm.
+    :ivar List[List[float]] delta_wavelengths: 2D list of delta wavelengths, from the start, by serial number, in pm.
+    :ivar List[float] mean_delta_wavelengths: list of average delta wavelengths in pm.
+    :ivar List[float] drift_rates: list of calibration drift rates mK/min
     """
 
     def __init__(self):
-        self.times = []
-        self.temps = []
-        self.delta_temps = []
-        self.powers = []
-        self.delta_powers = []
-        self.mean_delta_powers = []
-        self.wavelengths = []
-        self.delta_wavelengths = []
-        self.mean_delta_wavelengths = []
-        self.drift_rates = []  # 2D, drift rates in mk/min
+        """Create empty collection, must call create to populate."""
+        self.times = []  # type: List[float]
+        self.temps = []  # type: List[float]
+        self.delta_temps = []  # type: List[float]
+        self.powers = []  # type: List[List[float]]
+        self.delta_powers = []  # type: List[List[float]]
+        self.mean_delta_powers = []  # type: List[float]
+        self.wavelengths = []  # type: List[List[float]]
+        self.delta_wavelengths = []  # type: List[List[float]]
+        self.mean_delta_wavelengths = []  # type: List[float]
+        self.drift_rates = []  # type: List[float]
 
 
     def create(self, is_cal: bool, df: pd.DataFrame, snums: Optional[List[str]]=None,
@@ -43,6 +44,8 @@ class DataCollection(object):
         """
         Creates a data collection from the given dataframe, updates the instance variables to match how they are
         specified in the class docstring, numpy arrays are used instead of lists however.
+
+        **Adds date time column to the data frame**
 
         :param is_cal: boolean for whether or not the program is a calibration program
         :param df: dataframe representing the sql table for the program
@@ -61,19 +64,18 @@ class DataCollection(object):
             self.times = [(time - start_time) / 60 / 60 for time in timestamps]
             self.temps = df["Mean Temperature (K)"]
             first_temp = self.temps[0]
-            self.delta_temps = np.array([temp - first_temp for temp in self.temps])
+            self.delta_temps = [temp - first_temp for temp in self.temps]
 
             wave_headers = [head for head in headers if "Wave" in head]
             pow_headers = [head for head in headers if "Pow" in head]
             for wave_head, pow_head in zip(wave_headers, pow_headers):
                 self.wavelengths.append(df[wave_head])
                 self.powers.append(df[pow_head])
-            self.delta_wavelengths = np.array([np.array([(w - wave[0]) * 1000 for w in wave])
-                                                    for wave in self.wavelengths])
-            self.delta_powers = np.array([np.array([p - power[0] for p in power]) for power in self.powers])
+            self.delta_wavelengths = [[(w - wave[0]) * 1000 for w in wave] for wave in self.wavelengths]
+            self.delta_powers = [[p - power[0] for p in power] for power in self.powers]
 
-            self.mean_delta_wavelengths = np.array(self.delta_wavelengths[0])
-            self.mean_delta_powers = np.array(self.delta_powers[0])
+            self.mean_delta_wavelengths = self.delta_wavelengths[0]
+            self.mean_delta_powers = self.delta_powers[0]
 
             for wave_diff, pow_diff in zip(self.delta_wavelengths[1:], self.delta_powers[1:]):
                 self.mean_delta_wavelengths += wave_diff

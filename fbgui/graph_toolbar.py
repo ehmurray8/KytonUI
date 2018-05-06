@@ -4,9 +4,19 @@ from tkinter.ttk import Frame
 
 
 class Toolbar(NavigationToolbar2TkAgg):
-    """Overrides the default Matplotlib toolbar to add play and pause animation buttons."""
+    """
+    Overrides the default Matplotlib toolbar to add play and pause animation buttons.
+
+    :ivar Graphing graphing_helper: Graphing helper object that controls the graphing screen
+    """
 
     def __init__(self, figure_canvas: FigureCanvasTkAgg, parent: Frame):
+        """
+        Override the default matplotlib toolbar for the tkinter canvas.
+
+        :param figure_canvas: the canvas to add the toolbar to.
+        :param parent: the parent frame of the canvas
+        """
         self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
                           ('Back', 'Back to  previous view', 'back', 'back'),
                           ('Forward', 'Forward to next view',
@@ -30,7 +40,11 @@ class Toolbar(NavigationToolbar2TkAgg):
         super().__init__(self.figure_canvas, self.parent)
 
     def set_gh(self, graphing_helper):
-        """Sets the graphing helper."""
+        """
+        Sets the graphing helper.
+
+        :param graphing_helper: The graphing helper class controlling the graphing screen
+        """
         self.graphing_helper = graphing_helper
 
     def play(self):

@@ -64,7 +64,11 @@ class SM125(socket.socket):
 
 
 class Vidia(object):
-    """Vidia-Swept laser wrapper object."""
+    """
+    Vidia-Swept laser wrapper object.
+
+    :ivar Resource device: PyVisa GPIB connection to the device
+    """
 
     def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
         """
@@ -90,8 +94,20 @@ class Vidia(object):
 
 
 class Oven(object):
-    """Delta oven object, uses pyvisa."""
+    """
+    Delta oven object, uses pyvisa.
+
+    :ivar Resource device: PyVisa GPIB connection to the device
+    """
+
     def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
+        """
+        Opens a GPIB connection with the device at the specified location.
+
+        :param loc: the location of the device
+        :param manager: the PyVisa Resource Manager
+        :param use_dev: if True connect to the device
+        """
         self.device = None
         if use_dev:
             self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
@@ -153,7 +169,11 @@ class OpSwitch(socket.socket):
 
 
 class TempController(object):
-    """Object representation of the Temperature Controller needed for the program."""
+    """
+    Object representation of the Temperature Controller needed for the program.
+
+    :ivar Resource device: PyVisa GPIB connection to the device.
+    """
     def __init__(self, loc, manager, use_dev):
         """
         Establishes a GPIB connection with the temperature controller.

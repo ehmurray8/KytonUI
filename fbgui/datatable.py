@@ -9,7 +9,15 @@ from fbgui.messages import MessageType, Message
 
 
 class DataTable(ttk.Frame):
-    """Overrides ttk Frame class used to create a data view."""
+    """
+    Overrides ttk Frame class used to create a data view.
+
+    :ivar List[str] headers: headers for the tree view widget
+    :ivar ttk.Treeview tree: tree used for displaying the data
+    :ivar Callable func: param func
+    :ivar List[int] item_ids: ids of the items currently stored in the tree view
+    :ivar Queue main_queue: param main_queue
+    """
 
     def __init__(self, master: ttk.Frame, create_excel_func: Callable, main_queue: Queue=None):
         """
@@ -18,12 +26,6 @@ class DataTable(ttk.Frame):
         :param master: ttk frame that will be the parent of this object
         :param func: program identifier string
         :param main_queue: if present, used for writing messages to the log view
-
-        :ivar headers: headers for the tree view widget
-        :ivar tree: tree used for displaying the data
-        :ivar func: param func
-        :ivar item_ids: ids of the items currently stored in the tree view
-        :ivar main_queue: param main_queue
         """
         super().__init__(master)
         self.headers = []

@@ -2,24 +2,28 @@
 
 import configparser
 import os
+from typing import List
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
-from fbgui.constants import BAKING, CAL
+from fbgui.constants import BAKING, CAL, ASSETS_PATH
 from fbgui import helpers, ui_helper as uh
 
 
 class OptionsPanel(ttk.Frame):
-    """Main Tkinter window class."""
+    """
+    Options panel widget in both the baking and calibration program screens, used for configuring program settings.
+
+    """
 
     def __init__(self, parent, program):
         super().__init__(parent)
 
         # Init member vars
-        self.sn_ents = [[], [], [], []]
-        self.chan_nums = [[], [], [], []]
-        self.switch_positions = [[], [], [], []]
-        self.snum_frames = [[], [], [], []]
+        self.sn_ents = [[], [], [], []]  # type: List[List[str]]
+        self.chan_nums = [[], [], [], []]  # type: List[List[int]]
+        self.switch_positions = [[], [], [], []]  # type: List[List[int]]
+        self.snum_frames = [[], [], [], []]  # type: List[List[ttk.Frame]]
 
         # Init member widgets
         self.file_name = tk.StringVar()
@@ -46,14 +50,11 @@ class OptionsPanel(ttk.Frame):
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
-        self.chan_rows = [1, 1, 1, 1]
-
         # Prevent from being garbage collected
-        assets_path = os.path.join("assets")
-        path = os.path.join(assets_path, 'plus.png')
+        path = os.path.join(ASSETS_PATH, 'plus.png')
         self.img_plus = tk.PhotoImage(file=path)
 
-        path = os.path.join(assets_path, 'minus.png')
+        path = os.path.join(ASSETS_PATH, 'minus.png')
         self.img_minus = tk.PhotoImage(file=path)
 
         self.create_options_grid()

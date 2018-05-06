@@ -1,14 +1,13 @@
 import configparser
 import os
 import tkinter as tk
-
-from typing import List
 from tkinter import ttk, filedialog, messagebox as mbox
+import functools
+from typing import List
+from PIL import ImageTk
 from dateutil import parser
 from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
 import fbgui.constants as constants
-from PIL import ImageTk
-import functools
 
 
 def ui_entry(var_type, use_func=False):

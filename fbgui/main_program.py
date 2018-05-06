@@ -24,34 +24,35 @@ class Application(tk.Tk):
     """
     Main Application class, Tk implementation used as the master throughout the package.
 
-    :ivar use_dev: True if the program is configured to use devices, False if configured to run a simulation
-    :ivar conf_parser: ConfigParser to read, and set device settings
-    :ivar manager: PyVisa ResourceManager used for communicating with GPIB instruments
-    :ivar main_queue: Queue used for listening for logging messages to write to the log_view
-    :ivar thread_map: Map of thread UUIDs to booleans for whether or not to stop the thread
-    :ivar open_threads: List of UUIDs of the currently open data collection threads
-    :ivar graph_threads: List of UUIDs of the currently open graph threads
-    :ivar running: True if either program is running, False otherwise
-    :ivar running_prog: Program identifier for currently running program, None if the program is not running
-    :ivar temp_controller: Temperature controller wrapper used for communicating with the Temperatur Controller,
-                           None if not connected to the temperature controller
-    :ivar oven: Oven wrapper used for communicating with the Oven, None if not connected to the oven
-    :ivar laser: Laser wrapper used for communicating with the Laser, None if not connected to the laser
-    :ivar switch: Switch wrapper used for communicating with the Optical Switch, None if not connected to the optical
-                  switch
-    :ivar is_full_screen: True if the program is in full screen, False otherwise
-    :ivar controller_location: tkinter variable for the temperature controller location input field
-    :ivar oven_location: tkinter variable for the oven location input field
-    :ivar op_switch_address: tkinter variable for the optical switch address input field
-    :ivar op_switch_port: tkinter variable for the optical switch port input field
-    :ivar sm125_address: tkinter variable for the sm125 address input field
-    :ivar sm125_port: tkinter variable for the sm125 port input field
-    :ivar main_notebook: ttk notebook widget which is the highest level widget
-    :ivar home_frame: the home page ttk frame widget
-    :ivar device_frame: the widget containing the device input widgets on the home screen
-    :ivar log_view: Logview widget containing the logging scrolled text widget
-    :ivar baking_program: the program object for the baking program
-    :ivar cal_program: the program object for the calibration program
+    :ivar bool use_dev: True if the program is configured to use devices, False if configured to run a simulation
+    :ivar configparser.ConfigParser conf_parser: ConfigParser to read, and set device settings
+    :ivar visa.ResourceManager manager: PyVisa ResourceManager used for communicating with GPIB instruments
+    :ivar Queue main_queue: Queue used for listening for logging messages to write to the log_view
+    :ivar Dict[UUID, bool] thread_map: Map of thread UUIDs to booleans for whether or not to stop the thread
+    :ivar List[UUID] open_threads: List of UUIDs of the currently open data collection threads
+    :ivar List[UUID] graph_threads: List of UUIDs of the currently open graph threads
+    :ivar bool running: True if either program is running, False otherwise
+    :ivar str running_prog: Program identifier for currently running program, None if the program is not running
+    :ivar devices.TempController temp_controller: temperature controller wrapper used for communicating with the
+                                                  temperature controller, None if not connected to the temperature
+                                                  controller
+    :ivar devices.Oven oven: Oven wrapper used for communicating with the Oven, None if not connected to the oven
+    :ivar devices.SM125 laser: Laser wrapper used for communicating with the Laser, None if not connected to the laser
+    :ivar devices.OpSwitch switch: Switch wrapper used for communicating with the Optical Switch, None if not
+                                   connected to the optical switch
+    :ivar bool is_full_screen: True if the program is in full screen, False otherwise
+    :ivar tkinter.IntVar controller_location: tkinter variable for the temperature controller location input field
+    :ivar tkinter.IntVar oven_location: tkinter variable for the oven location input field
+    :ivar tkinter.StringVar op_switch_address: tkinter variable for the optical switch address input field
+    :ivar tkinter.IntVar op_switch_port: tkinter variable for the optical switch port input field
+    :ivar tkinter.StringVar sm125_address: tkinter variable for the sm125 address input field
+    :ivar tkinter.IntVar sm125_port: tkinter variable for the sm125 port input field
+    :ivar tkinter.Notebook main_notebook: ttk notebook widget which is the highest level widget
+    :ivar tkinter.Frame home_frame: the home page ttk frame widget
+    :ivar tkinter.Frame device_frame: the widget containing the device input widgets on the home screen
+    :ivar messages.LogView log_view: Logview widget containing the logging scrolled text widget
+    :ivar baking_program.BakingProgram bake_program: the program object for the baking program
+    :ivar cal_program.CalProgram calibration_program: the program object for the calibration program
     """
 
     def __init__(self, *args, **kwargs):
@@ -114,11 +115,11 @@ class Application(tk.Tk):
         self.setup_home_frame()
 
         self.bake_program = None  # type: BakingProgram
-        self.cal_program = None   # type: CalProgram
+        self.calibration_program = None   # type: CalProgram
         self.bake_program = BakingProgram(self)
         self.main_notebook.add(self.bake_program, text="Bake")
-        self.cal_program = CalProgram(self)
-        self.main_notebook.add(self.cal_program, text="Calibration")
+        self.calibration_program = CalProgram(self)
+        self.main_notebook.add(self.calibration_program, text="Calibration")
         self.check_queue()
 
     def check_queue(self):

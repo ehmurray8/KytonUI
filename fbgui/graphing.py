@@ -38,6 +38,7 @@ class Graph(object):
     :ivar anim: FuncAnimation object when using the animate_func function parameter to animate the graph
     :ivar zoom_axes: list of the axes objects for the zoomed graph
     """
+
     def __init__(self, title: str, xlabel: str, ylabels: Tuple[str], animate_func: Callable, fig: Figure,
                  dims: List[Union[int, gridspec.GridSpec]], fname: StringVar, is_cal: bool,
                  snums: List[str], main_queue: Queue):
