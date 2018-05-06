@@ -113,8 +113,8 @@ class Message(object):
         if title is None:
             self.text = "{}: {}\n".format(timestamp, text)
         else:
-            self.text = "{}: {}({})\n".format(timestamp, title, text)
-        self.msg = '{}({})\n'.format(title, text)
+            self.text = "{}: {} - {}\n".format(timestamp, title, text)
+        self.msg = '{} - {}\n'.format(title, text)
 
 
 class LogView(ttk.Frame):
@@ -207,7 +207,12 @@ class LogView(ttk.Frame):
             if MessageType.DEVELOPER in self.message_types:
                 mtype = MessageType.DEVELOPER.filter_num
             msgs = self.get_msgs(mtype)
-            msgs_sorted = reversed(sorted(list(msgs.items()), key=lambda x: x[0]))
+
+            msg_items = list(msgs.items())
+            for item in list(msg_items):
+                if item[0] == 'key':
+                    msg_items.remove(item)
+            msgs_sorted = reversed(sorted(msg_items, key=lambda x: x[0]))
             for t, (text, tag) in msgs_sorted:
                 f.write(text)
 
@@ -227,22 +232,27 @@ class LogView(ttk.Frame):
 
         :param msg: message to add to the log view
         """
-        if msg.msg in self.message_time and msg.time - self.message_time[msg.msg] < FILTER_TIME:
-            if msg.msg not in self.message_time_filter:
-                self.message_time_filter[msg.msg] = MessageDelay.FIRST
+        if msg.msg in self.message_time:
+            if msg.time - self.message_time[msg.msg] > FILTER_TIME:
+                del self.message_time[msg.msg]
             else:
-                curr_delay = self.message_time_filter[msg.msg]
-                if curr_delay != MessageDelay.MAX:
-                    idx = self.message_delays.index(curr_delay)
-                    next_delay = self.message_delays[idx+1]
-                    self.message_time_filter[msg.msg] = next_delay
-        elif msg.msg in self.message_time_filter:
-            del self.message_time_filter[msg.msg]
-
-        self.message_time[msg.msg] = msg.time
-        self.messages[msg.type.name.title()].append((msg.time, msg.text))
-        if msg.type.filter_num <= self.current_filter.filter_num:
-            self.write_msg(msg.text, msg.type.name)
+                if msg.msg not in self.message_time_filter:
+                    self.message_time_filter[msg.msg] = MessageDelay.FIRST
+                else:
+                    elapsed_time = msg.time - self.message_time[msg.msg]
+                    if elapsed_time > self.message_time_filter[msg.msg].value:
+                        self.messages[msg.type.name.title()].append((msg.time, msg.text))
+                        self.message_time[msg.msg] = msg.time
+                        if msg.type.filter_num <= self.current_filter.filter_num:
+                            self.write_msg(msg.text, msg.type.name)
+                        if self.message_time_filter[msg.msg] != MessageDelay.MAX:
+                            self.message_time_filter[msg.msg] = \
+                                self.message_delays[self.message_delays.index(self.message_time_filter[msg.msg])+1]
+        else:
+            self.message_time[msg.msg] = msg.time
+            self.messages[msg.type.name.title()].append((msg.time, msg.text))
+            if msg.type.filter_num <= self.current_filter.filter_num:
+                self.write_msg(msg.text, msg.type.name)
 
     def write_msg(self, text: str, tag: str, start: str="1.0"):
         """
