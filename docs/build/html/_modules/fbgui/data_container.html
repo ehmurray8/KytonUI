@@ -1,0 +1,171 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.data_container &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.data_container</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Data container for database data.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="k">import</span> <span class="n">Queue</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">fbgui.messages</span> <span class="k">import</span> <span class="n">MessageType</span><span class="p">,</span> <span class="n">Message</span>
+<span class="kn">from</span> <span class="nn">fbgui</span> <span class="k">import</span> <span class="n">file_helper</span> <span class="k">as</span> <span class="n">fh</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="DataCollection"><a class="viewcode-back" href="../../index.html#fbgui.data_container.DataCollection">[docs]</a><span class="k">class</span> <span class="nc">DataCollection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Data container class for data stored in the database for the program</span>
+
+<span class="sd">    **Create must be called in order to instantiate the object properly based on a dataframe object.**</span>
+
+<span class="sd">    :ivar List[float] times: list of delta times in hours, from the start</span>
+<span class="sd">    :ivar List[float] temps: list of temperatures in Kelvin</span>
+<span class="sd">    :ivar List[delta_temps: list of delta temperatures in Kelvin, from the start</span>
+<span class="sd">    :ivar List[List[float]] powers: 2D list of powers by serial number in dBm.</span>
+<span class="sd">    :ivar List[List[float]] delta_powers: 2D list of delta powers, from the start, by serial number, in dBm.</span>
+<span class="sd">    :ivar List[float] mean_delta_powers: list of average delta power in dBm, from the start</span>
+<span class="sd">    :ivar List[List[float]] wavelengths: 2D list of wavelengths by serial number in nm.</span>
+<span class="sd">    :ivar List[List[float]] delta_wavelengths: 2D list of delta wavelengths, from the start, by serial number, in pm.</span>
+<span class="sd">    :ivar List[float] mean_delta_wavelengths: list of average delta wavelengths in pm.</span>
+<span class="sd">    :ivar List[float] drift_rates: list of calibration drift rates mK/min</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create empty collection, must call create to populate.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temps</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_temps</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powers</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[List[float]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_powers</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[List[float]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_powers</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wavelengths</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[List[float]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_wavelengths</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[List[float]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_wavelengths</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drift_rates</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[float]</span>
+
+
+<div class="viewcode-block" id="DataCollection.create"><a class="viewcode-back" href="../../index.html#fbgui.data_container.DataCollection.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_cal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">snums</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">main_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a data collection from the given dataframe, updates the instance variables to match how they are</span>
+<span class="sd">        specified in the class docstring, numpy arrays are used instead of lists however.</span>
+
+<span class="sd">        **Adds date time column to the data frame**</span>
+
+<span class="sd">        :param is_cal: boolean for whether or not the program is a calibration program</span>
+<span class="sd">        :param df: dataframe representing the sql table for the program</span>
+<span class="sd">        :param snums: list of serial numbers that are in use for the program, if None the serial numbers will be found</span>
+<span class="sd">                      using file_helper get_snums function</span>
+<span class="sd">        :param main_queue: if present used for writing messages to the program log</span>
+<span class="sd">        :raises RuntimeError: If the table has not been created or populated yet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">snums</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">snums</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_snums</span><span class="p">(</span><span class="n">is_cal</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">create_headers</span><span class="p">(</span><span class="n">snums</span><span class="p">,</span> <span class="n">is_cal</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">timestamps</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date Time&quot;</span><span class="p">]</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date Time&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date Time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date Time&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[(</span><span class="n">time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">60</span> <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temps</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Mean Temperature (K)&quot;</span><span class="p">]</span>
+            <span class="n">first_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delta_temps</span> <span class="o">=</span> <span class="p">[</span><span class="n">temp</span> <span class="o">-</span> <span class="n">first_temp</span> <span class="k">for</span> <span class="n">temp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">temps</span><span class="p">]</span>
+
+            <span class="n">wave_headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">head</span> <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">headers</span> <span class="k">if</span> <span class="s2">&quot;Wave&quot;</span> <span class="ow">in</span> <span class="n">head</span><span class="p">]</span>
+            <span class="n">pow_headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">head</span> <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">headers</span> <span class="k">if</span> <span class="s2">&quot;Pow&quot;</span> <span class="ow">in</span> <span class="n">head</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">wave_head</span><span class="p">,</span> <span class="n">pow_head</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">wave_headers</span><span class="p">,</span> <span class="n">pow_headers</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wavelengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">wave_head</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">pow_head</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delta_wavelengths</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">w</span> <span class="o">-</span> <span class="n">wave</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wave</span><span class="p">]</span> <span class="k">for</span> <span class="n">wave</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelengths</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delta_powers</span> <span class="o">=</span> <span class="p">[[</span><span class="n">p</span> <span class="o">-</span> <span class="n">power</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">power</span><span class="p">]</span> <span class="k">for</span> <span class="n">power</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_wavelengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_wavelengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_powers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_powers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">wave_diff</span><span class="p">,</span> <span class="n">pow_diff</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta_wavelengths</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_powers</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_wavelengths</span> <span class="o">+=</span> <span class="n">wave_diff</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_powers</span> <span class="o">+=</span> <span class="n">pow_diff</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_wavelengths</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_wavelengths</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_powers</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_delta_powers</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_cal</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drift_rates</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Drift Rate&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">main_queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span><span class="p">,</span> <span class="s2">&quot;File Helper Create Data Coll Error Dump&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No data has been collected yet&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

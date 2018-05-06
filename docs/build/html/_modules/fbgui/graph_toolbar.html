@@ -1,0 +1,136 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.graph_toolbar &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.graph_toolbar</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Overrides the default matplotlib tkinter toolbar to add play and pause to the graph animation.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_tkagg</span> <span class="k">import</span> <span class="n">FigureCanvasTkAgg</span><span class="p">,</span> <span class="n">NavigationToolbar2TkAgg</span>
+<span class="kn">from</span> <span class="nn">tkinter.ttk</span> <span class="k">import</span> <span class="n">Frame</span>
+
+
+<div class="viewcode-block" id="Toolbar"><a class="viewcode-back" href="../../index.html#fbgui.graph_toolbar.Toolbar">[docs]</a><span class="k">class</span> <span class="nc">Toolbar</span><span class="p">(</span><span class="n">NavigationToolbar2TkAgg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Overrides the default Matplotlib toolbar to add play and pause animation buttons.</span>
+
+<span class="sd">    :ivar Graphing graphing_helper: Graphing helper object that controls the graphing screen</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure_canvas</span><span class="p">:</span> <span class="n">FigureCanvasTkAgg</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">Frame</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override the default matplotlib toolbar for the tkinter canvas.</span>
+
+<span class="sd">        :param figure_canvas: the canvas to add the toolbar to.</span>
+<span class="sd">        :param parent: the parent frame of the canvas</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolitems</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;Home&#39;</span><span class="p">,</span> <span class="s1">&#39;Reset original view&#39;</span><span class="p">,</span> <span class="s1">&#39;home&#39;</span><span class="p">,</span> <span class="s1">&#39;home&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Back&#39;</span><span class="p">,</span> <span class="s1">&#39;Back to  previous view&#39;</span><span class="p">,</span> <span class="s1">&#39;back&#39;</span><span class="p">,</span> <span class="s1">&#39;back&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Forward&#39;</span><span class="p">,</span> <span class="s1">&#39;Forward to next view&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;forward&#39;</span><span class="p">,</span> <span class="s1">&#39;forward&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Pan&#39;</span><span class="p">,</span> <span class="s1">&#39;Pan axes with left mouse, zoom with right&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;move&#39;</span><span class="p">,</span> <span class="s1">&#39;pan&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Zoom&#39;</span><span class="p">,</span> <span class="s1">&#39;Zoom to rectangle&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom_to_rect&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Subplots&#39;</span><span class="p">,</span> <span class="s1">&#39;Configure subplots&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;subplots&#39;</span><span class="p">,</span> <span class="s1">&#39;configure_subplots&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Save&#39;</span><span class="p">,</span> <span class="s1">&#39;Save the figure&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;filesave&#39;</span><span class="p">,</span> <span class="s1">&#39;save_figure&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Pause&#39;</span><span class="p">,</span> <span class="s1">&#39;Pause the animation&#39;</span><span class="p">,</span> <span class="s1">&#39;pause&#39;</span><span class="p">,</span> <span class="s1">&#39;pause&#39;</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s1">&#39;Play&#39;</span><span class="p">,</span> <span class="s1">&#39;Play the animation&#39;</span><span class="p">,</span> <span class="s1">&#39;play&#39;</span><span class="p">,</span> <span class="s1">&#39;play&#39;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure_canvas</span> <span class="o">=</span> <span class="n">figure_canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphing_helper</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure_canvas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Toolbar.set_gh"><a class="viewcode-back" href="../../index.html#fbgui.graph_toolbar.Toolbar.set_gh">[docs]</a>    <span class="k">def</span> <span class="nf">set_gh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graphing_helper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the graphing helper.</span>
+
+<span class="sd">        :param graphing_helper: The graphing helper class controlling the graphing screen</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphing_helper</span> <span class="o">=</span> <span class="n">graphing_helper</span></div>
+
+<div class="viewcode-block" id="Toolbar.play"><a class="viewcode-back" href="../../index.html#fbgui.graph_toolbar.Toolbar.play">[docs]</a>    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plays graph animation linked to play button on toolbar.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphing_helper</span><span class="o">.</span><span class="n">play</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Toolbar.pause"><a class="viewcode-back" href="../../index.html#fbgui.graph_toolbar.Toolbar.pause">[docs]</a>    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pauses graph animation linked to button on toolbar.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphing_helper</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,173 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.constants &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.constants</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Constants used throughout the program.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+
+
+<span class="c1"># Program identifiers</span>
+<span class="n">BAKING</span> <span class="o">=</span> <span class="s2">&quot;Baking&quot;</span>
+<span class="n">CAL</span> <span class="o">=</span> <span class="s2">&quot;Cal&quot;</span>
+
+<span class="c1"># Device identifiers</span>
+<span class="n">OVEN</span> <span class="o">=</span> <span class="s2">&quot;Delta Oven&quot;</span>
+<span class="n">LASER</span> <span class="o">=</span> <span class="s2">&quot;Micron Optics SM125&quot;</span>
+<span class="n">SWITCH</span> <span class="o">=</span> <span class="s2">&quot;Optical Switch&quot;</span>
+<span class="n">TEMP</span> <span class="o">=</span> <span class="s2">&quot;LSC Temperature Controller&quot;</span>
+<span class="n">DEV_HEADER</span> <span class="o">=</span> <span class="s2">&quot;Devices&quot;</span>
+
+
+<div class="viewcode-block" id="Colors"><a class="viewcode-back" href="../../index.html#fbgui.constants.Colors">[docs]</a><span class="k">class</span> <span class="nc">Colors</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Colors used in the GUI styling.&quot;&quot;&quot;</span>
+    <span class="n">WHITE</span> <span class="o">=</span> <span class="s2">&quot;#f0eff4&quot;</span>
+    <span class="n">AZ_WHITE</span> <span class="o">=</span> <span class="s2">&quot;#dcedff&quot;</span>
+    <span class="n">MED_BLUE</span> <span class="o">=</span> <span class="s2">&quot;#0B3C5D&quot;</span>
+    <span class="n">SKY_BLUE</span> <span class="o">=</span> <span class="s2">&quot;#328CC1&quot;</span>
+    <span class="n">GOLD</span> <span class="o">=</span> <span class="s2">&quot;#D9B310&quot;</span>
+    <span class="n">BLACK</span> <span class="o">=</span> <span class="s2">&quot;#1D2731&quot;</span>
+    <span class="n">GRAY</span> <span class="o">=</span> <span class="s2">&quot;#2b2a29&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hex_color</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines a color.</span>
+
+<span class="sd">        :param hex_color: Contains the hex value string representing the color.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">hex_color</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span></div>
+
+
+<span class="n">LOG_BACKGROUND_COLOR</span> <span class="o">=</span> <span class="s2">&quot;#38383d&quot;</span>
+<span class="n">DISABLED_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">GRAY</span><span class="p">)</span>
+<span class="n">BG_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">BLACK</span><span class="p">)</span>
+<span class="n">TAB_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">SKY_BLUE</span><span class="p">)</span>
+<span class="n">TABS_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">AZ_WHITE</span><span class="p">)</span>
+<span class="n">ENTRY_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">GRAY</span><span class="p">)</span>
+<span class="n">BUTTON_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">GRAY</span><span class="p">)</span>
+<span class="n">TEXT_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">GOLD</span><span class="p">)</span>
+<span class="n">BUTTON_TEXT</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">BLACK</span><span class="p">)</span>
+<span class="n">ARRAY_ENTRY_COLOR</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Colors</span><span class="o">.</span><span class="n">WHITE</span><span class="p">)</span>
+
+<span class="n">ENTRY_FONT</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Helvetica&#39;</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
+
+<span class="c1"># Excel column colors</span>
+<span class="n">HEX_COLORS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#FFD700&quot;</span><span class="p">,</span> <span class="s2">&quot;#008080&quot;</span><span class="p">,</span> <span class="s2">&quot;#FF7373&quot;</span><span class="p">,</span> <span class="s2">&quot;#FFC0CB&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#40E0D0&quot;</span><span class="p">,</span> <span class="s2">&quot;#FFA500&quot;</span><span class="p">,</span> <span class="s2">&quot;#00FF00&quot;</span><span class="p">,</span> <span class="s2">&quot;#468499&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#66CDAA&quot;</span><span class="p">,</span> <span class="s2">&quot;#FF7F50&quot;</span><span class="p">,</span> <span class="s2">&quot;#FF4040&quot;</span><span class="p">,</span> <span class="s2">&quot;#B4EEB4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#DAA520&quot;</span><span class="p">,</span> <span class="s2">&quot;#FFFF00&quot;</span><span class="p">,</span> <span class="s2">&quot;#C0C0C0&quot;</span><span class="p">,</span> <span class="s2">&quot;#F0F8FF&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#E6E6FA&quot;</span><span class="p">,</span> <span class="s2">&quot;#008000&quot;</span><span class="p">,</span> <span class="s2">&quot;#FF00FF&quot;</span><span class="p">,</span> <span class="s2">&quot;#0099CC&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#FAD1D1&quot;</span><span class="p">,</span> <span class="s2">&quot;#A3928F&quot;</span><span class="p">,</span> <span class="s2">&quot;#BF6A40&quot;</span><span class="p">,</span> <span class="s2">&quot;#FFAA00&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#AD961F&quot;</span><span class="p">,</span> <span class="s2">&quot;#DDFF33&quot;</span><span class="p">,</span> <span class="s2">&quot;#66CC00&quot;</span><span class="p">,</span> <span class="s2">&quot;#94E085&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;#94D1B2&quot;</span><span class="p">,</span> <span class="s2">&quot;#40AABF&quot;</span><span class="p">,</span> <span class="s2">&quot;#4D7FB2&quot;</span><span class="p">,</span> <span class="s2">&quot;#9540BF&quot;</span><span class="p">]</span>
+
+<span class="c1"># Main folder paths</span>
+<span class="n">ASSETS_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;assets&quot;</span><span class="p">)</span>
+<span class="n">CONFIG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">)</span>
+<span class="n">DB_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;db&quot;</span><span class="p">)</span>
+
+<span class="c1"># Database path</span>
+<span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DB_DIR</span><span class="p">,</span> <span class="s2">&quot;program_data.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># Matplotlib images, and style</span>
+<span class="n">MPL_STYLE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;kyton.mplstyle&quot;</span><span class="p">)</span>
+<span class="n">PLAY_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;play.gif&quot;</span><span class="p">)</span>
+<span class="n">PAUSE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;pause.gif&quot;</span><span class="p">)</span>
+
+<span class="c1"># Config file paths</span>
+<span class="n">PROG_CONFIG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CONFIG_PATH</span><span class="p">,</span> <span class="s2">&quot;prog_config.cfg&quot;</span><span class="p">)</span>
+<span class="n">DEV_CONFIG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CONFIG_PATH</span><span class="p">,</span> <span class="s2">&quot;devices.cfg&quot;</span><span class="p">)</span>
+
+<span class="c1"># Gui Images</span>
+<span class="n">FIBER_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;fiber.png&quot;</span><span class="p">)</span>
+<span class="n">CONFIG_IMG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;config.png&quot;</span><span class="p">)</span>
+<span class="n">GRAPH_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;graph.png&quot;</span><span class="p">)</span>
+<span class="n">FILE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s2">&quot;file.png&quot;</span><span class="p">)</span>
+<span class="n">DOCS_ICON_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ASSETS_PATH</span><span class="p">,</span> <span class="s1">&#39;docs_icon.png&#39;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">DOCS_ICON</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">DOCS_ICON_PATH</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+    <span class="n">DOCS_ICON</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;fbgui&quot;</span><span class="p">,</span> <span class="n">DOCS_ICON_PATH</span><span class="p">))</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
