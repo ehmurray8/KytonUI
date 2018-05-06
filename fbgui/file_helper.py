@@ -190,6 +190,7 @@ def create_headers_init(snums: List[str], is_cal: bool) -> List[str]:
     return col_list
 
 
+# noinspection PyUnresolvedReferences
 def db_to_df(func: str, name: str) -> pd.DataFrame:
     """
     Creates a pandas dataframe object from the database table corresponding to the program run of type
@@ -201,7 +202,6 @@ def db_to_df(func: str, name: str) -> pd.DataFrame:
     :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
     :raises RuntimeError: If program database has been corrupted, or the table is empty
     """
-    # noinspection PyUnresolvedReferences
     conn = None
     try:
         conn = sqlite3.connect(DB_PATH)

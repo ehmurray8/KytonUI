@@ -1,0 +1,406 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.messages &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.messages</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="n">ttk</span>
+<span class="kn">from</span> <span class="nn">tkinter.scrolledtext</span> <span class="k">import</span> <span class="n">ScrolledText</span>
+<span class="kn">from</span> <span class="nn">tkinter.font</span> <span class="k">import</span> <span class="n">Font</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">fbgui.constants</span> <span class="k">import</span> <span class="n">LOG_BACKGROUND_COLOR</span>
+
+<span class="c1">#: Amount of time in between messages to enable the filtering</span>
+<span class="n">FILTER_TIME</span> <span class="o">=</span> <span class="mf">300.</span>
+
+
+<div class="viewcode-block" id="MessageType"><a class="viewcode-back" href="../../index.html#fbgui.messages.MessageType">[docs]</a><span class="k">class</span> <span class="nc">MessageType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Type of Message to log, used for coloring and filtering of messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DEVELOPER</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;#3399FF&quot;</span><span class="p">)</span>
+    <span class="n">INFO</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;#FFFFFF&quot;</span><span class="p">)</span>
+    <span class="n">WARNING</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;#FFCC00&quot;</span><span class="p">)</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;#FF0000&quot;</span><span class="p">)</span>
+    <span class="n">CRITICAL</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;#FF8800&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Createa a Message Type.</span>
+
+<span class="sd">        :param filter_num: Level of filtering, lower numbers are more important</span>
+<span class="sd">        :param color: the color to write the message as</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_num</span> <span class="o">=</span> <span class="n">filter_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span></div>
+
+
+<div class="viewcode-block" id="MessageDelay"><a class="viewcode-back" href="../../index.html#fbgui.messages.MessageDelay">[docs]</a><span class="k">class</span> <span class="nc">MessageDelay</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Length of delay before repeating a message if filtering is enabled.&quot;&quot;&quot;</span>
+    <span class="n">FIRST</span> <span class="o">=</span> <span class="mf">60.</span>
+    <span class="n">SHORT</span> <span class="o">=</span> <span class="mf">300.</span>
+    <span class="n">LONG</span> <span class="o">=</span> <span class="mf">600.</span>
+    <span class="n">MAX</span> <span class="o">=</span> <span class="mf">3600.</span></div>
+
+
+<div class="viewcode-block" id="SizeDict"><a class="viewcode-back" href="../../index.html#fbgui.messages.SizeDict">[docs]</a><span class="k">class</span> <span class="nc">SizeDict</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A dictionary of max length that removes FIFO when the max size is reached.</span>
+
+<span class="sd">    :ivar dict store: dictionary for storing key value pairs</span>
+<span class="sd">    :ivar collections.deque added_order: FIFO queue of the keys used to keep a fixed length</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">50000</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes dictionary and queue.</span>
+
+<span class="sd">        :param maxsize: maximum number of elements in the dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">added_order</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxsize</span> <span class="o">=</span> <span class="n">maxsize</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add key value mapping to the dictionary, remove first added element if dictionary is full.</span>
+
+<span class="sd">        :param key: key of the mapping</span>
+<span class="sd">        :param value: value of the mapping</span>
+<span class="sd">        :return: the key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">added_order</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">added_order</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">added_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxsize</span><span class="p">:</span>
+            <span class="n">rem_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">added_order</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">rem_key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">key</span>
+
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Message"><a class="viewcode-back" href="../../index.html#fbgui.messages.Message">[docs]</a><span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Message object contains info about a log message.</span>
+
+<span class="sd">    :ivar time: unix timestamp in seconds of when the message was created</span>
+<span class="sd">    :ivar msg: Test of the message without the timestamp included</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="n">MessageType</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a message, and log the time it was creaeted.</span>
+
+<span class="sd">        :param MessageType msg_type: type of message</span>
+<span class="sd">        :param str title: title of the message, can be None</span>
+<span class="sd">        :param str text: text of the message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">msg_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%x</span><span class="s2"> </span><span class="si">%X</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> - </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LogView"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView">[docs]</a><span class="k">class</span> <span class="nc">LogView</span><span class="p">(</span><span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Widget for the program log messages, ttk Frame implementation.</span>
+
+<span class="sd">    :ivar List[MessageType] message_types: the MessageTypes to include in the filter combobox</span>
+<span class="sd">    :ivar List[MessageType] all_types: a list of all the message types</span>
+<span class="sd">    :ivar List[MessageDelay] message_delays: a list of all of the message delays</span>
+<span class="sd">    :ivar Dict[str: collections.deque] messages: mapping of message type title string to deques of fixed</span>
+<span class="sd">                                                 size containing messages&#39; body</span>
+<span class="sd">    :ivar Dict[str: float] message_time: message body without timestamp mapped to time in s</span>
+<span class="sd">    :ivar Dict[str: MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay</span>
+<span class="sd">    :ivar float first_click_time: the time the header text was first clicked (Used for developer messages)</span>
+<span class="sd">    :ivar int num_clicks: the number of times the header text was clicked within the specified time (Used for dev msgs)</span>
+<span class="sd">    :ivar bool showing: True if developer messages are in the filter, False otherwise</span>
+<span class="sd">    :ivar MessageType current_filter: the current message type to filter messages</span>
+<span class="sd">    :ivar ttk.Combobox filter_box: the combobox tkinter widget used for selecting a filter level</span>
+<span class="sd">    :ivar ttk.ScrolledText log_view: the scrolled text tkinter widget used for displaying log messages</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the log view widgets, and the data structures for storing messages.</span>
+
+<span class="sd">        :param container: parent frame</span>
+<span class="sd">        :param kwargs: additional arguments for the Frame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">ERROR</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span> <span class="o">+</span> <span class="p">[</span><span class="n">MessageType</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">,</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">MessageDelay</span><span class="o">.</span><span class="n">FIRST</span><span class="p">,</span> <span class="n">MessageDelay</span><span class="o">.</span><span class="n">SHORT</span><span class="p">,</span> <span class="n">MessageDelay</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">MessageDelay</span><span class="o">.</span><span class="n">MAX</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span> <span class="o">=</span> <span class="n">SizeDict</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># type: Dict[str, float]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span> <span class="o">=</span> <span class="n">SizeDict</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># type: Dict[str, MessageDelay]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_click_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_clicks</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showing</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_filter</span> <span class="o">=</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()]</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+        <span class="n">header_frame</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">header_frame</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">)</span>
+        <span class="n">header_lbl</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">header_frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Program Log&quot;</span><span class="p">)</span>
+        <span class="n">header_lbl</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">LEFT</span><span class="p">)</span>
+        <span class="n">header_lbl</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;Button-1&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">click_handler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Combobox</span><span class="p">(</span><span class="n">header_frame</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">mtype</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">mtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;readonly&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;&lt;ComboboxSelected&gt;&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span> <span class="o">=</span> <span class="n">ScrolledText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">LOG_BACKGROUND_COLOR</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">tag_configure</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Helvetica&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span> <span class="n">foreground</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">)</span>
+        <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Export&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">export</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">CENTER</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LogView.click_handler"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.click_handler">[docs]</a>    <span class="k">def</span> <span class="nf">click_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Click handler for the Program Log header to allow the user to view developer messages.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_click_time</span> <span class="o">&gt;</span> <span class="mf">15.</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_click_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_clicks</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_clicks</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_clicks</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_clicks</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">showing</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">showing</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">showing</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">mtype</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">mtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="LogView.export"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export the messages to a log text file in the log folder.&quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">T%H%M%S&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_log.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">timestamp</span><span class="p">))),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">mtype</span> <span class="o">=</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="o">.</span><span class="n">filter_num</span>
+            <span class="k">if</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="p">:</span>
+                <span class="n">mtype</span> <span class="o">=</span> <span class="n">MessageType</span><span class="o">.</span><span class="n">DEVELOPER</span><span class="o">.</span><span class="n">filter_num</span>
+            <span class="n">msgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_msgs</span><span class="p">(</span><span class="n">mtype</span><span class="p">)</span>
+
+            <span class="n">msg_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">msg_items</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;key&#39;</span><span class="p">:</span>
+                    <span class="n">msg_items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">msgs_sorted</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">msg_items</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="ow">in</span> <span class="n">msgs_sorted</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogView.clear"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear the log view scrolled text.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">tag_remove</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogView.add_msg"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.add_msg">[docs]</a>    <span class="k">def</span> <span class="nf">add_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the msg to the log view, and the message store data structures.</span>
+
+<span class="sd">        :param msg: message to add to the log view</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">FILTER_TIME</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">msg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">=</span> <span class="n">MessageDelay</span><span class="o">.</span><span class="n">FIRST</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">elapsed_time</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">msg</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">time</span>
+                        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">filter_num</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_filter</span><span class="o">.</span><span class="n">filter_num</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">write_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">!=</span> <span class="n">MessageDelay</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">=</span> \
+                                <span class="bp">self</span><span class="o">.</span><span class="n">message_delays</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">message_delays</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message_time_filter</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_time</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">msg</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">msg</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">filter_num</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_filter</span><span class="o">.</span><span class="n">filter_num</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_msg</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogView.write_msg"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.write_msg">[docs]</a>    <span class="k">def</span> <span class="nf">write_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the text to the Scrolled Text tkinter widget, color it based on the tag, add it to the beginning</span>
+<span class="sd">        if start is &#39;1.0&#39;, if start tk.END add it to the end.</span>
+
+<span class="sd">        :param text: text to write to the scrolled text view</span>
+<span class="sd">        :param tag: name of the tag that defines the style for the text, based on MessageType</span>
+<span class="sd">        :param start: the position to start writing the text</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highlight_pattern</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s1">&#39;disabled&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogView.highlight_pattern"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.highlight_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">highlight_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="n">regexp</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the given tag to all text that matches the given pattern.</span>
+
+<span class="sd">        :param pattern: pattern to match when looking to format the text using the tag.</span>
+<span class="sd">        :param tag: tkinter scrolled text tag corresponding to a tk font</span>
+<span class="sd">        :param start: where to start looking for the pattern from</span>
+<span class="sd">        :param end: where to end looking for the pattern</span>
+<span class="sd">        :param regexp: If True, pattern will be treated as a Tcl regular expression</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s2">&quot;matchStart&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s2">&quot;matchEnd&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s2">&quot;searchLimit&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">IntVar</span><span class="p">()</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s2">&quot;matchEnd&quot;</span><span class="p">,</span> <span class="s2">&quot;searchLimit&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">regexp</span><span class="o">=</span><span class="n">regexp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">count</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># degenerate pattern which matches zero-length strings</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s2">&quot;matchStart&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s2">&quot;matchEnd&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">+</span><span class="si">%s</span><span class="s2">c&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">count</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_view</span><span class="o">.</span><span class="n">tag_add</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="s2">&quot;matchStart&quot;</span><span class="p">,</span> <span class="s2">&quot;matchEnd&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogView.get_msgs"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.get_msgs">[docs]</a>    <span class="k">def</span> <span class="nf">get_msgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all of the messages that have a filter number less than or equal the filter number.</span>
+
+<span class="sd">        :param filter_num: the number used for filtering messages</span>
+<span class="sd">        :return: time mapped to (text, tag) for all filtered messages</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msgs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_type</span><span class="o">.</span><span class="n">filter_num</span> <span class="o">&lt;=</span> <span class="n">filter_num</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="n">_type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()]:</span>
+                    <span class="n">msgs</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="LogView.filter_msg"><a class="viewcode-back" href="../../index.html#fbgui.messages.LogView.filter_msg">[docs]</a>    <span class="k">def</span> <span class="nf">filter_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Filters messages when the filter combobox value is changed.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">:</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_box</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_types</span><span class="p">[</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_filter</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="n">msgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_msgs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_filter</span><span class="o">.</span><span class="n">filter_num</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">msg_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">msg_items</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;key&#39;</span><span class="p">:</span>
+                <span class="n">msg_items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">msgs_sorted</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">msg_items</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="ow">in</span> <span class="n">msgs_sorted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_msg</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
