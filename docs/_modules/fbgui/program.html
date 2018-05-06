@@ -1,0 +1,595 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.program &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.program</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Abstract class defines common functionality between calibration program and baking program.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="k">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">tkinter</span> <span class="k">as</span> <span class="nn">tk</span>
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="n">ttk</span><span class="p">,</span> <span class="n">messagebox</span> <span class="k">as</span> <span class="n">mbox</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">ImageTk</span><span class="p">,</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_tkagg</span> <span class="k">import</span> <span class="n">FigureCanvasTkAgg</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="k">import</span> <span class="n">Figure</span>
+<span class="kn">import</span> <span class="nn">visa</span>
+<span class="kn">from</span> <span class="nn">fbgui</span> <span class="k">import</span> <span class="n">file_helper</span> <span class="k">as</span> <span class="n">fh</span><span class="p">,</span> <span class="n">graphing</span><span class="p">,</span> <span class="n">dev_helper</span><span class="p">,</span> <span class="n">ui_helper</span><span class="p">,</span> <span class="n">options_frame</span><span class="p">,</span> <span class="n">helpers</span>
+<span class="kn">from</span> <span class="nn">fbgui.constants</span> <span class="k">import</span> <span class="n">PROG_CONFIG_PATH</span><span class="p">,</span> <span class="n">CONFIG_IMG_PATH</span><span class="p">,</span> <span class="n">GRAPH_PATH</span><span class="p">,</span> <span class="n">FILE_PATH</span><span class="p">,</span> <span class="n">DB_PATH</span><span class="p">,</span> <span class="n">DEV_CONFIG_PATH</span><span class="p">,</span> \
+    <span class="n">CAL</span><span class="p">,</span> <span class="n">BAKING</span><span class="p">,</span> <span class="n">LASER</span><span class="p">,</span> <span class="n">SWITCH</span><span class="p">,</span> <span class="n">TEMP</span><span class="p">,</span> <span class="n">OVEN</span>
+<span class="kn">from</span> <span class="nn">fbgui.datatable</span> <span class="k">import</span> <span class="n">DataTable</span>
+<span class="kn">from</span> <span class="nn">fbgui.graph_toolbar</span> <span class="k">import</span> <span class="n">Toolbar</span>
+<span class="kn">from</span> <span class="nn">fbgui.messages</span> <span class="k">import</span> <span class="n">MessageType</span><span class="p">,</span> <span class="n">Message</span>
+<span class="kn">from</span> <span class="nn">fbgui.main_program</span> <span class="k">import</span> <span class="n">Application</span>
+
+<span class="n">MPL_PLOT_NUM</span> <span class="o">=</span> <span class="mi">230</span>
+
+
+<div class="viewcode-block" id="ProgramType"><a class="viewcode-back" href="../../index.html#fbgui.program.ProgramType">[docs]</a><span class="k">class</span> <span class="nc">ProgramType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines constants for calibration and baking programs.</span>
+
+<span class="sd">    :ivar str start_title: Title of the start button when the program is paused on the options screen</span>
+<span class="sd">    :ivar str title: Title of the program options screen</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets up the program constants.</span>
+
+<span class="sd">        :param prog_id: program identifier string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">=</span> <span class="n">prog_id</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">BAKING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_title</span> <span class="o">=</span> <span class="s2">&quot;Start Baking&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Configure Baking&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_title</span> <span class="o">=</span> <span class="s2">&quot;Start Calibration&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Configure Calibration&quot;</span></div>
+
+
+<div class="viewcode-block" id="Program"><a class="viewcode-back" href="../../index.html#fbgui.program.Program">[docs]</a><span class="k">class</span> <span class="nc">Program</span><span class="p">(</span><span class="n">ttk</span><span class="o">.</span><span class="n">Notebook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Definition of the abstract program page, contains shared logic between the two program types, and implements</span>
+<span class="sd">    the ttk Notebook widget.</span>
+
+<span class="sd">    :ivar configparser.ConfigParser conf_parser: ConfigParser used for reading the prog_config file</span>
+<span class="sd">    :ivar List[List[str]] channels: 2D list one list for each SM125 channel, each element is a serial number, and is</span>
+<span class="sd">                                    the same shape as the FBG inputs on the options screen</span>
+<span class="sd">    :ivar List[List[int]] switches: 2D list one list for each SM125 channel, each element is a switch position,</span>
+<span class="sd">                                    same shape as the channels matrix</span>
+<span class="sd">    :ivar List[str] snums: serial numbers in order as a flatten list of the channels matrix</span>
+<span class="sd">    :ivar ttk.Button start_btn: start button on the options screen</span>
+<span class="sd">    :ivar bool need_oven: True if the program needs to use the oven, False otherwise</span>
+<span class="sd">    :ivar options_frame.OptionsPanel options: options screen wrapper</span>
+<span class="sd">    :ivar DataTable table: data table screen wrapper</span>
+<span class="sd">    :ivar graphing.Graphing graph_helper: graphing screen wrapper</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">:</span> <span class="n">Application</span><span class="p">,</span> <span class="n">program_type</span><span class="p">:</span> <span class="n">ProgramType</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets up the program UI, and data structures.</span>
+
+<span class="sd">        :param master: master Application program</span>
+<span class="sd">        :param program_type: type of program that is being created</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Style</span><span class="p">()</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s1">&#39;InnerNB.TNotebook&#39;</span><span class="p">,</span> <span class="n">tabposition</span><span class="o">=</span><span class="s1">&#39;wn&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="o">.</span><span class="n">main_notebook</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;InnerNB.TNotebook&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">PROG_CONFIG_PATH</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span> <span class="o">=</span> <span class="n">program_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]]</span>  <span class="c1"># type: List[List[str]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]]</span>  <span class="c1"># type: List[List[int]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snums</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># type: List[str]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ttk.Button</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: options_frame.OptionsPanel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: DataTable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_helper</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: graphing.Graphing</span>
+
+        <span class="c1"># Needed to avoid garbage collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_photo</span> <span class="o">=</span> <span class="n">ImageTk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">CONFIG_IMG_PATH</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_photo</span> <span class="o">=</span> <span class="n">ImageTk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">GRAPH_PATH</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_photo</span> <span class="o">=</span> <span class="n">ImageTk</span><span class="o">.</span><span class="n">PhotoImage</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">FILE_PATH</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_tabs</span><span class="p">()</span>
+
+        <span class="n">is_running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">BAKING</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="n">BAKING</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">)</span>
+        <span class="n">is_running</span> <span class="o">=</span> <span class="n">is_running</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">CAL</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="n">CAL</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_running</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Program.program_loop"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.program_loop">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">program_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Main loop that the program uses to run.</span>
+
+<span class="sd">        :param thread_id: UUID of the thread running the program loop</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Program.create_excel"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.create_excel">[docs]</a>    <span class="k">def</span> <span class="nf">create_excel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates excel file, in a new thread.&quot;&quot;&quot;</span>
+        <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">fh</span><span class="o">.</span><span class="n">create_excel_file</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">CAL</span><span class="p">))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Program.setup_tabs"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.setup_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">setup_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setup the configuration, graphing, and table tabs.&quot;&quot;&quot;</span>
+        <span class="n">config_frame</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">graph_frame</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">table_frame</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Set up config tab</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">config_frame</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_photo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options_frame</span><span class="o">.</span><span class="n">OptionsPanel</span><span class="p">(</span><span class="n">config_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">create_start_btn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">init_fbgs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="c1"># Set up graphing tab</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">graph_frame</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_photo</span><span class="p">)</span>
+
+        <span class="c1"># Set up table tab</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">table_frame</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_photo</span><span class="p">)</span>
+        <span class="n">ttk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="n">table_frame</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Last 100 Readings&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">DataTable</span><span class="p">(</span><span class="n">table_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_excel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">setup_headers</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">FigureCanvasTkAgg</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">graph_frame</span><span class="p">)</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">get_tk_widget</span><span class="p">()</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">toolbar</span> <span class="o">=</span> <span class="n">Toolbar</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">graph_frame</span><span class="p">)</span>
+        <span class="n">toolbar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_helper</span> <span class="o">=</span> <span class="n">graphing</span><span class="o">.</span><span class="n">Graphing</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">MPL_PLOT_NUM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">CAL</span><span class="p">,</span>
+                                              <span class="n">fig</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">toolbar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="p">)</span>
+        <span class="n">toolbar</span><span class="o">.</span><span class="n">set_gh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_helper</span><span class="p">)</span>
+
+        <span class="c1"># noinspection PyProtectedMember</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">_tkcanvas</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">TOP</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Program.is_valid_file"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.is_valid_file">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the file is valid, either there is an entry for the program name in the map table of the same type,</span>
+<span class="sd">        or the file can be created at the specified location.</span>
+
+<span class="sd">        :return: True if the file is valid, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">DB_PATH</span><span class="p">)</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">get_file_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT ID, ProgName, ProgType from map&quot;</span><span class="p">)</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+            <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">types</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">OperationalError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="s2">&quot;File Error&quot;</span><span class="p">,</span>
+                                                   <span class="s2">&quot;Cannot put write file to </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">valid</span></div>
+
+<div class="viewcode-block" id="Program.check_device_config"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.check_device_config">[docs]</a>    <span class="k">def</span> <span class="nf">check_device_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the device configuration is valid on the home screen. The IP addresses are correctly</span>
+<span class="sd">        formatted, and the ports are integer values.</span>
+
+<span class="sd">        :return: True if the home screen device inputs are properly configured, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">gpib_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;GPIB\d+::\d+::INSTR$&quot;</span><span class="p">)</span>
+            <span class="n">valid_gpib</span> <span class="o">=</span> <span class="n">gpib_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">controller_location</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">and</span> \
+                <span class="n">gpib_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven_location</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_gpib</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;GPIB&quot;</span><span class="p">)</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">op_switch_port</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">sm125_port</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">op_switch_address</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;IP&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">sm125_address</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;IP&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+            <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Device Configuration Error&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;Please fill in all the device configuration inputs on the home screen before starting.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Device Configuration Error&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;Please make sure the port Laser and Optical switch port inputs &quot;</span>
+                           <span class="s2">&quot;on the home screen are integer values.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;IP&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+                <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Device Configuration Error&quot;</span><span class="p">,</span>
+                               <span class="s2">&quot;Please make sure the optical switch, and sm125 address inputs on &quot;</span>
+                               <span class="s2">&quot;the home screen are valid IP addresses.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;GPIB&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+                <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Device Configuration Error&quot;</span><span class="p">,</span>
+                               <span class="s2">&quot;Please make sure the oven and temperature controller inputs on the home screen &quot;</span>
+                               <span class="s2">&quot;are valid GPIB address. (eg. GPIB0::12::INSTR)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Program.start"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks to make sure all the settings are properly configured, and then runs the program if they are.</span>
+<span class="sd">        Pause the program if the program is already running.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Pause&quot;</span><span class="p">)</span>
+        <span class="n">can_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_device_config</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">check_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">can_start</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running_prog</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">:</span>
+                    <span class="n">prog</span> <span class="o">=</span> <span class="s2">&quot;Baking&quot;</span>
+                    <span class="n">run</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">BAKING</span><span class="p">:</span>
+                        <span class="n">prog</span> <span class="o">=</span> <span class="s2">&quot;Calibration&quot;</span>
+                        <span class="n">run</span> <span class="o">=</span> <span class="s2">&quot;bake&quot;</span>
+                    <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> program is already running&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prog</span><span class="p">),</span>
+                                   <span class="s2">&quot;Please stop the </span><span class="si">{}</span><span class="s2"> program before starting the </span><span class="si">{}</span><span class="s2">.&quot;</span>
+                                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prog</span><span class="p">,</span> <span class="n">run</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">start_title</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pause_program</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">sn_ents</span><span class="p">):</span>
+                <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Configuration Error&quot;</span><span class="p">,</span>
+                               <span class="s2">&quot;Please add fbg entries to your configuration before running the program.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_file</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">chan</span><span class="p">,</span> <span class="n">snum</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">chan_nums</span><span class="p">),</span>
+                                               <span class="n">helpers</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">sn_ents</span><span class="p">),</span>
+                                               <span class="n">helpers</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">switch_positions</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">snum</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">and</span> <span class="n">snum</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snum</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">chan</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snum</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+                            <span class="k">if</span> <span class="n">pos</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="n">chan</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">):</span>
+                        <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Configuration Error&quot;</span><span class="p">,</span>
+                                       <span class="s2">&quot;Program was configured to use the optical switch but no &quot;</span> <span class="o">+</span>
+                                       <span class="s2">&quot;switch positions were provided.&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pause_program</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Configuration Error&quot;</span><span class="p">,</span>
+                                       <span class="s2">&quot;Can only have one channel configured to use the optical switch.&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pause_program</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">helpers</span><span class="o">.</span><span class="n">is_unique</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">)):</span>
+                        <span class="n">mbox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;Configuration Error&quot;</span><span class="p">,</span>
+                                       <span class="s2">&quot;Multiple FBGs are configured to use the same switch position.&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pause_program</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">save_config_info</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running_prog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span>
+                        <span class="n">ui_helper</span><span class="o">.</span><span class="n">lock_widgets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+                        <span class="n">ui_helper</span><span class="o">.</span><span class="n">lock_main_widgets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">device_frame</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">graph_helper</span><span class="o">.</span><span class="n">show_subplots</span><span class="p">()</span>
+                        <span class="n">headers</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">create_headers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">CAL</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                        <span class="n">headers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">setup_headers</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                        <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_program</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">start_title</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">start_title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Program.run_program"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.run_program">[docs]</a>    <span class="k">def</span> <span class="nf">run_program</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setups the thread and the thread map, and then starts the data collection process.&quot;&quot;&quot;</span>
+        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">open_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thread_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Starting data collection for </span><span class="si">{}</span><span class="s2"> program.&quot;</span>
+                                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect_devices</span><span class="p">(</span><span class="n">thread_id</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">program_loop</span><span class="p">(</span><span class="n">thread_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disconnect_devices</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> program is finished.&quot;</span>
+                                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pause_program</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Pausing data collection for </span><span class="si">{}</span><span class="s2"> program.&quot;</span>
+                                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Program.disconnect_devices"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.disconnect_devices">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disconnect all the devices, and set them to None.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">use_dev</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">laser</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">laser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">laser</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">temp_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">temp_controller</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">temp_controller</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">switch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">switch</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">switch</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Program.connect_devices"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.connect_devices">[docs]</a>    <span class="k">def</span> <span class="nf">connect_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Connect to all the required devices, as configured on the main screen.</span>
+
+<span class="sd">        :param thread_id: the thread the code is currently running in</span>
+<span class="sd">        :return: True if all the devices can be connected to, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">need_switch</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect_devices</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">LASER</span><span class="p">,</span> <span class="n">try_once</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">TEMP</span><span class="p">,</span> <span class="n">try_once</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">switch</span><span class="p">)</span> <span class="k">for</span> <span class="n">switch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">):</span>
+            <span class="n">need_switch</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">SWITCH</span><span class="p">,</span> <span class="n">try_once</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">use_dev</span> \
+                    <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">CAL</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">set_temp</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">OVEN</span><span class="p">,</span> <span class="n">try_once</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">BAKING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_oven_temp</span><span class="p">(</span><span class="n">force_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span>\
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">switch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">need_switch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">laser</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">temp_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disconnect_devices</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Program.set_oven_temp"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.set_oven_temp">[docs]</a>    <span class="k">def</span> <span class="nf">set_oven_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heat</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force_connect</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">cooling</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the oven temperature to temp, or to the bake temperature configured on the options screen.</span>
+
+<span class="sd">        :param temp: temp to set the oven to, if None use the baking temperature on the options screen</span>
+<span class="sd">        :param heat: If True turn on the heater</span>
+<span class="sd">        :param force_connect: If True make sure the device is connected to, otherwise only try to connect to the</span>
+<span class="sd">                              device once</span>
+<span class="sd">        :param thread_id: UUID of the thread the code is currently running in</span>
+<span class="sd">        :param cooling: If True turn on the oven cooling</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_set</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">temp_set</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">temp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span><span class="p">:</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">set_temp</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_oven</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">OVEN</span><span class="p">,</span> <span class="n">try_once</span><span class="o">=</span><span class="ow">not</span> <span class="n">force_connect</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">set_temp</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Connection Issue&quot;</span><span class="p">,</span>
+                                                           <span class="s2">&quot;Failed to set temperature of oven to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">)))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">heater_off</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">cooling_off</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Connection Issue&quot;</span><span class="p">,</span>
+                                                           <span class="s2">&quot;Failed to turn off oven cooling and heating.&quot;</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">heat</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">heater_on</span><span class="p">()</span>
+                        <span class="k">except</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Connection Issue&quot;</span><span class="p">,</span>
+                                                               <span class="s2">&quot;Failed to turn oven heater on.&quot;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">cooling</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">cooling</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven</span><span class="o">.</span><span class="n">cooling_on</span><span class="p">()</span>
+                        <span class="k">except</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Connection Issue&quot;</span><span class="p">,</span>
+                                                               <span class="s2">&quot;Failed to turn oven cooling on.&quot;</span><span class="p">))</span>
+                <span class="n">temp_set</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">force_connect</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Device Connection Issue&quot;</span><span class="p">,</span>
+                                                       <span class="s2">&quot;Failed to set the oven temperature to </span><span class="si">{}</span><span class="s2"> C. Trying to set the &quot;</span>
+                                                       <span class="s2">&quot;temperature again.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Device Connection Issue&quot;</span><span class="p">,</span>
+                                                       <span class="s2">&quot;Failed to set the oven temperature to </span><span class="si">{}</span><span class="s2"> C.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="Program.save_config_info"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.save_config_info">[docs]</a>    <span class="k">def</span> <span class="nf">save_config_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the options, and devices configuration to the prog_config and devices config respectively.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;num_scans&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">num_pts</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">last_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">file_name</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;last_folder&quot;</span><span class="p">,</span> <span class="n">last_folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">snums</span><span class="p">,</span> <span class="n">switches</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;chan</span><span class="si">{}</span><span class="s2">_fbgs&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">snums</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;chan</span><span class="si">{}</span><span class="s2">_positions&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                                 <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">switches</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span> <span class="o">==</span> <span class="n">BAKING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">CAL</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;set_temp&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">set_temp</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;drift_rate&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">drift_rate</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;prim_interval&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">prim_time</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">BAKING</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;use_cool&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">cooling</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;num_temp_readings&quot;</span><span class="p">,</span>
+                                 <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">num_temp_readings</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;temp_interval&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">temp_interval</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;drift_rate&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">drift_rate</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;num_cycles&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">num_cal_cycles</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">prog_id</span><span class="p">,</span> <span class="s2">&quot;target_temps&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get_target_temps</span><span class="p">()))</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">PROG_CONFIG_PATH</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pcfg</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pcfg</span><span class="p">)</span>
+
+        <span class="n">dev_conf</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">DEV_CONFIG_PATH</span><span class="p">)</span>
+
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;oven_location&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">oven_location</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;controller_location&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">controller_location</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;op_switch_address&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">op_switch_address</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;op_switch_port&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">op_switch_port</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;sm125_port&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">sm125_port</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+        <span class="n">dev_conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Devices&quot;</span><span class="p">,</span> <span class="s2">&quot;sm125_address&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">sm125_address</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">DEV_CONFIG_PATH</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dcfg</span><span class="p">:</span>
+            <span class="n">dev_conf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dcfg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Program.pause_program"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.pause_program">[docs]</a>    <span class="k">def</span> <span class="nf">pause_program</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pauses the program, and stops the running thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect_devices</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">open_threads</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">open_threads</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">program_type</span><span class="o">.</span><span class="n">start_title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_btn</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
+        <span class="n">ui_helper</span><span class="o">.</span><span class="n">unlock_widgets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">ui_helper</span><span class="o">.</span><span class="n">unlock_main_widgets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">device_frame</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">running_prog</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">BAKING</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">CAL</span><span class="p">,</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">PROG_CONFIG_PATH</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pcfg</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pcfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snums</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]]</span></div>
+
+<div class="viewcode-block" id="Program.temp_controller_error"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.temp_controller_error">[docs]</a>    <span class="k">def</span> <span class="nf">temp_controller_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes a temperature controller warning message to the queue log.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">MessageType</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s2">&quot;Device Connection Issue&quot;</span><span class="p">,</span>
+                                           <span class="s2">&quot;Failed to collect power and wavelength data from the laser and the &quot;</span>
+                                           <span class="s2">&quot;switch. Trying to collect data again.&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Program.get_wave_amp_data"><a class="viewcode-back" href="../../index.html#fbgui.program.Program.get_wave_amp_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_wave_amp_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use the dev_helper module to get the wavelength and power data from the SM125.</span>
+
+<span class="sd">        :param thread_id: UUID of the thread the code is currently running in</span>
+<span class="sd">        :return: wavelength readings, power readings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">positions_used</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">switch</span><span class="p">)</span> <span class="k">for</span> <span class="n">switch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">SWITCH</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">conn_dev</span><span class="p">(</span><span class="n">LASER</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">dev_helper</span><span class="o">.</span><span class="n">avg_waves_amps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">laser</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">switch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">num_pts</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">positions_used</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">use_dev</span><span class="p">,</span>
+                                                 <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snums</span><span class="p">),</span> <span class="n">thread_id</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">thread_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">main_queue</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="n">visa</span><span class="o">.</span><span class="n">VisaIOError</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">temp_controller_error</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

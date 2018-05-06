@@ -1,0 +1,286 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.devices &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fbgui.devices</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains object representations of all the necessary devices.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">visa</span> <span class="k">import</span> <span class="n">ResourceManager</span>
+<span class="kn">from</span> <span class="nn">pyvisa.resources.gpib</span> <span class="k">import</span> <span class="n">GPIBInstrument</span>
+
+<span class="c1"># SM125 Data Constants</span>
+<span class="n">WAVELEN_SCALE_FACTOR</span> <span class="o">=</span> <span class="mf">10000.0</span>
+<span class="n">AMP_SCALE_FACTOR</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+
+<div class="viewcode-block" id="SM125"><a class="viewcode-back" href="../../index.html#fbgui.devices.SM125">[docs]</a><span class="k">class</span> <span class="nc">SM125</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;UDP socket connection for SM125 device.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">use_dev</span><span class="p">):</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_dev</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SM125.get_data"><a class="viewcode-back" href="../../index.html#fbgui.devices.SM125.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dummy_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the SM125 wavelengths, amplitudes, and number of elements recorded for each channel.</span>
+
+<span class="sd">        :param dummy_value: If true then make up fake values, otherwise query the SM125 for wavelength and power data</span>
+<span class="sd">        :param num: number of fake values to make up</span>
+<span class="sd">        :returns: Wavelength readings, Amplitude readings, Number of readings on each channel, if using fake values then</span>
+<span class="sd">                  the third parameter is empty</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dummy_value</span><span class="p">:</span>
+            <span class="n">waves</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">amps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">wave_start_num</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">wave_end_num</span> <span class="o">=</span> <span class="mi">25</span>
+            <span class="n">amp_start_num</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">amp_end_num</span> <span class="o">=</span> <span class="o">-.</span><span class="mi">5</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+                <span class="n">waves</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">1500</span><span class="o">+</span><span class="n">wave_start_num</span><span class="p">,</span> <span class="mi">1500</span> <span class="o">+</span> <span class="n">wave_end_num</span><span class="p">))</span>
+                <span class="n">wave_start_num</span> <span class="o">+=</span> <span class="mi">25</span>
+                <span class="n">wave_end_num</span> <span class="o">+=</span> <span class="mi">25</span>
+                <span class="n">amps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="o">+</span><span class="n">amp_start_num</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span> <span class="o">+</span> <span class="n">amp_end_num</span><span class="p">))</span>
+                <span class="n">amp_start_num</span> <span class="o">+=</span> <span class="o">.</span><span class="mi">25</span>
+                <span class="n">amp_end_num</span> <span class="o">+=</span> <span class="o">.</span><span class="mi">25</span>
+            <span class="k">return</span> <span class="n">waves</span><span class="p">,</span> <span class="n">amps</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;#GET_PEAKS_AND_LEVELS&#39;</span><span class="p">)</span>
+            <span class="n">pre_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pre_response</span><span class="p">))</span>
+            <span class="n">chan_lens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">response</span><span class="p">[:</span><span class="mi">20</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;3uint32, 4uint16&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">total_peaks</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">chan_lens</span><span class="p">)</span>
+
+            <span class="n">wave_start_idx</span> <span class="o">=</span> <span class="mi">32</span>
+            <span class="n">wave_end_idx</span> <span class="o">=</span> <span class="n">wave_start_idx</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">total_peaks</span>
+            <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="n">wave_start_idx</span><span class="p">:</span><span class="n">wave_end_idx</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">total_peaks</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;int32&#39;</span><span class="p">))</span>
+            <span class="n">amp_start_idx</span> <span class="o">=</span> <span class="n">wave_end_idx</span>
+            <span class="n">amp_end_idx</span> <span class="o">=</span> <span class="n">amp_start_idx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">total_peaks</span>
+            <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="n">amp_start_idx</span><span class="p">:</span><span class="n">amp_end_idx</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">total_peaks</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;int16&#39;</span><span class="p">))</span>
+
+            <span class="n">wavelengths_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">en</span> <span class="o">/</span> <span class="n">WAVELEN_SCALE_FACTOR</span> <span class="k">for</span> <span class="n">en</span> <span class="ow">in</span> <span class="n">wavelengths</span><span class="p">]</span>
+            <span class="n">amplitudes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">en</span> <span class="o">/</span> <span class="n">AMP_SCALE_FACTOR</span> <span class="k">for</span> <span class="n">en</span> <span class="ow">in</span> <span class="n">amplitudes</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">wavelengths_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">amplitudes_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chan_lens</span></div></div>
+
+
+<div class="viewcode-block" id="Vidia"><a class="viewcode-back" href="../../index.html#fbgui.devices.Vidia">[docs]</a><span class="k">class</span> <span class="nc">Vidia</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Vidia-Swept laser wrapper object.</span>
+
+<span class="sd">    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">ResourceManager</span><span class="p">,</span> <span class="n">use_dev</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a visa connection using loc and manager to the Vidia-Swept laser.</span>
+
+<span class="sd">        :param loc: the GPIB location of the laser</span>
+<span class="sd">        :param manager:  the PyVisa resource manager</span>
+<span class="sd">        :param use_dev: if True connect to laser</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">use_dev</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>  <span class="c1"># type: GPIBInstrument</span>
+
+<div class="viewcode-block" id="Vidia.start_scan"><a class="viewcode-back" href="../../index.html#fbgui.devices.Vidia.start_scan">[docs]</a>    <span class="k">def</span> <span class="nf">start_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Starts the scanning process for the laser.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:OUTP ON&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:OUTP:TRAC OFF&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:OUTP:SCAN:STAR -1&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Vidia.wave_info"><a class="viewcode-back" href="../../index.html#fbgui.devices.Vidia.wave_info">[docs]</a>    <span class="k">def</span> <span class="nf">wave_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns wavelength information from the laser.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:WAVE MIN?&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:WAVE?&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;:WAVE MAX?&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Oven"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven">[docs]</a><span class="k">class</span> <span class="nc">Oven</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delta oven object, uses pyvisa.</span>
+
+<span class="sd">    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">ResourceManager</span><span class="p">,</span> <span class="n">use_dev</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Opens a GPIB connection with the device at the specified location.</span>
+
+<span class="sd">        :param loc: the location of the device</span>
+<span class="sd">        :param manager: the PyVisa Resource Manager</span>
+<span class="sd">        :param use_dev: if True connect to the device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">use_dev</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">read_termination</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">open_timeout</span><span class="o">=</span><span class="mi">2500</span><span class="p">)</span>  <span class="c1"># type: GPIBInstrument</span>
+
+<div class="viewcode-block" id="Oven.set_temp"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.set_temp">[docs]</a>    <span class="k">def</span> <span class="nf">set_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets set point of delta oven.</span>
+
+<span class="sd">        :param temp: Temperature to set the oven to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;S </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">temp</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Oven.heater_on"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.heater_on">[docs]</a>    <span class="k">def</span> <span class="nf">heater_on</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns oven heater on.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;H ON&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Oven.heater_off"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.heater_off">[docs]</a>    <span class="k">def</span> <span class="nf">heater_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns oven heater off.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;H OFF&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Oven.cooling_on"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.cooling_on">[docs]</a>    <span class="k">def</span> <span class="nf">cooling_on</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns oven cooling on.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;C ON&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Oven.cooling_off"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.cooling_off">[docs]</a>    <span class="k">def</span> <span class="nf">cooling_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns oven cooling off.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;C OFF&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Oven.close"><a class="viewcode-back" href="../../index.html#fbgui.devices.Oven.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Closes the resource.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="OpSwitch"><a class="viewcode-back" href="../../index.html#fbgui.devices.OpSwitch">[docs]</a><span class="k">class</span> <span class="nc">OpSwitch</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object representation of the Optical Switch needed for the program, overrides the socket module.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">use_dev</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Connects to the specified address, and port using a socket connection.</span>
+
+<span class="sd">        :param addr: IP address of the optical switch</span>
+<span class="sd">        :param port: Port of the optical switch</span>
+<span class="sd">        :param use_dev: If true connect to the device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_dev</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+
+<div class="viewcode-block" id="OpSwitch.set_channel"><a class="viewcode-back" href="../../index.html#fbgui.devices.OpSwitch.set_channel">[docs]</a>    <span class="k">def</span> <span class="nf">set_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the channel on the optical switch.</span>
+
+<span class="sd">        :param chan: channel to set the optical switch to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&lt;OSW</span><span class="si">{}</span><span class="s2">_OUT_</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;02d&#39;</span><span class="p">),</span> <span class="nb">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">chan</span><span class="p">),</span> <span class="s1">&#39;02d&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="TempController"><a class="viewcode-back" href="../../index.html#fbgui.devices.TempController">[docs]</a><span class="k">class</span> <span class="nc">TempController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object representation of the Temperature Controller needed for the program.</span>
+
+<span class="sd">    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">manager</span><span class="p">,</span> <span class="n">use_dev</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Establishes a GPIB connection with the temperature controller.</span>
+
+<span class="sd">        :param loc: the location of the instrument</span>
+<span class="sd">        :param manager: the PyVisa resource manager</span>
+<span class="sd">        :param use_dev: if True connect to the device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">use_dev</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">read_termination</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">open_timeout</span><span class="o">=</span><span class="mi">2500</span><span class="p">)</span>  <span class="c1"># type: GPIBInstrument</span>
+
+<div class="viewcode-block" id="TempController.get_temp_k"><a class="viewcode-back" href="../../index.html#fbgui.devices.TempController.get_temp_k">[docs]</a>    <span class="k">def</span> <span class="nf">get_temp_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dummy_val</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">center_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return temperature reading in degrees Kelvin.</span>
+
+<span class="sd">        :param dummy_val: If true make up a temperature</span>
+<span class="sd">        :param center_num: The number the temperature is set to used for simulating the temp reading</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dummy_val</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="n">center_num</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span> <span class="n">center_num</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;KRDG? B&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">query</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TempController.close"><a class="viewcode-back" href="../../index.html#fbgui.devices.TempController.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close the device connection.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">FbgUI 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
