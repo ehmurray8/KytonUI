@@ -1,6 +1,6 @@
 """Tkinter frame for the data view in the program."""
 from queue import Queue
-from typing import List
+from typing import List, Callable
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
 import tkinter as tk
@@ -11,7 +11,7 @@ from fbgui.messages import MessageType, Message
 class DataTable(ttk.Frame):
     """Overrides ttk Frame class used to create a data view."""
 
-    def __init__(self, master: ttk.Frame=None, func: str=None, main_queue: Queue=None):
+    def __init__(self, master: ttk.Frame, create_excel_func: Callable, main_queue: Queue=None):
         """
         Creates the data table frame.
 
@@ -28,7 +28,7 @@ class DataTable(ttk.Frame):
         super().__init__(master)
         self.headers = []
         self.tree = None
-        self.func = func
+        self.create_excel_func = create_excel_func
         self.item_ids = []
         self.main_queue = main_queue
 
@@ -42,7 +42,7 @@ class DataTable(ttk.Frame):
         vsb.grid(column=1, row=0, sticky='ns', in_=self)
         hsb.grid(column=0, row=1, sticky='ew', in_=self)
 
-        create_xcel = ttk.Button(self, text="Create Excel Spreadsheet", command=self.func)
+        create_xcel = ttk.Button(self, text="Create Excel Spreadsheet", command=self.create_excel_func)
         create_xcel.grid(column=0, row=2)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)

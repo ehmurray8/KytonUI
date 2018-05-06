@@ -22,6 +22,7 @@ class DataCollection(object):
     :ivar wavelengths: 2D list of wavelengths by serial number in nm.
     :ivar delta_wavelengths: 2D list of delta wavelengths, from the start, by serial number, in pm.
     :ivar mean_delta_wavelengths: list of average delta wavelengths in pm.
+    :ivar drift_rates: list of calibration drift rates mK/min
     """
 
     def __init__(self):
@@ -37,7 +38,8 @@ class DataCollection(object):
         self.drift_rates = []  # 2D, drift rates in mk/min
 
 
-    def create(self, is_cal, df: pd.DataFrame, snums: Optional[List[str]]=None, main_queue: Optional[Queue]=None):
+    def create(self, is_cal: bool, df: pd.DataFrame, snums: Optional[List[str]]=None,
+               main_queue: Optional[Queue]=None):
         """
         Creates a data collection from the given dataframe, updates the instance variables to match how they are
         specified in the class docstring, numpy arrays are used instead of lists however.
@@ -79,6 +81,8 @@ class DataCollection(object):
 
             self.mean_delta_wavelengths /= len(self.mean_delta_wavelengths)
             self.mean_delta_powers /= len(self.mean_delta_powers)
+            if is_cal:
+                self.drift_rates = df['Drift Rate']
         except (KeyError, IndexError) as e:
             if main_queue is not None:
                 main_queue.put(Message(MessageType.DEVELOPER, "File Helper Create Data Coll Error Dump", str(e)))

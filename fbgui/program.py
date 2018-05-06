@@ -15,8 +15,7 @@ from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import visa
-from fbgui import file_helper as fh, graphing as graphing, dev_helper as dev_helper, ui_helper as ui_helper, \
-    options_frame as options_frame, helpers
+from fbgui import file_helper as fh, graphing, dev_helper, ui_helper, options_frame, helpers
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
     CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from fbgui.datatable import DataTable

@@ -1,6 +1,6 @@
 """Home page table used for creating excel spreadsheets of program runs."""
 from queue import Queue
-from typing import List
+from typing import List, Dict
 import threading
 import tkinter
 import tkinter.font as tkfont
@@ -34,10 +34,10 @@ class ExcelTable(ttk.Frame):
         super().__init__(master, **kwargs)
         self.headers = ["Id", "File name", "Program Type"]
         self.main_queue = main_queue
-        self.tree = None
-        self.item_ids = []
-        self.file_paths = None
-        self.s_nums = None
+        self.tree = None  # type: ttk.Treeview
+        self.item_ids = []  #type: List[int]
+        self.file_paths = None  # type: Dict[int, str]
+        self.s_nums = None  # type: List[str]
         self._setup_widgets()
         self._setup_headers()
         self.refresh()

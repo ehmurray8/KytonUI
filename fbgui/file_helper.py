@@ -1,4 +1,4 @@
-"""Module used for helping with creating output files."""
+"""Module used for helping with creating output files, and communicating with the database."""
 import datetime
 import os
 import sqlite3
@@ -17,8 +17,24 @@ from fbgui.data_container import DataCollection
 
 def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: float, wavelengths: List[float],
              powers: List[float], func: str, table: DataTable, main_queue: queue.Queue, drift_rate: float=None,
-             real_cal_pt: bool=False, cycle_num: int=0):
-    """Writes the output to sqlite database."""
+             real_cal_pt: bool=False, cycle_num: int=0) -> bool:
+    """
+    Writes the output to sqlite database.
+
+    :param file_name: file name of the run of the program that data is being collected for
+    :param serial_nums: serial numbers of the fbgs being used for the run
+    :param timestamp: unix timestamp of when the data was recorded in s
+    :param temp: temperature of the oven when the data was recorded
+    :param wavelengths: list of wavelength readings to record
+    :param powers: list of power readings to record
+    :param func: program identifier string
+    :param table: data table object to add the data points to as they are recorded in the table
+    :param main_queue: queue used for adding logging messages to
+    :param drift_rate: drift rate to record if the program is a calibration program
+    :param real_cal_pt: boolean value whether or not this is an actual calibration point, used for calibration
+    :param cycle_num: the calibration cycle number if the program is a calibration program
+    :return: True if wrote data successfully, False otherwise
+    """
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
@@ -79,6 +95,13 @@ def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: flo
 
 
 def get_last_cycle_num(file_name: str, func: str) -> int:
+    """
+    Get the number of the last calibration cycle that data is recorded for.
+
+    :param file_name: the name of the file that the current program corresponds to
+    :param func: program identifier string
+    :return: last calibration cycle number, or 0 if there is no data calibration recorded
+    """
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     name = helpers.get_file_name(file_name)
@@ -96,7 +119,15 @@ def get_last_cycle_num(file_name: str, func: str) -> int:
     return int(last_cycle_num)
 
 
-def program_exists(name, cur_map, func):
+def program_exists(name: str, cur_map: sqlite3.Cursor, func: str) -> bool:
+    """
+    Checks whether or not there is data in the database for the program of type func, named name.
+
+    :param name: the name of the current running program run
+    :param cur_map: the map table database cursor
+    :param func: the program identifier string
+    :return: True if the program exists, otherwise False
+    """
     try:
         cur_map.execute("SELECT ID, ProgName, ProgType from map")
         rows = cur_map.fetchall()
@@ -115,7 +146,15 @@ def program_exists(name, cur_map, func):
     return prog_exists
 
 
-def create_headers(snums, is_cal, formatted):
+def create_headers(snums: List[str], is_cal: bool, formatted: bool) -> List[str]:
+    """
+    Create the data column headers.
+
+    :param snums: serial numbers for the current program run
+    :param is_cal: True if the current program run is a calibration run, False otherwise
+    :param formatted: True if headers are using facing, False if headers are used for the database
+    :return: list of header strings
+    """
     snum_cols = []
     for snum in snums:
         snum_cols.append("'{} Wavelength (nm.)'".format(snum))
@@ -130,7 +169,14 @@ def create_headers(snums, is_cal, formatted):
     return col_list
 
 
-def create_headers_init(snums, is_cal):
+def create_headers_init(snums: List[str], is_cal: bool) -> List[str]:
+    """
+    Returns a list of strings used for creating the database attribute values, includes names and SQL types.
+
+    :param snums: serial numbers being used in the current program run
+    :param is_cal: True if the program is a calibration run, False otherwise
+    :return: list of comma separated strings, names and types of table attributes
+    """
     snum_cols = []
     for snum in snums:
         snum_cols.append("'{} Wavelength (nm.)' REAl NOT NULL".format(snum))
@@ -146,10 +192,12 @@ def create_headers_init(snums, is_cal):
 
 def db_to_df(func: str, name: str) -> pd.DataFrame:
     """
+    Creates a pandas dataframe object from the database table corresponding to the program run of type
+    func, and named name.
 
-    :param func:
-    :param name:
-    :return:
+    :param func: program identifier string
+    :param name: name of the program run
+    :return: dataframe for the specified table, or an empty dataframe if one cannot be created for the table
     :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
     """
     try:
@@ -166,13 +214,27 @@ def db_to_df(func: str, name: str) -> pd.DataFrame:
 
 
 def make_length(values: List, length: int) -> List:
+    """
+    Force the values list to be of length, length.
+
+    :param values: list to resize
+    :param length: required length of the list
+    :return: list of length, length
+    """
     values = values[:length]
     values += [0] * (length - len(values))
     return values
 
 
 def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue, is_cal=False):
-    """Creates an excel file from the correspoding csv file."""
+    """
+    Create an excel file using the xcel_file to get data from the corresponding sql table.
+
+    :param xcel_file: name of the excel file for the program to create the excel file for
+    :param snums: list of serial numbers to use for creating the excel file
+    :param main_queue: queue to use for posting logging messages to
+    :param is_cal: True if creating an excel file for a calibration program run, False otherwise
+    """
     try:
         df = db_to_df(helpers.get_file_name(xcel_file), CAL if is_cal else BAKING)
         data_coll = DataCollection()
@@ -254,7 +316,6 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
         sf_cal = StyleFrame(small_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
         sf = StyleFrame(new_df, styler_obj=Styler(**defaults, shrink_to_fit=False, wrap_text=False))
 
-        # Style the headers of the table
         header_style = Styler(bold=True, font_size=18)
         sf.set_column_width(columns=sf.columns, width=35)
         sf.apply_headers_style(styler_obj=header_style)
@@ -307,6 +368,13 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
 
 
 def get_snums(is_cal: bool) -> List[str]:
+    """
+    Get the serial numbers recorded in the prog_config configuration file, under the header
+    based on the is_cal parameter
+
+    :param is_cal: True if program is calibration, False otherwise
+    :return: list of serial numbers
+    """
     program = BAKING
     if is_cal:
         program = CAL

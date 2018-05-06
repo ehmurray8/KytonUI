@@ -103,6 +103,7 @@ class BakingProgram(program.Program):
             if not fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
                                waves, amps, BAKING, self.table, self.master.main_queue):
                 self.pause_program()
+                return
 
             start_time = time.time()
             count = 0
