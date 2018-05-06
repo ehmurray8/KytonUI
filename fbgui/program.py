@@ -1,6 +1,5 @@
 """
-Abstract class defines common functionality between calibration
-program and baking program.
+Abstract class defines common functionality between calibration program and baking program.
 """
 import abc
 import uuid
@@ -9,6 +8,7 @@ import socket
 import os
 from threading import Thread
 import sqlite3
+from typing import List, Tuple
 import tkinter as tk
 from tkinter import ttk, messagebox as mbox
 from PIL import ImageTk, Image
@@ -21,27 +21,59 @@ from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_
 from fbgui.datatable import DataTable
 from fbgui.graph_toolbar import Toolbar
 from fbgui.messages import MessageType, Message
+from fbgui.main_program import Application
+
+MPL_PLOT_NUM = 230
 
 
 class ProgramType(object):
-    """Defines constants for each type of program."""
+    """
+    Defines constants for calibration and baking programs.
 
-    def __init__(self, prog_id):
+    :ivar str start_title: Title of the start button when the program is paused on the options screen
+    :ivar str title: Title of the program options screen
+    """
+
+    def __init__(self, prog_id: str):
+        """
+        Sets up the program constants.
+
+        :param prog_id: program identifier string
+        """
         self.prog_id = prog_id
         if self.prog_id == BAKING:
             self.start_title = "Start Baking"
             self.title = "Configure Baking"
-            self.plot_num = 230
         else:
             self.start_title = "Start Calibration"
             self.title = "Configure Calibration"
-            self.plot_num = 230
 
 
 class Program(ttk.Notebook):
-    """Definition of the abstract program page."""
+    """
+    Definition of the abstract program page, contains shared logic between the two program types, and implements
+    the ttk Notebook widget.
 
-    def __init__(self, master, program_type):
+    :ivar configparser.ConfigParser conf_parser: ConfigParser used for reading the prog_config file
+    :ivar List[List[str]] channels: 2D list one list for each SM125 channel, each element is a serial number, and is
+                                    the same shape as the FBG inputs on the options screen
+    :ivar List[List[int]] switches: 2D list one list for each SM125 channel, each element is a switch position,
+                                    same shape as the channels matrix
+    :ivar List[str] snums: serial numbers in order as a flatten list of the channels matrix
+    :ivar ttk.Button start_btn: start button on the options screen
+    :ivar bool need_oven: True if the program needs to use the oven, False otherwise
+    :ivar options_frame.OptionsPanel options: options screen wrapper
+    :ivar DataTable table: data table screen wrapper
+    :ivar graphing.Graphing graph_helper: graphing screen wrapper
+    """
+
+    def __init__(self, master: Application, program_type: ProgramType):
+        """
+        Sets up the program UI, and data structures.
+
+        :param master: master Application program
+        :param program_type: type of program that is being created
+        """
         style = ttk.Style()
         style.configure('InnerNB.TNotebook', tabposition='wn')
         super().__init__(master.main_notebook, style='InnerNB.TNotebook')
@@ -49,17 +81,17 @@ class Program(ttk.Notebook):
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(PROG_CONFIG_PATH)
         self.master = master
-        self.connection_thread = None
         self.program_type = program_type
-        self.channels = [[], [], [], []]
-        self.switches = [[], [], [], []]
-        self.snums = []
-        self.start_btn = None
+        self.channels = [[], [], [], []]  # type: List[List[str]]
+        self.switches = [[], [], [], []]  # type: List[List[int]]
+        self.snums = []  # type: List[str]
+        self.start_btn = None  # type: ttk.Button
         self.need_oven = False
-        self.options = None
-        self.table = None
-        self.graph_helper = None
+        self.options = None  # type: options_frame.OptionsPanel
+        self.table = None  # type: DataTable
+        self.graph_helper = None  # type: graphing.Graphing
 
+        # Needed to avoid garbage collection
         self.config_photo = ImageTk.PhotoImage(Image.open(CONFIG_IMG_PATH))
         self.graph_photo = ImageTk.PhotoImage(Image.open(GRAPH_PATH))
         self.file_photo = ImageTk.PhotoImage(Image.open(FILE_PATH))
@@ -71,12 +103,16 @@ class Program(ttk.Notebook):
             self.start()
 
     @abc.abstractmethod
-    def program_loop(self, thread_id):
-        """Main loop that the program uses to run."""
+    def program_loop(self, thread_id: uuid.UUID):
+        """
+        Main loop that the program uses to run.
+
+        :param thread_id: UUID of the thread running the program loop
+        """
         return
 
     def create_excel(self):
-        """Creates excel file."""
+        """Creates excel file, in a new thread."""
         Thread(target=fh.create_excel_file, args=(self.options.file_name.get(), self.snums, self.master.main_queue,
                                                   self.program_type.prog_id == CAL)).start()
 
@@ -109,12 +145,20 @@ class Program(ttk.Notebook):
         toolbar = Toolbar(canvas, graph_frame)
         toolbar.update()
         file_name = self.options.file_name
-        self.graph_helper = graphing.Graphing(file_name, self.program_type.plot_num, self.program_type.prog_id == CAL,
+        self.graph_helper = graphing.Graphing(file_name, MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue)
         toolbar.set_gh(self.graph_helper)
+
+        # noinspection PyProtectedMember
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def is_valid_file(self):
+    def is_valid_file(self) -> bool:
+        """
+        Checks if the file is valid, either there is an entry for the program name in the map table of the same type,
+        or the file can be created at the specified location.
+
+        :return: True if the file is valid, False otherwise
+        """
         valid = True
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
@@ -142,7 +186,13 @@ class Program(ttk.Notebook):
                                                    "Cannot put write file to {}.".format(dirname)))
         return valid
 
-    def check_device_config(self):
+    def check_device_config(self) -> bool:
+        """
+        Checks if the device configuration is valid on the home screen. The IP addresses are correctly
+        formatted, and the ports are integer values.
+
+        :return: True if the home screen device inputs are properly configured, False otherwise
+        """
         try:
             int(self.master.controller_location.get())
             int(self.master.oven_location.get())
@@ -170,7 +220,10 @@ class Program(ttk.Notebook):
         return False
 
     def start(self):
-        """Starts the recording process."""
+        """
+        Checks to make sure all the settings are properly configured, and then runs the program if they are.
+        Pause the program if the program is already running.
+        """
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
         can_start = self.check_device_config() and self.options.check_config()
@@ -234,6 +287,7 @@ class Program(ttk.Notebook):
             self.start_btn.configure(state=tk.NORMAL)
 
     def run_program(self):
+        """Setups the thread and the thread map, and then starts the data collection process."""
         thread_id = uuid.uuid4()
         self.master.thread_map[thread_id] = True
         self.master.open_threads.append(thread_id)
@@ -250,6 +304,7 @@ class Program(ttk.Notebook):
                                                .format(self.program_type.prog_id), title=None))
 
     def disconnect_devices(self):
+        """Disconnect all the devices, and set them to None."""
         if self.master.use_dev:
             if self.master.oven is not None:
                 self.master.oven.close()
@@ -264,7 +319,13 @@ class Program(ttk.Notebook):
                 self.master.switch.close()
                 self.master.switch = None
 
-    def connect_devices(self, thread_id):
+    def connect_devices(self, thread_id: uuid.UUID) -> bool:
+        """
+        Connect to all the required devices, as configured on the main screen.
+
+        :param thread_id: the thread the code is currently running in
+        :return: True if all the devices can be connected to, False otherwise
+        """
         self.need_oven = False
         need_switch = False
         self.disconnect_devices()
@@ -297,6 +358,16 @@ class Program(ttk.Notebook):
 
     def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
                       cooling=False):
+        """
+        Sets the oven temperature to temp, or to the bake temperature configured on the options screen.
+
+        :param temp: temp to set the oven to, if None use the baking temperature on the options screen
+        :param heat: If True turn on the heater
+        :param force_connect: If True make sure the device is connected to, otherwise only try to connect to the
+                              device once
+        :param thread_id: UUID of the thread the code is currently running in
+        :param cooling: If True turn on the oven cooling
+        """
         temp_set = False
         while not temp_set:
             if temp is None and self.need_oven:
@@ -335,6 +406,7 @@ class Program(ttk.Notebook):
                                                    "temperature again."))
 
     def save_config_info(self):
+        """Write the options, and devices configuration to the prog_config and devices config respectively."""
         self.conf_parser.set(self.program_type.prog_id, "num_scans", str(self.options.num_pts.get()))
         self.conf_parser.set(self.program_type.prog_id, "file", str(self.options.file_name.get()))
         last_folder = os.path.dirname(self.options.file_name.get())
@@ -384,7 +456,7 @@ class Program(ttk.Notebook):
             dev_conf.write(dcfg)
 
     def pause_program(self):
-        """Pauses the program."""
+        """Pauses the program, and stops the running thread."""
         self.disconnect_devices()
         for tid in self.master.open_threads:
             self.master.thread_map[tid] = False
@@ -404,11 +476,18 @@ class Program(ttk.Notebook):
         self.switches = [[], [], [], []]
 
     def temp_controller_error(self):
+        """Writes a temperature controller warning message to the queue log."""
         self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
                                            "Failed to collect power and wavelength data from the laser and the "
                                            "switch. Trying to collect data again."))
 
-    def get_wave_amp_data(self, thread_id):
+    def get_wave_amp_data(self, thread_id: uuid.UUID) -> Tuple[List[float], List[float]]:
+        """
+        Use the dev_helper module to get the wavelength and power data from the SM125.
+
+        :param thread_id: UUID of the thread the code is currently running in
+        :return: wavelength readings, power readings
+        """
         positions_used = [len(x) for x in self.channels]
         while True:
             try:

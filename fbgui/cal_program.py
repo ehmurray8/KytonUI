@@ -10,11 +10,12 @@ from fbgui import file_helper as fh
 from fbgui.constants import CAL, TEMP
 from fbgui.program import Program, ProgramType
 from fbgui.messages import MessageType, Message
+from fbgui.main_program import Application
 
 
 class CalProgram(Program):
     """Contains the logic specific for running a calibration program."""
-    def __init__(self, master):
+    def __init__(self, master: Application):
         """
         Creates a new CalProgram object that overrides the Program class with the CAl program type.
 
@@ -49,6 +50,27 @@ class CalProgram(Program):
                 return False
         return True
 
+    def get_temp(self, thread_id: UUID) -> float:
+        """
+        Takes the configured number of temperature readings and averages them.
+
+        :param thread_id: UUID of the thread the code is currently running in
+        :return: the averaged temperature
+        """
+        avg_temp = 0.
+        temp = None
+        for _ in range(self.options.num_temp_readings.get()):
+            while temp is None:
+                try:
+                    self.master.conn_dev(TEMP, thread_id=thread_id)
+                    temp = float((self.master.temp_controller.get_temp_k()))
+                    avg_temp += temp
+                except (AttributeError, visa.VisaIOError):
+                    self.temp_controller_error()
+            temp = None
+        self.disconnect_devices()
+        return avg_temp/self.options.num_temp_readings.get()
+
     def cal_loop(self, temps: List[float], thread_id: UUID):
         """
         Runs the main calibration loop.
@@ -66,13 +88,7 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            temp = None
-            while temp is None:
-                try:
-                    self.master.conn_dev(TEMP, thread_id=thread_id)
-                    temp = float((self.master.temp_controller.get_temp_k()))
-                except (AttributeError, visa.VisaIOError):
-                    self.temp_controller_error()
+            temp = self.get_temp(thread_id)
 
             kwargs = {"force_connect": True, "thread_id": thread_id}
             if temp < float(temps[0]) + 274.15 - 5:
@@ -124,16 +140,10 @@ class CalProgram(Program):
         :param start_temp: The first temperature the oven is set to
         :param thread_id: UUID of the thread the code is currently running in
         """
-        while True:
-            try:
-                self.master.conn_dev(TEMP, thread_id=thread_id)
-                temp = float((self.master.temp_controller.get_temp_k()))
-                self.disconnect_devices()
-                if temp <= float(start_temp + 274.15) - 5:
-                    return True
-                return False
-            except (AttributeError, visa.VisaIOError):
-                self.temp_controller_error()
+        temp = self.get_temp(thread_id)
+        if temp <= float(start_temp + 274.15) - 5:
+            return True
+        return False
 
     def check_drift_rate(self, thread_id: UUID, cycle_num: int) -> bool:
         """
@@ -149,11 +159,11 @@ class CalProgram(Program):
                 start_time = time.time()
                 if not self.master.thread_map[thread_id]:
                     return False
-                start_temp = float(self.master.temp_controller.get_temp_k())
+                start_temp = self.get_temp(thread_id)
                 waves, amps = self.get_wave_amp_data(thread_id)
                 if not self.master.thread_map[thread_id]:
                     return False
-                curr_temp = float(self.master.temp_controller.get_temp_k())
+                curr_temp = self.get_temp(thread_id)
                 curr_time = time.time()
                 self.disconnect_devices()
 

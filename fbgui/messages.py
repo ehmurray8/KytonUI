@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from tkinter.font import Font
 import tkinter as tk
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict
 from fbgui.constants import LOG_BACKGROUND_COLOR
 
 #: Amount of time in between messages to enable the filtering
@@ -123,15 +123,16 @@ class LogView(ttk.Frame):
 
     :ivar List[MessageType] message_types: the MessageTypes to include in the filter combobox
     :ivar List[MessageType] all_types: a list of all the message types
-    :ivar Dict[str, collections.deque] messages: mapping of message type title string to deques of fixed
+    :ivar List[MessageDelay] message_delays: a list of all of the message delays
+    :ivar Dict[str: collections.deque] messages: mapping of message type title string to deques of fixed
                                                  size containing messages' body
-    :ivar Dict[str, float] message_time: message body without timestamp mapped to time in s
-    :ivar Dict[str, MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay
+    :ivar Dict[str: float] message_time: message body without timestamp mapped to time in s
+    :ivar Dict[str: MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay
     :ivar float first_click_time: the time the header text was first clicked (Used for developer messages)
     :ivar int num_clicks: the number of times the header text was clicked within the specified time (Used for dev msgs)
     :ivar bool showing: True if developer messages are in the filter, False otherwise
     :ivar MessageType current_filter: the current message type to filter messages
-    :ivar ttk.Combobox filter: the combobox tkinter widget used for selecting a filter level
+    :ivar ttk.Combobox filter_box: the combobox tkinter widget used for selecting a filter level
     :ivar ttk.ScrolledText log_view: the scrolled text tkinter widget used for displaying log messages
     """
 
@@ -145,9 +146,10 @@ class LogView(ttk.Frame):
         super().__init__(container, **kwargs)
         self.message_types = [MessageType.INFO, MessageType.WARNING, MessageType.ERROR]
         self.all_types = self.message_types + [MessageType.CRITICAL, MessageType.DEVELOPER]
+        self.message_delays = [MessageDelay.FIRST, MessageDelay.SHORT, MessageDelay.LONG, MessageDelay.MAX]
 
         self.messages = {}
-        self.message_time = SizeDict(maxsize=1000)  # type: Dict[str, int]
+        self.message_time = SizeDict(maxsize=1000)  # type: Dict[str, float]
         self.message_time_filter = SizeDict(maxsize=1000)  # type: Dict[str, MessageDelay]
 
         self.first_click_time = time.time()
@@ -205,7 +207,8 @@ class LogView(ttk.Frame):
             if MessageType.DEVELOPER in self.message_types:
                 mtype = MessageType.DEVELOPER.filter_num
             msgs = self.get_msgs(mtype)
-            for t, (text, tag) in reversed(msgs.items()):
+            msgs_sorted = reversed(sorted(list(msgs.items()), key=lambda x: x[0]))
+            for t, (text, tag) in msgs_sorted:
                 f.write(text)
 
     def clear(self):
@@ -230,8 +233,8 @@ class LogView(ttk.Frame):
             else:
                 curr_delay = self.message_time_filter[msg.msg]
                 if curr_delay != MessageDelay.MAX:
-                    idx = list(MessageDelay).index(curr_delay)
-                    next_delay = list(MessageDelay)[idx+1]
+                    idx = self.message_delays.index(curr_delay)
+                    next_delay = self.message_delays[idx+1]
                     self.message_time_filter[msg.msg] = next_delay
         elif msg.msg in self.message_time_filter:
             del self.message_time_filter[msg.msg]
@@ -262,7 +265,7 @@ class LogView(ttk.Frame):
         :param pattern: pattern to match when looking to format the text using the tag.
         :param tag: tkinter scrolled text tag corresponding to a tk font
         :param start: where to start looking for the pattern from
-        :parma end: where to end looking for the pattern
+        :param end: where to end looking for the pattern
         :param regexp: If True, pattern will be treated as a Tcl regular expression
         """
         start = self.log_view.index(start)
@@ -290,10 +293,10 @@ class LogView(ttk.Frame):
         :return: time mapped to (text, tag) for all filtered messages
         """
         msgs = {}
-        for t in self.all_types:
-            if t.filter_num <= filter_num:
-                for msg in self.messages[t.name.title()]:
-                    msgs[msg[0]] = (msg[1], t.name)
+        for _type in self.all_types:
+            if _type.filter_num <= filter_num:
+                for msg in self.messages[_type.name.title()]:
+                    msgs[msg[0]] = (msg[1], _type.name)
         return collections.OrderedDict(msgs.items(), key=lambda t: t[0])
 
     def filter_msg(self, _):
@@ -305,9 +308,9 @@ class LogView(ttk.Frame):
         msgs = self.get_msgs(self.current_filter.filter_num)
         self.clear()
         msg_items = list(msgs.items())
-        for x in list(msg_items):
-            if x[0] == 'key':
-                msg_items.remove(x)
+        for item in list(msg_items):
+            if item[0] == 'key':
+                msg_items.remove(item)
         msgs_sorted = reversed(sorted(msg_items, key=lambda x: x[0]))
         for t, (text, tag) in msgs_sorted:
             self.write_msg(text, tag, start=tk.END)

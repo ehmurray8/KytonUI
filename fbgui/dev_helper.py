@@ -14,13 +14,13 @@ from fbgui.devices import SM125, OpSwitch
 class Params(object):
     """Wrapper for the parameters used throughout the module."""
 
-    def __init__(self, laser: SM125, switch: OpSwitch, switches: List[List[int]], num_pts: int, pos_used: List[int],
-             use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue, switch_num: int):
+    def __init__(self, laser: SM125, switch: OpSwitch, switches: List[int], num_pts: int, pos_used: List[int],
+                 use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue, switch_num: int):
         """
 
         :param laser: the SM125 wrapper used for communicating with the SM125
         :param switch: the optical switch wrapper used for communicating with the optical switch
-        :param switches: 2D list with one list for each SM125 channel containing the switch positions on each channel
+        :param switches: flattened list of switches from the 2D list of switches broken down by channel
         :param num_pts: the number of readings to take for each fbg
         :param pos_used: the number of fbgs on each SM125 channel
         :param use_dev: if True use devices, otherwise run simulation
@@ -66,12 +66,12 @@ def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: List[List[int]], nu
     :param main_queue: Queue used for writing log messages to
     """
     lens = [len(x) for x in switches]
-    switches_arr = np.hstack(switches)
+    switches_flat = list(np.hstack(switches))
     switch_num = -1
-    if len(switches_arr):
+    if len(switches_flat):
         switch_num = lens.index(max(lens))
     if thread_map[thread_id]:
-        params = Params(laser, switch, switches, num_pts, pos_used, use_dev, num_snums,
+        params = Params(laser, switch, switches_flat, num_pts, pos_used, use_dev, num_snums,
                         thread_id, thread_map, main_queue, switch_num)
         ret = __get_average_data(params)
         if thread_map[thread_id]:

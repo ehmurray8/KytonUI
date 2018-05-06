@@ -1,7 +1,6 @@
 """Data container for database data."""
 from queue import Queue
 import pandas as pd
-import numpy as np
 from fbgui.messages import MessageType, Message
 from fbgui import file_helper as fh
 from typing import List, Optional
@@ -37,7 +36,6 @@ class DataCollection(object):
         self.delta_wavelengths = []  # type: List[List[float]]
         self.mean_delta_wavelengths = []  # type: List[float]
         self.drift_rates = []  # type: List[float]
-
 
     def create(self, is_cal: bool, df: pd.DataFrame, snums: Optional[List[str]]=None,
                main_queue: Optional[Queue]=None):

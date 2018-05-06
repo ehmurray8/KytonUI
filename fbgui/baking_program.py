@@ -6,12 +6,13 @@ from uuid import UUID
 import socket
 from fbgui import file_helper as fh, program
 from fbgui.constants import BAKING, TEMP
+from fbgui.main_program import Application
 
 
 class BakingProgram(program.Program):
     """Contains the Baking Program specific logic, extends the Program abstract class."""
 
-    def __init__(self, master):
+    def __init__(self, master: Application):
         """
         Creates a program with the Baking Program Type.
 

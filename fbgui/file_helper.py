@@ -200,6 +200,7 @@ def db_to_df(func: str, name: str) -> pd.DataFrame:
     :return: dataframe for the specified table, or an empty dataframe if one cannot be created for the table
     :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
     """
+    # noinspection PyUnresolvedReferences
     try:
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()

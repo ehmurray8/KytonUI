@@ -1,8 +1,8 @@
-"""Class sets up the tkinter UI code for the options panel."""
+"""Class sets up the tkinter UI code for the options screen."""
 
 import configparser
 import os
-from typing import List
+from typing import List, Callable
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
@@ -14,18 +14,39 @@ class OptionsPanel(ttk.Frame):
     """
     Options panel widget in both the baking and calibration program screens, used for configuring program settings.
 
+    :ivar List[List[tkinter.Entry]] sn_ents: 2D list with one list for each SM125 channel, of tkinter Entrys
+                                             corresponding to the serial number input fields
+    :ivar List[List[int]] chan_nums: 2D list with one list for each SM125 channel, of ints where the len of the lists
+                                     is used for determining the number of FBGs on a channel
+    :ivar List[List[tkinter.IntVar]] switch_positions: 2D list with one list for each SM125 channel, of tkinter
+                                                       IntVars each representing a ttk spinbox used for specifying
+                                                       the FBGs switch position
+    :ivar List[List[tkinter.Frame]] snum_frames: 2D list with one list for each SM125 channel, of tkinter Frames, each
+                                                 Frame contains a serial number, and switch input for a FBG
+    :ivar tkinter.StringVar file_name: tkinter StringVar corresponding to the file input
+    :ivar tkinter.DoubleVar prim_time: tkinter DoubleVar corresponding to the primary bake time
+    :ivar tkinter.IntVar num_pts: tkinter IntVar corresponding to the number of points to average for each reading
+    :ivar tkinter.IntVar num_temp_readings: the number of temperature readings to use to average for the
+                                            calibration program
+    :ivar tkinter.IntVar temp_interval: IntVar corresponding to the time between taking cal drift rate readings
+    :ivar tkinter.DoubleVar drift_rate: IntVar corresponding to the maximum calibration point drift rate
+    :ivar tkinter.IntVar num_cal_cycles: IntVar corresponding to the number of calibration cycles to run
+    :ivar tkinter.IntVar cooling: IntVar - 1 if cal program is configured to use cooling, 0 if not configured to use
+                                           cooling
+    :ivar tkinter.Text target_temps_entry: Text entry corresponding to the calibration target temperatures text input
+    :ivar tkinter.Frame options_grid: Upper portion of the options screen containing configuration options
+    :ivar tkinter.Frame fbg_grid: Lower portion of the options screen containing fbg configuration options
+    :ivar configparser.ConfigParser conf_parser: ConfigParser used for reading in prog_config settings
     """
 
-    def __init__(self, parent, program):
+    def __init__(self, parent: ttk.Frame, program: str):
         super().__init__(parent)
 
-        # Init member vars
-        self.sn_ents = [[], [], [], []]  # type: List[List[str]]
+        self.sn_ents = [[], [], [], []]  # type: List[List[tk.Entry]]
         self.chan_nums = [[], [], [], []]  # type: List[List[int]]
-        self.switch_positions = [[], [], [], []]  # type: List[List[int]]
+        self.switch_positions = [[], [], [], []]  # type: List[List[tk.IntVar]]
         self.snum_frames = [[], [], [], []]  # type: List[List[ttk.Frame]]
 
-        # Init member widgets
         self.file_name = tk.StringVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
@@ -35,7 +56,7 @@ class OptionsPanel(ttk.Frame):
         self.num_cal_cycles = tk.IntVar()
         self.set_temp = tk.DoubleVar()
         self.cooling = tk.IntVar()
-        self.target_temps_entry = None
+        self.target_temps_entry = None  # type: tk.Text
         self.program = program
         self.options_grid = ttk.Frame(self)
 
@@ -53,13 +74,22 @@ class OptionsPanel(ttk.Frame):
         # Prevent from being garbage collected
         path = os.path.join(ASSETS_PATH, 'plus.png')
         self.img_plus = tk.PhotoImage(file=path)
-
         path = os.path.join(ASSETS_PATH, 'minus.png')
         self.img_minus = tk.PhotoImage(file=path)
 
         self.create_options_grid()
 
-    def check_config(self):
+    def check_config(self) -> bool:
+        """
+        Checks to make sure all of the input fields are filled in properly, and of the right types.
+
+        **
+        This does not ensure the configuration settings make sense, just that the fields have values of the proper
+        type.
+        **
+
+        :return True if properly configured, False otherwise
+        """
         try:
             int(self.num_pts.get())
             path, fname = os.path.split(self.file_name.get())
@@ -82,7 +112,7 @@ class OptionsPanel(ttk.Frame):
                 float(self.drift_rate.get())
                 float(self.num_cal_cycles.get())
 
-        except ValueError:
+        except (ValueError, tk.TclError):
             mbox.showerror("Invalid configuration",
                            "Please check to make sure the configuration settings are numeric.")
             return False
@@ -90,7 +120,7 @@ class OptionsPanel(ttk.Frame):
         if self.program == CAL:
             try:
                 self.get_target_temps()
-            except ValueError:
+            except (ValueError, tk.TclError):
                 mbox.showerror("Configuration Error",
                                "The target temperatures import is not formatted properly, please insert the target " +
                                "temps as comma separated decimal numbers.")
@@ -98,24 +128,23 @@ class OptionsPanel(ttk.Frame):
 
         return True
 
-    def get_target_temps(self):
+    def get_target_temps(self) -> List[float]:
         """
         Returns the target temps as an array, doesn't catch the ValueError exception possibility.
+
+        :return: list of target calibration temps
         """
         return helpers.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
 
     def create_options_grid(self):
-        """Creates the grid for the user to configure options."""
+        """Creates the grid for the user to configure options, in the upper portion of the options screen."""
 
-        # Options Grid Init
         row_num = 0
-
         if self.program == CAL:
             use_cool = self.conf_parser.getboolean(self.program, "use_cool")
             self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
             row_num += 1
 
-        # Number of points to average entry
         num_scans = self.conf_parser.getint(self.program, "num_scans")
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
         row_num += 1
@@ -162,8 +191,12 @@ class OptionsPanel(ttk.Frame):
         self.file_name = uh.file_entry(self.options_grid, "Excel file name: ", row_num, 50, fname)
         row_num += 1
 
-    def create_start_btn(self, start):
-        """Creates the start button in the app."""
+    def create_start_btn(self, start: Callable) -> ttk.Button:
+        """
+        Creates the start button in the app, and adds the start parameter as the button callback.
+
+        :return: the created tkinter Button
+        """
         start_button = ttk.Button(self)
         title = self.program
         if title == CAL:
@@ -173,13 +206,21 @@ class OptionsPanel(ttk.Frame):
         start_button.pack(anchor='center', pady=20)
         return start_button
 
-    def add_fbg(self, fbg_grid, chan, fbg_name=None, switch_pos=None):
-        """Add an fbg input to the view."""
+    def add_fbg(self, fbg_grid: ttk.Frame, chan: int, fbg_name: str=None, switch_pos: int=None):
+        """
+        Add an fbg input to the view, at the column corresponding to the chan index. If fbg_name, and switch_pos
+        are not None then set the serial number entry, and switch position entry to their values respectively.
+
+        :param fbg_grid: Container frame for fbg configuration
+        :param chan: index of where the new fbg sub frame should be added
+        :param fbg_name: If not None, the name of the FBG to add
+        :param switch_pos: If not None, the switch position of the FBG to add
+        """
         most = -1
         for i, chan_num in enumerate(self.chan_nums):
             if len(chan_num) > 1:
                 most = i
-        if len(self.chan_nums[chan]) >= 16:
+        if len(self.chan_nums[chan]) > 16:
             mbox.showerror("Channel error", "Can only have 16 FBGs on single channel.")
         elif most != -1 and most != chan and len(self.chan_nums[chan]):
             mbox.showerror("Channel error", "Can only have multiple FBGs on a single channel, please clear channel {} "
@@ -195,7 +236,12 @@ class OptionsPanel(ttk.Frame):
             self.sn_ents[chan].append(serial_num)
             self.switch_positions[chan].append(switch_pos)
 
-    def minus_fbg(self, chan):
+    def minus_fbg(self, chan: int):
+        """
+        Removes the last FBG sub frame at the specified chan index.
+
+        :param chan: index of which column to remove a FBG sub frame from
+        """
         if len(self.chan_nums[chan]):
             self.chan_nums[chan].pop()
             uh.remove_snum_entry(self.snum_frames[chan][-1])
@@ -203,7 +249,7 @@ class OptionsPanel(ttk.Frame):
             self.switch_positions[chan].pop()
 
     def init_fbgs(self):
-        """Initialize the fbg input section of the configuration page."""
+        """ Initialize the fbg input section of the options page, using settings stored in prog_config."""
         for i in range(4):
             title_frame = ttk.Frame(self.fbg_grid)
             ttk.Label(title_frame, text="Channel {}".format(i + 1), style="Bold.TLabel")\

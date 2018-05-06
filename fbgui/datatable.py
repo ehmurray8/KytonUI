@@ -24,7 +24,7 @@ class DataTable(ttk.Frame):
         Creates the data table frame.
 
         :param master: ttk frame that will be the parent of this object
-        :param func: program identifier string
+        :param create_excel_func: program identifier string
         :param main_queue: if present, used for writing messages to the log view
         """
         super().__init__(master)
@@ -63,7 +63,7 @@ class DataTable(ttk.Frame):
                 self.reset()
             self._setup_widgets()
         for i, col in enumerate(self.headers):
-            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
+            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, False))
             self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
     def add_data(self, item: List[str]):
@@ -84,7 +84,7 @@ class DataTable(ttk.Frame):
         if len(uh.get_all_children_tree(self.tree)) > 100:
             try:
                 self.tree.delete(self.item_ids.pop(0))
-            except tk.TclError as t:
+            except tk.TclError:
                 self.master.main_queue.put(Message(MessageType.DEVELOPER, "Tree Deletion Error",
                                                    "Failed to delete item from the table view."))
 

@@ -2,8 +2,6 @@
 from enum import Enum
 import os
 from PIL import Image
-from typing import List, TypeVar
-
 
 
 # Program identifiers

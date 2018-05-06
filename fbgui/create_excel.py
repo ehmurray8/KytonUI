@@ -21,7 +21,7 @@ class ExcelTable(ttk.Frame):
     :ivar Queue main_queue: main_queue parameter
     :ivar ttk.Treeview tree: ttk tree displaying information about the program runs
     :ivar List[int] item_ids: ids of the items currently stored in the tree
-    :ivar Dict[int, str] file_paths: mapping of map table ids to file paths
+    :ivar Dict[int: str] file_paths: mapping of map table ids to file paths
     :ivar List[str] s_nums: map of program database ids to comma separated strings of serial numbers for that program
     """
 
@@ -37,7 +37,7 @@ class ExcelTable(ttk.Frame):
         self.headers = ["Id", "File name", "Program Type"]
         self.main_queue = main_queue
         self.tree = None  # type: ttk.Treeview
-        self.item_ids = []  #type: List[int]
+        self.item_ids = []  # type: List[int]
         self.file_paths = None  # type: Dict[int, str]
         self.s_nums = None  # type: List[str]
         self._setup_widgets()
@@ -98,7 +98,7 @@ class ExcelTable(ttk.Frame):
     def _setup_headers(self):
         """Sets up the tree view headers."""
         for i, col in enumerate(self.headers):
-            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, 0))
+            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, False))
             self.tree.column(col, width=tkfont.Font().measure(col.title()))
 
     def add_data(self, item: List[str]):

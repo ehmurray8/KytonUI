@@ -12,11 +12,13 @@ from uuid import UUID
 import matplotlib
 matplotlib.use("TkAgg")
 
+# noinspection PyPep8
 import tkinter as tk
+# noinspection PyPep8
 from tkinter import ttk
+# noinspection PyPep8
 from tkinter import messagebox as mbox
-from fbgui.baking_program import BakingProgram
-from fbgui.cal_program import CalProgram
+# noinspection PyPep8
 from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh, messages, install
 
 
@@ -28,7 +30,7 @@ class Application(tk.Tk):
     :ivar configparser.ConfigParser conf_parser: ConfigParser to read, and set device settings
     :ivar visa.ResourceManager manager: PyVisa ResourceManager used for communicating with GPIB instruments
     :ivar Queue main_queue: Queue used for listening for logging messages to write to the log_view
-    :ivar Dict[UUID, bool] thread_map: Map of thread UUIDs to booleans for whether or not to stop the thread
+    :ivar Dict[UUID: bool] thread_map: Map of thread UUIDs to booleans for whether or not to stop the thread
     :ivar List[UUID] open_threads: List of UUIDs of the currently open data collection threads
     :ivar List[UUID] graph_threads: List of UUIDs of the currently open graph threads
     :ivar bool running: True if either program is running, False otherwise
@@ -116,10 +118,6 @@ class Application(tk.Tk):
 
         self.bake_program = None  # type: BakingProgram
         self.calibration_program = None   # type: CalProgram
-        self.bake_program = BakingProgram(self)
-        self.main_notebook.add(self.bake_program, text="Bake")
-        self.calibration_program = CalProgram(self)
-        self.main_notebook.add(self.calibration_program, text="Calibration")
         self.check_queue()
 
     def check_queue(self):
@@ -346,8 +344,15 @@ class Application(tk.Tk):
 
 
 if __name__ == "__main__":
+    # Need to defer import to here to avoid circular imports
+    from fbgui.baking_program import BakingProgram
+    from fbgui.cal_program import CalProgram
     try:
         APP = Application()
+        APP.bake_program = BakingProgram(APP)
+        APP.main_notebook.add(APP.bake_program, text="Bake")
+        APP.calibration_program = CalProgram(APP)
+        APP.main_notebook.add(APP.calibration_program, text="Calibration")
         APP.mainloop()
     except RuntimeError:
         pass
