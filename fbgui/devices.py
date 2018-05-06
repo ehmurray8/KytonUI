@@ -6,6 +6,7 @@ import numpy as np
 import random
 from typing import List, Tuple
 from visa import ResourceManager
+from pyvisa.resources.gpib import GPIBInstrument
 
 # SM125 Data Constants
 WAVELEN_SCALE_FACTOR = 10000.0
@@ -67,7 +68,7 @@ class Vidia(object):
     """
     Vidia-Swept laser wrapper object.
 
-    :ivar Resource device: PyVisa GPIB connection to the device
+    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
     """
 
     def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
@@ -80,7 +81,7 @@ class Vidia(object):
         """
         self.device = None
         if use_dev:
-            self.device = manager.open_resource(loc)
+            self.device = manager.open_resource(loc)  # type: GPIBInstrument
 
     def start_scan(self):
         """Starts the scanning process for the laser."""
@@ -97,7 +98,7 @@ class Oven(object):
     """
     Delta oven object, uses pyvisa.
 
-    :ivar Resource device: PyVisa GPIB connection to the device
+    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
     """
 
     def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
@@ -110,7 +111,7 @@ class Oven(object):
         """
         self.device = None
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)
+            self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)  # type: GPIBInstrument
 
     def set_temp(self, temp: float):
         """
@@ -172,7 +173,7 @@ class TempController(object):
     """
     Object representation of the Temperature Controller needed for the program.
 
-    :ivar Resource device: PyVisa GPIB connection to the device.
+    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device.
     """
     def __init__(self, loc, manager, use_dev):
         """
@@ -184,7 +185,7 @@ class TempController(object):
         """
         self.device = None
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)
+            self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)  # type: GPIBInstrument
 
     def get_temp_k(self, dummy_val=False, center_num=0):
         """

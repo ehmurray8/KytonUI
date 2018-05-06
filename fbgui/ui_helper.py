@@ -115,8 +115,8 @@ def array_entry(container: ttk.Frame, label_text: str, row: int, width: int, hei
     return text
 
 
-def device_entry(container: ttk.Frame, dev_text: str, loc_str: str, row: int, port_str: str,
-                 loc_var: tk.StringVar, port_var: tk.StringVar):
+def device_entry(container: ttk.Frame, dev_text: str, loc_str: str, row: int, port_str: Optional[str],
+                 loc_var: tk.StringVar, port_var: Optional[tk.StringVar]):
     """
     Creates an entry in the device grid for a device.
 

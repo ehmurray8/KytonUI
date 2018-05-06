@@ -6,6 +6,7 @@ import uuid
 import configparser
 import socket
 import os
+import re
 from threading import Thread
 import sqlite3
 from typing import List, Tuple
@@ -194,15 +195,18 @@ class Program(ttk.Notebook):
         :return: True if the home screen device inputs are properly configured, False otherwise
         """
         try:
-            int(self.master.controller_location.get())
-            int(self.master.oven_location.get())
+            gpib_re = re.compile(r"GPIB\d+::\d+::INSTR$")
+            valid_gpib = gpib_re.match(self.master.controller_location.get()) and \
+                gpib_re.match(self.master.oven_location.get())
+            if not valid_gpib:
+                raise TypeError("GPIB")
             int(self.master.op_switch_port.get())
             int(self.master.sm125_port.get())
             try:
                 if sum(bool(int(x)) for x in self.master.op_switch_address.get().split(".")) != 4:
-                    raise TypeError
+                    raise TypeError("IP")
                 if sum(bool(int(x)) for x in self.master.sm125_address.get().split(".")) != 4:
-                    raise TypeError
+                    raise TypeError("IP")
             except (ValueError, TypeError):
                 raise TypeError
             return True
@@ -211,12 +215,17 @@ class Program(ttk.Notebook):
                            "Please fill in all the device configuration inputs on the home screen before starting.")
         except ValueError:
             mbox.showerror("Device Configuration Error",
-                           "Please make sure the temperature controller, oven, and port device inputs on " +
-                           "the home screen are integer values.")
-        except TypeError:
-            mbox.showerror("Device Configuration Error",
-                           "Please make sure the optical switch, and sm125 addresses are valid IP addresses on the " +
-                           "home screen inputs.")
+                           "Please make sure the port Laser and Optical switch port inputs "
+                           "on the home screen are integer values.")
+        except TypeError as t:
+            if "IP" in str(t):
+                mbox.showerror("Device Configuration Error",
+                               "Please make sure the optical switch, and sm125 address inputs on "
+                               "the home screen are valid IP addresses.")
+            elif "GPIB" in str(t):
+                mbox.showerror("Device Configuration Error",
+                               "Please make sure the oven and temperature controller inputs on the home screen "
+                               "are valid GPIB address. (eg. GPIB0::12::INSTR)")
         return False
 
     def start(self):
@@ -401,9 +410,13 @@ class Program(ttk.Notebook):
                                                                "Failed to turn oven cooling on."))
                 temp_set = True
             except (AttributeError, visa.VisaIOError):
-                self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
-                                                   "Failed to set the oven temperature to {} C. Trying to set the "
-                                                   "temperature again."))
+                if not force_connect:
+                    self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
+                                                       "Failed to set the oven temperature to {} C. Trying to set the "
+                                                       "temperature again.".format(temp)))
+                else:
+                    self.master.main_queue.put(Message(MessageType.WARNING, "Device Connection Issue",
+                                                       "Failed to set the oven temperature to {} C.".format(temp)))
 
     def save_config_info(self):
         """Write the options, and devices configuration to the prog_config and devices config respectively."""

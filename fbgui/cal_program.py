@@ -155,7 +155,7 @@ class CalProgram(Program):
         """
         while True:
             try:
-                self.master.conn_dev(TEMP, thread_id)
+                self.master.conn_dev(TEMP, thread_id=thread_id)
                 start_time = time.time()
                 if not self.master.thread_map[thread_id]:
                     return False

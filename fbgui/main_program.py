@@ -99,8 +99,8 @@ class Application(tk.Tk):
         self.switch = None  # type: Optional[devices.OpSwitch]
         self.is_full_screen = False
 
-        self.controller_location = tk.IntVar()
-        self.oven_location = tk.IntVar()
+        self.controller_location = tk.StringVar()
+        self.oven_location = tk.StringVar()
         self.op_switch_address = tk.StringVar()
         self.op_switch_port = tk.IntVar()
         self.sm125_address = tk.StringVar()
@@ -210,24 +210,18 @@ class Application(tk.Tk):
                         if self.temp_controller is None:
                             err_specifier = "GPIB address"
                             temp_loc = self.controller_location.get()
-                            full_loc = "GPIB0::{}::INSTR".format(temp_loc)
-                            if self.use_dev and full_loc not in self.manager.list_resources():
-                                full_loc = [x for x in self.manager.list_resources() if str(temp_loc) in x]
-                                if not len(full_loc):
-                                    if try_once:
-                                        mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
-                                                                                  "controller, check the configured "
-                                                                                  "settings on the home screen.")
-                                    self.main_queue.put(messages.Message(messages.MessageType.ERROR,
-                                                                         "Device Connection Error",
-                                                                         "Failed to connect to the temperature "
-                                                                         "controller."))
-                                    continue
-                                else:
-                                    self.temp_controller = devices.TempController(full_loc[0], self.manager,
-                                                                                  self.use_dev)
+                            if self.use_dev and temp_loc not in self.manager.list_resources():
+                                if try_once and thread_id is None:
+                                    mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
+                                                                              "controller, check the configured "
+                                                                              "settings on the home screen.")
+                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                     "Device Connection Error",
+                                                                     "Failed to connect to the temperature "
+                                                                     "controller."))
+                                continue
                             else:
-                                self.temp_controller = devices.TempController(full_loc, self.manager, self.use_dev)
+                                self.temp_controller = devices.TempController(temp_loc, self.manager, self.use_dev)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
@@ -236,22 +230,17 @@ class Application(tk.Tk):
                         if self.oven is None:
                             err_specifier = "GPIB address"
                             oven_loc = self.oven_location.get()
-                            full_loc = "GPIB0::{}::INSTR".format(oven_loc)
-                            if self.use_dev and full_loc not in self.manager.list_resources():
-                                full_loc = [x for x in self.manager.list_resources() if str(oven_loc) in x]
-                                if not len(full_loc):
-                                    if try_once:
-                                        mbox.showerror("Device Connection Error", "Cannot connect to the oven, "
-                                                                                  "check the configured settings on "
-                                                                                  "the home screen.")
-                                    self.main_queue.put(messages.Message(messages.MessageType.ERROR,
-                                                                         "Device Connection Error",
-                                                                         "Failed to connect to the oven."))
-                                    continue
-                                else:
-                                    self.oven = devices.Oven(full_loc[0], self.manager, self.use_dev)
+                            if self.use_dev and oven_loc not in self.manager.list_resources():
+                                if try_once and thread_id is None:
+                                    mbox.showerror("Device Connection Error", "Cannot connect to the oven, "
+                                                                              "check the configured settings on "
+                                                                              "the home screen.")
+                                self.main_queue.put(messages.Message(messages.MessageType.ERROR,
+                                                                     "Device Connection Error",
+                                                                     "Failed to connect to the oven."))
+                                continue
                             else:
-                                self.oven = devices.Oven(full_loc, self.manager, self.use_dev)
+                                self.oven = devices.Oven(oven_loc, self.manager, self.use_dev)
                     else:
                         self.oven.close()
                         self.oven = None
@@ -291,11 +280,10 @@ class Application(tk.Tk):
                                                      "{} needs an integer input for its {}."
                                                      .format(dev, err_specifier)))
 
-        if need_conn_warn:
-            if try_once:
+        if try_once and thread_id is None:
+            if need_conn_warn:
                 uh.conn_warning(dev)
-        elif need_loc_warn:
-            if try_once:
+            elif need_loc_warn:
                 uh.loc_warning(err_specifier)
 
     def on_closing(self):
