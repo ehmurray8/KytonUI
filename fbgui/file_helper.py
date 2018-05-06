@@ -199,8 +199,10 @@ def db_to_df(func: str, name: str) -> pd.DataFrame:
     :param name: name of the program run
     :return: dataframe for the specified table, or an empty dataframe if one cannot be created for the table
     :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
+    :raises RuntimeError: If program database has been corrupted, or the table is empty
     """
     # noinspection PyUnresolvedReferences
+    conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
@@ -211,7 +213,13 @@ def db_to_df(func: str, name: str) -> pd.DataFrame:
         conn.close()
         return df
     except (pd.io.sql.DatabaseError, sqlite3.OperationalError):
+        if conn is not None:
+            conn.close()
         return pd.DataFrame()
+    except (RuntimeError, IndexError) as e:
+        if conn is not None:
+            conn.close()
+        raise e
 
 
 def make_length(values: List, length: int) -> List:
@@ -237,7 +245,9 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
     :param is_cal: True if creating an excel file for a calibration program run, False otherwise
     """
     try:
-        df = db_to_df(helpers.get_file_name(xcel_file), CAL if is_cal else BAKING)
+        name = helpers.get_file_name(xcel_file)
+        prog = CAL if is_cal else BAKING
+        df = db_to_df(prog, name)
         data_coll = DataCollection()
         data_coll.create(is_cal, df, snums, main_queue)
         new_df = pd.DataFrame()

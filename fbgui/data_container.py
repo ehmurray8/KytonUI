@@ -1,5 +1,6 @@
 """Data container for database data."""
 from queue import Queue
+import numpy as np
 import pandas as pd
 from fbgui.messages import MessageType, Message
 from fbgui import file_helper as fh
@@ -62,27 +63,32 @@ class DataCollection(object):
             self.times = [(time - start_time) / 60 / 60 for time in timestamps]
             self.temps = df["Mean Temperature (K)"]
             first_temp = self.temps[0]
-            self.delta_temps = [temp - first_temp for temp in self.temps]
+            self.delta_temps = np.array([temp - first_temp for temp in self.temps])
 
             wave_headers = [head for head in headers if "Wave" in head]
             pow_headers = [head for head in headers if "Pow" in head]
             for wave_head, pow_head in zip(wave_headers, pow_headers):
                 self.wavelengths.append(df[wave_head])
                 self.powers.append(df[pow_head])
-            self.delta_wavelengths = [[(w - wave[0]) * 1000 for w in wave] for wave in self.wavelengths]
-            self.delta_powers = [[p - power[0] for p in power] for power in self.powers]
 
-            self.mean_delta_wavelengths = self.delta_wavelengths[0]
-            self.mean_delta_powers = self.delta_powers[0]
+            self.delta_wavelengths = np.array([np.array([w - wave[0] for w in wave]) for wave in self.wavelengths])
+            self.delta_powers = np.array([np.array([p - power[0] for p in power]) for power in self.powers])
+            self.mean_delta_wavelengths = np.array(self.delta_wavelengths[0])
+            self.mean_delta_powers = np.array(self.delta_powers[0])
 
             for wave_diff, pow_diff in zip(self.delta_wavelengths[1:], self.delta_powers[1:]):
                 self.mean_delta_wavelengths += wave_diff
                 self.mean_delta_powers += pow_diff
-
             self.mean_delta_wavelengths /= len(self.mean_delta_wavelengths)
             self.mean_delta_powers /= len(self.mean_delta_powers)
+
+            self.delta_temps = list(self.delta_temps)
+            self.delta_wavelengths = list(self.delta_wavelengths)
+            self.delta_powers = list(self.delta_powers)
+            self.mean_delta_wavelengths = list(self.mean_delta_wavelengths)
+            self.mean_delta_powers = list(self.mean_delta_powers)
             if is_cal:
-                self.drift_rates = df['Drift Rate']
+                self.drift_rates = list(df['Drift Rate'])
         except (KeyError, IndexError) as e:
             if main_queue is not None:
                 main_queue.put(Message(MessageType.DEVELOPER, "File Helper Create Data Coll Error Dump", str(e)))
