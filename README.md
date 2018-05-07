@@ -30,12 +30,12 @@
      more details can be found in the ProgramSetup.docx file.
 
 #### Building the installer, and executable
- * Python3 version <= 3.5 is required with Pyinstaller installed to build
+ * Python3 version <= 3.5 is required with PyInstaller installed to build
    the installer and program executable, both of these are setup to
    run only on windows machines
  * There are two batch files in the main directory used for creating the
    executable files, make sure the files are pointing to the correct location
-   of where Python is installed on your machine.
+   of where Python (<= 3.5) is installed on your machine.
  * Run the following commands from a windows terminal in the main project directory:
  ```commandline
  ./install.bat
@@ -55,7 +55,7 @@
    - Each program tab has 3 tabs: the configuration screen, the graphing
      screen, and the data screen
 
-#### Main Screen
+### Main Screen
  * The main screen contains entries to configure the locations of the
    devices required for running the program:
    - The Micron Optics SM125 and Optical Switch are looking for IP
@@ -69,10 +69,12 @@
    excel files, selecting a program name and then clicking the generate
    spreadsheet button will create a spreadsheet and open it in Excel, the
    refresh button can be used to load new runs of the program.
-#### Bake Program
+
+### Bake Program
  * The bake program is used for recording points continuously at a set temperature
    for an infinite amount of time, until the program is paused.
-##### Options Screen
+
+#### Options Screen
  * This screen sets up a baking program run, and has the following options:
    - **Number of laser scans** - this configures the number of laser scans to take
      for each reading and use to average for that reading
@@ -88,10 +90,12 @@
    - **FBG inputs** - FBGs can be added each channel, and can be named using
      the entry input, and a switch position can be specified for the FBG by
      using the spinbox
-#### Calibration Program
+
+### Calibration Program
  * The calibration program is used for recording wavelength and power readings
    for a set of specified temperatures.
-##### Options Screen
+
+#### Options Screen
  * This screen sets up a calibration program run and has the following options:
    - **Use Cooling** - If checked use the oven cooling function
    - **Number of laser scans** - this configures the number of laser scans to take
@@ -109,6 +113,7 @@
 ### General Program Screens
  * The graphing, and data tabs are roughly the same for both the calibration and
    baking programs
+
 #### Graphing Screen
  * The graphing screen contains a grid of 6 graphs displaying the data that is
    being recorded
@@ -117,6 +122,7 @@
    - The pause button will stop the graph animation to allow the user to interact
      with the graphs and zoom in, the animation will not continue until the play
      button is pressed
+
 #### Data Screen
  * The data screen shows a table view of the last 100 recorded points, and
    can be used to look at new data that is being recorded
@@ -145,3 +151,6 @@
    - If attempting to change databases always make sure to keep a backup copy of
      the database, and to put the database in the db folder and name it
      program_data.db.
+
+### Generating Source Code Documentation
+

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="github-markdown.css">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>README</title>
+</head>
+<body>
+<article class="markdown-body">
+<h1>FBGUI-README: FBG Baking and Calibration UI</h1>
+
+<h2>Overview</h2>
+
+<ul>
+<li>The project contains a configurable baking, and calibration program
+both accessible through a tkinter GUI.</li>
+<li>Both programs are contained in the same Application, and each application
+contains widgets to configure settings, a realtime graphing display of
+the results, and an excel format generator for the results.</li>
+</ul>
+
+<h2>Getting Started</h2>
+
+<ul>
+<li>The project requires Python 3 and NIVisa
+<ul>
+<li>The required python modules are listed in the requirements.txt file</li>
+<li>These can be run, assuming python and pip are in the machines path
+by running the command:
+<code>pip install -r requirements.txt</code></li>
+</ul></li>
+<li>Detailed source code documentation is available in the docs folder</li>
+<li>A detailed document describing how to setup the computers is
+ included in the docs folder, called ProgramSetup.docx</li>
+</ul>
+
+<h2>Detailed Usage</h2>
+
+<h3>Running the Code</h3>
+
+<ul>
+<li>The program can be run from source once all the requirements have been
+installed running <code>python ./main_program.py</code> from within the fbgui
+directory will launch the gui.</li>
+<li>An executable can also be created using PyInstaller, and this can be
+used to run the program without python installed.
+<ul>
+<li>NiVisa still needs to be installed in order to run the program,
+more details can be found in the ProgramSetup.docx file.</li>
+</ul></li>
+</ul>
+
+<h4>Building the installer, and executable</h4>
+
+<ul>
+<li>Python3 version &lt;= 3.5 is required with PyInstaller installed to build
+the installer and program executable, both of these are setup to
+run only on windows machines</li>
+<li>There are two batch files in the main directory used for creating the
+executable files, make sure the files are pointing to the correct location
+of where Python (&lt;= 3.5) is installed on your machine.</li>
+<li>Run the following commands from a windows terminal in the main project directory:
+<code>commandline
+./install.bat
+./create.bat
+</code></li>
+<li>You may need to press 'y' when prompted by the script to continue</li>
+<li>Once both scripts are done executing a folder called dist\install<em>fbgui,
+will be created, and in the folder the file install</em>fbgui.exe can be
+used to install the program on a computer</li>
+<li>Running install_fbgui.exe will create will install the code in the
+$USER\AppData\Local\Program\FbgUI folder, will create a desktop shortcut,
+and a start menu entry</li>
+</ul>
+
+<h3>Using the Program</h3>
+
+<ul>
+<li>There are 3 main tabs on the program ui: the home screen, the baking
+program, and the calibration program
+<ul>
+<li>Each program tab has 3 tabs: the configuration screen, the graphing
+screen, and the data screen</li>
+</ul></li>
+</ul>
+
+<h3>Main Screen</h3>
+
+<ul>
+<li>The main screen contains entries to configure the locations of the
+devices required for running the program:
+<ul>
+<li>The Micron Optics SM125 and Optical Switch are looking for IP
+addresses, and ports respectively</li>
+<li>The LSC Temp Controller, and Delta Oven are looking for valid
+GPIB addresses (i.e. GPIB0::12::INSTR)</li>
+</ul></li>
+<li>This screen also contains a program log used for displaying log messages,
+a dropdown box to filter messages by severity, and a button to
+export the log messages to a txt file in the fbgui\log folder</li>
+<li>The screen also contains a list of the program runs used for creating
+excel files, selecting a program name and then clicking the generate
+spreadsheet button will create a spreadsheet and open it in Excel, the
+refresh button can be used to load new runs of the program.</li>
+</ul>
+
+<h3>Bake Program</h3>
+
+<ul>
+<li>The bake program is used for recording points continuously at a set temperature
+for an infinite amount of time, until the program is paused.</li>
+</ul>
+
+<h4>Options Screen</h4>
+
+<ul>
+<li>This screen sets up a baking program run, and has the following options:
+<ul>
+<li><strong>Number of laser scans</strong> - this configures the number of laser scans to take
+for each reading and use to average for that reading</li>
+<li><strong>Baking Temperature</strong> - temperature in C to set the oven to for the bake,
+if this field is empty, the oven will not be used for the bake.</li>
+<li><strong>Primary time interval</strong> - the time in hours to wait between taking
+data points</li>
+<li><strong>Drift Rate</strong> - once this drift rate is reached the program will begin
+recording points</li>
+<li><strong>Excel File Name</strong> - the name of the excel file to store the eventual
+output spreadsheet, the file name must end in .xlsx, and must be uniquely
+named, changing the file path does not classify as being unique</li>
+<li><strong>FBG inputs</strong> - FBGs can be added each channel, and can be named using
+the entry input, and a switch position can be specified for the FBG by
+using the spinbox</li>
+</ul></li>
+</ul>
+
+<h3>Calibration Program</h3>
+
+<ul>
+<li>The calibration program is used for recording wavelength and power readings
+for a set of specified temperatures.</li>
+</ul>
+
+<h4>Options Screen</h4>
+
+<ul>
+<li>This screen sets up a calibration program run and has the following options:
+<ul>
+<li><strong>Use Cooling</strong> - If checked use the oven cooling function</li>
+<li><strong>Number of laser scans</strong> - this configures the number of laser scans to take
+for each reading and use to average for that reading</li>
+<li><strong>Number of temperature readings</strong> - the number of temperature readings
+to average together to use for calculating the drift rate</li>
+<li><strong>Time between temp readings</strong> - The frequency at which to check the drift
+rate</li>
+<li><strong>Number of Cal Cycles</strong> - The number of calibration cycles to run</li>
+<li><strong>Target Temps</strong> - Comma separated list of the temperatures to use for
+the calibration run</li>
+<li><strong>Excel file name</strong> - Same as Baking (See Above)</li>
+<li><strong>FBG inputs</strong> - Same as Baking (See Above)</li>
+</ul></li>
+</ul>
+
+<h3>General Program Screens</h3>
+
+<ul>
+<li>The graphing, and data tabs are roughly the same for both the calibration and
+baking programs</li>
+</ul>
+
+<h4>Graphing Screen</h4>
+
+<ul>
+<li>The graphing screen contains a grid of 6 graphs displaying the data that is
+being recorded</li>
+<li>Double clicking on one of the graphs will display a zoomed view of the graph</li>
+<li>The toolbar in the lower left corner can be used for interacting with the graph
+<ul>
+<li>The pause button will stop the graph animation to allow the user to interact
+with the graphs and zoom in, the animation will not continue until the play
+button is pressed</li>
+</ul></li>
+</ul>
+
+<h4>Data Screen</h4>
+
+<ul>
+<li>The data screen shows a table view of the last 100 recorded points, and
+can be used to look at new data that is being recorded
+<ul>
+<li>Each column of the table can be sorted by clicking on the header</li>
+</ul></li>
+<li>The Create Excel button at the bottom of the screen will create an excel
+spreadsheet of the current running program</li>
+</ul>
+
+<h2>Program Notes</h2>
+
+<ul>
+<li>If the program was running, not paused, when the program was closed or
+the power shut off the program will start up using the last used configuration.
+If you would like to change the configuration you must press the pause button
+first.</li>
+<li>The log view on the homescreen should display relevant information about
+the current status of the program and should be the first place that is checked
+if something appears to be wrong.</li>
+<li>If there is an issue try closing the program, and reopening it.</li>
+<li>Pressing F11 will toggle full screen mode.</li>
+<li>The program stores data in a sqlite database called program<em>data.db
+located in the db folder.
+<ul>
+<li>Creating a copy of this datbase would be a good way to backup data
+and move data between computers.</li>
+<li>If the program appears to be slowing down or not working after a while it is
+possible the database may be too full, and moving the database to a different location
+would allow the program to start with a fresh database. The old database
+can be switched in for the new database at any time to look at old data.</li>
+<li>If attempting to change databases always make sure to keep a backup copy of
+the database, and to put the database in the db folder and name it
+program</em>data.db.</li>
+</ul></li>
+</ul>
+
+<h3>Generating Source Code Documentation</h3>
+
+</article>
+</body>
+</html>
+
