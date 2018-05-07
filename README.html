@@ -1,0 +1,213 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="file:/C:/Users/phils/AppData/Local/Temp/multimarkdown_layout.css">
+<style>
+
+body.multimarkdown-preview,
+body.multimarkdown-wiki-preview {
+    font-size: 16px;
+}
+</style>
+<link rel="stylesheet" href="file:/C:/Users/phils/AppData/Local/Temp/multimarkdown_darcula.css">
+</head>
+<body class="multimarkdown-preview">
+<div class="content">
+<div class="page-header"><a href="https://http///github.com/ehmurray8/KytonUI/blob/master/README.md" name="wikipage" id="wikipage" title="Click here to open the file on GitHub">README.md</a></div>
+<div class="hr"></div>
+<h1 id="fbgui-readme-fbg-baking-and-calibration-ui" md-pos="2-45"><a href="#fbgui-readme-fbg-baking-and-calibration-ui" name="fbgui-readme-fbg-baking-and-calibration-ui">FBGUI-README: FBG Baking and Calibration UI</a></h1>
+<h2 id="overview" md-pos="50-58"><a href="#overview" name="overview">Overview</a></h2>
+<ul>
+  <li md-pos="61-173">The project contains a configurable baking, and calibration program
+  both accessible through a tkinter GUI.</li>
+  <li md-pos="174-387">Both programs are contained in the same Application, and each application
+  contains widgets to configure settings, a realtime graphing display of
+  the results, and an excel format generator for the results.</li>
+</ul>
+<h2 id="getting-started" md-pos="391-406"><a href="#getting-started" name="getting-started">Getting Started</a></h2>
+<ul>
+  <li md-pos="408-668">The project requires Python 3 and NIVisa
+    <ul>
+      <li md-pos="454-524">The required python modules are listed in the requirements.txt file</li>
+      <li md-pos="527-668">These can be run, assuming python and pip are in the machines path
+      by running the command:
+      <code md-pos="633-664">pip install -r requirements.txt</code></li>
+    </ul>
+  </li>
+  <li md-pos="669-738">Detailed source code documentation is available in the docs folder</li>
+  <li md-pos="739-861">A detailed document describing how to setup the computers is
+  included in the docs folder, called ProgramSetup.docx</li>
+</ul>
+<h2 id="detailed-usage" md-pos="865-879"><a href="#detailed-usage" name="detailed-usage">Detailed Usage</a></h2>
+<h3 id="running-the-code" md-pos="885-901"><a href="#running-the-code" name="running-the-code">Running the Code</a></h3>
+<ul>
+  <li md-pos="903-1084">The program can be run from source once all the requirements have been
+  installed running <code md-pos="1000-1024">python ./main_program.py</code> from within the fbgui
+  directory will launch the gui.</li>
+  <li md-pos="1085-1340">An executable can also be created using PyInstaller, and this can be
+  used to run the program without python installed.
+    <ul>
+      <li md-pos="1212-1340">NiVisa still needs to be installed in order to run the program,
+      more details can be found in the ProgramSetup.docx file.</li>
+    </ul>
+  </li>
+</ul>
+<h4 id="building-the-installer-and-executable" md-pos="1346-1384"><a href="#building-the-installer-and-executable" name="building-the-installer-and-executable">Building the installer, and executable</a></h4>
+<ul>
+  <li md-pos="1386-1559">Python3 version &lt;= 3.5 is required with Pyinstaller installed to build
+  the installer and program executable, both of these are setup to
+  run only on windows machines</li>
+  <li md-pos="1560-1759">There are two batch files in the main directory used for creating the
+  executable files, make sure the files are pointing to the correct location
+  of where Python is installed on your machine.</li>
+  <li md-pos="1760-1844">Run the following commands from a windows terminal in the main project directory:</li>
+</ul>
+<pre md-pos="1845-1894"><code class="commandline" md-pos="1861-1889">./install.bat
+./create.bat
+</code></pre>
+<ul>
+  <li md-pos="1895-1963">You may need to press 'y' when prompted by the script to continue</li>
+  <li md-pos="1964-2156">Once both scripts are done executing a folder called dist\install_fbgui,
+  will be created, and in the folder the file install_fbgui.exe can be
+  used to install the program on a computer</li>
+  <li md-pos="2157-2329">Running install_fbgui.exe will create will install the code in the
+  $USER\AppData\Local\Program\FbgUI folder, will create a desktop shortcut,
+  and a start menu entry</li>
+</ul>
+<h3 id="using-the-program" md-pos="2334-2351"><a href="#using-the-program" name="using-the-program">Using the Program</a></h3>
+<ul>
+  <li md-pos="2353-2570">There are 3 main tabs on the program ui: the home screen, the baking
+  program, and the calibration program
+    <ul>
+      <li md-pos="2467-2570">Each program tab has 3 tabs: the configuration screen, the graphing
+      screen, and the data screen</li>
+    </ul>
+  </li>
+</ul>
+<h4 id="main-screen" md-pos="2576-2587"><a href="#main-screen" name="main-screen">Main Screen</a></h4>
+<ul>
+  <li md-pos="2589-2920">The main screen contains entries to configure the locations of the
+  devices required for running the program:
+    <ul>
+      <li md-pos="2706-2809">The Micron Optics SM125 and Optical Switch are looking for IP
+      addresses, and ports respectively</li>
+      <li md-pos="2812-2920">The LSC Temp Controller, and Delta Oven are looking for valid
+      GPIB addresses (i.e. GPIB0::12::INSTR)</li>
+    </ul>
+  </li>
+  <li md-pos="2921-3128">This screen also contains a program log used for displaying log messages,
+  a dropdown box to filter messages by severity, and a button to
+  export the log messages to a txt file in the fbgui\log folder</li>
+  <li md-pos="3129-3410">The screen also contains a list of the program runs used for creating
+  excel files, selecting a program name and then clicking the generate
+  spreadsheet button will create a spreadsheet and open it in Excel, the
+  refresh button can be used to load new runs of the program.</li>
+</ul>
+<h4 id="bake-program" md-pos="3415-3427"><a href="#bake-program" name="bake-program">Bake Program</a></h4>
+<ul>
+  <li md-pos="3429-3575">The bake program is used for recording points continuously at a set temperature
+  for an infinite amount of time, until the program is paused.</li>
+</ul>
+<h5 id="options-screen" md-pos="3581-3595"><a href="#options-screen" name="options-screen">Options Screen</a></h5>
+<ul>
+  <li md-pos="3597-4552">This screen sets up a baking program run, and has the following options:
+    <ul>
+      <li md-pos="3675-3813"><strong md-pos="3679-3700">Number of laser scans</strong> - this configures the number of laser scans to take
+      for each reading and use to average for that reading</li>
+      <li md-pos="3816-3962"><strong md-pos="3820-3838">Baking Temperature</strong> - temperature in C to set the oven to for the bake,
+      if this field is empty, the oven will not be used for the bake.</li>
+      <li md-pos="3965-4053"><strong md-pos="3969-3990">Primary time interval</strong> - the time in hours to wait between taking
+      data points</li>
+      <li md-pos="4056-4152"><strong md-pos="4060-4070">Drift Rate</strong> - once this drift rate is reached the program will begin
+      recording points</li>
+      <li md-pos="4155-4376"><strong md-pos="4159-4174">Excel File Name</strong> - the name of the excel file to store the eventual
+      output spreadsheet, the file name must end in .xlsx, and must be uniquely
+      named, changing the file path does not classify as being unique</li>
+      <li md-pos="4379-4552"><strong md-pos="4383-4393">FBG inputs</strong> - FBGs can be added each channel, and can be named using
+      the entry input, and a switch position can be specified for the FBG by
+      using the spinbox</li>
+    </ul>
+  </li>
+</ul>
+<h4 id="calibration-program" md-pos="4557-4576"><a href="#calibration-program" name="calibration-program">Calibration Program</a></h4>
+<ul>
+  <li md-pos="4578-4696">The calibration program is used for recording wavelength and power readings
+  for a set of specified temperatures.</li>
+</ul>
+<h5 id="options-screen-1" md-pos="4702-4716"><a href="#options-screen-1" name="options-screen-1">Options Screen</a></h5>
+<ul>
+  <li md-pos="4718-5508">This screen sets up a calibration program run and has the following options:
+    <ul>
+      <li md-pos="4800-4861"><strong md-pos="4804-4815">Use Cooling</strong> - If checked use the oven cooling function</li>
+      <li md-pos="4864-5002"><strong md-pos="4868-4889">Number of laser scans</strong> - this configures the number of laser scans to take
+      for each reading and use to average for that reading</li>
+      <li md-pos="5005-5142"><strong md-pos="5009-5039">Number of temperature readings</strong> - the number of temperature readings
+      to average together to use for calculating the drift rate</li>
+      <li md-pos="5145-5232"><strong md-pos="5149-5175">Time between temp readings</strong> - The frequency at which to check the drift
+      rate</li>
+      <li md-pos="5235-5304"><strong md-pos="5239-5259">Number of Cal Cycles</strong> - The number of calibration cycles to run</li>
+      <li md-pos="5307-5405"><strong md-pos="5311-5323">Target Temps</strong> - Comma separated list of the temperatures to use for
+      the calibration run</li>
+      <li md-pos="5408-5459"><strong md-pos="5412-5427">Excel file name</strong> - Same as Baking (See Above)</li>
+      <li md-pos="5462-5508"><strong md-pos="5466-5476">FBG inputs</strong> - Same as Baking (See Above)</li>
+    </ul>
+  </li>
+</ul>
+<h3 id="general-program-screens" md-pos="5513-5536"><a href="#general-program-screens" name="general-program-screens">General Program Screens</a></h3>
+<ul>
+  <li md-pos="5538-5637">The graphing, and data tabs are roughly the same for both the calibration and
+  baking programs</li>
+</ul>
+<h4 id="graphing-screen" md-pos="5642-5657"><a href="#graphing-screen" name="graphing-screen">Graphing Screen</a></h4>
+<ul>
+  <li md-pos="5659-5755">The graphing screen contains a grid of 6 graphs displaying the data that is
+  being recorded</li>
+  <li md-pos="5756-5835">Double clicking on one of the graphs will display a zoomed view of the graph</li>
+  <li md-pos="5836-6104">The toolbar in the lower left corner can be used for interacting with the graph
+    <ul>
+      <li md-pos="5921-6104">The pause button will stop the graph animation to allow the user to interact
+      with the graphs and zoom in, the animation will not continue until the play
+      button is pressed</li>
+    </ul>
+  </li>
+</ul>
+<h4 id="data-screen" md-pos="6109-6120"><a href="#data-screen" name="data-screen">Data Screen</a></h4>
+<ul>
+  <li md-pos="6122-6324">The data screen shows a table view of the last 100 recorded points, and
+  can be used to look at new data that is being recorded
+    <ul>
+      <li md-pos="6257-6324">Each column of the table can be sorted by clicking on the header</li>
+    </ul>
+  </li>
+  <li md-pos="6325-6446">The Create Excel button at the bottom of the screen will create an excel
+  spreadsheet of the current running program</li>
+</ul>
+<h2 id="program-notes" md-pos="6450-6463"><a href="#program-notes" name="program-notes">Program Notes</a></h2>
+<ul>
+  <li md-pos="6465-6712">If the program was running, not paused, when the program was closed or
+  the power shut off the program will start up using the last used configuration.
+  If you would like to change the configuration you must press the pause button
+  first.</li>
+  <li md-pos="6713-6908">The log view on the homescreen should display relevant information about
+  the current status of the program and should be the first place that is checked
+  if something appears to be wrong.</li>
+  <li md-pos="6909-6975">If there is an issue try closing the program, and reopening it.</li>
+  <li md-pos="6976-7021">Pressing F11 will toggle full screen mode.</li>
+  <li md-pos="7022-7736">The program stores data in a sqlite database called program_data.db
+  located in the db folder.
+    <ul>
+      <li md-pos="7124-7231">Creating a copy of this datbase would be a good way to backup data
+      and move data between computers.</li>
+      <li md-pos="7234-7561">If the program appears to be slowing down or not working after a while it is
+      possible the database may be too full, and moving the database to a different location
+      would allow the program to start with a fresh database. The old database
+      can be switched in for the new database at any time to look at old data.</li>
+      <li md-pos="7564-7736">If attempting to change databases always make sure to keep a backup copy of
+      the database, and to put the database in the db folder and name it
+      program_data.db.</li>
+    </ul>
+  </li>
+</ul>
+</div>
+</body>
+</html>
