@@ -34,10 +34,3 @@ goto end
 
 :end
 popd
-
-move docs\html\* docs\
-cd docs\html
-move _modules ..\
-move _static ..\
-move _sources ..\
-cd ..\..\

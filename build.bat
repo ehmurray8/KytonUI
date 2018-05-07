@@ -1,8 +1,13 @@
-rmdir dist /q
-rmdir build /q
+rmdir dist /S /Q
+rmdir build /S /Q
 %HOMEPATH%\AppData\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean -n fbgui .\fbgui.spec
-%HOMEPATH%\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean --windowed .\create.spec
-./make.bat html
+%HOMEPATH%\AppData\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean --windowed .\install.spec
+call make.bat html
+move docs\html\* docs
+cd docs\html
+move _modules ..
+move _static ..
+move _sources ..
+cd ..\..
 python -m create_mdhtml README.md "README"
-cp -r docs dist/install_fbgui/fbgui
-
+cp -r docs dist\install_fbgui\fbgui

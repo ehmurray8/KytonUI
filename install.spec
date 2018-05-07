@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['create.py'],
+a = Analysis(['insaller.py'],
              pathex=['C:\\Users\\Emmet\\source_code\\KytonUI'],
              binaries=[],
              datas=[('C:\\Users\\Emmet\\source_code\\KytonUI\\dist\\fbgui', '.\\fbgui')],

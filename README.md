@@ -33,21 +33,22 @@
  * Python3 version <= 3.5 is required with PyInstaller installed to build
    the installer and program executable, both of these are setup to
    run only on windows machines
- * There are two batch files in the main directory used for creating the
-   executable files, make sure the files are pointing to the correct location
-   of where Python (<= 3.5) is installed on your machine.
- * Run the following commands from a windows terminal in the main project directory:
+ * There is a batch file in the main directory, called build.bat, used for creating the
+   executable files, make sure the file is pointing to the correct location
+   of where Python (<= 3.5) is installed on your machine, for the two PyInstaller
+   commands.
+ * Run the following command from a windows terminal in the main source code project directory:
  ```commandline
- ./install.bat
- ./create.bat
+ ./make.bat
  ```
- * You may need to press 'y' when prompted by the script to continue
  * Once both scripts are done executing a folder called dist\install_fbgui,
    will be created, and in the folder the file install_fbgui.exe can be
    used to install the program on a computer
- * Running install_fbgui.exe will create will install the code in the
+ * Running install_fbgui.exe will install the code in the
    $USER\AppData\Local\Program\FbgUI folder, will create a desktop shortcut,
-   and a start menu entry
+   and a start menu entry for the program
+   - The installer will also create a desktop entry for the documentation, as well
+     as a Start Menu entry for the documentation.
 
 ### Using the Program
  * There are 3 main tabs on the program ui: the home screen, the baking
@@ -152,5 +153,17 @@
      the database, and to put the database in the db folder and name it
      program_data.db.
 
-### Generating Source Code Documentation
+### Additional Details
 
+ * The source code documentation was generated using the sphinx tool.
+ * The source code documentation options are configured in the sphinx-source directory.
+   - The conf.py file in this directory contains configuration information for how the
+     source code documentation will be generated.
+   - The index.rst file is used for pointing sphinx in the right direction to find
+     all of the source code. A fbgui.rst file can be created by running the command:
+     ```sphinx-apidoc.exe -o .\sphinx_source .\fbgui```
+     from the main directory, and then rename fbgui.rst to index.rst, for sphinx to use it.
+   - The make.bat file is used to create the docs, and this is called within the build.bat
+     script.
+ * The executable configuration options are in the file fbgui.spec, and the installer
+   configuration options are in the install.spec file.
