@@ -133,8 +133,10 @@ class OptionsPanel(ttk.Frame):
         Returns the target temps as an array, doesn't catch the ValueError exception possibility.
 
         :return: list of target calibration temps
+        :raises ValueError: If target temps are not of the right type
         """
-        return helpers.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
+        #return helpers.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
+        return helpers.list_cast(self.target_temps_entry.get().split(","), float)
 
     def create_options_grid(self):
         """Creates the grid for the user to configure options, in the upper portion of the options screen."""
@@ -169,8 +171,10 @@ class OptionsPanel(ttk.Frame):
             row_num += 1
 
             target_temps = self.conf_parser.get(self.program, "target_temps")
-            self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
-                                                     .format(u'\u00B0'), row_num, 10, 4, target_temps)
+            #self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
+            #                                         .format(u'\u00B0'), row_num, 10, 2, target_temps)
+            self.target_temps_entry = uh.string_entry(self.options_grid, "Target temps {}C [Comma Separated]"
+                                                      .format(u'\u00B0'), row_num, 10, target_temps)
             row_num += 1
         else:
             set_temp = self.conf_parser.getfloat(self.program, "set_temp")
@@ -220,7 +224,7 @@ class OptionsPanel(ttk.Frame):
         for i, chan_num in enumerate(self.chan_nums):
             if len(chan_num) > 1:
                 most = i
-        if len(self.chan_nums[chan]) > 16:
+        if len(self.chan_nums[chan]) >= 16:
             mbox.showerror("Channel error", "Can only have 16 FBGs on single channel.")
         elif most != -1 and most != chan and len(self.chan_nums[chan]):
             mbox.showerror("Channel error", "Can only have multiple FBGs on a single channel, please clear channel {} "

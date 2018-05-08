@@ -73,6 +73,12 @@ def double_entry() -> tk.DoubleVar:
     pass
 
 
+@ui_entry(tk.StringVar)
+def string_entry() -> tk.StringVar:
+    """Creates a labeled entry that looks for a string value as the input."""
+    pass
+
+
 def checkbox_entry(container: ttk.Frame, label_text: str, row: int, checked: bool=True) -> tk.IntVar:
     """
     Creates a checkbox entry, and returns a reference to the entry var.

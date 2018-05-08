@@ -4,6 +4,7 @@ import socket
 from socket import AF_INET, SOCK_STREAM
 import numpy as np
 import random
+import math
 from typing import List, Tuple
 from visa import ResourceManager
 from pyvisa.resources.gpib import GPIBInstrument
@@ -64,7 +65,7 @@ class SM125(socket.socket):
             return wavelengths_list[0], amplitudes_list[0], chan_lens
 
 
-class Vidia(object):
+class VidiaLaser(object):
     """
     Vidia-Swept laser wrapper object.
 
@@ -83,15 +84,65 @@ class Vidia(object):
         if use_dev:
             self.device = manager.open_resource(loc)  # type: GPIBInstrument
 
-    def start_scan(self):
-        """Starts the scanning process for the laser."""
+    def start_scan(self, num_scans: int=-1):
+        """
+        Starts the scanning process for the laser.
+
+        :param num_scans: the number of scans to run, defaults to -1 (continuous scan)
+        """
         self.device.query(":OUTP ON")
         self.device.query(":OUTP:TRAC OFF")
-        self.device.query(":OUTP:SCAN:STAR -1")
+        self.device.query(":OUTP:SCAN:STAR {}".format(num_scans))
 
-    def wave_info(self):
-        """Returns wavelength information from the laser."""
-        return self.device.query(":WAVE MIN?"), self.device.query(":WAVE?"), self.device.query(":WAVE MAX?")
+    def get_wavelength(self) -> float:
+        """
+        Returns wavelength information from the laser.
+
+        :return: min wavelength, set wavelength, max wavelength
+        """
+        return float(self.device.query(":SENS:WAVE?"))
+
+    def get_mean_wavelength(self) -> float:
+        """
+        Return the mean wavelength of the scan.
+
+        :return: mean wavelength of the scan range
+        """
+        return (float(self.device.query(":WAVE MAX?")) + float(self.device.query(":WAVE MIN?"))) / 2
+
+
+class NewportPower(object):
+    """
+    Newport Power Meter 1830-C wrapper object.
+
+    :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
+    """
+
+    def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
+        """
+        Create a visa connection using loc and manager to the Newport Power Meter.
+
+        :param loc: the GPIB location of the power meter
+        :param manager: the PyVisa resource manager
+        :param use_dev: if True connect to the power meter
+        """
+        self.device = None
+        if use_dev:
+            self.device = manager.open_resource(loc)  # type: GPIBInstrument
+
+    def set_units_dbm(self):
+        """Set the units of the device to dBm"""
+        if self.device.query("U?\n") != "3":
+            self.device.query("U3")
+
+    def get_power(self) -> float:
+        """
+        Returns the power reading of the device in dBm.
+
+        :return: power in dBm.
+        """
+        power_watts = float(self.device.query("D?\n"))
+        return power_watts
 
 
 class Oven(object):
