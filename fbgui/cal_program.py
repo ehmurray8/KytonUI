@@ -170,9 +170,10 @@ class CalProgram(Program):
                 drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
                 drift_rate *= 60000.
 
-                if not self.master.thread_map[thread_id] and math.fabs(curr_temp - self.options.set_temp.get()) < .5:
+                if not self.master.thread_map[thread_id]:
                     return False
-                if drift_rate <= self.options.drift_rate.get():
+                if drift_rate <= self.options.drift_rate.get() and \
+                        math.fabs(curr_temp - 274.15 - self.options.set_temp.get()) <= 1:
                     fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
                                 self.table, self.master.main_queue, drift_rate, True, cycle_num)
                     return True
