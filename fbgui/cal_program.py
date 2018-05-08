@@ -147,7 +147,8 @@ class CalProgram(Program):
 
     def check_drift_rate(self, thread_id: UUID, cycle_num: int) -> bool:
         """
-        Checks if the drift rate is below the configured drift.
+        Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
+        temperature.
 
         :param thread_id: UUID of the thread the code is curretnly running in
         :param cycle_num: The number of the current calibration cycle
@@ -173,7 +174,7 @@ class CalProgram(Program):
                 if not self.master.thread_map[thread_id]:
                     return False
                 if drift_rate <= self.options.drift_rate.get() and \
-                        math.fabs(curr_temp - 274.15 - self.options.set_temp.get()) <= 1:
+                        math.fabs(curr_temp - 274.15 - float(self.options.set_temp.get())) <= 1:
                     fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
                                 self.table, self.master.main_queue, drift_rate, True, cycle_num)
                     return True

@@ -47,7 +47,7 @@ by running the command:
 </ul></li>
 <li>Detailed source code documentation is available in the docs folder</li>
 <li>A detailed document describing how to setup the computers is
- included in the docs folder, called ProgramSetup.docx</li>
+ included in the docs folder, called ProgramSetup.html.</li>
 </ul>
 
 <h2>Detailed Usage</h2>
@@ -62,7 +62,7 @@ directory will launch the gui.</li>
 used to run the program without python installed.
 <ul>
 <li>NiVisa still needs to be installed in order to run the program,
-more details can be found in the ProgramSetup.docx file.</li>
+more details can be found in the ProgramSetup.html file.</li>
 </ul></li>
 </ul>
 
@@ -78,7 +78,7 @@ of where Python (&lt;= 3.5) is installed on your machine, for the two PyInstalle
 commands.</li>
 <li>Run the following command from a windows terminal in the main source code project directory:
 <code>commandline
-./make.bat
+./build.bat
 </code></li>
 <li>Once both scripts are done executing a folder called dist\install<em>fbgui,
 will be created, and in the folder the file install</em>fbgui.exe can be
@@ -256,6 +256,9 @@ script.</li>
 </ul></li>
 <li>The executable configuration options are in the file fbgui.spec, and the installer
 configuration options are in the install.spec file.</li>
+<li>Known issue: The zoomed wavelength vs. power graph xlabel doesn't appear,
+the bottom righthand corner of the screen displays the x and y coordinates
+of the cursor.</li>
 </ul>
 
 </article>

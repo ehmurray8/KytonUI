@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="github-markdown.css">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Program Setup</title>
+</head>
+<body>
+<article class="markdown-body">
+<h1>Program Setup</h1>
+
+<h2>GPIB</h2>
+
+<ul>
+<li>Make sure the NIVisa program is installed on the target machine, this program
+enables the usage of USB GPIB hubs, and allows python to talk with the NIVisa
+program.
+<ul>
+<li>Install location: www.ni.com/download/ni-488.2/7272/en</li>
+<li>The program will warn you if NIVisa is not installed when it starts</li>
+</ul></li>
+<li><strong>Lake Shore Cryotronics 340 Default GPIB Address:</strong> GPIB0::12::INSTR</li>
+<li><strong>Lake Shore Cryotronics 332 Default GPIB Address:</strong> GPIB0::13::INSTR</li>
+<li><strong>Delta Oven Default GPIB Address:</strong> GPIB0::27::INSTR</li>
+</ul>
+
+<h2>Ethernet</h2>
+
+<ul>
+<li>Make sure the computer and all of the devices are on the same subnet.</li>
+<li><strong>Optical Switch:</strong> defaults to 192.168.1.111, to change the IP address and port,
+press enter, and then the down arrow 2 times, and then enter gets you to
+the IP address. Moving the arrows up and down will change the address,
+and enter will confirm the highlighted selection.</li>
+<li><strong>Micron Optics</strong> to change the Micron Optics IP Address, you must use the
+Micron Optics Enlight program and the network configuration can be found in
+the settings tab.</li>
+</ul>
+
+</article>
+</body>
+</html>
+

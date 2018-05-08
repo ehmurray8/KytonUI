@@ -9,7 +9,7 @@ a = Analysis(['fbgui\\install.py', 'fbgui\\baking_program.py', 'fbgui\\cal_progr
               'fbgui\\program.py', 'fbgui\\datatable.py', 'fbgui\\ui_helper.py'],
              pathex=['C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui'],
              binaries=[],
-             datas=[('C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui\\assets', '.\\assets')],
+             datas=[('.\\fbgui\\assets', '.\\assets')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -28,7 +28,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True, icon='C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui\\assets\\fiber.ico')
+          console=True, icon='.\\fbgui\\assets\\fiber.ico')
 
 coll = COLLECT(exe,
                a.binaries,

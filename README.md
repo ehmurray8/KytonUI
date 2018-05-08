@@ -16,7 +16,7 @@
      ```pip install -r requirements.txt```
  * Detailed source code documentation is available in the docs folder
  * A detailed document describing how to setup the computers is
-     included in the docs folder, called ProgramSetup.docx
+     included in the docs folder, called ProgramSetup.html.
 
 ## Detailed Usage
 
@@ -27,7 +27,7 @@
  * An executable can also be created using PyInstaller, and this can be
    used to run the program without python installed.
    - NiVisa still needs to be installed in order to run the program,
-     more details can be found in the ProgramSetup.docx file.
+     more details can be found in the ProgramSetup.html file.
 
 #### Building the installer, and executable
  * Python3 version <= 3.5 is required with PyInstaller installed to build
@@ -39,7 +39,7 @@
    commands.
  * Run the following command from a windows terminal in the main source code project directory:
  ```commandline
- ./make.bat
+ ./build.bat
  ```
  * Once both scripts are done executing a folder called dist\install_fbgui,
    will be created, and in the folder the file install_fbgui.exe can be
@@ -165,5 +165,10 @@
      from the main directory, and then rename fbgui.rst to index.rst, for sphinx to use it.
    - The make.bat file is used to create the docs, and this is called within the build.bat
      script.
+   - You may need to change the directories in the sphinx_source\conf.py file
+     to point to the code on your machine.
  * The executable configuration options are in the file fbgui.spec, and the installer
    configuration options are in the install.spec file.
+ * Known issue: The zoomed wavelength vs. power graph xlabel doesn't appear,
+   the bottom righthand corner of the screen displays the x and y coordinates
+   of the cursor.
