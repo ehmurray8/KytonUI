@@ -486,8 +486,9 @@ def drift_rate_graph(axes: List[Axes], dc: DataCollection):
     :param dc: data collection object to use for populating the graph
     """
     times, drates, delta_drates = __get_drift_rates(dc)
-    axes[0].plot(times, drates)
-    if len(axes) > 1:
+    if len(times) == len(drates):
+        axes[0].plot(times, drates)
+    if len(axes) > 1 and len(times) == len(delta_drates):
         axes[1].plot(times, delta_drates)
 
 

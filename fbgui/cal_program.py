@@ -23,6 +23,7 @@ class CalProgram(Program):
         """
         cal_type = ProgramType(CAL)
         super().__init__(master, cal_type)
+        self.current_set_temp = None
 
     def program_loop(self, thread_id: UUID):
         """
@@ -102,6 +103,7 @@ class CalProgram(Program):
             if not self.master.thread_map[thread_id]:
                 return
 
+            self.current_set_temp = temps[0] - 5
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
@@ -117,6 +119,7 @@ class CalProgram(Program):
                                                title=None))
             start_cycle_time = time.time()
             for temp in temps:
+                self.current_set_temp = temp
                 if temp >= temps[0]:
                     kwargs = {"temp": temp, "heat": True, "force_connect": True}
                 else:
@@ -174,7 +177,7 @@ class CalProgram(Program):
                 if not self.master.thread_map[thread_id]:
                     return False
                 if drift_rate <= self.options.drift_rate.get() and \
-                        math.fabs(curr_temp - 274.15 - float(self.options.set_temp.get())) <= 1:
+                        math.fabs(curr_temp - 274.15 - self.current_set_temp) <= 1:
                     fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
                                 self.table, self.master.main_queue, drift_rate, True, cycle_num)
                     return True
