@@ -14,8 +14,17 @@
 #
 import os
 import sys
-sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI")
-sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI\fbgui")
+import getpass
+
+if "phil" in getpass.getuser():
+    sys.path.insert(0, r"C:\Users\phils\Documents\FbgUI\fbgui")
+    sys.path.insert(0, r"C:\Users\phils\Documents\FbgUI")
+elif "emmet" in getpass.getuser():
+    sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI\fbgui")
+    sys.path.insert(0, r"C:\Users\Emmet\Documents\KytonUI")
+else:
+    sys.path.insert(0, os.path.abspath("."))
+    sys.path.insert(0, os.path.abspath(os.path.join(".", "fbgui")))
 
 
 # -- Project information -----------------------------------------------------

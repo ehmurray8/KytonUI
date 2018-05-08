@@ -111,7 +111,8 @@
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.check_drift_rate">
 <code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>thread_id</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if the drift rate is below the configured drift.</p>
+<dd><p>Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
+temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -439,6 +440,43 @@ UUID should be running</li>
 <span id="fbgui-devices-module"></span><h2>fbgui.devices module<a class="headerlink" href="#module-fbgui.devices" title="Permalink to this headline">¶</a></h2>
 <p>Contains object representations of all the necessary devices.</p>
 <dl class="class">
+<dt id="fbgui.devices.NewportPower">
+<em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">NewportPower</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#NewportPower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.NewportPower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Newport Power Meter 1830-C wrapper object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>device</strong> (<em>pyvisa.resources.gpib.GPIBInstrument</em>) – PyVisa GPIB connection to the device</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="fbgui.devices.NewportPower.get_power">
+<code class="descname">get_power</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#NewportPower.get_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.NewportPower.get_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the power reading of the device in dBm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">power in dBm.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.NewportPower.set_units_dbm">
+<code class="descname">set_units_dbm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#NewportPower.set_units_dbm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.NewportPower.set_units_dbm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the units of the device to dBm</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="fbgui.devices.OpSwitch">
 <em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">OpSwitch</code><span class="sig-paren">(</span><em>addr</em>, <em>port</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#OpSwitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.OpSwitch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">socket.socket</span></code></p>
@@ -590,8 +628,8 @@ the third parameter is empty</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="fbgui.devices.Vidia">
-<em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">Vidia</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#Vidia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.Vidia" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.devices.VidiaLaser">
+<em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">VidiaLaser</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#VidiaLaser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.VidiaLaser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Vidia-Swept laser wrapper object.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -603,15 +641,49 @@ the third parameter is empty</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="fbgui.devices.Vidia.start_scan">
-<code class="descname">start_scan</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#Vidia.start_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.Vidia.start_scan" title="Permalink to this definition">¶</a></dt>
-<dd><p>Starts the scanning process for the laser.</p>
+<dt id="fbgui.devices.VidiaLaser.get_mean_wavelength">
+<code class="descname">get_mean_wavelength</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#VidiaLaser.get_mean_wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.VidiaLaser.get_mean_wavelength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mean wavelength of the scan.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean wavelength of the scan range</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="fbgui.devices.Vidia.wave_info">
-<code class="descname">wave_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#Vidia.wave_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.Vidia.wave_info" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.devices.VidiaLaser.get_wavelength">
+<code class="descname">get_wavelength</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#VidiaLaser.get_wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.VidiaLaser.get_wavelength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns wavelength information from the laser.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">min wavelength, set wavelength, max wavelength</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.VidiaLaser.start_scan">
+<code class="descname">start_scan</code><span class="sig-paren">(</span><em>num_scans=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#VidiaLaser.start_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.VidiaLaser.start_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the scanning process for the laser.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num_scans</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the number of scans to run, defaults to -1 (continuous scan)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -924,7 +996,7 @@ the animation if it is.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes_tuple</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – tuple of matplotlib Axes objects, that will be graphed using the animate function if
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes_tuple</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>, …]) – tuple of matplotlib Axes objects, that will be graphed using the animate function if
 the program exists</td>
 </tr>
 </tbody>
@@ -1732,6 +1804,8 @@ type.
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of target calibration temps</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – If target temps are not of the right type</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -2270,6 +2344,20 @@ the serial number entry and switch position switchbox for a FBG</p>
 <li><strong>descending</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True sort in descending order, otherwise sort in ascending order</li>
 </ul>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.ui_helper.string_entry">
+<code class="descclassname">fbgui.ui_helper.</code><code class="descname">string_entry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#string_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.string_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a labeled entry that looks for a string value as the input.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code></td>
 </tr>
 </tbody>
 </table>

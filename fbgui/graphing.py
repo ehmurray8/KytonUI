@@ -103,7 +103,7 @@ class Graph(object):
         axes_tuple = (self.sub_axis,)
         self.check_val_file(axes_tuple)
 
-    def check_val_file(self, axes_tuple: Tuple[Axes]):
+    def check_val_file(self, axes_tuple: Tuple[Axes, ...]):
         """
         Checks whether the currently configured file name is a program stored in the map sql table, and starts
         the animation if it is.

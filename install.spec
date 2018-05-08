@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['installer.py'],
-             pathex=['C:\\Users\\Emmet\\source_code\\KytonUI'],
+             pathex=['.'],
              binaries=[],
-             datas=[('C:\\Users\\Emmet\\source_code\\KytonUI\\dist\\fbgui', '.\\fbgui')],
+             datas=[('.\\dist\\fbgui', '.\\fbgui')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=True,
-          icon='C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui\\assets\\fiber.ico')
+          icon='.\\fbgui\\assets\\fiber.ico')
 
 coll = COLLECT(exe,
                a.binaries,
