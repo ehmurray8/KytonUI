@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['insaller.py'],
+a = Analysis(['installer.py'],
              pathex=['C:\\Users\\Emmet\\source_code\\KytonUI'],
              binaries=[],
              datas=[('C:\\Users\\Emmet\\source_code\\KytonUI\\dist\\fbgui', '.\\fbgui')],
