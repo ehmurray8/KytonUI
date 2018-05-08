@@ -55,9 +55,9 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread this code is running in</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the drift rate is stable otherwise returns false</td>
 </tr>
@@ -73,7 +73,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread this code is running in</td>
 </tr>
 </tbody>
 </table>
@@ -99,8 +99,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>temps</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – the list of temperatures to set the oven to</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the code the thread is currently running in</li>
+<li><strong>temps</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – the list of temperatures to set the oven to</li>
+<li><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the code the thread is currently running in</li>
 </ul>
 </td>
 </tr>
@@ -118,12 +118,12 @@ temperature.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is curretnly running in</li>
-<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The number of the current calibration cycle</li>
+<li><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread the code is curretnly running in</li>
+<li><strong>cycle_num</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – The number of the current calibration cycle</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the drift rate is below the configured drift rate, otherwise False</p>
@@ -141,9 +141,9 @@ temperature.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread the code is currently running in</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the averaged temperature</td>
 </tr>
@@ -159,7 +159,7 @@ temperature.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread this code is running in</td>
 </tr>
 </tbody>
 </table>
@@ -174,12 +174,12 @@ temperature.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>start_temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The first temperature the oven is set to</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</li>
+<li><strong>start_temp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The first temperature the oven is set to</li>
+<li><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread the code is currently running in</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -194,9 +194,9 @@ temperature.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread this code is running in</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">False if the program was paused, True otherwise</td>
 </tr>
@@ -213,7 +213,7 @@ temperature.</p>
 <dl class="class">
 <dt id="fbgui.constants.Colors">
 <em class="property">class </em><code class="descclassname">fbgui.constants.</code><code class="descname">Colors</code><span class="sig-paren">(</span><em>hex_color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/constants.html#Colors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.constants.Colors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Colors used in the GUI styling.</p>
 </dd></dl>
 
@@ -231,12 +231,12 @@ temperature.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – the treeview table headers</li>
+<li><strong>headers</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – the treeview table headers</li>
 <li><strong>main_queue</strong> (<em>Queue</em>) – main_queue parameter</li>
 <li><strong>tree</strong> (<em>ttk.Treeview</em>) – ttk tree displaying information about the program runs</li>
-<li><strong>item_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em>) – ids of the items currently stored in the tree</li>
-<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><strong>int</strong></a> – str] file_paths: mapping of map table ids to file paths</li>
-<li><strong>s_nums</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – map of program database ids to comma separated strings of serial numbers for that program</li>
+<li><strong>item_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – ids of the items currently stored in the tree</li>
+<li><strong>Dict</strong><strong>[</strong><strong>int</strong> – str] file_paths: mapping of map table ids to file paths</li>
+<li><strong>s_nums</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – map of program database ids to comma separated strings of serial numbers for that program</li>
 </ul>
 </td>
 </tr>
@@ -250,7 +250,7 @@ temperature.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of strings for the program id, program name, and program type respectively</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of strings for the program id, program name, and program type respectively</td>
 </tr>
 </tbody>
 </table>
@@ -277,7 +277,7 @@ temperature.</p>
 <dl class="class">
 <dt id="fbgui.data_container.DataCollection">
 <em class="property">class </em><code class="descclassname">fbgui.data_container.</code><code class="descname">DataCollection</code><a class="reference internal" href="_modules/fbgui/data_container.html#DataCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.data_container.DataCollection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Data container class for data stored in the database for the program</p>
 <p><strong>Create must be called in order to instantiate the object properly based on a dataframe object.</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -285,16 +285,16 @@ temperature.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>times</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em>) – list of delta times in hours, from the start</li>
-<li><strong>temps</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em>) – list of temperatures in Kelvin</li>
+<li><strong>times</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – list of delta times in hours, from the start</li>
+<li><strong>temps</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – list of temperatures in Kelvin</li>
 <li><strong>List</strong><strong>[</strong><strong>delta_temps</strong> – list of delta temperatures in Kelvin, from the start</li>
-<li><strong>powers</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em><em>]</em>) – 2D list of powers by serial number in dBm.</li>
-<li><strong>delta_powers</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em><em>]</em>) – 2D list of delta powers, from the start, by serial number, in dBm.</li>
-<li><strong>mean_delta_powers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em>) – list of average delta power in dBm, from the start</li>
-<li><strong>wavelengths</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em><em>]</em>) – 2D list of wavelengths by serial number in nm.</li>
-<li><strong>delta_wavelengths</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em><em>]</em>) – 2D list of delta wavelengths, from the start, by serial number, in pm.</li>
-<li><strong>mean_delta_wavelengths</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em>) – list of average delta wavelengths in pm.</li>
-<li><strong>drift_rates</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>]</em>) – list of calibration drift rates mK/min</li>
+<li><strong>powers</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – 2D list of powers by serial number in dBm.</li>
+<li><strong>delta_powers</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – 2D list of delta powers, from the start, by serial number, in dBm.</li>
+<li><strong>mean_delta_powers</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – list of average delta power in dBm, from the start</li>
+<li><strong>wavelengths</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – 2D list of wavelengths by serial number in nm.</li>
+<li><strong>delta_wavelengths</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – 2D list of delta wavelengths, from the start, by serial number, in pm.</li>
+<li><strong>mean_delta_wavelengths</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – list of average delta wavelengths in pm.</li>
+<li><strong>drift_rates</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – list of calibration drift rates mK/min</li>
 </ul>
 </td>
 </tr>
@@ -311,15 +311,15 @@ specified in the class docstring, numpy arrays are used instead of lists however
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – boolean for whether or not the program is a calibration program</li>
+<li><strong>is_cal</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – boolean for whether or not the program is a calibration program</li>
 <li><strong>df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – dataframe representing the sql table for the program</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of serial numbers that are in use for the program, if None the serial numbers will be found
+<li><strong>snums</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of serial numbers that are in use for the program, if None the serial numbers will be found
 using file_helper get_snums function</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>]) – if present used for writing messages to the program log</li>
+<li><strong>main_queue</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code>]) – if present used for writing messages to the program log</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><strong>RuntimeError</strong></a> – If the table has not been created or populated yet</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>RuntimeError</strong> – If the table has not been created or populated yet</p>
 </td>
 </tr>
 </tbody>
@@ -342,10 +342,10 @@ using file_helper get_snums function</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – headers for the tree view widget</li>
+<li><strong>headers</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – headers for the tree view widget</li>
 <li><strong>tree</strong> (<em>ttk.Treeview</em>) – tree used for displaying the data</li>
 <li><strong>func</strong> (<em>Callable</em>) – param func</li>
-<li><strong>item_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em>) – ids of the items currently stored in the tree view</li>
+<li><strong>item_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – ids of the items currently stored in the tree view</li>
 <li><strong>main_queue</strong> (<em>Queue</em>) – param main_queue</li>
 </ul>
 </td>
@@ -360,7 +360,7 @@ using file_helper get_snums function</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of strings corresponding to the columns in the tree view</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of strings corresponding to the columns in the tree view</td>
 </tr>
 </tbody>
 </table>
@@ -381,8 +381,8 @@ using file_helper get_snums function</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>headers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of header strings to add to the tree view</li>
-<li><strong>reset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If true clear the table</li>
+<li><strong>headers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of header strings to add to the tree view</li>
+<li><strong>reset</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If true clear the table</li>
 </ul>
 </td>
 </tr>
@@ -399,7 +399,7 @@ using file_helper get_snums function</li>
 <dl class="class">
 <dt id="fbgui.dev_helper.Params">
 <em class="property">class </em><code class="descclassname">fbgui.dev_helper.</code><code class="descname">Params</code><span class="sig-paren">(</span><em>laser</em>, <em>switch</em>, <em>switches</em>, <em>num_pts</em>, <em>pos_used</em>, <em>use_dev</em>, <em>num_snums</em>, <em>thread_id</em>, <em>thread_map</em>, <em>main_queue</em>, <em>switch_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/dev_helper.html#Params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.dev_helper.Params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Wrapper for the parameters used throughout the module.</p>
 </dd></dl>
 
@@ -416,19 +416,19 @@ in order of the serial numbers, and corresponding indices match between the two 
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>laser</strong> (<a class="reference internal" href="#fbgui.devices.SM125" title="fbgui.devices.SM125"><code class="xref py py-class docutils literal notranslate"><span class="pre">SM125</span></code></a>) – the SM125 wrapper used for communicating with the SM125</li>
 <li><strong>switch</strong> (<a class="reference internal" href="#fbgui.devices.OpSwitch" title="fbgui.devices.OpSwitch"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpSwitch</span></code></a>) – the optical switch wrapper used for communicating with the optical switch</li>
-<li><strong>switches</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – 2D list with one list for each SM125 channel containing the switch positions on each channel</li>
-<li><strong>num_pts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the number of readings to take for each fbg</li>
-<li><strong>pos_used</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – the number of fbgs on each SM125 channel</li>
-<li><strong>use_dev</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if True use devices, otherwise run simulation</li>
-<li><strong>num_snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – total number of fbgs in the current test</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running on</li>
-<li><strong>thread_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>) – Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with that
+<li><strong>switches</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]) – 2D list with one list for each SM125 channel containing the switch positions on each channel</li>
+<li><strong>num_pts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the number of readings to take for each fbg</li>
+<li><strong>pos_used</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – the number of fbgs on each SM125 channel</li>
+<li><strong>use_dev</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – if True use devices, otherwise run simulation</li>
+<li><strong>num_snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – total number of fbgs in the current test</li>
+<li><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread the code is currently running on</li>
+<li><strong>thread_map</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>) – Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with that
 UUID should be running</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – Queue used for writing log messages to</li>
+<li><strong>main_queue</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code>) – Queue used for writing log messages to</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
 </td>
 </tr>
 </tbody>
@@ -442,7 +442,7 @@ UUID should be running</li>
 <dl class="class">
 <dt id="fbgui.devices.NewportPower">
 <em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">NewportPower</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#NewportPower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.NewportPower" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Newport Power Meter 1830-C wrapper object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -460,7 +460,7 @@ UUID should be running</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">power in dBm.</td>
 </tr>
@@ -489,7 +489,7 @@ UUID should be running</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>chan</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – channel to set the optical switch to</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>chan</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – channel to set the optical switch to</td>
 </tr>
 </tbody>
 </table>
@@ -500,7 +500,7 @@ UUID should be running</li>
 <dl class="class">
 <dt id="fbgui.devices.Oven">
 <em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">Oven</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#Oven"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.Oven" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Delta oven object, uses pyvisa.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -548,7 +548,7 @@ UUID should be running</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Temperature to set the oven to</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Temperature to set the oven to</td>
 </tr>
 </tbody>
 </table>
@@ -575,7 +575,7 @@ UUID should be running</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Wavelength readings, Amplitude readings, Number of readings on each channel, if using fake values then
@@ -591,7 +591,7 @@ the third parameter is empty</p>
 <dl class="class">
 <dt id="fbgui.devices.TempController">
 <em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">TempController</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#TempController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.TempController" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Object representation of the Temperature Controller needed for the program.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -630,7 +630,7 @@ the third parameter is empty</p>
 <dl class="class">
 <dt id="fbgui.devices.VidiaLaser">
 <em class="property">class </em><code class="descclassname">fbgui.devices.</code><code class="descname">VidiaLaser</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em>, <em>use_dev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices.html#VidiaLaser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.VidiaLaser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Vidia-Swept laser wrapper object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -648,7 +648,7 @@ the third parameter is empty</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">mean wavelength of the scan range</td>
 </tr>
@@ -664,7 +664,7 @@ the third parameter is empty</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">min wavelength, set wavelength, max wavelength</td>
 </tr>
@@ -680,7 +680,7 @@ the third parameter is empty</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num_scans</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the number of scans to run, defaults to -1 (continuous scan)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num_scans</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the number of scans to run, defaults to -1 (continuous scan)</td>
 </tr>
 </tbody>
 </table>
@@ -701,9 +701,9 @@ the third parameter is empty</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>xcel_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the excel file for the program to create the excel file for</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of serial numbers to use for creating the excel file</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – queue to use for posting logging messages to</li>
+<li><strong>xcel_file</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of the excel file for the program to create the excel file for</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of serial numbers to use for creating the excel file</li>
+<li><strong>main_queue</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code>) – queue to use for posting logging messages to</li>
 <li><strong>is_cal</strong> – True if creating an excel file for a calibration program run, False otherwise</li>
 </ul>
 </td>
@@ -721,13 +721,13 @@ the third parameter is empty</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers for the current program run</li>
-<li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if the current program run is a calibration run, False otherwise</li>
-<li><strong>formatted</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if headers are using facing, False if headers are used for the database</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – serial numbers for the current program run</li>
+<li><strong>is_cal</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if the current program run is a calibration run, False otherwise</li>
+<li><strong>formatted</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if headers are using facing, False if headers are used for the database</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of header strings</p>
@@ -746,12 +746,12 @@ the third parameter is empty</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers being used in the current program run</li>
-<li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if the program is a calibration run, False otherwise</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – serial numbers being used in the current program run</li>
+<li><strong>is_cal</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if the program is a calibration run, False otherwise</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of comma separated strings, names and types of table attributes</p>
@@ -771,8 +771,8 @@ func, and named name.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the program run</li>
+<li><strong>func</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – program identifier string</li>
+<li><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of the program run</li>
 </ul>
 </td>
 </tr>
@@ -783,8 +783,8 @@ func, and named name.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IndexError" title="(in Python v3.6)"><strong>IndexError</strong></a> – If program is not in the map, thus data has not been recorded for this program yet</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.6)"><strong>RuntimeError</strong></a> – If program database has been corrupted, or the table is empty</li>
+<li><strong>IndexError</strong> – If program is not in the map, thus data has not been recorded for this program yet</li>
+<li><strong>RuntimeError</strong> – If program database has been corrupted, or the table is empty</li>
 </ul>
 </td>
 </tr>
@@ -801,12 +801,12 @@ func, and named name.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the name of the file that the current program corresponds to</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
+<li><strong>file_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the name of the file that the current program corresponds to</li>
+<li><strong>func</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – program identifier string</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">last calibration cycle number, or 0 if there is no data calibration recorded</p>
@@ -825,9 +825,9 @@ based on the is_cal parameter</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if program is calibration, False otherwise</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>is_cal</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if program is calibration, False otherwise</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of serial numbers</td>
 </tr>
@@ -844,12 +844,12 @@ based on the is_cal parameter</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]) – list to resize</li>
-<li><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – required length of the list</li>
+<li><strong>values</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]) – list to resize</li>
+<li><strong>length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – required length of the list</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of length, length</p>
@@ -868,13 +868,13 @@ based on the is_cal parameter</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the name of the current running program run</li>
-<li><strong>cur_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>) – the map table database cursor</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the program identifier string</li>
+<li><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the name of the current running program run</li>
+<li><strong>cur_map</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code>) – the map table database cursor</li>
+<li><strong>func</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the program identifier string</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the program exists, otherwise False</p>
@@ -893,22 +893,22 @@ based on the is_cal parameter</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – file name of the run of the program that data is being collected for</li>
-<li><strong>serial_nums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers of the fbgs being used for the run</li>
-<li><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – unix timestamp of when the data was recorded in s</li>
-<li><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – temperature of the oven when the data was recorded</li>
-<li><strong>wavelengths</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – list of wavelength readings to record</li>
-<li><strong>powers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – list of power readings to record</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
+<li><strong>file_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – file name of the run of the program that data is being collected for</li>
+<li><strong>serial_nums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – serial numbers of the fbgs being used for the run</li>
+<li><strong>timestamp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – unix timestamp of when the data was recorded in s</li>
+<li><strong>temp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – temperature of the oven when the data was recorded</li>
+<li><strong>wavelengths</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – list of wavelength readings to record</li>
+<li><strong>powers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – list of power readings to record</li>
+<li><strong>func</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – program identifier string</li>
 <li><strong>table</strong> (<a class="reference internal" href="#fbgui.datatable.DataTable" title="fbgui.datatable.DataTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataTable</span></code></a>) – data table object to add the data points to as they are recorded in the table</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – queue used for adding logging messages to</li>
-<li><strong>drift_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – drift rate to record if the program is a calibration program</li>
-<li><strong>real_cal_pt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – boolean value whether or not this is an actual calibration point, used for calibration</li>
-<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the calibration cycle number if the program is a calibration program</li>
+<li><strong>main_queue</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code>) – queue used for adding logging messages to</li>
+<li><strong>drift_rate</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – drift rate to record if the program is a calibration program</li>
+<li><strong>real_cal_pt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – boolean value whether or not this is an actual calibration point, used for calibration</li>
+<li><strong>cycle_num</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the calibration cycle number if the program is a calibration program</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if wrote data successfully, False otherwise</p>
@@ -970,7 +970,7 @@ based on the is_cal parameter</p>
 <dl class="class">
 <dt id="fbgui.graphing.Graph">
 <em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>title</em>, <em>xlabel</em>, <em>ylabels</em>, <em>animate_func</em>, <em>fig</em>, <em>dims</em>, <em>fname</em>, <em>is_cal</em>, <em>snums</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class describes a specific graph that can be represented as a subplot or a main plot.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1044,7 +1044,7 @@ the program exists</td>
 <dl class="class">
 <dt id="fbgui.graphing.Graphing">
 <em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graphing</code><span class="sig-paren">(</span><em>fname</em>, <em>dims</em>, <em>is_cal</em>, <em>figure</em>, <em>canvas</em>, <em>toolbar</em>, <em>master</em>, <em>snums</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graphing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graphing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class used for graphing the individual Graph objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1081,7 +1081,7 @@ the graph at the index of event, if event is an integer.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">MouseEvent</span></code>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – MouseEvent corresponding to a click event on the graph, or an integer used to index the graphs
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">MouseEvent</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – MouseEvent corresponding to a click event on the graph, or an integer used to index the graphs
 list to show that graph</td>
 </tr>
 </tbody>
@@ -1096,7 +1096,7 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">MouseEvent</span></code>]) – MouseEvent object passed in on click</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">MouseEvent</span></code>]) – MouseEvent object passed in on click</td>
 </tr>
 </tbody>
 </table>
@@ -1124,9 +1124,9 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>use_snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True the function being decorated accepts serial nums as an argument</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>use_snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True the function being decorated accepts serial nums as an argument</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -1141,7 +1141,7 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – average power Axes as only element</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – average power Axes as only element</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1159,7 +1159,7 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – average wavelength Axes as only element</li>
+<li><strong>axes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – average wavelength Axes as only element</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1177,7 +1177,7 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – drift rate vs. time Axes, delta drift rate vs. time Axes [Only for Calibration]</li>
+<li><strong>axes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – drift rate vs. time Axes, delta drift rate vs. time Axes [Only for Calibration]</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1197,7 +1197,7 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – axis label value</li>
+<li><strong>val</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – axis label value</li>
 <li><strong>_</strong> – not needed</li>
 </ul>
 </td>
@@ -1215,8 +1215,8 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delta power vs. time Axes, raw power vs. time Axes [Only used for Baking]</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – the serial numbers in use for the corresponding program run being graphed</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delta power vs. time Axes, raw power vs. time Axes [Only used for Baking]</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – the serial numbers in use for the corresponding program run being graphed</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1234,7 +1234,7 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delta temperature vs. time Axes, raw temperature vs time Axes</li>
+<li><strong>axes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delta temperature vs. time Axes, raw temperature vs time Axes</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1252,8 +1252,8 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delat wavelength vs. time Axes, wavelength vs. time Axes</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – the serial numbers in use for the corresponding program run being graphed</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – delat wavelength vs. time Axes, wavelength vs. time Axes</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – the serial numbers in use for the corresponding program run being graphed</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1271,8 +1271,8 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – wavelength vs power Axes as only element</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – the serial numbers in use for the corresponding program run being graphed</li>
+<li><strong>axis</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]) – wavelength vs power Axes as only element</li>
+<li><strong>snums</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – the serial numbers in use for the corresponding program run being graphed</li>
 <li><strong>dc</strong> (<a class="reference internal" href="#fbgui.data_container.DataCollection" title="fbgui.data_container.DataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollection</span></code></a>) – data collection object to use for populating the graph</li>
 </ul>
 </td>
@@ -1293,9 +1293,9 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>str_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of strings</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>str_list</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of strings</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of strings without whitespace characters</td>
 </tr>
@@ -1311,9 +1311,9 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list2d</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]]) – Matrix to flatten</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list2d</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]]) – Matrix to flatten</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list is ordered how the list is visually seen in 1D</td>
 </tr>
@@ -1329,9 +1329,9 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – file path file named.file extension</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_str</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – file path file named.file extension</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">file name</td>
 </tr>
@@ -1347,9 +1347,9 @@ list to show that graph</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>test_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]) – list of objects to test for uniqueness</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>test_list</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]) – list of objects to test for uniqueness</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether or not the elements of the test_list are unique.</td>
 </tr>
@@ -1366,18 +1366,18 @@ list to show that graph</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>str_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of strings</li>
-<li><strong>cast_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>) – type to cast the strings to</li>
+<li><strong>str_list</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – list of strings</li>
+<li><strong>cast_type</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code>) – type to cast the strings to</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of values of the cast type</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – if list cannot be cast to the specified time</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> – if list cannot be cast to the specified time</p>
 </td>
 </tr>
 </tbody>
@@ -1401,22 +1401,22 @@ list to show that graph</td>
 <dl class="class">
 <dt id="fbgui.main_program.Application">
 <em class="property">class </em><code class="descclassname">fbgui.main_program.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/main_program.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.main_program.Application" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/tkinter.html#tkinter.Tk" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.Tk</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.Tk</span></code></p>
 <p>Main Application class, Tk implementation used as the master throughout the package.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>use_dev</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if the program is configured to use devices, False if configured to run a simulation</li>
-<li><strong>conf_parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>configparser.ConfigParser</em></a>) – ConfigParser to read, and set device settings</li>
+<li><strong>use_dev</strong> (<em>bool</em>) – True if the program is configured to use devices, False if configured to run a simulation</li>
+<li><strong>conf_parser</strong> (<em>configparser.ConfigParser</em>) – ConfigParser to read, and set device settings</li>
 <li><strong>manager</strong> (<em>visa.ResourceManager</em>) – PyVisa ResourceManager used for communicating with GPIB instruments</li>
 <li><strong>main_queue</strong> (<em>Queue</em>) – Queue used for listening for logging messages to write to the log_view</li>
 <li><strong>Dict</strong><strong>[</strong><strong>UUID</strong> – bool] thread_map: Map of thread UUIDs to booleans for whether or not to stop the thread</li>
 <li><strong>open_threads</strong> (<em>List</em><em>[</em><em>UUID</em><em>]</em>) – List of UUIDs of the currently open data collection threads</li>
 <li><strong>graph_threads</strong> (<em>List</em><em>[</em><em>UUID</em><em>]</em>) – List of UUIDs of the currently open graph threads</li>
-<li><strong>running</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if either program is running, False otherwise</li>
-<li><strong>running_prog</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Program identifier for currently running program, None if the program is not running</li>
+<li><strong>running</strong> (<em>bool</em>) – True if either program is running, False otherwise</li>
+<li><strong>running_prog</strong> (<em>str</em>) – Program identifier for currently running program, None if the program is not running</li>
 <li><strong>temp_controller</strong> (<a class="reference internal" href="#fbgui.devices.TempController" title="fbgui.devices.TempController"><em>devices.TempController</em></a>) – temperature controller wrapper used for communicating with the
 temperature controller, None if not connected to the temperature
 controller</li>
@@ -1424,7 +1424,7 @@ controller</li>
 <li><strong>laser</strong> (<a class="reference internal" href="#fbgui.devices.SM125" title="fbgui.devices.SM125"><em>devices.SM125</em></a>) – Laser wrapper used for communicating with the Laser, None if not connected to the laser</li>
 <li><strong>switch</strong> (<a class="reference internal" href="#fbgui.devices.OpSwitch" title="fbgui.devices.OpSwitch"><em>devices.OpSwitch</em></a>) – Switch wrapper used for communicating with the Optical Switch, None if not
 connected to the optical switch</li>
-<li><strong>is_full_screen</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if the program is in full screen, False otherwise</li>
+<li><strong>is_full_screen</strong> (<em>bool</em>) – True if the program is in full screen, False otherwise</li>
 <li><strong>controller_location</strong> (<em>tkinter.IntVar</em>) – tkinter variable for the temperature controller location input field</li>
 <li><strong>oven_location</strong> (<em>tkinter.IntVar</em>) – tkinter variable for the oven location input field</li>
 <li><strong>op_switch_address</strong> (<em>tkinter.StringVar</em>) – tkinter variable for the optical switch address input field</li>
@@ -1457,10 +1457,10 @@ connected to the optical switch</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dev</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – device identifier string, to identify which device to connect</li>
-<li><strong>connect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if connect, False if disconnect</li>
-<li><strong>try_once</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if try to connect only once, False if continuously try to connect to device</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>]) – UUID of the thread running the code, if None then code is running on main thread</li>
+<li><strong>dev</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – device identifier string, to identify which device to connect</li>
+<li><strong>connect</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if connect, False if disconnect</li>
+<li><strong>try_once</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – True if try to connect only once, False if continuously try to connect to device</li>
+<li><strong>thread_id</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>]) – UUID of the thread running the code, if None then code is running on main thread</li>
 </ul>
 </td>
 </tr>
@@ -1522,13 +1522,13 @@ connected to the optical switch</li>
 <li><strong>message_types</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageType" title="fbgui.messages.MessageType"><em>MessageType</em></a><em>]</em>) – the MessageTypes to include in the filter combobox</li>
 <li><strong>all_types</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageType" title="fbgui.messages.MessageType"><em>MessageType</em></a><em>]</em>) – a list of all the message types</li>
 <li><strong>message_delays</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageDelay" title="fbgui.messages.MessageDelay"><em>MessageDelay</em></a><em>]</em>) – a list of all of the message delays</li>
-<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><strong>str</strong></a> – collections.deque] messages: mapping of message type title string to deques of fixed
+<li><strong>Dict</strong><strong>[</strong><strong>str</strong> – collections.deque] messages: mapping of message type title string to deques of fixed
 size containing messages’ body</li>
-<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><strong>str</strong></a> – float] message_time: message body without timestamp mapped to time in s</li>
-<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><strong>str</strong></a> – MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay</li>
-<li><strong>first_click_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the time the header text was first clicked (Used for developer messages)</li>
-<li><strong>num_clicks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the number of times the header text was clicked within the specified time (Used for dev msgs)</li>
-<li><strong>showing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if developer messages are in the filter, False otherwise</li>
+<li><strong>Dict</strong><strong>[</strong><strong>str</strong> – float] message_time: message body without timestamp mapped to time in s</li>
+<li><strong>Dict</strong><strong>[</strong><strong>str</strong> – MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay</li>
+<li><strong>first_click_time</strong> (<em>float</em>) – the time the header text was first clicked (Used for developer messages)</li>
+<li><strong>num_clicks</strong> (<em>int</em>) – the number of times the header text was clicked within the specified time (Used for dev msgs)</li>
+<li><strong>showing</strong> (<em>bool</em>) – True if developer messages are in the filter, False otherwise</li>
 <li><strong>current_filter</strong> (<a class="reference internal" href="#fbgui.messages.MessageType" title="fbgui.messages.MessageType"><em>MessageType</em></a>) – the current message type to filter messages</li>
 <li><strong>filter_box</strong> (<em>ttk.Combobox</em>) – the combobox tkinter widget used for selecting a filter level</li>
 <li><strong>log_view</strong> (<em>ttk.ScrolledText</em>) – the scrolled text tkinter widget used for displaying log messages</li>
@@ -1583,9 +1583,9 @@ size containing messages’ body</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filter_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the number used for filtering messages</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filter_num</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the number used for filtering messages</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.OrderedDict" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrderedDict</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrderedDict</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">time mapped to (text, tag) for all filtered messages</td>
 </tr>
@@ -1602,11 +1602,11 @@ size containing messages’ body</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – pattern to match when looking to format the text using the tag.</li>
-<li><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – tkinter scrolled text tag corresponding to a tk font</li>
-<li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – where to start looking for the pattern from</li>
-<li><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – where to end looking for the pattern</li>
-<li><strong>regexp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, pattern will be treated as a Tcl regular expression</li>
+<li><strong>pattern</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – pattern to match when looking to format the text using the tag.</li>
+<li><strong>tag</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – tkinter scrolled text tag corresponding to a tk font</li>
+<li><strong>start</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – where to start looking for the pattern from</li>
+<li><strong>end</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – where to end looking for the pattern</li>
+<li><strong>regexp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, pattern will be treated as a Tcl regular expression</li>
 </ul>
 </td>
 </tr>
@@ -1624,9 +1624,9 @@ if start is ‘1.0’, if start tk.END add it to the end.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – text to write to the scrolled text view</li>
-<li><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the tag that defines the style for the text, based on MessageType</li>
-<li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the position to start writing the text</li>
+<li><strong>text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – text to write to the scrolled text view</li>
+<li><strong>tag</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of the tag that defines the style for the text, based on MessageType</li>
+<li><strong>start</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the position to start writing the text</li>
 </ul>
 </td>
 </tr>
@@ -1639,14 +1639,14 @@ if start is ‘1.0’, if start tk.END add it to the end.</p>
 <dl class="class">
 <dt id="fbgui.messages.Message">
 <em class="property">class </em><code class="descclassname">fbgui.messages.</code><code class="descname">Message</code><span class="sig-paren">(</span><em>msg_type</em>, <em>title</em>, <em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/messages.html#Message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.messages.Message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Message object contains info about a log message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/time.html#module-time" title="(in Python v3.6)"><strong>time</strong></a> – unix timestamp in seconds of when the message was created</li>
+<li><strong>time</strong> – unix timestamp in seconds of when the message was created</li>
 <li><strong>msg</strong> – Test of the message without the timestamp included</li>
 </ul>
 </td>
@@ -1658,29 +1658,29 @@ if start is ‘1.0’, if start tk.END add it to the end.</p>
 <dl class="class">
 <dt id="fbgui.messages.MessageDelay">
 <em class="property">class </em><code class="descclassname">fbgui.messages.</code><code class="descname">MessageDelay</code><a class="reference internal" href="_modules/fbgui/messages.html#MessageDelay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.messages.MessageDelay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Length of delay before repeating a message if filtering is enabled.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="fbgui.messages.MessageType">
 <em class="property">class </em><code class="descclassname">fbgui.messages.</code><code class="descname">MessageType</code><span class="sig-paren">(</span><em>filter_num</em>, <em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/messages.html#MessageType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.messages.MessageType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Type of Message to log, used for coloring and filtering of messages.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="fbgui.messages.SizeDict">
 <em class="property">class </em><code class="descclassname">fbgui.messages.</code><code class="descname">SizeDict</code><span class="sig-paren">(</span><em>maxsize=50000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/messages.html#SizeDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.messages.SizeDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableMapping</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableMapping</span></code></p>
 <p>A dictionary of max length that removes FIFO when the max size is reached.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>store</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – dictionary for storing key value pairs</li>
-<li><strong>added_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.deque" title="(in Python v3.6)"><em>collections.deque</em></a>) – FIFO queue of the keys used to keep a fixed length</li>
+<li><strong>store</strong> (<em>dict</em>) – dictionary for storing key value pairs</li>
+<li><strong>added_order</strong> (<em>collections.deque</em>) – FIFO queue of the keys used to keep a fixed length</li>
 </ul>
 </td>
 </tr>
@@ -1704,7 +1704,7 @@ if start is ‘1.0’, if start tk.END add it to the end.</p>
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
 <li><strong>sn_ents</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>tkinter.Entry</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of tkinter Entrys
 corresponding to the serial number input fields</li>
-<li><strong>chan_nums</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of ints where the len of the lists
+<li><strong>chan_nums</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of ints where the len of the lists
 is used for determining the number of FBGs on a channel</li>
 <li><strong>switch_positions</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>tkinter.IntVar</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of tkinter
 IntVars each representing a ttk spinbox used for specifying
@@ -1724,7 +1724,7 @@ cooling</li>
 <li><strong>target_temps_entry</strong> (<em>tkinter.Text</em>) – Text entry corresponding to the calibration target temperatures text input</li>
 <li><strong>options_grid</strong> (<em>tkinter.Frame</em>) – Upper portion of the options screen containing configuration options</li>
 <li><strong>fbg_grid</strong> (<em>tkinter.Frame</em>) – Lower portion of the options screen containing fbg configuration options</li>
-<li><strong>conf_parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>configparser.ConfigParser</em></a>) – ConfigParser used for reading in prog_config settings</li>
+<li><strong>conf_parser</strong> (<em>configparser.ConfigParser</em>) – ConfigParser used for reading in prog_config settings</li>
 </ul>
 </td>
 </tr>
@@ -1741,9 +1741,9 @@ are not None then set the serial number entry, and switch position entry to thei
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fbg_grid</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – Container frame for fbg configuration</li>
-<li><strong>chan</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – index of where the new fbg sub frame should be added</li>
-<li><strong>fbg_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – If not None, the name of the FBG to add</li>
-<li><strong>switch_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – If not None, the switch position of the FBG to add</li>
+<li><strong>chan</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – index of where the new fbg sub frame should be added</li>
+<li><strong>fbg_name</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – If not None, the name of the FBG to add</li>
+<li><strong>switch_pos</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – If not None, the switch position of the FBG to add</li>
 </ul>
 </td>
 </tr>
@@ -1764,7 +1764,7 @@ type.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -1800,11 +1800,11 @@ type.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of target calibration temps</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – If target temps are not of the right type</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – If target temps are not of the right type</td>
 </tr>
 </tbody>
 </table>
@@ -1824,7 +1824,7 @@ type.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>chan</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – index of which column to remove a FBG sub frame from</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>chan</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – index of which column to remove a FBG sub frame from</td>
 </tr>
 </tbody>
 </table>
@@ -1839,7 +1839,7 @@ type.
 <dl class="class">
 <dt id="fbgui.program.Program">
 <em class="property">class </em><code class="descclassname">fbgui.program.</code><code class="descname">Program</code><span class="sig-paren">(</span><em>master</em>, <em>program_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/program.html#Program"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.program.Program" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/tkinter.ttk.html#tkinter.ttk.Notebook" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.ttk.Notebook</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.ttk.Notebook</span></code></p>
 <p>Definition of the abstract program page, contains shared logic between the two program types, and implements
 the ttk Notebook widget.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1847,14 +1847,14 @@ the ttk Notebook widget.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>conf_parser</strong> (<a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.6)"><em>configparser.ConfigParser</em></a>) – ConfigParser used for reading the prog_config file</li>
-<li><strong>channels</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em><em>]</em>) – 2D list one list for each SM125 channel, each element is a serial number, and is
+<li><strong>conf_parser</strong> (<em>configparser.ConfigParser</em>) – ConfigParser used for reading the prog_config file</li>
+<li><strong>channels</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – 2D list one list for each SM125 channel, each element is a serial number, and is
 the same shape as the FBG inputs on the options screen</li>
-<li><strong>switches</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em>) – 2D list one list for each SM125 channel, each element is a switch position,
+<li><strong>switches</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – 2D list one list for each SM125 channel, each element is a switch position,
 same shape as the channels matrix</li>
-<li><strong>snums</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – serial numbers in order as a flatten list of the channels matrix</li>
+<li><strong>snums</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – serial numbers in order as a flatten list of the channels matrix</li>
 <li><strong>start_btn</strong> (<em>ttk.Button</em>) – start button on the options screen</li>
-<li><strong>need_oven</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – True if the program needs to use the oven, False otherwise</li>
+<li><strong>need_oven</strong> (<em>bool</em>) – True if the program needs to use the oven, False otherwise</li>
 <li><strong>options</strong> (<a class="reference internal" href="#fbgui.options_frame.OptionsPanel" title="fbgui.options_frame.OptionsPanel"><em>options_frame.OptionsPanel</em></a>) – options screen wrapper</li>
 <li><strong>table</strong> (<a class="reference internal" href="#fbgui.datatable.DataTable" title="fbgui.datatable.DataTable"><em>DataTable</em></a>) – data table screen wrapper</li>
 <li><strong>graph_helper</strong> (<a class="reference internal" href="#fbgui.graphing.Graphing" title="fbgui.graphing.Graphing"><em>graphing.Graphing</em></a>) – graphing screen wrapper</li>
@@ -1872,7 +1872,7 @@ formatted, and the ports are integer values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the home screen device inputs are properly configured, False otherwise</td>
 </tr>
@@ -1888,9 +1888,9 @@ formatted, and the ports are integer values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – the thread the code is currently running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – the thread the code is currently running in</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if all the devices can be connected to, False otherwise</td>
 </tr>
@@ -1918,9 +1918,9 @@ formatted, and the ports are integer values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread the code is currently running in</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">wavelength readings, power readings</td>
 </tr>
@@ -1937,7 +1937,7 @@ or the file can be created at the specified location.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the file is valid, False otherwise</td>
 </tr>
@@ -1959,7 +1959,7 @@ or the file can be created at the specified location.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread running the program loop</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code>) – UUID of the thread running the program loop</td>
 </tr>
 </tbody>
 </table>
@@ -1986,9 +1986,9 @@ or the file can be created at the specified location.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – temp to set the oven to, if None use the baking temperature on the options screen</li>
-<li><strong>heat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True turn on the heater</li>
-<li><strong>force_connect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True make sure the device is connected to, otherwise only try to connect to the
+<li><strong>temp</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – temp to set the oven to, if None use the baking temperature on the options screen</li>
+<li><strong>heat</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True turn on the heater</li>
+<li><strong>force_connect</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True make sure the device is connected to, otherwise only try to connect to the
 device once</li>
 <li><strong>thread_id</strong> – UUID of the thread the code is currently running in</li>
 <li><strong>cooling</strong> – If True turn on the oven cooling</li>
@@ -2023,15 +2023,15 @@ Pause the program if the program is already running.</p>
 <dl class="class">
 <dt id="fbgui.program.ProgramType">
 <em class="property">class </em><code class="descclassname">fbgui.program.</code><code class="descname">ProgramType</code><span class="sig-paren">(</span><em>prog_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/program.html#ProgramType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.program.ProgramType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Defines constants for calibration and baking programs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start_title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Title of the start button when the program is paused on the options screen</li>
-<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Title of the program options screen</li>
+<li><strong>start_title</strong> (<em>str</em>) – Title of the start button when the program is paused on the options screen</li>
+<li><strong>title</strong> (<em>str</em>) – Title of the program options screen</li>
 </ul>
 </td>
 </tr>
@@ -2063,11 +2063,11 @@ Pause the program if the program is already running.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – frame to add the widgets to</li>
-<li><strong>label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – text to write to the label</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – row of the container to add the widgets to</li>
-<li><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the width of the text widget</li>
-<li><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the height of the text widget</li>
-<li><strong>default_arr</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]]) – If not None, the default array to write to the text widget</li>
+<li><strong>label_text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – text to write to the label</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – row of the container to add the widgets to</li>
+<li><strong>width</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the width of the text widget</li>
+<li><strong>height</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the height of the text widget</li>
+<li><strong>default_arr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]]) – If not None, the default array to write to the text widget</li>
 </ul>
 </td>
 </tr>
@@ -2105,9 +2105,9 @@ Pause the program if the program is already running.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the container to add the widgets to</li>
-<li><strong>label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the text to set the label to</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row of the container to add the widgets to</li>
-<li><strong>checked</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True the widget defaults to being checked</li>
+<li><strong>label_text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the text to set the label to</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the row of the container to add the widgets to</li>
+<li><strong>checked</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True the widget defaults to being checked</li>
 </ul>
 </td>
 </tr>
@@ -2129,7 +2129,7 @@ Pause the program if the program is already running.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dev</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the device identifier string</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dev</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the device identifier string</td>
 </tr>
 </tbody>
 </table>
@@ -2145,12 +2145,12 @@ Pause the program if the program is already running.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the frame to add the widgets to</li>
-<li><strong>dev_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the device name used as the label text</li>
-<li><strong>loc_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the string to set the location entry to</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row to add the widgets to in the container</li>
-<li><strong>port_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – the string to set the port entry to if not None</li>
+<li><strong>dev_text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the device name used as the label text</li>
+<li><strong>loc_str</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the string to set the location entry to</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the row to add the widgets to in the container</li>
+<li><strong>port_str</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – the string to set the port entry to if not None</li>
 <li><strong>loc_var</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code>) – the variable referencing the device location</li>
-<li><strong>port_var</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code>]) – If the port_str is not None, the variable referencing the device port</li>
+<li><strong>port_var</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code>]) – If the port_str is not None, the variable referencing the device port</li>
 </ul>
 </td>
 </tr>
@@ -2183,7 +2183,7 @@ Pause the program if the program is already running.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>text_var</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code>) – the variable that will store the entry value</li>
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the container to add the widgets to</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row of the container grid to add the widget to</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the row of the container grid to add the widget to</li>
 </ul>
 </td>
 </tr>
@@ -2200,12 +2200,12 @@ Pause the program if the program is already running.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>tree</strong> (<a class="reference external" href="https://docs.python.org/3/library/tkinter.ttk.html#tkinter.ttk.Treeview" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Treeview</span></code></a>) – treeview to look through</li>
-<li><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – parent element to recursively look for children from</li>
+<li><strong>tree</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Treeview</span></code>) – treeview to look through</li>
+<li><strong>item</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – parent element to recursively look for children from</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~T]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of all of the children of item</p>
@@ -2237,7 +2237,7 @@ Pause the program if the program is already running.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>loc_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string identifying what type of connection is attempting to be made</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>loc_type</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – string identifying what type of connection is attempting to be made</td>
 </tr>
 </tbody>
 </table>
@@ -2253,7 +2253,7 @@ Pause the program if the program is already running.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>widget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Widget</span></code>) – recursively lock/unlock if its a frame otherwise change the config to the specified state</li>
-<li><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – state to set the widgets to</li>
+<li><strong>state</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – state to set the widgets to</li>
 </ul>
 </td>
 </tr>
@@ -2306,10 +2306,10 @@ in the options_grid and the fbg_grid of the options_panel.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the frame to add the widgets to</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row of the container grid to add the widgets to</li>
-<li><strong>col</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the column of the container grid to add the widgets to</li>
-<li><strong>def_snum</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the default name of the serial number being added</li>
-<li><strong>switch_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.6)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – the default switch position, if None then use 0 as the switch position</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the row of the container grid to add the widgets to</li>
+<li><strong>col</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the column of the container grid to add the widgets to</li>
+<li><strong>def_snum</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the default name of the serial number being added</li>
+<li><strong>switch_pos</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – the default switch position, if None then use 0 as the switch position</li>
 </ul>
 </td>
 </tr>
@@ -2339,9 +2339,9 @@ the serial number entry and switch position switchbox for a FBG</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>tree</strong> (<a class="reference external" href="https://docs.python.org/3/library/tkinter.ttk.html#tkinter.ttk.Treeview" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Treeview</span></code></a>) – the root tree to sort</li>
-<li><strong>col</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the column of the tree to sort</li>
-<li><strong>descending</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True sort in descending order, otherwise sort in ascending order</li>
+<li><strong>tree</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Treeview</span></code>) – the root tree to sort</li>
+<li><strong>col</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the column of the tree to sort</li>
+<li><strong>descending</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True sort in descending order, otherwise sort in ascending order</li>
 </ul>
 </td>
 </tr>
@@ -2373,7 +2373,7 @@ the serial number entry and switch position switchbox for a FBG</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>var_type</strong> – tkinter variable class to use for the ttk Entry</li>
-<li><strong>use_func</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True call the wrapped function</li>
+<li><strong>use_func</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True call the wrapped function</li>
 </ul>
 </td>
 </tr>
@@ -2391,11 +2391,11 @@ the serial number entry and switch position switchbox for a FBG</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the frame to add the widgets to</li>
-<li><strong>label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the text to write to the label</li>
-<li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row of the container grid to add the widgets to</li>
-<li><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the width of the entry widget</li>
-<li><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the string representing the unit the values of the entry are in</li>
-<li><strong>default_double</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – the default value to use for the widget</li>
+<li><strong>label_text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the text to write to the label</li>
+<li><strong>row</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the row of the container grid to add the widgets to</li>
+<li><strong>width</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the width of the entry widget</li>
+<li><strong>unit</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the string representing the unit the values of the entry are in</li>
+<li><strong>default_double</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the default value to use for the widget</li>
 </ul>
 </td>
 </tr>

@@ -70,7 +70,7 @@ class CalProgram(Program):
                     self.temp_controller_error()
             temp = None
         self.disconnect_devices()
-        return avg_temp/self.options.num_temp_readings.get()
+        return avg_temp/(float(self.options.num_temp_readings.get()))
 
     def cal_loop(self, temps: List[float], thread_id: UUID):
         """

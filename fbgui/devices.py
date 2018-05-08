@@ -236,7 +236,7 @@ class TempController(object):
         """
         self.device = None
         if use_dev:
-            self.device = manager.open_resource(loc, read_termination='\n', open_timeout=2500)  # type: GPIBInstrument
+            self.device = manager.open_resource(loc, read_termination='\r\n', open_timeout=2500)  # type: GPIBInstrument
 
     def get_temp_k(self, dummy_val=False, center_num=0):
         """
@@ -249,7 +249,7 @@ class TempController(object):
             return float(random.gauss(center_num - 5, center_num + 5))
         else:
             query = self.device.query('KRDG? B')
-            return float(query[:-4])
+            return float(query)
 
     def close(self):
         """Close the device connection."""
