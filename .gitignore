@@ -5,8 +5,6 @@
 
 .idea/
 
-fbgui/test_new_setup.py
-
 fbgui.wxs
 db/
 config/

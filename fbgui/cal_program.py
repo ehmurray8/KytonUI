@@ -1,6 +1,6 @@
 """Contains the calibration program specific logic."""
 
-from typing import List
+from typing import List, Tuple, Optional
 import math
 import time
 import visa
@@ -92,13 +92,13 @@ class CalProgram(Program):
             temp = self.get_temp(thread_id)
 
             kwargs = {"force_connect": True, "thread_id": thread_id}
-            if temp < float(temps[0]) + 274.15 - 5:
+            if temp < float(temps[0]) + 273.15 - 4.5:
                 kwargs["heat"] = True
             else:
                 kwargs["cooling"] = True
 
-            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {}K."
-                                               .format(cycle_num+1, temps[0]+274.15-5), title=None))
+            self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {} C."
+                                               .format(cycle_num+1, temps[0]-5), title=None))
             start_init_time = time.time()
             if not self.master.thread_map[thread_id]:
                 return
@@ -110,7 +110,6 @@ class CalProgram(Program):
             while not self.reset_temp(temps[0], thread_id):
                 if not self.sleep(thread_id):
                     return
-                self.set_oven_temp(temps[0] - 5, **kwargs)
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
                 cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
@@ -138,46 +137,80 @@ class CalProgram(Program):
 
     def reset_temp(self, start_temp: float, thread_id: UUID) -> bool:
         """
-        Checks to see if the temperature is 5K below the starting temperature.
+        Checks to see if the temperature is 4.5K below the starting temperature.
 
         :param start_temp: The first temperature the oven is set to
         :param thread_id: UUID of the thread the code is currently running in
         """
         temp = self.get_temp(thread_id)
-        if temp <= float(start_temp + 274.15) - 5:
+        drift_rate = self.get_drift_rate(thread_id)
+        kwargs = {"force_connect": False, "thread_id": thread_id}
+        if temp < float(start_temp + 273.15 - 4.5):
+            kwargs["heat"] = True
+        else:
+            kwargs["cooling"] = True
+        self.set_oven_temp(start_temp - 5, **kwargs)
+        if drift_rate is not None:
+            drift_rate = drift_rate[0]
+        if temp <= float(start_temp + 273.15) - 4.5 or drift_rate < self.options.drift_rate.get():
             return True
         return False
+
+    def get_drift_rate(self, thread_id: UUID, get_wave_amp: bool=False) -> Optional[Tuple[float, float, float,
+                                                                                    List[float], List[float]]]:
+        """
+        Get the drift rate of the system.
+
+        :param: the UUID of the thread the code is currently running on
+        :return: the current drift rate in mK/min
+        """
+        self.master.conn_dev(TEMP, thread_id=thread_id)
+        start_time = time.time()
+        if not self.master.thread_map[thread_id]:
+            return None
+        start_temp = self.get_temp(thread_id)
+
+        waves = []
+        amps = []
+        if get_wave_amp:
+            waves, amps = self.get_wave_amp_data(thread_id)
+        else:
+            time.sleep(5)
+
+        if not self.master.thread_map[thread_id]:
+            return None
+        if not self.sleep(thread_id):
+            return None
+
+        self.master.conn_dev(TEMP, thread_id=thread_id)
+        curr_temp = self.get_temp(thread_id)
+        curr_time = time.time()
+        self.disconnect_devices()
+
+        drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
+        drift_rate *= 60000.
+        return drift_rate, curr_temp, curr_time, waves, amps
 
     def check_drift_rate(self, thread_id: UUID, cycle_num: int) -> bool:
         """
         Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
         temperature.
 
-        :param thread_id: UUID of the thread the code is curretnly running in
+        :param thread_id: UUID of the thread the code is currently running in
         :param cycle_num: The number of the current calibration cycle
         :return: True if the drift rate is below the configured drift rate, otherwise False
         """
         while True:
             try:
-                self.master.conn_dev(TEMP, thread_id=thread_id)
-                start_time = time.time()
-                if not self.master.thread_map[thread_id]:
+                ret = self.get_drift_rate(thread_id)
+                if ret is None:
                     return False
-                start_temp = self.get_temp(thread_id)
-                waves, amps = self.get_wave_amp_data(thread_id)
-                if not self.master.thread_map[thread_id]:
-                    return False
-                curr_temp = self.get_temp(thread_id)
-                curr_time = time.time()
-                self.disconnect_devices()
-
-                drift_rate = math.fabs(start_temp - curr_temp) / math.fabs(start_time - curr_time)
-                drift_rate *= 60000.
+                else:
+                    drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(thread_id, True)
 
                 if not self.master.thread_map[thread_id]:
                     return False
-                if drift_rate <= self.options.drift_rate.get() and \
-                        math.fabs(curr_temp - 274.15 - self.current_set_temp) <= 1:
+                if drift_rate <= self.options.drift_rate.get():
                     fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
                                 self.table, self.master.main_queue, drift_rate, True, cycle_num)
                     return True

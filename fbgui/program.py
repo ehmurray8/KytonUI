@@ -396,7 +396,7 @@ class Program(ttk.Notebook):
                         self.master.main_queue.put(Message(MessageType.WARNING, "Connection Issue",
                                                            "Failed to turn off oven cooling and heating."))
 
-                    if heat:
+                    if heat and not cooling:
                         try:
                             self.master.oven.heater_on()
                         except visa.VisaIOError:

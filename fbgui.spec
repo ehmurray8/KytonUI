@@ -28,7 +28,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True, icon='.\\fbgui\\assets\\fiber.ico')
+          console=False, icon='.\\fbgui\\assets\\fiber.ico')
 
 coll = COLLECT(exe,
                a.binaries,

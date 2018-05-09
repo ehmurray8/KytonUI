@@ -370,7 +370,8 @@ def average_wave_graph(axes: List[Axes], dc: DataCollection):
     :param dc: data collection object to use for populating the graph
     """
     times, wavelen_diffs = dc.times, dc.mean_delta_wavelengths
-    axes[0].plot(times, wavelen_diffs)
+    if len(times) == len(wavelen_diffs):
+        axes[0].plot(times, wavelen_diffs)
 
 
 @animate_graph(True)
@@ -386,7 +387,8 @@ def wave_power_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
     idx = 0
     axes = []
     for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
-        axes.append(axis[0].scatter(waves, powers, color=color, s=75))
+        if len(waves) == len(powers):
+            axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
 
     font_size = 8
@@ -406,8 +408,9 @@ def temp_graph(axes: List[Axes], dc: DataCollection):
     :param dc: data collection object to use for populating the graph
     """
     times, temp_diffs, temps = dc.times, dc.delta_temps, dc.temps
-    axes[0].plot(times, temp_diffs)
-    if len(axes) > 1:
+    if len(times) == len(temp_diffs):
+        axes[0].plot(times, temp_diffs)
+    if len(axes) > 1 and len(times) == len(temps):
         axes[1].plot(times, temps, color='b')
 
 
@@ -420,8 +423,9 @@ def average_power_graph(axis: List[Axes], dc: DataCollection):
     :param dc: data collection object to use for populating the graph
     """
     times, power_diffs = dc.times, dc.mean_delta_powers
-    axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
-    axis[0].plot(times, power_diffs)
+    if len(times) == len(power_diffs):
+        axis[0].yaxis.set_major_formatter(mtick.FuncFormatter(formatter))
+        axis[0].plot(times, power_diffs)
 
 
 @animate_graph(True)
@@ -438,8 +442,9 @@ def wave_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
     idx = 0
     axes = []
     for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
-        axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
-        if len(axis) > 1:
+        if len(times) == len(wave_diffs):
+            axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
+        if len(axis) > 1 and len(times) == len(waves):
             axis[1].plot(times, waves, color=color)
         idx += 1
 
@@ -464,8 +469,9 @@ def power_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
     idx = 0
     axes = []
     for pows, pow_diffs, color in zip(powers, power_diffs, HEX_COLORS):
-        axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
-        if len(axis) > 1:
+        if len(times) == len(pow_diffs):
+            axes.append(axis[0].plot(times, pow_diffs, color=color)[0])
+        if len(axis) > 1 and len(times) == len(pows):
             axis[1].plot(times, pows, color=color)
         idx += 1
 

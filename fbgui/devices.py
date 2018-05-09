@@ -4,7 +4,7 @@ import socket
 from socket import AF_INET, SOCK_STREAM
 import numpy as np
 import random
-import math
+import time
 from typing import List, Tuple
 from visa import ResourceManager
 from pyvisa.resources.gpib import GPIBInstrument
@@ -84,14 +84,25 @@ class VidiaLaser(object):
         if use_dev:
             self.device = manager.open_resource(loc)  # type: GPIBInstrument
 
-    def start_scan(self, num_scans: int=-1):
+    def start_scan(self, num_scans: int=-1, start_wave: int=1510, end_wave: int=1575, power: int=6):
         """
         Starts the scanning process for the laser.
 
         :param num_scans: the number of scans to run, defaults to -1 (continuous scan)
+        :param start_wave: the starting wave for the scan
+        :param end_wave: the ending wave for the scan
+        :param power: the power to set the laser to
         """
+        self.device.query(":POW {}".format(power))
+        time.sleep(.5)
         self.device.query(":OUTP ON")
+        time.sleep(.5)
+        self.device.query(":WAVE:STAR {}".format(start_wave))
+        time.sleep(.5)
+        self.device.query(":WAVE:STOP {}".format(end_wave))
+        time.sleep(.5)
         self.device.query(":OUTP:TRAC OFF")
+        time.sleep(.5)
         self.device.query(":OUTP:SCAN:STAR {}".format(num_scans))
 
     def get_wavelength(self) -> float:
@@ -109,6 +120,11 @@ class VidiaLaser(object):
         :return: mean wavelength of the scan range
         """
         return (float(self.device.query(":WAVE MAX?")) + float(self.device.query(":WAVE MIN?"))) / 2
+
+    def stop_scan(self):
+        """Stop the laser scan, and turn off the power."""
+        self.device.query(":OUTP:SCAN:ABORT")
+        self.device.query(":OUTP OFF")
 
 
 class NewportPower(object):
