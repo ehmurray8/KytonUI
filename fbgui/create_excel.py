@@ -81,8 +81,8 @@ class ExcelTable(ttk.Frame):
         vsb.grid(column=1, row=1, sticky='ns', in_=self)
         hsb.grid(column=0, row=2, sticky='ew', in_=self)
 
-        create_xcel = ttk.Button(self, text="Generate Spreadsheet for Selected", command=self.create_spreadsheet)
-        create_xcel.grid(column=0, row=3, pady=10)
+        create_excel = ttk.Button(self, text="Generate Spreadsheet for Selected", command=self.create_spreadsheet)
+        create_excel.grid(column=0, row=3, pady=10)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 

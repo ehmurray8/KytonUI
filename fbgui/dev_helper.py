@@ -9,6 +9,7 @@ from uuid import UUID
 from queue import Queue
 from fbgui.messages import MessageType, Message
 from fbgui.devices import SM125, OpSwitch
+from fbgui.types import FloatMatrix, IntMatrix
 
 
 class Params(object):
@@ -44,7 +45,7 @@ class Params(object):
         self.switch_num = switch_num
 
 
-def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: List[List[int]], num_pts: int, pos_used: List[int],
+def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: IntMatrix, num_pts: int, pos_used: List[int],
                    use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue)\
         -> Tuple[List[float], List[float]]:
     """
@@ -82,7 +83,7 @@ def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: List[List[int]], nu
         return [], []
 
 
-def __avg_arr(first: List[List[float]], second: List[List[float]]) -> np.array:
+def __avg_arr(first: FloatMatrix, second: FloatMatrix) -> np.array:
     """
     Averages the values of two matrices, keeps the same shape when returned.
 
@@ -100,35 +101,43 @@ def __avg_arr(first: List[List[float]], second: List[List[float]]) -> np.array:
     return first
 
 
-def __get_data(params: Params) -> Tuple[List[List[float]], List[List[float]]]:
+def __get_data(params: Params) -> Tuple[FloatMatrix, FloatMatrix]:
     """
     Get the data from the laser, and use the optical switch to configure the fbgs correctly.
 
     :param params: Params object describing data collection parameters
     :return: Matrix of wavelengths, Matrix of powers
     """
-    wavelens = [[], [], [], []]
-    amps = [[], [], [], []]
-    for switch in params.switches:
+    wavelengths = [[], [], [], []]
+    amplitudes = [[], [], [], []]
+    if len(params.switches) == 0:
+        record_wavelengths_and_amplitudes(wavelengths, amplitudes, params)
+    for position_number in params.switches:
         try:
-            if params.use_dev:
-                params.switch.set_channel(switch)
-            time.sleep(1.2)
-            for i in range(params.num_readings):
-                add_wavelength = False
-                if not i:
-                    add_wavelength = True
-                if params.thread_map[params.thread_id]:
-                    __get_sm125_data(wavelens, amps, add_wavelength, params)
+            __switch_to(position_number, params)
+            record_wavelengths_and_amplitudes(wavelengths, amplitudes, params)
         except socket.error:
             params.main_queue.put(Message(MessageType.DEVELOPER, "Socket Error", "Error communicating with the "
                                                                                  "laser in dev_helper."))
-    wavelens = [wave for i, wave in enumerate(wavelens) if params.positions_used[i]]
-    amps = [amp for i, amp in enumerate(amps) if params.positions_used[i]]
-    return wavelens, amps
+    wavelengths = [wave for i, wave in enumerate(wavelengths) if params.positions_used[i]]
+    amps = [amp for i, amp in enumerate(amplitudes) if params.positions_used[i]]
+    return wavelengths, amps
 
 
-def __get_sm125_data(all_waves: List[List[float]], all_amps: List[List[float]], add_wavelength: bool, params: Params):
+def record_wavelengths_and_amplitudes(wavelengths: FloatMatrix, amplitudes: FloatMatrix, params: Params):
+    for reading_number in range(params.num_readings):
+        add_wavelength = not bool(reading_number)
+        if params.thread_map[params.thread_id]:
+            __get_sm125_data(wavelengths, amplitudes, add_wavelength, params)
+
+
+def __switch_to(position: int, params: Params):
+    if params.use_dev:
+        params.switch.set_channel(position)
+    time.sleep(1.2)
+
+
+def __get_sm125_data(all_waves: FloatMatrix, all_amps: FloatMatrix, add_wavelength: bool, params: Params):
     """
     Collect the data from the SM125, and add the data to the proper lists in all_waves, and all_amps.
 
