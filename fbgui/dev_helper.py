@@ -66,7 +66,7 @@ def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: IntMatrix, num_pts:
                        UUID should be running
     :param main_queue: Queue used for writing log messages to
     """
-    lens = [len(x) if len(x) and x[0] != 0 else 0 for x in switches]
+    lens = [len(x) for x in switches]
     switches_flat = list(np.hstack(switches))
     switch_num = -1
     if len(switches_flat):
@@ -125,8 +125,8 @@ def __get_data(params: Params) -> Tuple[FloatMatrix, FloatMatrix]:
 
 
 def record_wavelengths_and_amplitudes(wavelengths: FloatMatrix, amplitudes: FloatMatrix, params: Params):
-    for i in range(params.num_readings):
-        add_wavelength = False if i else True
+    for reading_number in range(params.num_readings):
+        add_wavelength = not bool(reading_number)
         if params.thread_map[params.thread_id]:
             __get_sm125_data(wavelengths, amplitudes, add_wavelength, params)
 
