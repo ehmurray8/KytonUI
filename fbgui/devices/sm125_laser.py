@@ -34,6 +34,6 @@ class SM125(socket.socket):
         amp_end_idx = amp_start_idx + 2 * total_peaks
         amplitudes = np.frombuffer(response[amp_start_idx:amp_end_idx], dtype=(str(total_peaks) + 'int16'))
 
-        wavelengths_list = [en / WAVELENGTH_MULTIPLIER for en in wavelengths]
-        amplitudes_list = [en / AMPLITUDE_MULTIPLIER for en in amplitudes]
+        wavelengths_list = [wavelength / WAVELENGTH_MULTIPLIER for wavelength in wavelengths]
+        amplitudes_list = [amplitude / AMPLITUDE_MULTIPLIER for amplitude in amplitudes]
         return wavelengths_list[0], amplitudes_list[0], chan_lens
