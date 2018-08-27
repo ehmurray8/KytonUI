@@ -145,39 +145,22 @@ def __get_sm125_data(all_waves: FloatMatrix, all_amps: FloatMatrix, add_waveleng
     :param params: data collection parameters object
     """
     if params.thread_map[params.thread_id]:
-        wavelens, amps, lens = params.laser.get_data()
-    else:
-        return
+        use_positions = [bool(num_on_position) for num_on_position in params.positions_used]
+        wavelengths, amplitudes = params.laser.get_data(use_positions)
 
-    try:
-        wavelens = list(wavelens)
-        amps = list(amps)
-    except TypeError:
-        wavelens = [wavelens]
-        amps = [amps]
-
-    waves_list = []
-    amps_list = []
-    for i, pos in enumerate(params.positions_used):
-        if pos and lens is not None and lens[i]:
-            waves_list.append(wavelens.pop(0))
-            amps_list.append(amps.pop(0))
-        else:
-            waves_list.append(0.)
-            amps_list.append(0.)
-
-    first_run = True
-    if len(np.hstack(all_waves)):
-        first_run = False
-    for i, (amp, wave) in enumerate(zip(amps_list, waves_list)):
-        if first_run or (i == params.switch_num and add_wavelength):
-            all_waves[i].append(wave)
-            all_amps[i].append(amp)
-        else:
-            temp_wave = all_waves[i].pop()
-            temp_amp = all_amps[i].pop()
-            all_waves[i].insert(len(all_waves[i]), (temp_wave + wave) / 2.)
-            all_amps[i].insert(len(all_amps[i]), (temp_amp + amp) / 2.)
+        first_run = True
+        if len(np.hstack(all_waves)):
+            first_run = False
+        for i, (amplitude, wavelength, use_position) in enumerate(zip(amplitudes, wavelengths, use_positions)):
+            if use_position:
+                if first_run or (i == params.switch_num and add_wavelength):
+                    all_waves[i].append(wavelength)
+                    all_amps[i].append(amplitude)
+                else:
+                    current_wavelength = all_waves[i].pop()
+                    current_amplitude = all_amps[i].pop()
+                    all_waves[i].insert(len(all_waves[i]), (current_wavelength + wavelength) / 2.)
+                    all_amps[i].insert(len(all_amps[i]), (current_amplitude + amplitude) / 2.)
 
 
 def __get_average_data(params: Params) -> Tuple[List[float], List[float]]:
