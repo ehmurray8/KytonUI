@@ -290,7 +290,7 @@ class LogView(ttk.Frame):
             if index == "":
                 break
             if count.get() == 0:
-                break  # degenerate pattern which matches zero-length strings
+                break
             self.log_view.mark_set("matchStart", index)
             self.log_view.mark_set("matchEnd", "%s+%sc" % (index, count.get()))
             self.log_view.tag_add(tag, "matchStart", "matchEnd")

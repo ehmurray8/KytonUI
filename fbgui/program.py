@@ -23,6 +23,8 @@ from fbgui.datatable import DataTable
 from fbgui.graph_toolbar import Toolbar
 from fbgui.messages import MessageType, Message
 from fbgui.main_program import Application
+import sys
+import traceback
 
 MPL_PLOT_NUM = 230
 
@@ -511,4 +513,5 @@ class Program(ttk.Notebook):
                                                  sum(len(s) > 0 for s in self.snums), thread_id,
                                                  self.master.thread_map, self.master.main_queue)
             except (AttributeError, visa.VisaIOError, socket.error):
+                traceback.print_exc(file=sys.stdout)
                 self.temp_controller_error()
