@@ -11,7 +11,7 @@ def flatten(list2d: List[List]) -> List:
     :param list2d: Matrix to flatten
     :returns: list is ordered how the list is visually seen in 1D
     """
-    return functools.reduce(lambda x, y: x+y, list2d)
+    return functools.reduce(lambda x, y: x + y, list2d)
 
 
 def clean_str_list(str_list: List[str]) -> List[str]:

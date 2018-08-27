@@ -3,7 +3,7 @@ from queue import Queue
 import numpy as np
 import pandas as pd
 from fbgui.messages import MessageType, Message
-from fbgui import file_helper as fh
+from fbgui import file_functions as fh
 from typing import List, Optional
 
 

@@ -2,27 +2,29 @@
 Abstract class defines common functionality between calibration program and baking program.
 """
 import abc
-import uuid
 import configparser
-import socket
 import os
 import re
-from threading import Thread
+import socket
 import sqlite3
-from typing import List, Tuple
 import tkinter as tk
+import uuid
+from threading import Thread
 from tkinter import ttk, messagebox as mbox
+from typing import List, Tuple
+
+import visa
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import visa
-from fbgui import file_helper as fh, graphing, dev_helper, ui_helper, options_frame, helpers
-from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
-    CAL, BAKING, LASER, SWITCH, TEMP, OVEN
-from fbgui.datatable import DataTable
+from fbgui import file_functions as fh, graphing, laser_recorder, ui_functions, options_frame
 from fbgui.graph_toolbar import Toolbar
-from fbgui.messages import MessageType, Message
+from fbgui.helpers.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH,\
+    CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from fbgui.main_program import Application
+from fbgui.messages import MessageType, Message
+from fbgui.results_table import ResultsTable
+from fbgui.helpers import helpers
 
 MPL_PLOT_NUM = 230
 
@@ -89,7 +91,7 @@ class Program(ttk.Notebook):
         self.start_btn = None  # type: ttk.Button
         self.need_oven = False
         self.options = None  # type: options_frame.OptionsPanel
-        self.table = None  # type: DataTable
+        self.table = None  # type: ResultsTable
         self.graph_helper = None  # type: graphing.Graphing
 
         # Needed to avoid garbage collection
@@ -136,7 +138,7 @@ class Program(ttk.Notebook):
         # Set up table tab
         self.add(table_frame, image=self.file_photo)
         ttk.Label(table_frame, text="Last 100 Readings").pack(anchor="center")
-        self.table = DataTable(table_frame, self.create_excel, self.master.main_queue)
+        self.table = ResultsTable(table_frame, self.create_excel, self.master.main_queue)
         self.table.setup_headers([])
         self.table.pack(fill="both", expand=True)
         fig = Figure(figsize=(5, 5), dpi=100)
@@ -280,8 +282,8 @@ class Program(ttk.Notebook):
                     else:
                         self.save_config_info()
                         self.master.running_prog = self.program_type.prog_id
-                        ui_helper.lock_widgets(self.options)
-                        ui_helper.lock_main_widgets(self.master.device_frame)
+                        ui_functions.lock_widgets(self.options)
+                        ui_functions.lock_main_widgets(self.master.device_frame)
                         self.graph_helper.show_subplots()
                         headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
                         headers.pop(0)
@@ -356,15 +358,15 @@ class Program(ttk.Notebook):
                 and self.program_type.prog_id == BAKING:
             self.set_oven_temp(force_connect=True, thread_id=thread_id)
 
-        if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and\
-                (self.master.switch is not None) == need_switch and self.master.laser is not None and \
+        if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and \
+            (self.master.switch is not None) == need_switch and self.master.laser is not None and \
                 self.master.temp_controller is not None:
             self.disconnect_devices()
             self.master.running = True
             return True
         return False
 
-    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
+    def set_oven_temp(self, temp: float = None, heat: bool = True, force_connect: bool = False, thread_id=None,
                       cooling=False):
         """
         Sets the oven temperature to temp, or to the bake temperature configured on the options screen.
@@ -475,8 +477,8 @@ class Program(ttk.Notebook):
         self.master.open_threads.clear()
         self.start_btn.configure(text=self.program_type.start_title)
         self.start_btn.configure(state=tk.NORMAL)
-        ui_helper.unlock_widgets(self.options)
-        ui_helper.unlock_main_widgets(self.master.device_frame)
+        ui_functions.unlock_widgets(self.options)
+        ui_functions.unlock_main_widgets(self.master.device_frame)
         self.master.running = False
         self.master.running_prog = None
         self.conf_parser.set(BAKING, "running", "false")
@@ -506,9 +508,9 @@ class Program(ttk.Notebook):
                 if sum(len(switch) for switch in self.switches):
                     self.master.conn_dev(SWITCH, thread_id=thread_id)
                 self.master.conn_dev(LASER, thread_id=thread_id)
-                return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                 self.options.num_pts.get(), positions_used,
-                                                 sum(len(s) > 0 for s in self.snums), thread_id,
-                                                 self.master.thread_map, self.master.main_queue)
+                return laser_recorder.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
+                                                     self.options.num_pts.get(), positions_used,
+                                                     sum(len(s) > 0 for s in self.snums), thread_id,
+                                                     self.master.thread_map, self.master.main_queue)
             except (AttributeError, visa.VisaIOError, socket.error):
                 self.temp_controller_error()

@@ -2,12 +2,14 @@
 
 import configparser
 import os
-from typing import List, Callable
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
-from fbgui.constants import BAKING, CAL, ASSETS_PATH
-from fbgui import helpers, ui_helper as uh
+from typing import List, Callable
+
+from fbgui import ui_functions
+from fbgui.helpers import helpers
+from fbgui.helpers.constants import BAKING, CAL, ASSETS_PATH
 
 
 class OptionsPanel(ttk.Frame):
@@ -143,53 +145,57 @@ class OptionsPanel(ttk.Frame):
         row_num = 0
         if self.program == CAL:
             use_cool = self.conf_parser.getboolean(self.program, "use_cool")
-            self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
+            self.cooling = ui_functions.checkbox_entry(self.options_grid, "Use oven cooling function?",
+                                                       row_num, use_cool)
             row_num += 1
 
         num_scans = self.conf_parser.getint(self.program, "num_scans")
-        self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
+        self.num_pts = ui_functions.int_entry(self.options_grid, "Num laser scans to average:", row_num,
+                                              5, num_scans)
         row_num += 1
 
         if self.program == CAL:
             num_readings = self.conf_parser.getint(self.program, "num_temp_readings")
-            self.num_temp_readings = uh.int_entry(self.options_grid, "Num temperature readings to average: ",
-                                                  row_num, 10, num_readings)
+            self.num_temp_readings = ui_functions.int_entry(self.options_grid,
+                                                            "Num temperature readings to average: ",
+                                                            row_num, 10, num_readings)
             row_num += 1
 
             temp_int = self.conf_parser.getfloat(self.program, "temp_interval")
-            self.temp_interval = uh.units_entry(self.options_grid, "Time between temp readings: ", row_num, 10,
-                                                "seconds", temp_int)
+            self.temp_interval = ui_functions.units_entry(self.options_grid, "Time between temp readings: ",
+                                                          row_num, 10, "seconds", temp_int)
             row_num += 1
 
             drate = self.conf_parser.getfloat(self.program, "drift_rate")
-            self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
+            self.drift_rate = ui_functions.units_entry(self.options_grid, "Drift rate: ", row_num, 10,
+                                                       "mK/min", drate)
             row_num += 1
 
             num_cycles = self.conf_parser.getint(self.program, "num_cycles")
-            self.num_cal_cycles = uh.int_entry(self.options_grid, "Num cal cycles: ", row_num, 10, num_cycles)
+            self.num_cal_cycles = ui_functions.int_entry(self.options_grid, "Num cal cycles: ", row_num, 10, num_cycles)
             row_num += 1
 
             target_temps = self.conf_parser.get(self.program, "target_temps")
-            self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
-                                                     .format(u'\u00B0'), row_num, 10, 2, target_temps)
+            self.target_temps_entry = ui_functions.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
+                                                               .format(u'\u00B0'), row_num, 10, 2, target_temps)
             row_num += 1
         else:
             set_temp = self.conf_parser.getfloat(self.program, "set_temp")
-            self.set_temp = uh.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
-                                            row_num, 10, set_temp)
+            self.set_temp = ui_functions.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
+                                                      row_num, 10, set_temp)
             row_num += 1
 
             drate = self.conf_parser.getfloat(self.program, "drift_rate")
-            self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
+            self.drift_rate = ui_functions.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
             prim_interval = self.conf_parser.getfloat(self.program, "prim_interval")
-            self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
-                                            "hours", prim_interval)
+            self.prim_time = ui_functions.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
+                                                      "hours", prim_interval)
             row_num += 1
 
         fname = self.conf_parser.get(self.program, "file")
-        self.file_name = uh.file_entry(self.options_grid, "Excel file name: ", row_num, 50, fname)
+        self.file_name = ui_functions.file_entry(self.options_grid, "Excel file name: ", row_num, 50, fname)
         row_num += 1
 
     def create_start_btn(self, start: Callable) -> ttk.Button:
@@ -207,7 +213,7 @@ class OptionsPanel(ttk.Frame):
         start_button.pack(anchor='center', pady=20)
         return start_button
 
-    def add_fbg(self, fbg_grid: ttk.Frame, chan: int, fbg_name: str=None, switch_pos: int=None):
+    def add_fbg(self, fbg_grid: ttk.Frame, chan: int, fbg_name: str = None, switch_pos: int = None):
         """
         Add an fbg input to the view, at the column corresponding to the chan index. If fbg_name, and switch_pos
         are not None then set the serial number entry, and switch position entry to their values respectively.
@@ -231,8 +237,8 @@ class OptionsPanel(ttk.Frame):
             def_name = "FBG {}".format(sum(len(x) for x in self.chan_nums))
             if fbg_name is not None:
                 def_name = fbg_name
-            serial_num, switch_pos, frame = uh.serial_num_entry(fbg_grid, len(self.chan_nums[chan])+1,
-                                                                chan, def_name, switch_pos)
+            serial_num, switch_pos, frame = ui_functions.serial_num_entry(fbg_grid, len(self.chan_nums[chan]) + 1,
+                                                                          chan, def_name, switch_pos)
             self.snum_frames[chan].append(frame)
             self.sn_ents[chan].append(serial_num)
             self.switch_positions[chan].append(switch_pos)
@@ -245,7 +251,7 @@ class OptionsPanel(ttk.Frame):
         """
         if len(self.chan_nums[chan]):
             self.chan_nums[chan].pop()
-            uh.remove_snum_entry(self.snum_frames[chan].pop())
+            ui_functions.remove_snum_entry(self.snum_frames[chan].pop())
             self.sn_ents[chan].pop()
             self.switch_positions[chan].pop()
 
@@ -253,7 +259,7 @@ class OptionsPanel(ttk.Frame):
         """ Initialize the fbg input section of the options page, using settings stored in prog_config."""
         for i in range(4):
             title_frame = ttk.Frame(self.fbg_grid)
-            ttk.Label(title_frame, text="Channel {}".format(i + 1), style="Bold.TLabel")\
+            ttk.Label(title_frame, text="Channel {}".format(i + 1), style="Bold.TLabel") \
                 .pack(side='left', anchor='w')
 
             buttons_frame = ttk.Frame(title_frame)
@@ -265,8 +271,8 @@ class OptionsPanel(ttk.Frame):
             title_frame.grid(sticky='nsew', column=i, row=0)
 
         for i in range(4):
-            snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
-            positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
+            snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i + 1)).split(",")
+            positions = self.conf_parser.get(self.program, "chan{}_positions".format(i + 1)).split(",")
             try:
                 positions = helpers.list_cast(positions, int)
                 for snum, pos in zip(snums, positions):

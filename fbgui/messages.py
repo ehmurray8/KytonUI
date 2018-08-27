@@ -1,14 +1,15 @@
+import collections
+import datetime
 import enum
 import os
 import time
-import datetime
-import collections
-from tkinter import ttk
-from tkinter.scrolledtext import ScrolledText
-from tkinter.font import Font
 import tkinter as tk
+from tkinter import ttk
+from tkinter.font import Font
+from tkinter.scrolledtext import ScrolledText
 from typing import Optional, Dict
-from fbgui.constants import LOG_BACKGROUND_COLOR
+
+from fbgui.helpers.constants import LOG_BACKGROUND_COLOR
 
 #: Amount of time in between messages to enable the filtering
 FILTER_TIME = 300.

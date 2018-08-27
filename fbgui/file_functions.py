@@ -1,22 +1,24 @@
 """Module used for helping with creating output files, and communicating with the database."""
+import configparser
 import datetime
 import os
+import queue
 import sqlite3
 from tkinter import messagebox as mbox
-import configparser
-import pandas as pd
-import queue
 from typing import List
+
+import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
-from fbgui import helpers
-from fbgui.datatable import DataTable
-from fbgui.constants import HEX_COLORS, CAL, BAKING, PROG_CONFIG_PATH, DB_PATH
-from fbgui.messages import Message, MessageType
+
+from fbgui.helpers import helpers
 from fbgui.data_container import DataCollection
+from fbgui.helpers.constants import HEX_COLORS, CAL, BAKING, PROG_CONFIG_PATH, DB_PATH
+from fbgui.messages import Message, MessageType
+from fbgui.results_table import ResultsTable
 
 
 def write_db(file_name: str, serial_nums: List[str], timestamp: float, temp: float, wavelengths: List[float],
-             powers: List[float], func: str, table: DataTable, main_queue: queue.Queue, drift_rate: float=None,
+             powers: List[float], func: str, table: ResultsTable, main_queue: queue.Queue, drift_rate: float=None,
              real_cal_pt: bool=False, cycle_num: int=0) -> bool:
     """
     Writes the output to sqlite database.

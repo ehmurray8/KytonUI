@@ -16,12 +16,12 @@ def create_shortcut(desktop_shortcut_name, target_path, exe, icon_path):
             pass
 
     exe = os.path.join(target_path, exe)
-    wDir = target
+    working_directory = target
 
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(path)
     shortcut.Targetpath = exe
-    shortcut.WorkingDirectory = wDir
+    shortcut.WorkingDirectory = working_directory
     shortcut.IconLocation = icon_path
     shortcut.save()
 
@@ -38,11 +38,11 @@ def create_shortcut(desktop_shortcut_name, target_path, exe, icon_path):
         os.mkdir(os.path.join(start_menu, "Programs", "Kyton"))
 
     exe = os.path.join(target_path, "fbgui.exe")
-    wDir = target
+    working_directory = target
 
     shortcut = shell.CreateShortCut(path)
     shortcut.Targetpath = exe
-    shortcut.WorkingDirectory = wDir
+    shortcut.WorkingDirectory = working_directory
     shortcut.IconLocation = icon_path
     shortcut.save()
 
