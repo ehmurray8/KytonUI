@@ -8,18 +8,17 @@ from queue import Queue, Empty
 import visa
 from typing import Dict, List, Optional
 from uuid import UUID
+from fbgui import create_excel, constants, reset_config, messages, install, ui_helper as uh
+from fbgui.devices.oven import Oven
+from fbgui.devices.optical_switch import OpticalSwitch
+from fbgui.devices.sm125_laser import SM125
+from fbgui.devices.temperature_controller import TemperatureController
 
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox as mbox
 import matplotlib
 matplotlib.use("TkAgg")
-
-# noinspection PyPep8
-import tkinter as tk
-# noinspection PyPep8
-from tkinter import ttk
-# noinspection PyPep8
-from tkinter import messagebox as mbox
-# noinspection PyPep8
-from fbgui import create_excel, constants, devices, reset_config, ui_helper as uh, messages, install
 
 
 class Application(tk.Tk):
@@ -35,12 +34,12 @@ class Application(tk.Tk):
     :ivar List[UUID] graph_threads: List of UUIDs of the currently open graph threads
     :ivar bool running: True if either program is running, False otherwise
     :ivar str running_prog: Program identifier for currently running program, None if the program is not running
-    :ivar devices.TempController temp_controller: temperature controller wrapper used for communicating with the
+    :ivar devices.TemperatureController temp_controller: temperature controller wrapper used for communicating with the
                                                   temperature controller, None if not connected to the temperature
                                                   controller
     :ivar devices.Oven oven: Oven wrapper used for communicating with the Oven, None if not connected to the oven
     :ivar devices.SM125 laser: Laser wrapper used for communicating with the Laser, None if not connected to the laser
-    :ivar devices.OpSwitch switch: Switch wrapper used for communicating with the Optical Switch, None if not
+    :ivar devices.OpticalSwitch switch: Switch wrapper used for communicating with the Optical Switch, None if not
                                    connected to the optical switch
     :ivar bool is_full_screen: True if the program is in full screen, False otherwise
     :ivar tkinter.IntVar controller_location: tkinter variable for the temperature controller location input field
@@ -93,10 +92,10 @@ class Application(tk.Tk):
         self.graph_threads = []  # type: List[UUID]
         self.running = False
         self.running_prog = None  # type: Optional[str]
-        self.temp_controller = None  # type: Optional[devices.TempController]
-        self.oven = None  # type: Optional[devices.Oven]
-        self.laser = None  # type: Optional[devices.SM125]
-        self.switch = None  # type: Optional[devices.OpSwitch]
+        self.temp_controller = None  # type: Optional[TemperatureController]
+        self.oven = None  # type: Optional[Oven]
+        self.laser = None  # type: Optional[SM125]
+        self.switch = None  # type: Optional[OpticalSwitch]
         self.is_full_screen = False
 
         self.controller_location = tk.StringVar()
@@ -221,7 +220,7 @@ class Application(tk.Tk):
                                                                      "controller."))
                                 continue
                             else:
-                                self.temp_controller = devices.TempController(temp_loc, self.manager, self.use_dev)
+                                self.temp_controller = TemperatureController(temp_loc, self.manager, self.use_dev)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
@@ -240,7 +239,7 @@ class Application(tk.Tk):
                                                                      "Failed to connect to the oven."))
                                 continue
                             else:
-                                self.oven = devices.Oven(oven_loc, self.manager, self.use_dev)
+                                self.oven = Oven(oven_loc, self.manager, self.use_dev)
                     else:
                         self.oven.close()
                         self.oven = None
@@ -248,8 +247,8 @@ class Application(tk.Tk):
                     if connect:
                         if self.switch is None:
                             err_specifier = "ethernet port"
-                            self.switch = devices.OpSwitch(self.op_switch_address.get(),
-                                                           int(self.op_switch_port.get()), self.use_dev)
+                            self.switch = OpticalSwitch(self.op_switch_address.get(),
+                                                        int(self.op_switch_port.get()), self.use_dev)
                     else:
                         self.switch.close()
                         self.switch = None
@@ -257,8 +256,7 @@ class Application(tk.Tk):
                     if connect:
                         if self.laser is None:
                             err_specifier = "ethernet port"
-                            self.laser = devices.SM125(self.sm125_address.get(), int(self.sm125_port.get()),
-                                                       self.use_dev)
+                            self.laser = SM125(self.sm125_address.get(), int(self.sm125_port.get()), self.use_dev)
                     else:
                         self.laser.close()
                         self.laser = None
