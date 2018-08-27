@@ -1,5 +1,4 @@
 """Module contains the main entry point for the Kyton UI."""
-import argparse
 import configparser
 import os
 import socket
@@ -25,7 +24,6 @@ class Application(tk.Tk):
     """
     Main Application class, Tk implementation used as the master throughout the package.
 
-    :ivar bool use_dev: True if the program is configured to use devices, False if configured to run a simulation
     :ivar configparser.ConfigParser conf_parser: ConfigParser to read, and set device settings
     :ivar visa.ResourceManager manager: PyVisa ResourceManager used for communicating with GPIB instruments
     :ivar Queue main_queue: Queue used for listening for logging messages to write to the log_view
@@ -66,25 +64,18 @@ class Application(tk.Tk):
         super().__init__(*args, **kwargs)
         install.install()
         reset_config.reset_config()
-        parser = argparse.ArgumentParser(description='Run the Kyton program for the correct computer.')
-        parser.add_argument('--nodev', action="store_true", help='Use this arg if no devices are available.')
-        self.use_dev = True
-        cmd_args = parser.parse_args()
-        if cmd_args.nodev:
-            self.use_dev = False
         self.conf_parser = configparser.ConfigParser()
         self.conf_parser.read(os.path.join("config", "devices.cfg"))
 
         self.manager = None  # type: visa.ResourceManager
-        if self.use_dev:
-            try:
-                self.manager = visa.ResourceManager()
-            except OSError as e:
-                if "VISA" in str(e):
-                    mbox.showerror("NIVisa not installed",
-                                   "Need to install NIVisa to run the program.")
-                    self.destroy()
-                    raise RuntimeError("NIVisa not installed.")
+        try:
+            self.manager = visa.ResourceManager()
+        except OSError as e:
+            if "VISA" in str(e):
+                mbox.showerror("NIVisa not installed",
+                               "Need to install NIVisa to run the program.")
+                self.destroy()
+                raise RuntimeError("NIVisa not installed.")
 
         self.main_queue = Queue()
         self.thread_map = {}  # type: Dict[UUID, bool]
@@ -209,7 +200,7 @@ class Application(tk.Tk):
                         if self.temp_controller is None:
                             err_specifier = "GPIB address"
                             temp_loc = self.controller_location.get()
-                            if self.use_dev and temp_loc not in self.manager.list_resources():
+                            if temp_loc not in self.manager.list_resources():
                                 if try_once and thread_id is None:
                                     mbox.showerror("Device Connection Error", "Cannot connect to the temperature "
                                                                               "controller, check the configured "
@@ -220,7 +211,7 @@ class Application(tk.Tk):
                                                                      "controller."))
                                 continue
                             else:
-                                self.temp_controller = TemperatureController(temp_loc, self.manager, self.use_dev)
+                                self.temp_controller = TemperatureController(temp_loc, self.manager)
                     else:
                         self.temp_controller.close()
                         self.temp_controller = None
@@ -229,7 +220,7 @@ class Application(tk.Tk):
                         if self.oven is None:
                             err_specifier = "GPIB address"
                             oven_loc = self.oven_location.get()
-                            if self.use_dev and oven_loc not in self.manager.list_resources():
+                            if oven_loc not in self.manager.list_resources():
                                 if try_once and thread_id is None:
                                     mbox.showerror("Device Connection Error", "Cannot connect to the oven, "
                                                                               "check the configured settings on "
@@ -239,7 +230,7 @@ class Application(tk.Tk):
                                                                      "Failed to connect to the oven."))
                                 continue
                             else:
-                                self.oven = Oven(oven_loc, self.manager, self.use_dev)
+                                self.oven = Oven(oven_loc, self.manager)
                     else:
                         self.oven.close()
                         self.oven = None
@@ -247,8 +238,7 @@ class Application(tk.Tk):
                     if connect:
                         if self.switch is None:
                             err_specifier = "ethernet port"
-                            self.switch = OpticalSwitch(self.op_switch_address.get(),
-                                                        int(self.op_switch_port.get()), self.use_dev)
+                            self.switch = OpticalSwitch(self.op_switch_address.get(), int(self.op_switch_port.get()))
                     else:
                         self.switch.close()
                         self.switch = None
@@ -256,7 +246,7 @@ class Application(tk.Tk):
                     if connect:
                         if self.laser is None:
                             err_specifier = "ethernet port"
-                            self.laser = SM125(self.sm125_address.get(), int(self.sm125_port.get()), self.use_dev)
+                            self.laser = SM125(self.sm125_address.get(), int(self.sm125_port.get()))
                     else:
                         self.laser.close()
                         self.laser = None

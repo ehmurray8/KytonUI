@@ -17,7 +17,7 @@ class Params(object):
     """Wrapper for the parameters used throughout the module."""
 
     def __init__(self, laser: SM125, switch: OpticalSwitch, switches: List[int], num_pts: int, pos_used: List[int],
-                 use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue, switch_num: int):
+                 num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue, switch_num: int):
         """
 
         :param laser: the SM125 wrapper used for communicating with the SM125
@@ -25,7 +25,6 @@ class Params(object):
         :param switches: flattened list of switches from the 2D list of switches broken down by channel
         :param num_pts: the number of readings to take for each fbg
         :param pos_used: the number of fbgs on each SM125 channel
-        :param use_dev: if True use devices, otherwise run simulation
         :param num_snums: total number of fbgs in the current test
         :param thread_id: UUID of the thread the code is currently running on
         :param thread_map: Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with
@@ -38,7 +37,6 @@ class Params(object):
         self.switches = switches
         self.num_readings = num_pts
         self.positions_used = pos_used
-        self.use_dev = use_dev
         self.num_snums = num_snums
         self.thread_id = thread_id
         self.thread_map = thread_map
@@ -47,7 +45,7 @@ class Params(object):
 
 
 def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num_pts: int, pos_used: List[int],
-                   use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue)\
+                   num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue)\
         -> Tuple[List[float], List[float]]:
     """
     Returns the averaged wavelength, and power data collected from the SM125, and potentially using the Optical Switch.
@@ -60,7 +58,6 @@ def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num
     :param switches: 2D list with one list for each SM125 channel containing the switch positions on each channel
     :param num_pts: the number of readings to take for each fbg
     :param pos_used: the number of fbgs on each SM125 channel
-    :param use_dev: if True use devices, otherwise run simulation
     :param num_snums: total number of fbgs in the current test
     :param thread_id: UUID of the thread the code is currently running on
     :param thread_map: Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with that
@@ -73,7 +70,7 @@ def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num
     if len(switches_flat):
         switch_num = lens.index(max(lens))
     if thread_map[thread_id]:
-        params = Params(laser, switch, switches_flat, num_pts, pos_used, use_dev, num_snums,
+        params = Params(laser, switch, switches_flat, num_pts, pos_used, num_snums,
                         thread_id, thread_map, main_queue, switch_num)
         ret = __get_average_data(params)
         if thread_map[thread_id]:
@@ -133,8 +130,7 @@ def record_wavelengths_and_amplitudes(wavelengths: FloatMatrix, amplitudes: Floa
 
 
 def __switch_to(position: int, params: Params):
-    if params.use_dev:
-        params.switch.set_channel(position)
+    params.switch.set_channel(position)
     time.sleep(1.2)
 
 
@@ -149,7 +145,7 @@ def __get_sm125_data(all_waves: FloatMatrix, all_amps: FloatMatrix, add_waveleng
     :param params: data collection parameters object
     """
     if params.thread_map[params.thread_id]:
-        wavelens, amps, lens = params.laser.get_data(not params.use_dev, params.num_snums)
+        wavelens, amps, lens = params.laser.get_data()
     else:
         return
 
@@ -163,7 +159,7 @@ def __get_sm125_data(all_waves: FloatMatrix, all_amps: FloatMatrix, add_waveleng
     waves_list = []
     amps_list = []
     for i, pos in enumerate(params.positions_used):
-        if pos and lens is not None and (lens[i] or not params.use_dev):
+        if pos and lens is not None and lens[i]:
             waves_list.append(wavelens.pop(0))
             amps_list.append(amps.pop(0))
         else:

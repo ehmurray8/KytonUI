@@ -9,17 +9,14 @@ class NewportPower(object):
     :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
     """
 
-    def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
+    def __init__(self, location: str, manager: ResourceManager):
         """
         Create a visa connection using loc and manager to the Newport Power Meter.
 
-        :param loc: the GPIB location of the power meter
+        :param location: the GPIB location of the power meter
         :param manager: the PyVisa resource manager
-        :param use_dev: if True connect to the power meter
         """
-        self.device = None
-        if use_dev:
-            self.device = manager.open_resource(loc)  # type: GPIBInstrument
+        self.device = manager.open_resource(location)  # type: GPIBInstrument
 
     def set_units_dbm(self):
         """Set the units of the device to dBm"""
