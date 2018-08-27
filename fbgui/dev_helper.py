@@ -8,14 +8,15 @@ from typing import List, Tuple
 from uuid import UUID
 from queue import Queue
 from fbgui.messages import MessageType, Message
-from fbgui.devices import SM125, OpSwitch
 from fbgui.types import FloatMatrix, IntMatrix
+from fbgui.devices.sm125_laser import SM125
+from fbgui.devices.optical_switch import OpticalSwitch
 
 
 class Params(object):
     """Wrapper for the parameters used throughout the module."""
 
-    def __init__(self, laser: SM125, switch: OpSwitch, switches: List[int], num_pts: int, pos_used: List[int],
+    def __init__(self, laser: SM125, switch: OpticalSwitch, switches: List[int], num_pts: int, pos_used: List[int],
                  use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue, switch_num: int):
         """
 
@@ -45,7 +46,7 @@ class Params(object):
         self.switch_num = switch_num
 
 
-def avg_waves_amps(laser: SM125, switch: OpSwitch, switches: IntMatrix, num_pts: int, pos_used: List[int],
+def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num_pts: int, pos_used: List[int],
                    use_dev: bool, num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue)\
         -> Tuple[List[float], List[float]]:
     """
