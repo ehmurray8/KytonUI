@@ -51,8 +51,7 @@ class BakingProgram(program.Program):
         :param thread_id: UUID of the thread this code is running in
         """
         stable = False
-        while self.master.thread_map[thread_id] and self.options.set_temp.get() and \
-                self.master.use_dev and not stable:
+        while self.master.thread_map[thread_id] and self.options.set_temp.get() and not stable:
             stable = self.check_stable(thread_id)
             if not stable:
                 self.set_oven_temp()
@@ -61,16 +60,13 @@ class BakingProgram(program.Program):
             self.disconnect_devices()
 
         while self.master.thread_map[thread_id] and self.master.running:
-            if self.master.use_dev:
-                temperature = None
-                while temperature is None:
-                    try:
-                        self.master.conn_dev(TEMP, thread_id=thread_id)
-                        temperature = self.master.temp_controller.get_temp_k()
-                    except (visa.VisaIOError, AttributeError, socket.error):
-                        self.temp_controller_error()
-            else:
-                temperature = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
+            temperature = None
+            while temperature is None:
+                try:
+                    self.master.conn_dev(TEMP, thread_id=thread_id)
+                    temperature = self.master.temp_controller.get_temp_k()
+                except (visa.VisaIOError, AttributeError, socket.error):
+                    self.temp_controller_error()
 
             if not self.master.thread_map[thread_id]:
                 return
@@ -80,24 +76,19 @@ class BakingProgram(program.Program):
             if not self.master.thread_map[thread_id]:
                 return
 
-            if self.master.use_dev:
-                temp2 = None
-                while temp2 is None:
-                    try:
-                        self.master.conn_dev(TEMP, thread_id=thread_id)
-                        temp2 = self.master.temp_controller.get_temp_k()
-                        temperature += temp2
-                    except (AttributeError, visa.VisaIOError):
-                        self.temp_controller_error()
-            else:
-                temp2 = self.master.temp_controller.get_temp_k(True, self.options.set_temp.get())
-                temperature += temp2
+            temp2 = None
+            while temp2 is None:
+                try:
+                    self.master.conn_dev(TEMP, thread_id=thread_id)
+                    temp2 = self.master.temp_controller.get_temp_k()
+                    temperature += temp2
+                except (AttributeError, visa.VisaIOError):
+                    self.temp_controller_error()
 
             temperature /= 2.
             curr_time = time.time()
 
-            if self.master.use_dev:
-                self.disconnect_devices()
+            self.disconnect_devices()
             if not self.master.thread_map[thread_id]:
                 return
 

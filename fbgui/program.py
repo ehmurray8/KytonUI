@@ -314,19 +314,18 @@ class Program(ttk.Notebook):
 
     def disconnect_devices(self):
         """Disconnect all the devices, and set them to None."""
-        if self.master.use_dev:
-            if self.master.oven is not None:
-                self.master.oven.close()
-                self.master.oven = None
-            if self.master.laser is not None:
-                self.master.laser.close()
-                self.master.laser = None
-            if self.master.temp_controller is not None:
-                self.master.temp_controller.close()
-                self.master.temp_controller = None
-            if self.master.switch is not None:
-                self.master.switch.close()
-                self.master.switch = None
+        if self.master.oven is not None:
+            self.master.oven.close()
+            self.master.oven = None
+        if self.master.laser is not None:
+            self.master.laser.close()
+            self.master.laser = None
+        if self.master.temp_controller is not None:
+            self.master.temp_controller.close()
+            self.master.temp_controller = None
+        if self.master.switch is not None:
+            self.master.switch.close()
+            self.master.switch = None
 
     def connect_devices(self, thread_id: uuid.UUID) -> bool:
         """
@@ -346,7 +345,7 @@ class Program(ttk.Notebook):
             self.master.conn_dev(SWITCH, try_once=True)
 
         try:
-            if self.master.thread_map[thread_id] and self.master.use_dev \
+            if self.master.thread_map[thread_id] \
                     and (self.program_type.prog_id == CAL or self.options.set_temp.get()) and self.master.oven is None:
                 self.need_oven = True
                 self.master.conn_dev(OVEN, try_once=True)
@@ -508,7 +507,7 @@ class Program(ttk.Notebook):
                     self.master.conn_dev(SWITCH, thread_id=thread_id)
                 self.master.conn_dev(LASER, thread_id=thread_id)
                 return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                 self.options.num_pts.get(), positions_used, self.master.use_dev,
+                                                 self.options.num_pts.get(), positions_used,
                                                  sum(len(s) > 0 for s in self.snums), thread_id,
                                                  self.master.thread_map, self.master.main_queue)
             except (AttributeError, visa.VisaIOError, socket.error):

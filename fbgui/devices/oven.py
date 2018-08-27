@@ -9,17 +9,14 @@ class Oven(object):
     :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
     """
 
-    def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
+    def __init__(self, loc: str, manager: ResourceManager):
         """
         Opens a GPIB connection with the device at the specified location.
 
         :param loc: the location of the device
         :param manager: the PyVisa Resource Manager
-        :param use_dev: if True connect to the device
         """
-        self.device = None
-        if use_dev:
-            self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)  # type: GPIBInstrument
+        self.device = manager.open_resource(loc, read_termination="\n", open_timeout=2500)  # type: GPIBInstrument
 
     def set_temp(self, temp: float):
         """
@@ -47,5 +44,4 @@ class Oven(object):
 
     def close(self):
         """Closes the resource."""
-        if self.device is not None:
-            self.device.close()
+        self.device.close()

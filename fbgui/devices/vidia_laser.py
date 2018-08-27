@@ -10,17 +10,14 @@ class VidiaLaser(object):
     :ivar pyvisa.resources.gpib.GPIBInstrument device: PyVisa GPIB connection to the device
     """
 
-    def __init__(self, loc: str, manager: ResourceManager, use_dev: bool):
+    def __init__(self, location: str, manager: ResourceManager):
         """
         Create a visa connection using loc and manager to the Vidia-Swept laser.
 
-        :param loc: the GPIB location of the laser
+        :param location: the GPIB location of the laser
         :param manager:  the PyVisa resource manager
-        :param use_dev: if True connect to laser
         """
-        self.device = None
-        if use_dev:
-            self.device = manager.open_resource(loc)  # type: GPIBInstrument
+        self.device = manager.open_resource(location)  # type: GPIBInstrument
 
     def start_scan(self, num_scans: int=-1, start_wave: int=1510, end_wave: int=1575, power: int=6):
         """
