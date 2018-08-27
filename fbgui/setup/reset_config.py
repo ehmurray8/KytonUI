@@ -1,8 +1,9 @@
 """Makes sure configuration files are setup."""
 import os
-import fbgui.constants as constants
 import sqlite3
 from typing import IO
+
+import fbgui.helpers.constants as constants
 
 
 def reset_config():

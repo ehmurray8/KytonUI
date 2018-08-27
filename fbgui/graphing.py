@@ -1,29 +1,31 @@
 """Module used for handling the graphing using matplotlib."""
+import functools
 import gc
 import os
+import threading
 import time
 import uuid
-import threading
-import functools
 from queue import Queue
 from tkinter import StringVar
 from typing import Tuple, List, Callable, Union
-import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib import style
-from matplotlib.figure import Figure
-import matplotlib.ticker as mtick
+
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mtick
+import numpy as np
+from matplotlib import style
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import MouseEvent
-from fbgui import file_helper as fh
-from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
-from fbgui.graph_toolbar import Toolbar
-from fbgui import helpers
-from fbgui.messages import MessageType, Message
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
+from fbgui import file_functions as fh
+from fbgui.helpers import helpers
 from fbgui.data_container import DataCollection
+from fbgui.graph_toolbar import Toolbar
+from fbgui.helpers.constants import HEX_COLORS, BAKING, CAL, DB_PATH
 from fbgui.main_program import Application
+from fbgui.messages import MessageType, Message
 
 style.use("kyton")
 

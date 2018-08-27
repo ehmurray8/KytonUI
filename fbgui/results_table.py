@@ -4,11 +4,11 @@ from typing import List, Callable
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
 import tkinter as tk
-import fbgui.ui_helper as uh
+import fbgui.ui_functions as uh
 from fbgui.messages import MessageType, Message
 
 
-class DataTable(ttk.Frame):
+class ResultsTable(ttk.Frame):
     """
     Overrides ttk Frame class used to create a data view.
 
