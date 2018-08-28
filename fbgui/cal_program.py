@@ -134,7 +134,7 @@ class CalProgram(Program):
                     self.set_oven_temp(**kwargs)
             self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
                 cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
-        self.set_oven_temp(temps[0] - 5, force_connect=False)
+        self.set_oven_temp(50, force_connect=False, heat=False, cooling=False)
 
     def reset_temp(self, start_temp: float, thread_id: UUID) -> bool:
         """
