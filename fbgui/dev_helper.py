@@ -8,7 +8,6 @@ from typing import List, Tuple
 from uuid import UUID
 from queue import Queue
 from fbgui.messages import MessageType, Message
-from fbgui.types import FloatMatrix, IntMatrix
 from fbgui.devices.sm125_laser import SM125
 from fbgui.devices.optical_switch import OpticalSwitch
 
@@ -44,7 +43,7 @@ class Params(object):
         self.switch_num = switch_num
 
 
-def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num_pts: int, pos_used: List[int],
+def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: List[List[int]], num_pts: int, pos_used: List[int],
                    num_snums: int, thread_id: UUID, thread_map: dict, main_queue: Queue)\
         -> Tuple[List[float], List[float]]:
     """
@@ -81,7 +80,7 @@ def avg_waves_amps(laser: SM125, switch: OpticalSwitch, switches: IntMatrix, num
         return [], []
 
 
-def __avg_arr(first: FloatMatrix, second: FloatMatrix) -> np.array:
+def __avg_arr(first: List[List[float]], second: List[List[float]]) -> np.array:
     """
     Averages the values of two matrices, keeps the same shape when returned.
 
@@ -99,7 +98,7 @@ def __avg_arr(first: FloatMatrix, second: FloatMatrix) -> np.array:
     return first
 
 
-def __get_data(params: Params) -> Tuple[FloatMatrix, FloatMatrix]:
+def __get_data(params: Params) -> Tuple[List[List[float]], List[List[float]]]:
     """
     Get the data from the laser, and use the optical switch to configure the fbgs correctly.
 
@@ -122,7 +121,7 @@ def __get_data(params: Params) -> Tuple[FloatMatrix, FloatMatrix]:
     return wavelengths, amps
 
 
-def record_wavelengths_and_amplitudes(wavelengths: FloatMatrix, amplitudes: FloatMatrix, params: Params):
+def record_wavelengths_and_amplitudes(wavelengths: List[List[float]], amplitudes: List[List[float]], params: Params):
     for reading_number in range(params.num_readings):
         add_wavelength = not bool(reading_number)
         if params.thread_map[params.thread_id]:
@@ -134,7 +133,7 @@ def __switch_to(position: int, params: Params):
     time.sleep(1.2)
 
 
-def __get_sm125_data(all_waves: FloatMatrix, all_amps: FloatMatrix, add_wavelength: bool, params: Params):
+def __get_sm125_data(all_waves: List[List[float]], all_amps: List[List[float]], add_wavelength: bool, params: Params):
     """
     Collect the data from the SM125, and add the data to the proper lists in all_waves, and all_amps.
 
