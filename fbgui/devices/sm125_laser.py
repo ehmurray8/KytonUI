@@ -9,6 +9,11 @@ AMPLITUDE_MULTIPLIER = 100.0
 
 
 class SM125DataType(Enum):
+    """
+    Used for parsing the correct data from the SM125 response. Contains size of value in bytes, type of value
+    used by struct module for binary conversion, multiplier used for converting the received value.
+    """
+
     WAVELENGTH = (4, 'i', WAVELENGTH_MULTIPLIER)
     AMPLITUDE = (2, 'h', AMPLITUDE_MULTIPLIER)
 

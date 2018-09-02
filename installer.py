@@ -67,4 +67,3 @@ if __name__ == "__main__":
     create_shortcut("FbgUI.lnk", target, "fbgui.exe", icon)
     create_shortcut("FbgReadme.lnk", target, os.path.join("docs", "README.html"), icon)
     create_shortcut("FbgProgramSetup.lnk", target, os.path.join("docs", "ProgamSetup.html"), icon)
-    create_shortcut("FbgSourceCodeDocs.lnk", target, os.path.join("docs", "index.html"), icon)
