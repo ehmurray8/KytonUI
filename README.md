@@ -17,6 +17,7 @@
  * Detailed source code documentation is available in the docs folder
  * A detailed document describing how to setup the computers is
      included in the docs folder, called ProgramSetup.html.
+ * Source code documentation is available at https://ehmurray8.github.io/KytonUI
 
 ## Detailed Usage
 

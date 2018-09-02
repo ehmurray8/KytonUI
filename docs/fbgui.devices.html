@@ -1,0 +1,279 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fbgui.devices package &#8212; FbgUI 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="fbgui package" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="fbgui package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">FbgUI 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fbgui-devices-package">
+<h1>fbgui.devices package<a class="headerlink" href="#fbgui-devices-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-fbgui.devices.optical_switch">
+<span id="fbgui-devices-optical-switch-module"></span><h2>fbgui.devices.optical_switch module<a class="headerlink" href="#module-fbgui.devices.optical_switch" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.devices.optical_switch.OpticalSwitch">
+<em class="property">class </em><code class="descclassname">fbgui.devices.optical_switch.</code><code class="descname">OpticalSwitch</code><span class="sig-paren">(</span><em>address</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/optical_switch.html#OpticalSwitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.optical_switch.OpticalSwitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">socket.socket</span></code></p>
+<p>Object representation of the Optical Switch needed for the program, overrides the socket module.</p>
+<dl class="method">
+<dt id="fbgui.devices.optical_switch.OpticalSwitch.set_channel">
+<code class="descname">set_channel</code><span class="sig-paren">(</span><em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/optical_switch.html#OpticalSwitch.set_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.optical_switch.OpticalSwitch.set_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the channel on the optical switch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – channel to set the optical switch to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.devices.oven">
+<span id="fbgui-devices-oven-module"></span><h2>fbgui.devices.oven module<a class="headerlink" href="#module-fbgui.devices.oven" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.devices.oven.Oven">
+<em class="property">class </em><code class="descclassname">fbgui.devices.oven.</code><code class="descname">Oven</code><span class="sig-paren">(</span><em>loc</em>, <em>manager</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Delta oven object, uses pyvisa.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>device</strong> (<em>pyvisa.resources.gpib.GPIBInstrument</em>) – PyVisa GPIB connection to the device</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the resource.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.cooling_off">
+<code class="descname">cooling_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.cooling_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.cooling_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns oven cooling off.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.cooling_on">
+<code class="descname">cooling_on</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.cooling_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.cooling_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns oven cooling on.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.heater_off">
+<code class="descname">heater_off</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.heater_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.heater_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns oven heater off.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.heater_on">
+<code class="descname">heater_on</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.heater_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.heater_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns oven heater on.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.oven.Oven.set_temp">
+<code class="descname">set_temp</code><span class="sig-paren">(</span><em>temp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/oven.html#Oven.set_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.oven.Oven.set_temp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets set point of delta oven.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Temperature to set the oven to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.devices.sm125_laser">
+<span id="fbgui-devices-sm125-laser-module"></span><h2>fbgui.devices.sm125_laser module<a class="headerlink" href="#module-fbgui.devices.sm125_laser" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.devices.sm125_laser.SM125">
+<em class="property">class </em><code class="descclassname">fbgui.devices.sm125_laser.</code><code class="descname">SM125</code><span class="sig-paren">(</span><em>address</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/sm125_laser.html#SM125"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.sm125_laser.SM125" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">socket.socket</span></code></p>
+<p>Socket connection for SM125 device.</p>
+<dl class="method">
+<dt id="fbgui.devices.sm125_laser.SM125.get_data">
+<code class="descname">get_data</code><span class="sig-paren">(</span><em>use_positions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/sm125_laser.html#SM125.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.sm125_laser.SM125.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the SM125 wavelengths, amplitudes, the two lists are both of length 4, a value of 0 is used if no
+peak is detected on a channel that is expecting data, or used if not expecting data on a channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>use_positions</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – list of 4 values, True if expecting data on that channel, False otherwise</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Wavelength readings, Amplitude readings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.devices.sm125_laser.SM125DataType">
+<em class="property">class </em><code class="descclassname">fbgui.devices.sm125_laser.</code><code class="descname">SM125DataType</code><a class="reference internal" href="_modules/fbgui/devices/sm125_laser.html#SM125DataType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.sm125_laser.SM125DataType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Used for parsing the correct data from the SM125 response. Contains size of value in bytes, type of value
+used by struct module for binary conversion, multiplier used for converting the received value.</p>
+<dl class="attribute">
+<dt id="fbgui.devices.sm125_laser.SM125DataType.AMPLITUDE">
+<code class="descname">AMPLITUDE</code><em class="property"> = (2, 'h', 100.0)</em><a class="headerlink" href="#fbgui.devices.sm125_laser.SM125DataType.AMPLITUDE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.devices.sm125_laser.SM125DataType.WAVELENGTH">
+<code class="descname">WAVELENGTH</code><em class="property"> = (4, 'i', 10000.0)</em><a class="headerlink" href="#fbgui.devices.sm125_laser.SM125DataType.WAVELENGTH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.devices.temperature_controller">
+<span id="fbgui-devices-temperature-controller-module"></span><h2>fbgui.devices.temperature_controller module<a class="headerlink" href="#module-fbgui.devices.temperature_controller" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.devices.temperature_controller.TemperatureController">
+<em class="property">class </em><code class="descclassname">fbgui.devices.temperature_controller.</code><code class="descname">TemperatureController</code><span class="sig-paren">(</span><em>location</em>, <em>manager</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/temperature_controller.html#TemperatureController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.temperature_controller.TemperatureController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Object representation of the Temperature Controller needed for the program.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>device</strong> (<em>pyvisa.resources.gpib.GPIBInstrument</em>) – PyVisa GPIB connection to the device.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="fbgui.devices.temperature_controller.TemperatureController.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/temperature_controller.html#TemperatureController.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.temperature_controller.TemperatureController.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the device connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.devices.temperature_controller.TemperatureController.get_temp_k">
+<code class="descname">get_temp_k</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/devices/temperature_controller.html#TemperatureController.get_temp_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.devices.temperature_controller.TemperatureController.get_temp_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return temperature reading in degrees Kelvin.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.devices">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fbgui.devices" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">fbgui.devices package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-fbgui.devices.optical_switch">fbgui.devices.optical_switch module</a></li>
+<li><a class="reference internal" href="#module-fbgui.devices.oven">fbgui.devices.oven module</a></li>
+<li><a class="reference internal" href="#module-fbgui.devices.sm125_laser">fbgui.devices.sm125_laser module</a></li>
+<li><a class="reference internal" href="#module-fbgui.devices.temperature_controller">fbgui.devices.temperature_controller module</a></li>
+<li><a class="reference internal" href="#module-fbgui.devices">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">fbgui package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fbgui.devices.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="fbgui package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">FbgUI 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Emmet Murray.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
