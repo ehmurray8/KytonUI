@@ -16,3 +16,5 @@ python -m .\doc_assets\create_mdhtml README.md "README"
 python -m .\doc_assets\create_mdhtml ProgramSetup.md "Program Setup"
 mkdir dist\install_fbgui\fbgui\docs
 xcopy /s docs dist\install_fbgui\fbgui\docs
+xcopy /y uninstall.bat dist\install_fbgui
+python -c "import shutil; shutil.make_archive('dist\\install', 'zip', 'dist\\install_fbgui')"
