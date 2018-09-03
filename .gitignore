@@ -1,4 +1,5 @@
 # Output files
+pass
 *.csv
 *.xlsx
 .output/
@@ -8,7 +9,6 @@
 fbgui.wxs
 db/
 config/
-test/
 log/
 
 # Byte-compiled / optimized / DLL files

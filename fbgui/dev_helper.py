@@ -35,7 +35,7 @@ class Params(object):
         self.switch = switch
         self.switches = switches
         self.num_readings = num_pts
-        self.positions_used = pos_used
+        self.channel_lengths = pos_used
         self.num_snums = num_snums
         self.thread_id = thread_id
         self.thread_map = thread_map
@@ -116,8 +116,8 @@ def __get_data(params: Params) -> Tuple[List[List[float]], List[List[float]]]:
         except socket.error:
             params.main_queue.put(Message(MessageType.DEVELOPER, "Socket Error", "Error communicating with the "
                                                                                  "laser in dev_helper."))
-    wavelengths = [wave for i, wave in enumerate(wavelengths) if params.positions_used[i]]
-    amps = [amp for i, amp in enumerate(amplitudes) if params.positions_used[i]]
+    wavelengths = [wave for i, wave in enumerate(wavelengths) if params.channel_lengths[i]]
+    amps = [amp for i, amp in enumerate(amplitudes) if params.channel_lengths[i]]
     return wavelengths, amps
 
 
@@ -144,12 +144,20 @@ def __get_sm125_data(all_waves: List[List[float]], all_amps: List[List[float]], 
     :param params: data collection parameters object
     """
     if params.thread_map[params.thread_id]:
-        use_positions = [bool(num_on_position) for num_on_position in params.positions_used]
+        use_positions = [bool(num_on_position) for num_on_position in params.channel_lengths]
         wavelengths, amplitudes = params.laser.get_data(use_positions)
 
         first_run = True
         if len(np.hstack(all_waves)):
             first_run = False
+
+        for i, (wavelength_list, amplitude_list, use_position) in enumerate(zip(amplitudes, wavelengths, use_positions)):
+            if use_position:
+                for i, (wavelength, amplitude) in enumerate(zip(wavelength_list, amplitude_list)):
+                    if i == params.switch_num:
+                        pass
+
+
         for i, (amplitude, wavelength, use_position) in enumerate(zip(amplitudes, wavelengths, use_positions)):
             if use_position:
                 if first_run or (i == params.switch_num and add_wavelength):
