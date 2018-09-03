@@ -13,7 +13,6 @@ move _static ..
 move _sources ..
 cd ..\..
 python -m .\doc_assets\create_mdhtml README.md "README"
-python -m .\doc_assets\create_mdhtml ProgramSetup.md "Program Setup"
 mkdir dist\install_fbgui\fbgui\docs
 xcopy /s docs dist\install_fbgui\fbgui\docs
 xcopy /y uninstall.bat dist\install_fbgui
