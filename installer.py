@@ -9,60 +9,81 @@ def create_shortcut(desktop_shortcut_name, target_path, exe, icon_path):
     desktop = winshell.desktop()
     path = os.path.join(desktop, desktop_shortcut_name)
 
-    if os.path.isfile(path):
-        try:
-            os.remove(path)
-        except PermissionError:
-            pass
+    remove_file(path)
 
     exe = os.path.join(target_path, exe)
-    wDir = target
-
-    shell = Dispatch('WScript.Shell')
-    shortcut = shell.CreateShortCut(path)
-    shortcut.Targetpath = exe
-    shortcut.WorkingDirectory = wDir
-    shortcut.IconLocation = icon_path
-    shortcut.save()
+    create_shortcut_file(path, exe, target_path, icon_path)
 
     start_menu = winshell.start_menu()
     path = os.path.join(start_menu, "Programs", "Kyton", "FbgUI.lnk")
 
-    if os.path.isfile(path):
-        try:
-            os.remove(path)
-        except PermissionError:
-            pass
+    remove_file(path)
 
     if not os.path.isdir(os.path.join(start_menu, "Programs", "Kyton")):
         os.mkdir(os.path.join(start_menu, "Programs", "Kyton"))
 
     exe = os.path.join(target_path, "fbgui.exe")
-    wDir = target
+    create_shortcut_file(path, exe, target_path, icon_path)
 
-    shortcut = shell.CreateShortCut(path)
+
+def create_shortcut_file(path, exe, working_directory, icon_path):
+    shortcut = SHELL.CreateShortCut(path)
     shortcut.Targetpath = exe
-    shortcut.WorkingDirectory = wDir
+    shortcut.WorkingDirectory = working_directory
     shortcut.IconLocation = icon_path
     shortcut.save()
 
 
-if __name__ == "__main__":
-    home = str(Path.home())
-    target = os.path.join(home, "AppData", "Local", "Programs", "FbgUI")
-    if os.path.isdir(target):
+def remove_file(path: str):
+    if os.path.isfile(path):
         try:
-            rmtree(target)
+            os.remove(path)
         except PermissionError:
             pass
 
-    copytree("fbgui", target)
+
+def remove_old_installation(target_path):
+    if os.path.isdir(target_path):
+        try:
+            rmtree(target_path)
+        except PermissionError:
+            pass
+
+
+def save_config_files(root_path, target_path):
+    config_location = os.path.join(target_path, "config")
+    db_location = os.path.join(target_path, "db")
+    if os.path.isdir(config_location):
+        copytree(config_location, root_path)
+    if os.path.isdir(db_location):
+        copytree(db_location, root_path)
+
+
+def restore_config_files(root_path, target_path):
+    config_location = os.path.join(root_path, "config")
+    db_location = os.path.join(root_path, "db")
+    if os.path.isdir(config_location):
+        copytree(config_location, target_path)
+    if os.path.isdir(db_location):
+        copytree(db_location, target_path)
+
+
+if __name__ == "__main__":
+    home = str(Path.home())
+    ROOT = os.path.join(home, "AppData", "Local", "Programs")
+    TARGET = os.path.join(ROOT, "FbgUI")
+    SHELL = Dispatch('WScript.Shell')
+
+    save_config_files(ROOT, TARGET)
+    remove_old_installation(TARGET)
+    copytree("fbgui", TARGET)
+    restore_config_files(ROOT, TARGET)
 
     try:
         rmtree("fbgui")
     except PermissionError:
         pass
 
-    icon = os.path.join(target, "fbgui.exe")
-    create_shortcut("FbgUI.lnk", target, "fbgui.exe", icon)
-    create_shortcut("FbgReadme.lnk", target, os.path.join("docs", "README.html"), icon)
+    ICON = os.path.join(TARGET, "fbgui.exe")
+    create_shortcut("FbgUI.lnk", TARGET, "fbgui.exe", ICON)
+    create_shortcut("FbgReadme.lnk", TARGET, os.path.join("docs", "README.html"), ICON)
