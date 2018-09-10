@@ -8,8 +8,9 @@ Channel 1 | Channel 2 | Channel 3 | Channel 4
 Averaging two data collections together
 """
 
-from typing import List
 from fbgui.laser_data import LaserData
+import unittest
+
 
 EXPECTED = [[11, 16], [21, 31, 36, 41], [], [51, 56]]
 
@@ -68,24 +69,25 @@ READINGS = [
 ]
 
 
-def collect_data(switch_positions: List[List[int]], number_to_average: int, switch_channel_index: int):
-    laser_data = LaserData(switch_positions, switch_channel_index)
-    for switch_number, switch_position in enumerate(sorted(set(switch_positions[switch_channel_index]))):
-        _switch_to(switch_position)
-        for run_number in range(number_to_average):
-            for channel in range(4):
-                if len(switch_positions[channel]):
-                    laser_data.add_wavelengths(channel, READINGS[switch_number][run_number][channel], switch_position)
-    wavelengths = laser_data.get_wavelengths()
-    assert wavelengths == EXPECTED
+class TestMultiplePeaks(unittest.TestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.switch_positions = [[0, 0], [1, 4, 4, 7], [], [0, 0]]
+        self.number_to_average = 2
+        self.switch_channel_index = 1
 
-def _switch_to(position: int):
-    pass
+    def test_laser_data(self):
+        laser_data = LaserData(self.switch_positions, self.switch_channel_index)
+        for switch_number, switch_position in enumerate(sorted(set(self.switch_positions[self.switch_channel_index]))):
+            for run_number in range(self.number_to_average):
+                for channel in range(4):
+                    if len(self.switch_positions[channel]):
+                        laser_data.add_wavelengths(channel, READINGS[switch_number][run_number][channel],
+                                                   switch_position)
+        wavelengths = laser_data.get_wavelengths()
+        self.assertEqual(wavelengths, EXPECTED)
 
 
 if __name__ == "__main__":
-    SWITCH_POSITIONS = [[0, 0], [1, 4, 4, 7], [], [0, 0]]
-    NUMBER_TO_AVERAGE = 2
-    SWITCH_CHANNEL_INDEX = 1
-    collect_data(SWITCH_POSITIONS, NUMBER_TO_AVERAGE, SWITCH_CHANNEL_INDEX)
+    unittest.main()
