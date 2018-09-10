@@ -55,3 +55,17 @@ def get_file_name(file_str: str) -> str:
     :return: file name
     """
     return os.path.splitext(os.path.split(file_str)[1])[0]
+
+
+def average(elements: List[List[List[float]]]) -> List[List[float]]:
+    """
+    Converts a 3 dimensional array of floats into a 2 dimensional array by averaging the inner arrays.
+
+    :param elements: Elements to convert
+    :return: Elements with the inner lists averaged
+    """
+    for i, element_channel in enumerate(elements):
+        for j, element in enumerate(element_channel):
+            elements[i][j] = sum(element) / len(element)
+    return elements
+

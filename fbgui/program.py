@@ -16,13 +16,14 @@ from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import visa
-from fbgui import file_helper as fh, graphing, dev_helper, ui_helper, options_frame, helpers
+from fbgui import file_helper as fh, graphing, laser_recorder, ui_helper, options_frame, helpers
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
     CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from fbgui.datatable import DataTable
 from fbgui.graph_toolbar import Toolbar
 from fbgui.messages import MessageType, Message
 from fbgui.main_program import Application
+from fbgui.laser_recorder import LaserRecorder
 
 MPL_PLOT_NUM = 230
 
@@ -261,33 +262,18 @@ class Program(ttk.Notebook):
                         if snum.get() and snum.get() not in self.snums:
                             self.snums.append(snum.get())
                             self.channels[chan].append(snum.get())
-                            if pos.get():
-                                self.switches[chan].append(pos.get())
+                            self.switches[chan].append(pos.get())
 
-                    if any(len(x) > 1 for x in self.channels) and not sum(len(x) for x in self.switches):
-                        mbox.showerror("Configuration Error",
-                                       "Program was configured to use the optical switch but no " +
-                                       "switch positions were provided.")
-                        self.pause_program()
-                    elif sum(any(x) for x in self.switches) > 1:
-                        mbox.showerror("Configuration Error",
-                                       "Can only have one channel configured to use the optical switch.")
-                        self.pause_program()
-                    elif not helpers.is_unique(helpers.flatten(self.switches)):
-                        mbox.showerror("Configuration Error",
-                                       "Multiple FBGs are configured to use the same switch position.")
-                        self.pause_program()
-                    else:
-                        self.save_config_info()
-                        self.master.running_prog = self.program_type.prog_id
-                        ui_helper.lock_widgets(self.options)
-                        ui_helper.lock_main_widgets(self.master.device_frame)
-                        self.graph_helper.show_subplots()
-                        headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
-                        headers.pop(0)
-                        self.table.setup_headers(headers, True)
-                        Thread(target=self.run_program).start()
-                        self.start_btn.configure(state=tk.NORMAL)
+                    self.save_config_info()
+                    self.master.running_prog = self.program_type.prog_id
+                    ui_helper.lock_widgets(self.options)
+                    ui_helper.lock_main_widgets(self.master.device_frame)
+                    self.graph_helper.show_subplots()
+                    headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
+                    headers.pop(0)
+                    self.table.setup_headers(headers, True)
+                    Thread(target=self.run_program).start()
+                    self.start_btn.configure(state=tk.NORMAL)
                 else:
                     self.start_btn.configure(text=self.program_type.start_title)
                     self.start_btn.configure(state=tk.NORMAL)
@@ -500,15 +486,13 @@ class Program(ttk.Notebook):
         :param thread_id: UUID of the thread the code is currently running in
         :return: wavelength readings, power readings
         """
-        positions_used = [len(x) for x in self.channels]
         while True:
             try:
                 if sum(len(switch) for switch in self.switches):
                     self.master.conn_dev(SWITCH, thread_id=thread_id)
                 self.master.conn_dev(LASER, thread_id=thread_id)
-                return dev_helper.avg_waves_amps(self.master.laser, self.master.switch, self.switches,
-                                                 self.options.num_pts.get(), positions_used,
-                                                 sum(len(s) > 0 for s in self.snums), thread_id,
-                                                 self.master.thread_map, self.master.main_queue)
+                return LaserRecorder(self.master.laser, self.master.switch, self.switches, self.options.num_pts.get(),
+                                     thread_id, self.master.thread_map, self.master.main_queue)\
+                    .get_wavelength_amplitude_data()
             except (AttributeError, visa.VisaIOError, socket.error):
                 self.temp_controller_error()
