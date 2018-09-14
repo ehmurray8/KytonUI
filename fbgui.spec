@@ -30,7 +30,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False, icon='.\\fbgui\\assets\\fiber.ico')
+          console=False, icon='.\\fbgui\\assets\\program_logo.ico')
 
 coll = COLLECT(exe,
                a.binaries,
