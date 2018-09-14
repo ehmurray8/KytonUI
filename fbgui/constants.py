@@ -79,7 +79,7 @@ PROG_CONFIG_PATH = os.path.join(CONFIG_PATH, "prog_config.cfg")
 DEV_CONFIG_PATH = os.path.join(CONFIG_PATH, "devices.cfg")
 
 # Gui Images
-FIBER_PATH = os.path.join(ASSETS_PATH, "fiber.png")
+PROGRAM_LOGO_PATH = os.path.join(ASSETS_PATH, "program_logo.png")
 CONFIG_IMG_PATH = os.path.join(ASSETS_PATH, "config.png")
 GRAPH_PATH = os.path.join(ASSETS_PATH, "graph.png")
 FILE_PATH = os.path.join(ASSETS_PATH, "file.png")
@@ -87,5 +87,9 @@ DOCS_ICON_PATH = os.path.join(ASSETS_PATH, 'docs_icon.png')
 try:
     DOCS_ICON = Image.open(DOCS_ICON_PATH)
 except FileNotFoundError:
-    DOCS_ICON = Image.open(os.path.join("fbgui", DOCS_ICON_PATH))
+    try:
+        DOCS_ICON = Image.open(os.path.join("fbgui", DOCS_ICON_PATH))
+    except FileNotFoundError:
+        DOCS_ICON = ""
+
 

@@ -8,7 +8,6 @@
 fbgui.wxs
 db/
 config/
-test/
 log/
 
 # Byte-compiled / optimized / DLL files

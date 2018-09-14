@@ -21,7 +21,7 @@ if "phil" in getpass.getuser():
     sys.path.insert(0, r"C:\Users\phils\Documents\FbgUI")
 elif "emmet" in getpass.getuser().lower():
     sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI\fbgui")
-    sys.path.insert(0, r"C:\Users\Emmet\Documents\KytonUI")
+    sys.path.insert(0, r"C:\Users\Emmet\source_code\KytonUI")
 else:
     sys.path.insert(0, os.path.abspath("."))
     sys.path.insert(0, os.path.abspath(os.path.join(".", "fbgui")))

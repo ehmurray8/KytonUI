@@ -34,8 +34,8 @@ class DataCollection(object):
         self.delta_powers = []  # type: List[List[float]]
         self.mean_delta_powers = []  # type: List[float]
         self.wavelengths = []  # type: List[List[float]]
-        self.delta_wavelengths = []  # type: List[List[float]]
-        self.mean_delta_wavelengths = []  # type: List[float]
+        self.delta_wavelengths_pm = []  # type: List[List[float]]
+        self.mean_delta_wavelengths_pm = []  # type: List[float]
         self.drift_rates = []  # type: List[float]
 
     def create(self, is_cal: bool, df: pd.DataFrame, snums: Optional[List[str]]=None,
@@ -71,21 +71,22 @@ class DataCollection(object):
                 self.wavelengths.append(df[wave_head])
                 self.powers.append(df[pow_head])
 
-            self.delta_wavelengths = np.array([np.array([w - wave[0] for w in wave]) for wave in self.wavelengths])
+            self.delta_wavelengths_pm = np.array([np.array([(w - wave[0]) * 1000 for w in wave])
+                                                  for wave in self.wavelengths])
             self.delta_powers = np.array([np.array([p - power[0] for p in power]) for power in self.powers])
-            self.mean_delta_wavelengths = np.array(self.delta_wavelengths[0])
+            self.mean_delta_wavelengths_pm = np.array(self.delta_wavelengths_pm[0])
             self.mean_delta_powers = np.array(self.delta_powers[0])
 
-            for wave_diff, pow_diff in zip(self.delta_wavelengths[1:], self.delta_powers[1:]):
-                self.mean_delta_wavelengths += wave_diff
+            for wave_diff, pow_diff in zip(self.delta_wavelengths_pm[1:], self.delta_powers[1:]):
+                self.mean_delta_wavelengths_pm += wave_diff
                 self.mean_delta_powers += pow_diff
-            self.mean_delta_wavelengths /= len(self.mean_delta_wavelengths)
-            self.mean_delta_powers /= len(self.mean_delta_powers)
+            self.mean_delta_wavelengths_pm /= len(snums)
+            self.mean_delta_powers /= len(snums)
 
             self.delta_temps = list(self.delta_temps)
-            self.delta_wavelengths = list(self.delta_wavelengths)
+            self.delta_wavelengths_pm = list(self.delta_wavelengths_pm)
             self.delta_powers = list(self.delta_powers)
-            self.mean_delta_wavelengths = list(self.mean_delta_wavelengths)
+            self.mean_delta_wavelengths_pm = list(self.mean_delta_wavelengths_pm)
             self.mean_delta_powers = list(self.mean_delta_powers)
             if is_cal:
                 self.drift_rates = list(df['Drift Rate'])

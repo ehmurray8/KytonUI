@@ -217,15 +217,8 @@ class OptionsPanel(ttk.Frame):
         :param fbg_name: If not None, the name of the FBG to add
         :param switch_pos: If not None, the switch position of the FBG to add
         """
-        most = -1
-        for i, chan_num in enumerate(self.chan_nums):
-            if len(chan_num) > 1:
-                most = i
         if len(self.chan_nums[chan]) >= 16:
             mbox.showerror("Channel error", "Can only have 16 FBGs on single channel.")
-        elif most != -1 and most != chan and len(self.chan_nums[chan]):
-            mbox.showerror("Channel error", "Can only have multiple FBGs on a single channel, please clear channel {} "
-                           .format(most + 1) + " before continuing.")
         else:
             self.chan_nums[chan].append(chan)
             def_name = "FBG {}".format(sum(len(x) for x in self.chan_nums))

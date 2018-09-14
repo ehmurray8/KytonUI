@@ -310,7 +310,7 @@ class Application(tk.Tk):
     def setup_window(self):
         """Sets up the tkinter window."""
         self.title("Kyton FBG UI")
-        img = tk.PhotoImage(file=constants.FIBER_PATH)
+        img = tk.PhotoImage(file=constants.PROGRAM_LOGO_PATH)
         self.tk.call('wm', 'iconphoto', self._w, img)
         self.state("zoomed")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)

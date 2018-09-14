@@ -9,6 +9,11 @@ AMPLITUDE_MULTIPLIER = 100.0
 
 
 class SM125DataType(Enum):
+    """
+    Used for parsing the correct data from the SM125 response. Contains size of value in bytes, type of value
+    used by struct module for binary conversion, multiplier used for converting the received value.
+    """
+
     WAVELENGTH = (4, 'i', WAVELENGTH_MULTIPLIER)
     AMPLITUDE = (2, 'h', AMPLITUDE_MULTIPLIER)
 
@@ -31,7 +36,7 @@ class SM125(socket.socket):
         self.response_position = 0
         self.response = b""
 
-    def get_data(self, use_positions: List[bool]) -> Tuple[List[float], List[float]]:
+    def get_data(self, use_positions: List[bool]) -> Tuple[List[List[float]], List[List[float]]]:
         """
         Returns the SM125 wavelengths, amplitudes, the two lists are both of length 4, a value of 0 is used if no
         peak is detected on a channel that is expecting data, or used if not expecting data on a channel.
@@ -59,15 +64,15 @@ class SM125(socket.socket):
         return wavelengths, amplitudes
 
     def __parse_values(self, sm125_type: SM125DataType, channel_lengths: List[int], use_positions: List[bool]):
-        values = []
+        values = [[], [], [], []]
         for i in range(4):
             for j in range(channel_lengths[i]):
                 start = self.response_position
                 self.response_position += sm125_type.byte_length()
                 value_bytes = self.response[start:self.response_position]
                 value = struct.unpack(sm125_type.type_specifier(), value_bytes)[0] / sm125_type.multiplier()
-                if j == 0 and use_positions[i]:
-                    values.append(value)
+                if use_positions[i]:
+                    values[i].append(value)
             if (use_positions[i] and not channel_lengths[i]) or not use_positions[i]:
-                values.append(0.0)
+                values[i].append(0.0)
         return values
