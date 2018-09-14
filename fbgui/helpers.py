@@ -66,6 +66,9 @@ def average(elements: List[List[List[float]]]) -> List[List[float]]:
     """
     for i, element_channel in enumerate(elements):
         for j, element in enumerate(element_channel):
-            elements[i][j] = sum(element) / len(element)
+            try:
+                elements[i][j] = sum(element) / len(element)
+            except ZeroDivisionError:
+                elements[i][j] = 0
     return elements
 

@@ -29,4 +29,7 @@ class LaserData:
     def _add(self, channel: int, elements_to_add: List[float], position: int, elements: List[List[List[float]]]):
         start = self.switch_positions[channel].index(position)
         for i, element in enumerate(elements_to_add):
-            elements[channel][start + i].append(element)
+            try:
+                elements[channel][start + i].append(element)
+            except IndexError:
+                pass
