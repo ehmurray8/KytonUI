@@ -87,5 +87,9 @@ DOCS_ICON_PATH = os.path.join(ASSETS_PATH, 'docs_icon.png')
 try:
     DOCS_ICON = Image.open(DOCS_ICON_PATH)
 except FileNotFoundError:
-    DOCS_ICON = Image.open(os.path.join("fbgui", DOCS_ICON_PATH))
+    try:
+        DOCS_ICON = Image.open(os.path.join("fbgui", DOCS_ICON_PATH))
+    except FileNotFoundError:
+        DOCS_ICON = ""
+
 

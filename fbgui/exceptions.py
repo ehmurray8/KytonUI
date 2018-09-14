@@ -1,0 +1,2 @@
+class ProgramStopped(Exception):
+    pass
