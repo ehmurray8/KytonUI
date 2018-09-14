@@ -215,7 +215,7 @@ class Graphing(object):
         titles = ["Wavelengths vs. Time", "Power vs. Wavelength", "Powers vs. Time", "Temperature vs. Time",
                   "Average {} Power vs. Time".format(u'\u0394'), "Average {} Wavelength vs. Time".format(u'\u0394')]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
-        ylabels = [("{} Wavelength (nm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
+        ylabels = [("{} Wavelength (pm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
                    ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
                    ("Average {} Power (dBm)".format(u"\u0394"),), ("{} Wavelength (pm)".format(u'\u0394'),)]
