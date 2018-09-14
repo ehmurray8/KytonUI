@@ -213,9 +213,9 @@ class Graphing(object):
         threading.Thread(target=self.update_data_coll).start()
 
         titles = ["Wavelengths vs. Time", "Power vs. Wavelength", "Powers vs. Time", "Temperature vs. Time",
-                  "Average Power vs. Time", "Average Wavelength vs. Time"]
+                  "Average {} Power vs. Time".format(u'\u0394'), "Average {} Wavelength vs. Time".format(u'\u0394')]
         xlabels = ["Time (hr)", "Wavelength (nm)", "Time (hr)", "Time (hr)", "Time (hr)", "Time (hr)"]
-        ylabels = [("{} Wavelength (pm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
+        ylabels = [("{} Wavelength (nm)".format(u'\u0394'), "Wavelength (nm)"), ("Power (dBm)",),
                    ("{} Power (dBm)".format(u'\u0394'), "Power (dBm)"),
                    ("{} Temperature (K)".format(u'\u0394'), "Temperature (K)"),
                    ("Average {} Power (dBm)".format(u"\u0394"),), ("{} Wavelength (pm)".format(u'\u0394'),)]
@@ -369,9 +369,9 @@ def average_wave_graph(axes: List[Axes], dc: DataCollection):
     :param axes: average wavelength Axes as only element
     :param dc: data collection object to use for populating the graph
     """
-    times, wavelen_diffs = dc.times, dc.mean_delta_wavelengths
-    if len(times) == len(wavelen_diffs):
-        axes[0].plot(times, wavelen_diffs)
+    times, wavelength_diffs = dc.times, dc.mean_delta_wavelengths_pm
+    if len(times) == len(wavelength_diffs):
+        axes[0].plot(times, wavelength_diffs)
 
 
 @animate_graph(True)
@@ -383,10 +383,10 @@ def wave_power_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
     :param snums: the serial numbers in use for the corresponding program run being graphed
     :param dc: data collection object to use for populating the graph
     """
-    wavelens, powers = dc.wavelengths, dc.powers
+    wavelengths, powers = dc.wavelengths, dc.powers
     idx = 0
     axes = []
-    for waves, powers, color in zip(wavelens, powers, HEX_COLORS):
+    for waves, powers, color in zip(wavelengths, powers, HEX_COLORS):
         if len(waves) == len(powers):
             axes.append(axis[0].scatter(waves, powers, color=color, s=75))
         idx += 1
@@ -437,11 +437,10 @@ def wave_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
     :param snums: the serial numbers in use for the corresponding program run being graphed
     :param dc: data collection object to use for populating the graph
     """
-    times, wavelens, wavelen_diffs = dc.times, dc.wavelengths, dc.delta_wavelengths
-    wavelen_diffs = [w * 1000 for w in wavelen_diffs]
+    times, wavelengths, wavelength_diffs = dc.times, dc.wavelengths, dc.delta_wavelengths_pm
     idx = 0
     axes = []
-    for waves, wave_diffs, color in zip(wavelens, wavelen_diffs, HEX_COLORS):
+    for waves, wave_diffs, color in zip(wavelengths, wavelength_diffs, HEX_COLORS):
         if len(times) == len(wave_diffs):
             axes.append(axis[0].plot(times, wave_diffs, color=color)[0])
         if len(axis) > 1 and len(times) == len(waves):

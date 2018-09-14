@@ -304,7 +304,7 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
             new_df["{} Time (hr)  ".format(u"\u0394")] = data_coll.times
             new_df["{}T (K)  ".format(u"\u0394")] = data_coll.delta_temps
 
-        wave_diffs = data_coll.delta_wavelengths
+        wave_diffs = data_coll.delta_wavelengths_pm
         if not is_cal:
             for snum, delta_wave in zip(snums, wave_diffs):
                 new_df["{} {}{} (pm.)".format(snum, u"\u0394", u"\u03BB")] = delta_wave
@@ -320,7 +320,7 @@ def create_excel_file(xcel_file: str, snums: List[str], main_queue: queue.Queue,
 
         if not is_cal:
             new_df["{}T (K)".format(u"\u0394")] = data_coll.delta_temps
-            new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_delta_wavelengths
+            new_df["Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")] = data_coll.mean_delta_wavelengths_pm
             new_df["Mean raw {}{} (dBm.)".format(u"\u0394", "P")] = data_coll.mean_delta_powers
 
         defaults = {'font_size': 14}
