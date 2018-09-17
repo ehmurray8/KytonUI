@@ -466,51 +466,13 @@ using file_helper get_snums function</li>
 </dd></dl>
 
 </div>
-<div class="section" id="module-fbgui.dev_helper">
-<span id="fbgui-dev-helper-module"></span><h2>fbgui.dev_helper module<a class="headerlink" href="#module-fbgui.dev_helper" title="Permalink to this headline">¶</a></h2>
-<p>Gets the amplitude and wavelength data using the Micron Optics SM125, and the Optical Switch.</p>
-<dl class="class">
-<dt id="fbgui.dev_helper.Params">
-<em class="property">class </em><code class="descclassname">fbgui.dev_helper.</code><code class="descname">Params</code><span class="sig-paren">(</span><em>laser</em>, <em>switch</em>, <em>switches</em>, <em>num_pts</em>, <em>pos_used</em>, <em>num_snums</em>, <em>thread_id</em>, <em>thread_map</em>, <em>main_queue</em>, <em>switch_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/dev_helper.html#Params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.dev_helper.Params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Wrapper for the parameters used throughout the module.</p>
+<div class="section" id="module-fbgui.exceptions">
+<span id="fbgui-exceptions-module"></span><h2>fbgui.exceptions module<a class="headerlink" href="#module-fbgui.exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="fbgui.exceptions.ProgramStopped">
+<em class="property">exception </em><code class="descclassname">fbgui.exceptions.</code><code class="descname">ProgramStopped</code><a class="reference internal" href="_modules/fbgui/exceptions.html#ProgramStopped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.exceptions.ProgramStopped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 </dd></dl>
-
-<dl class="function">
-<dt id="fbgui.dev_helper.avg_waves_amps">
-<code class="descclassname">fbgui.dev_helper.</code><code class="descname">avg_waves_amps</code><span class="sig-paren">(</span><em>laser</em>, <em>switch</em>, <em>switches</em>, <em>num_pts</em>, <em>pos_used</em>, <em>num_snums</em>, <em>thread_id</em>, <em>thread_map</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/dev_helper.html#avg_waves_amps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.dev_helper.avg_waves_amps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the averaged wavelength, and power data collected from the SM125, and potentially using the Optical Switch.
-The data is collected num_pts amount of times and then averaged. The wavelengths and power data are returned
-in order of the serial numbers, and corresponding indices match between the two lists.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>laser</strong> (<a class="reference internal" href="fbgui.devices.html#fbgui.devices.sm125_laser.SM125" title="fbgui.devices.sm125_laser.SM125"><code class="xref py py-class docutils literal notranslate"><span class="pre">SM125</span></code></a>) – the SM125 wrapper used for communicating with the SM125</li>
-<li><strong>switch</strong> (<a class="reference internal" href="fbgui.devices.html#fbgui.devices.optical_switch.OpticalSwitch" title="fbgui.devices.optical_switch.OpticalSwitch"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpticalSwitch</span></code></a>) – the optical switch wrapper used for communicating with the optical switch</li>
-<li><strong>switches</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – 2D list with one list for each SM125 channel containing the switch positions on each channel</li>
-<li><strong>num_pts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the number of readings to take for each fbg</li>
-<li><strong>pos_used</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – the number of fbgs on each SM125 channel</li>
-<li><strong>num_snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – total number of fbgs in the current test</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running on</li>
-<li><strong>thread_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>) – Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with that
-UUID should be running</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – Queue used for writing log messages to</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.dev_helper.record_wavelengths_and_amplitudes">
-<code class="descclassname">fbgui.dev_helper.</code><code class="descname">record_wavelengths_and_amplitudes</code><span class="sig-paren">(</span><em>wavelengths</em>, <em>amplitudes</em>, <em>params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/dev_helper.html#record_wavelengths_and_amplitudes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.dev_helper.record_wavelengths_and_amplitudes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 <div class="section" id="module-fbgui.file_helper">
@@ -1120,6 +1082,24 @@ list to show that graph</td>
 <span id="fbgui-helpers-module"></span><h2>fbgui.helpers module<a class="headerlink" href="#module-fbgui.helpers" title="Permalink to this headline">¶</a></h2>
 <p>General helper functions used throughout the package.</p>
 <dl class="function">
+<dt id="fbgui.helpers.average">
+<code class="descclassname">fbgui.helpers.</code><code class="descname">average</code><span class="sig-paren">(</span><em>elements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/helpers.html#average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.helpers.average" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a 3 dimensional array of floats into a 2 dimensional array by averaging the inner arrays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>elements</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]) – Elements to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Elements with the inner lists averaged</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="fbgui.helpers.clean_str_list">
 <code class="descclassname">fbgui.helpers.</code><code class="descname">clean_str_list</code><span class="sig-paren">(</span><em>str_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/helpers.html#clean_str_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.helpers.clean_str_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes invisible characters from a list of strings.</p>
@@ -1226,6 +1206,79 @@ list to show that graph</td>
 <dt id="fbgui.install.install">
 <code class="descclassname">fbgui.install.</code><code class="descname">install</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/install.html#install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.install.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move matplotlib assets to correct folder, ensure db and config folders are on the disc.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.laser_data">
+<span id="fbgui-laser-data-module"></span><h2>fbgui.laser_data module<a class="headerlink" href="#module-fbgui.laser_data" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.laser_data.LaserData">
+<em class="property">class </em><code class="descclassname">fbgui.laser_data.</code><code class="descname">LaserData</code><span class="sig-paren">(</span><em>switch_positions</em>, <em>switch_channel_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_data.html#LaserData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_data.LaserData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="fbgui.laser_data.LaserData.add_powers">
+<code class="descname">add_powers</code><span class="sig-paren">(</span><em>channel</em>, <em>powers</em>, <em>position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_data.html#LaserData.add_powers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_data.LaserData.add_powers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.laser_data.LaserData.add_wavelengths">
+<code class="descname">add_wavelengths</code><span class="sig-paren">(</span><em>channel</em>, <em>wavelengths</em>, <em>position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_data.html#LaserData.add_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_data.LaserData.add_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.laser_data.LaserData.get_powers">
+<code class="descname">get_powers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_data.html#LaserData.get_powers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_data.LaserData.get_powers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.laser_data.LaserData.get_wavelengths">
+<code class="descname">get_wavelengths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_data.html#LaserData.get_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_data.LaserData.get_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.laser_recorder">
+<span id="fbgui-laser-recorder-module"></span><h2>fbgui.laser_recorder module<a class="headerlink" href="#module-fbgui.laser_recorder" title="Permalink to this headline">¶</a></h2>
+<p>Gets the amplitude and wavelength data using the Micron Optics SM125, and the Optical Switch.</p>
+<dl class="class">
+<dt id="fbgui.laser_recorder.LaserRecorder">
+<em class="property">class </em><code class="descclassname">fbgui.laser_recorder.</code><code class="descname">LaserRecorder</code><span class="sig-paren">(</span><em>laser</em>, <em>switch</em>, <em>switches</em>, <em>num_pts</em>, <em>thread_id</em>, <em>thread_map</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_recorder.html#LaserRecorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_recorder.LaserRecorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="fbgui.laser_recorder.LaserRecorder.get_wavelength_amplitude_data">
+<code class="descname">get_wavelength_amplitude_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_recorder.html#LaserRecorder.get_wavelength_amplitude_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_recorder.LaserRecorder.get_wavelength_amplitude_data" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.laser_recorder.LaserRecorder.record_wavelengths_and_amplitudes">
+<code class="descname">record_wavelengths_and_amplitudes</code><span class="sig-paren">(</span><em>laser_data</em>, <em>switch_position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/laser_recorder.html#LaserRecorder.record_wavelengths_and_amplitudes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.laser_recorder.LaserRecorder.record_wavelengths_and_amplitudes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -2338,12 +2391,14 @@ the serial number entry and switch position switchbox for a FBG</p>
 <li><a class="reference internal" href="#module-fbgui.create_excel">fbgui.create_excel module</a></li>
 <li><a class="reference internal" href="#module-fbgui.data_container">fbgui.data_container module</a></li>
 <li><a class="reference internal" href="#module-fbgui.datatable">fbgui.datatable module</a></li>
-<li><a class="reference internal" href="#module-fbgui.dev_helper">fbgui.dev_helper module</a></li>
+<li><a class="reference internal" href="#module-fbgui.exceptions">fbgui.exceptions module</a></li>
 <li><a class="reference internal" href="#module-fbgui.file_helper">fbgui.file_helper module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graph_toolbar">fbgui.graph_toolbar module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graphing">fbgui.graphing module</a></li>
 <li><a class="reference internal" href="#module-fbgui.helpers">fbgui.helpers module</a></li>
 <li><a class="reference internal" href="#module-fbgui.install">fbgui.install module</a></li>
+<li><a class="reference internal" href="#module-fbgui.laser_data">fbgui.laser_data module</a></li>
+<li><a class="reference internal" href="#module-fbgui.laser_recorder">fbgui.laser_recorder module</a></li>
 <li><a class="reference internal" href="#module-fbgui.main_program">fbgui.main_program module</a></li>
 <li><a class="reference internal" href="#module-fbgui.messages">fbgui.messages module</a></li>
 <li><a class="reference internal" href="#module-fbgui.options_frame">fbgui.options_frame module</a></li>

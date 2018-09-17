@@ -59,10 +59,10 @@ fbgui.datatable module
     :undoc-members:
     :show-inheritance:
 
-fbgui.dev\_helper module
-------------------------
+fbgui.exceptions module
+-----------------------
 
-.. automodule:: fbgui.dev_helper
+.. automodule:: fbgui.exceptions
     :members:
     :undoc-members:
     :show-inheritance:
@@ -103,6 +103,22 @@ fbgui.install module
 --------------------
 
 .. automodule:: fbgui.install
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fbgui.laser\_data module
+------------------------
+
+.. automodule:: fbgui.laser_data
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fbgui.laser\_recorder module
+----------------------------
+
+.. automodule:: fbgui.laser_recorder
     :members:
     :undoc-members:
     :show-inheritance:
