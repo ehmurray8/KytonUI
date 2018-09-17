@@ -1,7 +1,7 @@
 import os
 import winshell
 from win32com.client import Dispatch
-from shutil import copytree, rmtree
+from shutil import copytree, rmtree, move
 from pathlib import Path
 
 
@@ -53,19 +53,25 @@ def remove_old_installation(target_path):
 def save_config_files(root_path, target_path):
     config_location = os.path.join(target_path, "config")
     db_location = os.path.join(target_path, "db")
+    old_config_location = os.path.join(root_path, "config")
+    old_db_location = os.path.join(root_path, "db")
+    if os.path.isdir(old_config_location):
+        rmtree(old_config_location)
+    if os.path.isdir(old_db_location):
+        rmtree(old_db_location)
     if os.path.isdir(config_location):
-        copytree(config_location, root_path)
+        copytree(config_location, old_config_location)
     if os.path.isdir(db_location):
-        copytree(db_location, root_path)
+        copytree(db_location, old_db_location)
 
 
 def restore_config_files(root_path, target_path):
     config_location = os.path.join(root_path, "config")
     db_location = os.path.join(root_path, "db")
     if os.path.isdir(config_location):
-        copytree(config_location, target_path)
+        move(config_location, target_path)
     if os.path.isdir(db_location):
-        copytree(db_location, target_path)
+        move(db_location, target_path)
 
 
 if __name__ == "__main__":
