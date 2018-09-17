@@ -5,7 +5,7 @@ rmdir build /S /Q
 sphinx-apidoc.exe -f -o sphinx_source fbgui
 move sphinx_source\fbgui.rst sphinx_source\index.rst
 call make.bat html
-xcopy doc_assets\github-markdown.css docs
+xcopy /y doc_assets\github-markdown.css docs
 move docs\html\* docs
 cd docs\html
 move _modules ..
