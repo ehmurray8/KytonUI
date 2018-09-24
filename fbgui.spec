@@ -4,12 +4,12 @@ block_cipher = None
 
 
 a = Analysis(['fbgui\\install.py', 'fbgui\\baking_program.py', 'fbgui\\cal_program.py', 'fbgui\\constants.py',
-              'fbgui\\create_excel.py', 'fbgui\\data_container.py', 'fbgui\\laser_recorder.py', 'fbgui\\exceptions.py',
+              'fbgui\\create_excel_table.py', 'fbgui\\data_container.py', 'fbgui\\laser_recorder.py',
               'fbgui\\devices\\optical_switch.py', 'fbgui\\devices\\oven.py', 'fbgui\\devices\\sm125_laser.py',
-              'fbgui\\devices\\temperature_controller.py', 'fbgui\\file_helper.py',
-              'fbgui\\graph_toolbar.py', 'fbgui\\laser_data.py', 'fbgui\\messages.py',
+              'fbgui\\devices\\temperature_controller.py', 'fbgui\\excel_file_controller.py', 'fbgui\\exceptions.py',
+              'fbgui\\graph_toolbar.py', 'fbgui\\laser_data.py', 'fbgui\\messages.py', 'fbgui\\database_controller.py',
               'fbgui\\graphing.py', 'fbgui\\helpers.py', 'fbgui\\main_program.py', 'fbgui\\options_frame.py',
-              'fbgui\\program.py', 'fbgui\\datatable.py', 'fbgui\\ui_helper.py',
+              'fbgui\\program.py', 'fbgui\\datatable.py', 'fbgui\\ui_helper.py', 'fbgui\\config_controller.py',
               'fbgui\\reset_config.py'],
              pathex=['C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui'],
              binaries=[],

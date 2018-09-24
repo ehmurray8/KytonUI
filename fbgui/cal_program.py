@@ -6,11 +6,12 @@ import time
 import visa
 import datetime
 from uuid import UUID
-from fbgui import file_helper as fh
 from fbgui.constants import CAL, TEMP
 from fbgui.program import Program, ProgramType
 from fbgui.messages import MessageType, Message
 from fbgui.main_program import Application
+from fbgui.database_controller import DatabaseController
+from fbgui.exceptions import ProgramStopped
 
 
 class CalProgram(Program):
@@ -79,7 +80,9 @@ class CalProgram(Program):
         :param temps: the list of temperatures to set the oven to
         :param thread_id: UUID of the code the thread is currently running in
         """
-        last_cycle_num = fh.get_last_cycle_num(self.options.file_name.get(), CAL)
+        database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
+                                                 CAL, self.table)
+        last_cycle_num = database_controller.get_last_cycle_num()
         if last_cycle_num == self.options.num_cal_cycles.get():
             self.master.main_queue.put(Message(MessageType.WARNING, "Calibration Program Complete",
                                                "The calibration program has already completed the specified {} cycles"
@@ -128,7 +131,7 @@ class CalProgram(Program):
                 if not self.sleep(thread_id):
                     return
                 kwargs["force_connect"] = False
-                while not self.check_drift_rate(thread_id, cycle_num+1):
+                while not self.check_drift_rate(thread_id, cycle_num+1, database_controller):
                     if not self.sleep(thread_id):
                         return
                     self.set_oven_temp(**kwargs)
@@ -192,7 +195,7 @@ class CalProgram(Program):
         drift_rate *= 60000.
         return drift_rate, curr_temp, curr_time, waves, amps
 
-    def check_drift_rate(self, thread_id: UUID, cycle_num: int) -> bool:
+    def check_drift_rate(self, thread_id: UUID, cycle_num: int, database_controller: DatabaseController) -> bool:
         """
         Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
         temperature.
@@ -209,17 +212,15 @@ class CalProgram(Program):
                 else:
                     drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(thread_id, True)
 
-                if not self.master.thread_map[thread_id]:
-                    return False
                 if drift_rate <= self.options.drift_rate.get():
-                    fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
-                                self.table, self.master.main_queue, drift_rate, True, cycle_num)
+                    database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
+                                                                 drift_rate, True, cycle_num)
                     return True
 
                 if not self.master.thread_map[thread_id]:
-                    return False
-                fh.write_db(self.options.file_name.get(), self.snums, curr_time, curr_temp, waves, amps, CAL,
-                            self.table, self.master.main_queue, drift_rate, False, cycle_num)
+                    raise ProgramStopped
+                database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
+                                                             drift_rate, False, cycle_num)
                 return False
             except (AttributeError, visa.VisaIOError):
                 self.temp_controller_error()

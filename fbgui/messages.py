@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from tkinter.font import Font
 import tkinter as tk
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from fbgui.constants import LOG_BACKGROUND_COLOR
 
 #: Amount of time in between messages to enable the filtering
@@ -207,12 +207,7 @@ class LogView(ttk.Frame):
             if MessageType.DEVELOPER in self.message_types:
                 mtype = MessageType.DEVELOPER.filter_num
             msgs = self.get_msgs(mtype)
-
-            msg_items = list(msgs.items())
-            for item in list(msg_items):
-                if item[0] == 'key':
-                    msg_items.remove(item)
-            msgs_sorted = reversed(sorted(msg_items, key=lambda x: x[0]))
+            msgs_sorted = sort_messages(msgs)
             for t, (text, tag) in msgs_sorted:
                 f.write(text)
 
@@ -317,10 +312,14 @@ class LogView(ttk.Frame):
                 self.current_filter = t
         msgs = self.get_msgs(self.current_filter.filter_num)
         self.clear()
-        msg_items = list(msgs.items())
-        for item in list(msg_items):
-            if item[0] == 'key':
-                msg_items.remove(item)
-        msgs_sorted = reversed(sorted(msg_items, key=lambda x: x[0]))
+        msgs_sorted = sort_messages(msgs)
         for t, (text, tag) in msgs_sorted:
             self.write_msg(text, tag, start=tk.END)
+
+
+def sort_messages(msgs):
+    msg_items = list(msgs.items())
+    for item in list(msg_items):
+        if item[0] == 'key':
+            msg_items.remove(item)
+    return reversed(sorted(msg_items, key=lambda x: x[0]))

@@ -72,3 +72,17 @@ def average(elements: List[List[List[float]]]) -> List[List[float]]:
                 elements[i][j] = 0
     return elements
 
+
+def make_length(values: List, length: int) -> List:
+    """
+    Force the values list to be of length, length.
+
+    :param values: list to resize
+    :param length: required length of the list
+    :return: list of length, length
+    """
+    values = values[:length]
+    values += [0] * (length - len(values))
+    return values
+
+

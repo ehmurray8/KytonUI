@@ -7,7 +7,7 @@ import tkinter.font as tkfont
 import tkinter.ttk as ttk
 from tkinter import LEFT, E, RIGHT, W
 import sqlite3
-from fbgui import file_helper as fh
+from fbgui.excel_file_controller import ExcelFileController
 from fbgui.constants import CAL, DB_PATH
 from fbgui import ui_helper as uh
 from fbgui.messages import MessageType, Message
@@ -92,8 +92,11 @@ class ExcelTable(ttk.Frame):
             values = self.tree.item(item)['values']
             f_name = self.file_paths[values[0]]
             s_nums = self.s_nums[values[0]].split(",")
-            threading.Thread(target=fh.create_excel_file, args=(f_name, s_nums, self.main_queue,
-                                                                values[2] == CAL.lower())).start()
+            threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2])).start()
+
+    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str):
+        excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize())
+        excel_controller.create_excel()
 
     def _setup_headers(self):
         """Sets up the tree view headers."""

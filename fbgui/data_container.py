@@ -3,8 +3,7 @@ from queue import Queue
 import numpy as np
 import pandas as pd
 from fbgui.messages import MessageType, Message
-from fbgui import file_helper as fh
-from typing import List, Optional
+from fbgui.config_controller import *
 
 
 class DataCollection(object):
@@ -38,8 +37,7 @@ class DataCollection(object):
         self.mean_delta_wavelengths_pm = []  # type: List[float]
         self.drift_rates = []  # type: List[float]
 
-    def create(self, is_cal: bool, df: pd.DataFrame, snums: Optional[List[str]]=None,
-               main_queue: Optional[Queue]=None):
+    def create(self, is_cal: bool, df: pd.DataFrame, fbg_names: List[str]=None, main_queue: Queue=None):
         """
         Creates a data collection from the given dataframe, updates the instance variables to match how they are
         specified in the class docstring, numpy arrays are used instead of lists however.
@@ -48,15 +46,14 @@ class DataCollection(object):
 
         :param is_cal: boolean for whether or not the program is a calibration program
         :param df: dataframe representing the sql table for the program
-        :param snums: list of serial numbers that are in use for the program, if None the serial numbers will be found
+        :param fbg_names: list of serial numbers that are in use for the program, if None the serial numbers will be found
                       using file_helper get_snums function
         :param main_queue: if present used for writing messages to the program log
         :raises RuntimeError: If the table has not been created or populated yet
         """
-        if snums is None:
-            snums = fh.get_snums(is_cal)
+        if fbg_names is None:
+            fbg_names = get_configured_fbg_names(is_cal)
         try:
-            headers = fh.create_headers(snums, is_cal, True)
             timestamps = df["Date Time"]
             start_time = df["Date Time"][0]
             df['Date Time'] = pd.to_datetime(df['Date Time'], unit="s")
@@ -65,6 +62,7 @@ class DataCollection(object):
             first_temp = self.temps[0]
             self.delta_temps = np.array([temp - first_temp for temp in self.temps])
 
+            headers = df.columns.values.tolist()
             wave_headers = [head for head in headers if "Wave" in head]
             pow_headers = [head for head in headers if "Pow" in head]
             for wave_head, pow_head in zip(wave_headers, pow_headers):
@@ -80,8 +78,8 @@ class DataCollection(object):
             for wave_diff, pow_diff in zip(self.delta_wavelengths_pm[1:], self.delta_powers[1:]):
                 self.mean_delta_wavelengths_pm += wave_diff
                 self.mean_delta_powers += pow_diff
-            self.mean_delta_wavelengths_pm /= len(snums)
-            self.mean_delta_powers /= len(snums)
+            self.mean_delta_wavelengths_pm /= len(fbg_names)
+            self.mean_delta_powers /= len(fbg_names)
 
             self.delta_temps = list(self.delta_temps)
             self.delta_wavelengths_pm = list(self.delta_wavelengths_pm)
