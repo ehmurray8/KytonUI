@@ -4,9 +4,11 @@ import time
 import visa
 from uuid import UUID
 import socket
-from fbgui import file_helper as fh, program
+from fbgui import program
 from fbgui.constants import BAKING, TEMP
 from fbgui.main_program import Application
+from fbgui.exceptions import ProgramStopped
+from fbgui.database_controller import DatabaseController
 
 
 class BakingProgram(program.Program):
@@ -50,6 +52,8 @@ class BakingProgram(program.Program):
 
         :param thread_id: UUID of the thread this code is running in
         """
+        database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
+                                                 BAKING, self.table)
         stable = False
         while self.master.thread_map[thread_id] and self.options.set_temp.get() and not stable:
             stable = self.check_stable(thread_id)
@@ -60,51 +64,44 @@ class BakingProgram(program.Program):
             self.disconnect_devices()
 
         while self.master.thread_map[thread_id] and self.master.running:
-            temperature = None
-            while temperature is None:
-                try:
-                    self.master.conn_dev(TEMP, thread_id=thread_id)
-                    temperature = self.master.temp_controller.get_temp_k()
-                except (visa.VisaIOError, AttributeError, socket.error):
-                    self.temp_controller_error()
+            temperature = self.get_temperature(thread_id)
 
-            if not self.master.thread_map[thread_id]:
-                return
-
-            waves, amps = self.get_wave_amp_data(thread_id)
-
-            if not self.master.thread_map[thread_id]:
-                return
-
-            temp2 = None
-            while temp2 is None:
-                try:
-                    self.master.conn_dev(TEMP, thread_id=thread_id)
-                    temp2 = self.master.temp_controller.get_temp_k()
-                    temperature += temp2
-                except (AttributeError, visa.VisaIOError):
-                    self.temp_controller_error()
-
-            temperature /= 2.
             curr_time = time.time()
+            waves, powers = self.get_wave_amp_data(thread_id)
+            curr_time += time.time()
+            curr_time /= 2.
+
+            temperature += self.get_temperature(thread_id)
+            temperature /= 2.
 
             self.disconnect_devices()
-            if not self.master.thread_map[thread_id]:
-                return
 
-            if not fh.write_db(self.options.file_name.get(), self.snums, curr_time, temperature,
-                               waves, amps, BAKING, self.table, self.master.main_queue):
-                self.pause_program()
-                return
+            database_controller.record_baking_point(curr_time, temperature, waves, powers)
 
             start_time = time.time()
             count = 0
             while self.master.thread_map[thread_id] and time.time() - start_time < self.options.prim_time.get() \
                     * 60 * 60:
-                time.sleep(.5)
-                count += 1
-                if count > 360:
-                    count = 0
-                    self.set_oven_temp()
+                count = self.set_oven(count)
         else:
             self.disconnect_devices()
+
+    def get_temperature(self, thread_id: UUID) -> float:
+        temperature = None
+        while temperature is None:
+            if not self.master.thread_map[thread_id]:
+                raise ProgramStopped
+            try:
+                self.master.conn_dev(TEMP, thread_id=thread_id)
+                temperature = self.master.temp_controller.get_temp_k()
+            except (visa.VisaIOError, AttributeError, socket.error):
+                self.temp_controller_error()
+        return temperature
+
+    def set_oven(self, count: int) -> int:
+        time.sleep(.5)
+        count += 1
+        if count > 360:
+            count = 0
+            self.set_oven_temp()
+        return count

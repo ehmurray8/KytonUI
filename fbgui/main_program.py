@@ -7,7 +7,7 @@ from queue import Queue, Empty
 import visa
 from typing import Dict, List, Optional
 from uuid import UUID
-from fbgui import create_excel, constants, reset_config, messages, install, ui_helper as uh
+from fbgui import create_excel_table, constants, reset_config, messages, install, ui_helper as uh
 from fbgui.devices.oven import Oven
 from fbgui.devices.optical_switch import OpticalSwitch
 from fbgui.devices.sm125_laser import SM125
@@ -172,7 +172,7 @@ class Application(tk.Tk):
         self.log_view = messages.LogView(hframe)
         self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
 
-        create_excel.ExcelTable(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
+        create_excel_table.ExcelTable(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id: UUID=None):
         """

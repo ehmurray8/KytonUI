@@ -1,13 +1,12 @@
 """Module used for handling the graphing using matplotlib."""
 import gc
-import os
 import time
 import uuid
 import threading
 import functools
 from queue import Queue
 from tkinter import StringVar
-from typing import Tuple, List, Callable, Union
+from typing import Tuple,Callable, Union
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import style
@@ -17,13 +16,12 @@ import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import MouseEvent
-from fbgui import file_helper as fh
-from fbgui.constants import HEX_COLORS, BAKING, CAL, DB_PATH
 from fbgui.graph_toolbar import Toolbar
-from fbgui import helpers
 from fbgui.messages import MessageType, Message
 from fbgui.data_container import DataCollection
 from fbgui.main_program import Application
+from fbgui.config_controller import *
+from fbgui.database_controller import DatabaseController
 
 style.use("kyton")
 
@@ -40,8 +38,8 @@ class Graph(object):
     """
 
     def __init__(self, title: str, xlabel: str, ylabels: Tuple[str], animate_func: Callable, fig: Figure,
-                 dims: List[Union[int, gridspec.GridSpec]], fname: StringVar, is_cal: bool,
-                 snums: List[str], main_queue: Queue):
+                 dims: List[Union[int, gridspec.GridSpec]], is_cal: bool,
+                 snums: List[str], main_queue: Queue, database_controller: DatabaseController):
         """
         Creates a specific graph that represents a sub graph in the graph grid, and the corresponding zoomed
         graph when the graph is double clicked.
@@ -53,7 +51,6 @@ class Graph(object):
         :param fig: matplotlib figure the axes are contained in
         :param dims: the dimensions to use for the axes, first position is the sub graph dimensions, and
                      the remainder of the list is the zoom dimensions
-        :param fname: the tkinter String variable for the configuration input fields for the file name
         :param is_cal: True if the program is a calibration program to graph data for, False otherwise
         :param snums: list of serial nums used for the current run that is being graphed
         :param main_queue: queue used for posting logging messages to
@@ -62,12 +59,12 @@ class Graph(object):
         self.is_cal = is_cal
         self.xlabel = xlabel
         self.ylabels = ylabels
-        self.file_name = fname
         self.sub_dims = dims[0]
         self.zoom_dims = dims[1:]
         self.main_queue = main_queue
         self.animate_func = animate_func
         self.fig = fig
+        self.database_controller = database_controller
         self.sub_axis = None  # type: Axes
         self.anim = None  # type: animation.FuncAnimation
         self.snums = snums
@@ -111,17 +108,8 @@ class Graph(object):
         :param axes_tuple: tuple of matplotlib Axes objects, that will be graphed using the animate function if
                            the program exists
         """
-        name = os.path.splitext(os.path.split(self.file_name.get())[1])[0]
-        conn = fh.sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        func = BAKING
-        if self.is_cal:
-            func = CAL
-        if fh.program_exists(name, cur, func):
-            conn.close()
+        if self.database_controller.program_exists():
             self.animate_func(axes_tuple, self.snums, self.is_cal)
-        else:
-            conn.close()
 
     def show_main(self):
         """Show the graph as the main plot."""
@@ -180,9 +168,9 @@ class Graphing(object):
     data_coll = None  # type: DataCollection
     data_coll_cal = None  # type: DataCollection
 
-    def __init__(self, fname: StringVar, dims: int, is_cal: bool, figure: Figure,
+    def __init__(self, dims: int, is_cal: bool, figure: Figure,
                  canvas: FigureCanvasTkAgg, toolbar: Toolbar, master: Application,
-                 snums: List[str], main_queue: Queue):
+                 snums: List[str], main_queue: Queue, database_controller: DatabaseController):
 
         """
         Sets up all of the individual Graph objects for the graphing program page.
@@ -197,7 +185,6 @@ class Graphing(object):
         :param snums: list of serial numbers that will be graphed
         :param main_queue: queue used for posting logging messages to
         """
-        self.file_name = fname
         self.dimensions = dims
         self.is_cal = is_cal
         self.figure = figure
@@ -209,6 +196,8 @@ class Graphing(object):
         self.master = master
         self.snums = snums
         self.main_queue = main_queue
+        self.function_type = CAL if self.is_cal else BAKING
+        self.database_controller = database_controller
 
         threading.Thread(target=self.update_data_coll).start()
 
@@ -241,8 +230,8 @@ class Graphing(object):
             dim_list = [self.dimensions + i + 1]
             for dim in dimen:
                 dim_list.append(dim)
-            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.file_name, self.is_cal, self.snums,
-                         self.main_queue)
+            temp = Graph(title, xlbl, ylbl, anim, self.figure, dim_list, self.is_cal, self.snums,
+                         self.main_queue, self.database_controller)
             self.graphs.append(temp)
             self.sub_axes.append(temp.sub_axis)
         self.cid = self.canvas.mpl_connect('button_press_event', self.show_main_plot)
@@ -257,8 +246,7 @@ class Graphing(object):
         self.master.graph_threads.append(thread_id)
         while self.master.thread_map[thread_id]:
             try:
-                name = helpers.get_file_name(self.file_name.get())
-                df = fh.db_to_df(CAL if self.is_cal else BAKING, name)
+                df = self.database_controller.to_data_frame()
                 if self.is_cal:
                     Graphing.data_coll_cal = DataCollection()
                     Graphing.data_coll_cal.create(self.is_cal, df)
@@ -353,7 +341,7 @@ def animate_graph(use_snums: bool) -> Callable:
             if dc is not None:
                 if use_snums:
                     if snums is not None and not len(snums):
-                        snums = fh.get_snums(is_cal)
+                        snums = get_configured_fbg_names(is_cal)
                     func(axes, snums, dc)
                 else:
                     func(axes, dc)
