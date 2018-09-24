@@ -61,9 +61,11 @@ class LaserRecorder:
         laser_data = LaserData(self.switch_positions, self.switch_channel_index)
         if len(self.switch_positions) == 0:
             self.record_wavelengths_and_amplitudes(laser_data, 0)
-        for switch_position in sorted(set(self.switch_positions[self.switch_channel_index])):
+        switch_set = set(self.switch_positions[self.switch_channel_index])
+        for switch_position in sorted(switch_set):
             try:
-                self.__switch_to(switch_position)
+                if switch_position != 0:
+                    self.__switch_to(switch_position)
                 self.record_wavelengths_and_amplitudes(laser_data, switch_position)
             except socket.error:
                 self.main_queue.put(Message(MessageType.DEVELOPER, "Socket Error", "Error communicating with the "

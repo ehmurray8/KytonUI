@@ -1,5 +1,4 @@
 import sqlite3
-import datetime
 import pandas as pd
 import queue
 from typing import List
@@ -25,7 +24,7 @@ class DatabaseController:
             add_calibration_column_names(self.column_names)
         table_column_names = [s.replace("'", "") for s in self.column_names]
         if table is not None:
-            self.table.setup_headers(table_column_names)
+            self.table.setup_headers(table_column_names, True)
 
     def record_baking_point(self, timestamp: float, temperature: float, wavelengths: List[float], powers: List[float]):
         column_command_string = ",".join(self.create_database_column_commands())

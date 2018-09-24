@@ -1,14 +1,14 @@
 import pandas as pd
-import re
 import queue
 from typing import List, Tuple
 from tkinter import messagebox
 from StyleFrame import Styler, utils, StyleFrame
 from fbgui.messages import *
-from fbgui.helpers import make_length, get_file_name
+from fbgui.helpers import get_file_name
 from fbgui.database_controller import DatabaseController
 from fbgui.data_container import DataCollection
 from fbgui.constants import CAL, HEX_COLORS
+from fbgui.calibration_data_frame import CalibrationDataFrame
 
 
 DELTA_TIME_HEADER = "{} Time (hr.)".format(u"\u0394")
@@ -101,7 +101,7 @@ class ExcelFileController:
         add_wavelength_power_columns(full_column_ordering, data_frame)
         data_frame = data_frame[full_column_ordering]
 
-        calibration_data_frame = create_calibration_data_frame(real_point_data_frame, cycles)
+        calibration_data_frame = CalibrationDataFrame(real_point_data_frame, cycles).get_data_frame()
         calibration_style_frame = self.create_style_frame(calibration_data_frame)
         full_style_frame = self.create_style_frame(data_frame)
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
@@ -168,43 +168,6 @@ def add_baking_duplicate_columns(data_frame: pd.DataFrame, data_collection: Data
     data_frame[DELTA_TEMPERATURE_HEADER1] = data_collection.delta_temps
     data_frame[DELTA_TEMPERATURE_HEADER2] = data_collection.delta_temps
     data_frame[DELTA_TEMPERATURE_HEADER3] = data_collection.delta_temps
-
-
-def create_calibration_data_frame(real_point_data_frame: pd.DataFrame, cycles: List[int]):
-    calibration_data_frame = pd.DataFrame()
-    wavelength_headers, power_headers = get_wavelength_power_headers(real_point_data_frame)
-    temperature_averages = []
-    for cycle_num in cycles:
-        temperatures = list(real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
-        if not len(temperature_averages):
-            temperature_averages = temperatures
-        else:
-            temperatures += [0] * (len(temperature_averages) - len(temperatures))
-            temperature_averages = [(t + new_t)/2. if new_t != 0 else t for t, new_t in
-                                    zip(temperature_averages, temperatures)]
-        temperatures = make_length(list(temperatures), len(temperature_averages))
-        calibration_data_frame["Temperature (K) Cycle {}".format(cycle_num)] = temperatures
-        for wavelength_header in wavelength_headers:
-            wavelengths = real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][wavelength_header]
-            wavelengths = make_length(list(wavelengths), len(temperature_averages))
-            delta_wavelengths = [(wavelength - wavelengths[0]) * 1000 for wavelength in wavelengths]
-            calibration_data_frame["{} Cycle {}".format(wavelength_header, cycle_num)] = wavelengths
-            fbg_name = re.match("(.*)(?= Wavelength)", wavelength_header).group(0)
-            calibration_data_frame["{} {} Wavelength (pm) Cycle {}".format(fbg_name, u"\u0394", cycle_num)] = \
-                delta_wavelengths
-
-    calibration_data_frame["Mean Temperature (K)"] = make_length(list(temperature_averages), len(temperature_averages))
-    for cycle_num in cycles:
-        temperatures = list(real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
-        temperatures = make_length(list(temperatures), len(temperature_averages))
-        calibration_data_frame["Temperature (K) Cycle {} ".format(cycle_num)] = temperatures
-        for power_header in power_headers:
-            powers = real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][power_header]
-            powers = make_length(list(powers), len(temperature_averages))
-            calibration_data_frame["{} Cycle {}".format(power_header, cycle_num)] = powers
-
-    calibration_data_frame["Mean Temperature (K) "] = list(temperature_averages)
-    return calibration_data_frame
 
 
 def get_wavelength_power_headers(data_frame: pd.DataFrame) -> Tuple[List[str], List[str]]:
