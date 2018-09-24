@@ -130,33 +130,6 @@ class DatabaseController:
         connection.close()
         return int(last_cycle_num)
 
-    def create_data_frame(self) -> pd.DataFrame:
-        """
-        Creates a pandas dataframe object from the database table corresponding to the program run of type
-        func, and named name.
-
-        :return: dataframe for the specified table, or an empty dataframe if one cannot be created for the table
-        :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
-        :raises RuntimeError: If program database has been corrupted, or the table is empty
-        """
-        connection = None
-        try:
-            connection = sqlite3.connect(DB_PATH)
-            cursor = connection.cursor()
-            table_id = self.get_table_id(cursor)
-            df = pd.read_sql_query("SELECT * from {}".format(self.function_type.lower() + str(table_id)), connection)
-            del df["ID"]
-            connection.close()
-            return df
-        except (pd.io.sql.DatabaseError, sqlite3.OperationalError):
-            if connection is not None:
-                connection.close()
-            return pd.DataFrame()
-        except (RuntimeError, IndexError) as error:
-            if connection is not None:
-                connection.close()
-            raise error
-
     def to_data_frame(self) -> pd.DataFrame:
         """
         Creates a pandas dataframe object from the database table corresponding to the program run of type

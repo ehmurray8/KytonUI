@@ -307,23 +307,21 @@ class Graphing(object):
         if isinstance(event, int):
             self.figure.clf()
             self.graphs[event].show_main()
+            self.setup_click_listener()
+        else:
+            for i, axis in enumerate(self.sub_axes):
+                if event.dblclick and axis == event.inaxes:
+                    self.figure.clf()
+                    self.graphs[i].show_main()
+                    self.setup_click_listener()
+
+    def setup_click_listener(self):
             self.canvas.mpl_disconnect(self.cid)
             self.cid = self.canvas.mpl_connect('button_press_event', self.show_subplots)
             self.canvas.draw()
             self.toolbar.update()
             if not self.is_playing:
                 self.master.after(1500, self.pause)
-        else:
-            for i, axis in enumerate(self.sub_axes):
-                if event.dblclick and axis == event.inaxes:
-                    self.figure.clf()
-                    self.graphs[i].show_main()
-                    self.canvas.mpl_disconnect(self.cid)
-                    self.cid = self.canvas.mpl_connect('button_press_event', self.show_subplots)
-                    self.canvas.draw()
-                    self.toolbar.update()
-                    if not self.is_playing:
-                        self.master.after(1500, self.pause)
 
 
 def animate_graph(use_snums: bool) -> Callable:
@@ -435,12 +433,7 @@ def wave_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
             axis[1].plot(times, waves, color=color)
         idx += 1
 
-    if len(axis) > 1:
-        font_size = 8
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-        for text in legend.get_texts():
-            text.set_color("black")
+    create_legend(axis, snums, axes)
 
 
 @animate_graph(True)
@@ -461,13 +454,7 @@ def power_graph(axis: List[Axes], snums: List[str], dc: DataCollection):
         if len(axis) > 1 and len(times) == len(pows):
             axis[1].plot(times, pows, color=color)
         idx += 1
-
-    if len(axis) > 1:
-        font_size = 8
-        legend = axis[0].legend(axes, snums, bbox_to_anchor=(.5, 1.25), loc='upper center',
-                                ncol=int(len(snums) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
-        for text in legend.get_texts():
-            text.set_color("black")
+    create_legend(axis, snums, axes)
 
 
 @animate_graph(False)
@@ -496,6 +483,15 @@ def __get_drift_rates(dc: DataCollection) -> Tuple[List[float], List[float], Lis
     drates = dc.drift_rates
     delta_drates = [dr - drates[0] for dr in drates]
     return times, drates, delta_drates
+
+
+def create_legend(axis: List[Axes], fbg_names: List[str], axes: List[Axes]):
+    if len(axis) > 1:
+        font_size = 8
+        legend = axis[0].legend(axes, fbg_names, bbox_to_anchor=(.5, 1.25), loc='upper center',
+                                ncol=int(len(fbg_names) / 2 + 0.5), fontsize=font_size, fancybox=True, shadow=True)
+        for text in legend.get_texts():
+            text.set_color("black")
 
 
 def formatter(val: float, _):
