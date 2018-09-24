@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 import queue
 from typing import List, Tuple
 from tkinter import messagebox
@@ -182,21 +183,25 @@ def create_calibration_data_frame(real_point_data_frame: pd.DataFrame, cycles: L
             temperature_averages = [(t + new_t)/2. if new_t != 0 else t for t, new_t in
                                     zip(temperature_averages, temperatures)]
         temperatures = make_length(list(temperatures), len(temperature_averages))
-        calibration_data_frame["Temperature (K) {}".format(cycle_num)] = temperatures
+        calibration_data_frame["Temperature (K) Cycle {}".format(cycle_num)] = temperatures
         for wavelength_header in wavelength_headers:
             wavelengths = real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][wavelength_header]
             wavelengths = make_length(list(wavelengths), len(temperature_averages))
-            calibration_data_frame["{} {}".format(wavelength_header, cycle_num)] = wavelengths
+            delta_wavelengths = [(wavelength - wavelengths[0]) * 1000 for wavelength in wavelengths]
+            calibration_data_frame["{} Cycle {}".format(wavelength_header, cycle_num)] = wavelengths
+            fbg_name = re.match("(.*)(?= Wavelength)", wavelength_header).group(0)
+            calibration_data_frame["{} {} Wavelength (pm) Cycle {}".format(fbg_name, u"\u0394", cycle_num)] = \
+                delta_wavelengths
 
     calibration_data_frame["Mean Temperature (K)"] = make_length(list(temperature_averages), len(temperature_averages))
     for cycle_num in cycles:
         temperatures = list(real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
         temperatures = make_length(list(temperatures), len(temperature_averages))
-        calibration_data_frame["Temperature (K) {} ".format(cycle_num)] = temperatures
-        for col in power_headers:
-            powers = real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][col]
+        calibration_data_frame["Temperature (K) Cycle {} ".format(cycle_num)] = temperatures
+        for power_header in power_headers:
+            powers = real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][power_header]
             powers = make_length(list(powers), len(temperature_averages))
-            calibration_data_frame[col + " {}".format(cycle_num)] = powers
+            calibration_data_frame["{} Cycle {}".format(power_header, cycle_num)] = powers
 
     calibration_data_frame["Mean Temperature (K) "] = list(temperature_averages)
     return calibration_data_frame
