@@ -198,7 +198,7 @@ class ExcelFileController:
                 y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
                                      min_row=2, max_row=last_row)
                 series = Series(xvalues=x_values, values=y_values, title="Cycle {}".format(cycle))
-                series.marker = marker.Marker("dot")
+                series.marker = marker.Marker("x")
                 series.graphicalProperties.line.noFill = True
                 chart.series.append(series)
                 deviation_index += 1

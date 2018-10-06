@@ -32,7 +32,7 @@ class DatabaseController:
         values = [readable_time, *wavelength_power, temperature]
         self.record_point(column_command_string, values, timestamp)
 
-    def record_calibration_point(self, timestamp: float, temperature: List[float], wavelengths: List[float],
+    def record_calibration_point(self, timestamp: float, temperature: float, wavelengths: List[float],
                                  powers: List[float], drift_rate: float,
                                  is_real_calibration_point: bool, cycle_num: int):
         column_commands = self.create_database_column_commands()

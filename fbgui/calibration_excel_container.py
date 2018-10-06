@@ -66,9 +66,11 @@ class CalibrationExcelContainer:
         return make_length(list(temperatures), self.number_of_readings)
 
     def add_deviation(self):
-        for wavelength_header in self.wavelength_headers:
-            mean_wavelength = get_mean_wavelength(self.real_point_data_frame[wavelength_header])
-            for cycle in self.cycles:
+        for i, wavelength_header in enumerate(self.wavelength_headers):
+            mean_wavelength = get_mean_wavelength(list(self.real_point_data_frame[wavelength_header]),
+                                                  len(self.wavelength_headers), self.number_of_readings)
+            print("{} Mean Wavelength: {}".format(wavelength_header, mean_wavelength))
+            for j, cycle in enumerate(self.cycles):
                 wavelengths = self.get_wavelengths(cycle, wavelength_header)
                 fbg_name = fbg_name_from_header(wavelength_header)
                 deviation_column_name = "Cycle {} {} Wavelength Deviation (pm.)".format(cycle, fbg_name)
@@ -86,6 +88,16 @@ def fbg_name_from_header(header: str) -> str:
     return re.match("(.*)(?= Wavelength)", header).group(0)
 
 
-def get_mean_wavelength(wavelengths: List[float]):
-    mean_wavelength = sum(wavelengths)
-    return mean_wavelength / len(wavelengths)
+def get_mean_wavelength(wavelengths: List[float], num_fbgs: int, num_temps: int) -> List[float]:
+    try:
+        mean_wavelengths = []
+        count = 0
+        mean_wavelength = 0
+        for i in range(num_temps):
+            for j in range(i, len(wavelengths), num_fbgs):
+                mean_wavelength += wavelengths[j]
+                count += 1
+            mean_wavelengths.append(mean_wavelength / count)
+        return mean_wavelengths
+    except ZeroDivisionError:
+        return []
