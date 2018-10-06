@@ -1,15 +1,20 @@
-import pandas as pd
 import queue
-from typing import List, Tuple
 from tkinter import messagebox
-from StyleFrame import Styler, utils, StyleFrame
-from fbgui.messages import *
-from fbgui.helpers import get_file_name
-from fbgui.database_controller import DatabaseController
-from fbgui.data_container import DataCollection
-from fbgui.constants import CAL, HEX_COLORS
-from fbgui.calibration_data_frame import CalibrationDataFrame
+from typing import Tuple
 
+import pandas as pd
+from StyleFrame import Styler, utils, StyleFrame
+from openpyxl.chart import ScatterChart, Reference, Series, marker
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.drawing.colors import ColorChoice, RGBPercent
+from openpyxl.worksheet import Worksheet
+
+from fbgui.calibration_data_frame import CalibrationDataFrame
+from fbgui.constants import CAL, HEX_COLORS
+from fbgui.data_container import DataCollection
+from fbgui.database_controller import DatabaseController
+from fbgui.helpers import get_file_name
+from fbgui.messages import *
 
 DELTA_TIME_HEADER = "{} Time (hr.)".format(u"\u0394")
 DELTA_TIME_HEADER1 = "{} Time (hr.) ".format(u"\u0394")
@@ -29,7 +34,6 @@ CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
 
 
 class ExcelFileController:
-
     def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str):
         self.excel_file_path = excel_file_path
         self.excel_file_name = get_file_name(excel_file_path)
@@ -46,7 +50,7 @@ class ExcelFileController:
                 self.create_baking_excel()
         except (RuntimeError, IndexError):
             self.main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
-                                "No data has been recorded yet, or the database has been corrupted."))
+                                        "No data has been recorded yet, or the database has been corrupted."))
         except PermissionError:
             message = "Please close {}, before attempting to create a new copy of it.".format(self.excel_file_name)
             self.main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error", message))
@@ -80,7 +84,7 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                        styler_obj=Styler(font_color=utils.colors.red))
-        self.show_excel([style_frame], ["Baking Data"])
+        self.show_excel([style_frame], ["Baking Data"], len(data_frame.index))
 
     def create_calibration_excel(self):
         data_frame = self.database_controller.to_data_frame()
@@ -107,7 +111,8 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         full_style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                             styler_obj=Styler(font_color=utils.colors.red))
-        self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"])
+        self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
+                        len(real_point_data_frame.index))
 
     def add_delta_wavelengths(self, data_frame: pd.DataFrame, data_collection: DataCollection,
                               column_ordering: List[str]):
@@ -140,17 +145,50 @@ class ExcelFileController:
                                        styler_obj=Styler(font_color=utils.colors.red))
         return style_frame
 
-    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str]):
+    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], num_rows: int):
         ew = StyleFrame.ExcelWriter(self.excel_file_path)
         for style_frame, sheet_name in zip(style_frames, sheet_names):
             style_frame.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name=sheet_name)
+
+        if not self.is_calibration:
+            chart_sheet = ew.book.create_sheet(title="Chart")
+            self.graph_bake(chart_sheet, ew.sheets[sheet_names[0]], num_rows)
+
         ew.save()
         ew.close()
         os.startfile('"{}"'.format(self.excel_file_path.replace("\\", "\\\\")))
 
+    def graph_bake(self, chart_sheet: Worksheet, baking_sheet: Worksheet, num_rows: int):
+        chart = ScatterChart()
+
+        num_rows += 1
+        x_values = Reference(baking_sheet, min_col=2, min_row=2, max_row=num_rows)
+        for i, fbg_name in enumerate(self.fbg_names):
+            y_values = Reference(baking_sheet, min_col=4 + i, min_row=2, max_row=num_rows)
+            series = Series(values=y_values, xvalues=x_values, title=fbg_name)
+            rgb_percent = RGBPercent(*hex_to_rgb(i))
+            series.marker = marker.Marker(symbol="dot", spPr=GraphicalProperties(
+                solidFill=ColorChoice(rgb_percent)))
+            series.graphicalProperties.line.noFill = True
+            chart.series.append(series)
+
+        chart.title = "{} Time vs. Wavelength (nm.)".format(u"\u0394")
+        chart.x_axis.title = "{} Time (hr.)".format(u"\u0394")
+        chart.y_axis.title = "Wavelength (nm.)"
+        chart_sheet.add_chart(chart, "B2")
+
+
+def hex_to_rgb(hex_index: int) -> List[float]:
+    hex_string = HEX_COLORS[hex_index][1:]
+    rgb_list = []  # type: List[float]
+    for i in range(0, len(hex_string), 2):
+        hex_int = int(hex_string[i:i+2], 16) / 255 * 100
+        rgb_list.append(hex_int)
+    return rgb_list
+
 
 def add_times(data_frame: pd.DataFrame, data_collection: DataCollection):
-    data_frame[DATE_TIME_HEADER] = data_frame[DATE_TIME_HEADER]\
+    data_frame[DATE_TIME_HEADER] = data_frame[DATE_TIME_HEADER] \
         .apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
     data_frame[DELTA_TIME_HEADER] = data_collection.times
 
