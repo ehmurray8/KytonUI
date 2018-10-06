@@ -1,7 +1,6 @@
 import sqlite3
 import pandas as pd
 import queue
-from typing import List
 from fbgui import helpers
 from fbgui.datatable import DataTable
 from fbgui.constants import DB_PATH, CAL

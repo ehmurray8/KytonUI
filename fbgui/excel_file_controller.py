@@ -9,7 +9,7 @@ from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.worksheet import Worksheet
 
-from fbgui.calibration_data_frame import CalibrationDataFrame
+from fbgui.calibration_excel_container import CalibrationExcelContainer
 from fbgui.constants import CAL, HEX_COLORS
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
@@ -105,14 +105,15 @@ class ExcelFileController:
         add_wavelength_power_columns(full_column_ordering, data_frame)
         data_frame = data_frame[full_column_ordering]
 
-        calibration_data_frame = CalibrationDataFrame(real_point_data_frame, cycles).get_data_frame()
+        container = CalibrationExcelContainer(real_point_data_frame, cycles)
+        calibration_data_frame = container.get_data_frame()
         calibration_style_frame = self.create_style_frame(calibration_data_frame)
         full_style_frame = self.create_style_frame(data_frame)
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         full_style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                             styler_obj=Styler(font_color=utils.colors.red))
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
-                        len(real_point_data_frame.index))
+                        len(calibration_data_frame.index), container.deviation_indexes, container.cycles)
 
     def add_delta_wavelengths(self, data_frame: pd.DataFrame, data_collection: DataCollection,
                               column_ordering: List[str]):
@@ -145,13 +146,16 @@ class ExcelFileController:
                                        styler_obj=Styler(font_color=utils.colors.red))
         return style_frame
 
-    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], num_rows: int):
+    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], num_rows: int,
+                   deviation_indexes=None, cycles: List[int]=None):
         ew = StyleFrame.ExcelWriter(self.excel_file_path)
         for style_frame, sheet_name in zip(style_frames, sheet_names):
             style_frame.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name=sheet_name)
 
-        if not self.is_calibration:
-            chart_sheet = ew.book.create_sheet(title="Chart")
+        chart_sheet = ew.book.create_sheet(title="Chart")
+        if self.is_calibration:
+            self.graph_calibration(chart_sheet, ew.sheets[sheet_names[0]], num_rows, deviation_indexes, cycles)
+        else:
             self.graph_bake(chart_sheet, ew.sheets[sheet_names[0]], num_rows)
 
         ew.save()
@@ -160,16 +164,14 @@ class ExcelFileController:
 
     def graph_bake(self, chart_sheet: Worksheet, baking_sheet: Worksheet, num_rows: int):
         chart = ScatterChart()
+        chart.height = 15
+        chart.width = 30
 
-        num_rows += 1
-        x_values = Reference(baking_sheet, min_col=2, min_row=2, max_row=num_rows)
+        last_row = num_rows + 1
+        x_values = Reference(baking_sheet, min_col=2, min_row=2, max_row=last_row)
         for i, fbg_name in enumerate(self.fbg_names):
-            y_values = Reference(baking_sheet, min_col=4 + i, min_row=2, max_row=num_rows)
-            series = Series(values=y_values, xvalues=x_values, title=fbg_name)
-            rgb_percent = RGBPercent(*hex_to_rgb(i))
-            series.marker = marker.Marker(symbol="dot", spPr=GraphicalProperties(
-                solidFill=ColorChoice(rgb_percent)))
-            series.graphicalProperties.line.noFill = True
+            y_values = Reference(baking_sheet, min_col=4 + i, min_row=2, max_row=last_row)
+            series = self.create_series_bake(x_values, y_values, i)
             chart.series.append(series)
 
         chart.title = "{} Time vs. Wavelength (nm.)".format(u"\u0394")
@@ -177,14 +179,40 @@ class ExcelFileController:
         chart.y_axis.title = "Wavelength (nm.)"
         chart_sheet.add_chart(chart, "B2")
 
+    def graph_calibration(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, num_rows: int,
+                          deviation_indexes: List[int], cycles: List[int]):
+        last_row = num_rows + 1
+        min_col_x = 1
+        start_row = 2
+        deviation_index = 0
+        for i, fbg_name in enumerate(self.fbg_names):
+            chart = ScatterChart()
+            chart.height = 15
+            chart.width = 30
+            chart.x_axis.scaling.min = 310
+            chart.x_axis.scaling.max = 400
+            if i != 0:
+                min_col_x += i * (len(self.fbg_names) * 2 + 1)
+            for cycle in cycles:
+                x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=2, max_row=last_row)
+                y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
+                                     min_row=2, max_row=last_row)
+                series = Series(xvalues=x_values, values=y_values, title="Cycle {}".format(cycle))
+                series.marker = marker.Marker("dot")
+                series.graphicalProperties.line.noFill = True
+                chart.series.append(series)
+                deviation_index += 1
+            chart.title = "{} Temperature vs. Wavelength Deviation".format(self.fbg_names[i])
+            chart.x_axis.title = "Temperature (K)"
+            chart.y_axis.title = "Wavelength Deviation from Mean (nm.)"
+            chart_sheet.add_chart(chart, "B" + str(start_row + (i * 30)))
 
-def hex_to_rgb(hex_index: int) -> List[float]:
-    hex_string = HEX_COLORS[hex_index][1:]
-    rgb_list = []  # type: List[float]
-    for i in range(0, len(hex_string), 2):
-        hex_int = int(hex_string[i:i+2], 16) / 255 * 100
-        rgb_list.append(hex_int)
-    return rgb_list
+    def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
+        series = Series(values=y_values, xvalues=x_values, title=self.fbg_names[index])
+        rgb_percent = RGBPercent(*hex_to_rgb(index))
+        series.marker = marker.Marker(symbol="dot", spPr=GraphicalProperties(solidFill=ColorChoice(rgb_percent)))
+        series.graphicalProperties.line.noFill = True
+        return series
 
 
 def add_times(data_frame: pd.DataFrame, data_collection: DataCollection):
@@ -213,3 +241,13 @@ def get_wavelength_power_headers(data_frame: pd.DataFrame) -> Tuple[List[str], L
     wavelength_headers = [head for head in headers if "Wave" in head]
     power_headers = [head for head in headers if "Pow" in head]
     return wavelength_headers, power_headers
+
+
+def hex_to_rgb(hex_index: int) -> List[float]:
+    hex_string = HEX_COLORS[hex_index][1:]
+    rgb_list = []  # type: List[float]
+    for i in range(0, len(hex_string), 2):
+        hex_int = int(hex_string[i:i+2], 16) / 255 * 100
+        rgb_list.append(hex_int)
+    return rgb_list
+
