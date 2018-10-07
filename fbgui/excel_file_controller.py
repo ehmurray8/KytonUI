@@ -32,6 +32,8 @@ CYCLE_HEADER = "Cycle Num"
 
 CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
 
+MARKERS = ['star', 'square', 'triangle', 'circle', 'dash', 'x', 'plus', 'dot', 'diamond']
+
 
 class ExcelFileController:
     def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str):
@@ -170,7 +172,7 @@ class ExcelFileController:
         last_row = num_rows + 1
         x_values = Reference(baking_sheet, min_col=2, min_row=2, max_row=last_row)
         for i, fbg_name in enumerate(self.fbg_names):
-            y_values = Reference(baking_sheet, min_col=4 + i, min_row=2, max_row=last_row)
+            y_values = Reference(baking_sheet, min_col=2 * len(self.fbg_names) + 5 + i, min_row=2, max_row=last_row)
             series = self.create_series_bake(x_values, y_values, i)
             chart.series.append(series)
 
@@ -187,19 +189,20 @@ class ExcelFileController:
         deviation_index = 0
         for i, fbg_name in enumerate(self.fbg_names):
             chart = ScatterChart()
+            chart.scatterStyle = "smoothMarker"
             chart.height = 15
             chart.width = 30
             chart.x_axis.scaling.min = 310
             chart.x_axis.scaling.max = 400
             if i != 0:
                 min_col_x += i * (len(self.fbg_names) * 2 + 1)
-            for cycle in cycles:
+            for j, cycle in enumerate(cycles):
                 x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=2, max_row=last_row)
                 y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
                                      min_row=2, max_row=last_row)
                 series = Series(xvalues=x_values, values=y_values, title="Cycle {}".format(cycle))
-                series.marker = marker.Marker("x")
-                series.graphicalProperties.line.noFill = True
+                series.marker = marker.Marker(MARKERS[j % len(MARKERS)])
+                # series.graphicalProperties.line.noFill = True
                 chart.series.append(series)
                 deviation_index += 1
             chart.title = "{} Temperature vs. Wavelength Deviation".format(self.fbg_names[i])
@@ -210,7 +213,8 @@ class ExcelFileController:
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
         series = Series(values=y_values, xvalues=x_values, title=self.fbg_names[index])
         rgb_percent = RGBPercent(*hex_to_rgb(index))
-        series.marker = marker.Marker(symbol="dot", spPr=GraphicalProperties(solidFill=ColorChoice(rgb_percent)))
+        series.marker = marker.Marker(symbol=MARKERS[index % len(MARKERS)],
+                                      spPr=GraphicalProperties(solidFill=ColorChoice(rgb_percent)))
         series.graphicalProperties.line.noFill = True
         return series
 

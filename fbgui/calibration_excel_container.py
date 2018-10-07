@@ -68,8 +68,7 @@ class CalibrationExcelContainer:
     def add_deviation(self):
         for i, wavelength_header in enumerate(self.wavelength_headers):
             mean_wavelength = get_mean_wavelength(list(self.real_point_data_frame[wavelength_header]),
-                                                  len(self.wavelength_headers), self.number_of_readings)
-            print("{} Mean Wavelength: {}".format(wavelength_header, mean_wavelength))
+                                                  self.number_of_readings)
             for j, cycle in enumerate(self.cycles):
                 wavelengths = self.get_wavelengths(cycle, wavelength_header)
                 fbg_name = fbg_name_from_header(wavelength_header)
@@ -88,13 +87,13 @@ def fbg_name_from_header(header: str) -> str:
     return re.match("(.*)(?= Wavelength)", header).group(0)
 
 
-def get_mean_wavelength(wavelengths: List[float], num_fbgs: int, num_temps: int) -> List[float]:
+def get_mean_wavelength(wavelengths: List[float], num_temps: int) -> List[float]:
     try:
         mean_wavelengths = []
-        count = 0
-        mean_wavelength = 0
         for i in range(num_temps):
-            for j in range(i, len(wavelengths), num_fbgs):
+            count = 0
+            mean_wavelength = 0
+            for j in range(i, len(wavelengths), num_temps):
                 mean_wavelength += wavelengths[j]
                 count += 1
             mean_wavelengths.append(mean_wavelength / count)
