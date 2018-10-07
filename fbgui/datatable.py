@@ -62,9 +62,10 @@ class DataTable(ttk.Frame):
             if self.tree is not None:
                 self.reset()
             self._setup_widgets()
-        for i, col in enumerate(self.headers):
-            self.tree.heading(col, text=col.title(), command=lambda c=col: uh.sort_column(self.tree, c, False))
-            self.tree.column(col, width=tkfont.Font().measure(col.title()))
+        for i, column in enumerate(self.headers):
+            self.tree.heading(column, text=column.title(), command=lambda c=column: uh.sort_column(self.tree, c, False))
+            column_width = tkfont.Font().measure(column.title())
+            self.tree.column(self.headers[i], width=int(column_width * 1.2))
 
     def add_data(self, item: List[str]):
         """
@@ -88,10 +89,11 @@ class DataTable(ttk.Frame):
                 self.master.main_queue.put(Message(MessageType.DEVELOPER, "Tree Deletion Error",
                                                    "Failed to delete item from the table view."))
 
-        for ix, val in enumerate(item):
-            col_w = tkfont.Font().measure(val)
-            if self.tree.column(self.headers[ix], width=None) < int(col_w * 2):
-                self.tree.column(self.headers[ix], width=int(col_w * 2))
+        for i, val in enumerate(item):
+            try:
+                self.tree.column(self.headers[i])
+            except IndexError:
+                pass
 
     def reset(self):
         """Clears the tree view."""
