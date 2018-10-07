@@ -195,7 +195,7 @@ class ExcelFileController:
             chart.x_axis.scaling.min = 310
             chart.x_axis.scaling.max = 400
             if i != 0:
-                min_col_x += i * (len(self.fbg_names) * 2 + 1)
+                min_col_x += (len(self.fbg_names) * 2 + 1)
             for j, cycle in enumerate(cycles):
                 x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=2, max_row=last_row)
                 y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
@@ -207,7 +207,7 @@ class ExcelFileController:
                 deviation_index += 1
             chart.title = "{} Temperature vs. Wavelength Deviation".format(self.fbg_names[i])
             chart.x_axis.title = "Temperature (K)"
-            chart.y_axis.title = "Wavelength Deviation from Mean (nm.)"
+            chart.y_axis.title = "Wavelength Deviation from Mean (pm)"
             chart_sheet.add_chart(chart, "B" + str(start_row + (i * 30)))
 
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
