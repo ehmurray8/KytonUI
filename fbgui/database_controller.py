@@ -1,29 +1,37 @@
-import sqlite3
-import pandas as pd
 import queue
+import sqlite3
+
+import pandas as pd
+
 from fbgui import helpers
-from fbgui.datatable import DataTable
 from fbgui.constants import DB_PATH, CAL
+from fbgui.datatable import DataTable
 from fbgui.exceptions import ProgramStopped
 from fbgui.messages import *
 
 
 class DatabaseController:
-
     def __init__(self, file_path: str, fbg_names: List[str], main_queue: queue.Queue,
-                 function_type: str, table: DataTable=None):
-        self.file_path = file_path
-        self.file_name = helpers.get_file_name(self.file_path)
-        self.fbg_names = fbg_names
+                 function_type: str, table: DataTable = None):
         self.main_queue = main_queue
         self.table = table
         self.function_type = function_type
+        self.file_path = None  # type: str
+        self.file_name = None  # type: str
+        self.fbg_names = None  # type: List[str]
+        self.column_names = None  # type: List[str]
+        self.reset_controller(file_path, fbg_names)
+
+    def reset_controller(self, file_path: str, fbg_names: List[str]):
+        self.file_path = file_path
+        self.file_name = helpers.get_file_name(self.file_path)
+        self.fbg_names = fbg_names
         self.column_names = create_column_names(fbg_names)
-        if function_type == CAL:
+        if self.function_type == CAL:
             add_calibration_column_names(self.column_names)
         table_column_names = [s.replace("'", "") for s in self.column_names]
-        if table is not None:
-            self.table.setup_headers(table_column_names, True)
+        if self.table is not None:
+            self.table.setup_headers(table_column_names, reset=True)
 
     def record_baking_point(self, timestamp: float, temperature: float, wavelengths: List[float], powers: List[float]):
         column_command_string = ",".join(self.create_database_column_commands())
@@ -157,7 +165,7 @@ class DatabaseController:
                 connection.close()
             raise e
 
-    def program_exists(self, cursor: sqlite3.Cursor=None) -> bool:
+    def program_exists(self, cursor: sqlite3.Cursor = None) -> bool:
         """
         Checks whether or not there is data in the database for the program of type func, named name.
 

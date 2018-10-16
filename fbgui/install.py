@@ -1,6 +1,6 @@
 """Ensures assets, and helper data is in the correct place."""
-import sys
 import os
+import sys
 from shutil import copy2
 
 

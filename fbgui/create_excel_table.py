@@ -1,15 +1,16 @@
 """Home page table used for creating excel spreadsheets of program runs."""
-from queue import Queue
-from typing import List, Dict
+import sqlite3
 import threading
 import tkinter
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
+from queue import Queue
 from tkinter import LEFT, E, RIGHT, W
-import sqlite3
-from fbgui.excel_file_controller import ExcelFileController
-from fbgui.constants import CAL, DB_PATH
+from typing import List, Dict
+
 from fbgui import ui_helper as uh
+from fbgui.constants import DB_PATH
+from fbgui.excel_file_controller import ExcelFileController
 from fbgui.messages import MessageType, Message
 
 

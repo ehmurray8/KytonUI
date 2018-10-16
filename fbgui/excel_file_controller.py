@@ -114,6 +114,8 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         full_style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                             styler_obj=Styler(font_color=utils.colors.red))
+        full_style_frame.apply_column_style(cols_to_style=[DATE_TIME_HEADER],
+                                            styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
                         len(calibration_data_frame.index), container.deviation_indexes, container.cycles)
 
@@ -254,4 +256,3 @@ def hex_to_rgb(hex_index: int) -> List[float]:
         hex_int = int(hex_string[i:i+2], 16) / 255 * 100
         rgb_list.append(hex_int)
     return rgb_list
-

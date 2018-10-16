@@ -2,12 +2,13 @@
 
 import configparser
 import os
-from typing import List, Callable
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
-from fbgui.constants import BAKING, CAL, ASSETS_PATH
+from typing import List, Callable
+
 from fbgui import helpers, ui_helper as uh
+from fbgui.constants import BAKING, CAL, ASSETS_PATH
 
 
 class OptionsPanel(ttk.Frame):
