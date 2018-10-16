@@ -2,31 +2,33 @@
 Abstract class defines common functionality between calibration program and baking program.
 """
 import abc
-import uuid
 import configparser
-import socket
 import os
 import re
-from threading import Thread
+import socket
 import sqlite3
-from typing import List, Tuple
 import tkinter as tk
+import uuid
+from threading import Thread
 from tkinter import ttk, messagebox as mbox
+from typing import List, Tuple
+
+import visa
 from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import visa
+
 from fbgui import graphing, ui_helper, options_frame, helpers
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
     CAL, BAKING, LASER, SWITCH, TEMP, OVEN
 from fbgui.database_controller import DatabaseController
 from fbgui.datatable import DataTable
-from fbgui.graph_toolbar import Toolbar
-from fbgui.messages import MessageType, Message
-from fbgui.main_program import Application
-from fbgui.laser_recorder import LaserRecorder
-from fbgui.exceptions import ProgramStopped
 from fbgui.excel_file_controller import ExcelFileController
+from fbgui.exceptions import ProgramStopped
+from fbgui.graph_toolbar import Toolbar
+from fbgui.laser_recorder import LaserRecorder
+from fbgui.main_program import Application
+from fbgui.messages import MessageType, Message
 
 MPL_PLOT_NUM = 230
 
@@ -95,6 +97,7 @@ class Program(ttk.Notebook):
         self.options = None  # type: options_frame.OptionsPanel
         self.table = None  # type: DataTable
         self.graph_helper = None  # type: graphing.Graphing
+        self.database_controller = None  # type: DatabaseController
 
         # Needed to avoid garbage collection
         self.config_photo = ImageTk.PhotoImage(Image.open(CONFIG_IMG_PATH))
@@ -151,11 +154,11 @@ class Program(ttk.Notebook):
         toolbar = Toolbar(canvas, graph_frame)
         toolbar.update()
         file_name = self.options.file_name
-        database_controller = DatabaseController(file_name.get(), self.snums,
-                                                 self.master.main_queue, self.program_type.prog_id)
+        self.database_controller = DatabaseController(file_name.get(), self.snums,
+                                                      self.master.main_queue, self.program_type.prog_id)
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
-                                              database_controller)
+                                              self.database_controller)
         toolbar.set_gh(self.graph_helper)
 
         # noinspection PyProtectedMember
@@ -276,9 +279,7 @@ class Program(ttk.Notebook):
                     ui_helper.lock_widgets(self.options)
                     ui_helper.lock_main_widgets(self.master.device_frame)
                     self.graph_helper.show_subplots()
-                    # headers = fh.create_headers(self.snums, self.program_type.prog_id == CAL, True)
-                    # headers.pop(0)
-                    # self.table.setup_headers(headers, True)
+                    self.database_controller.reset_controller(self.options.file_name.get(), self.snums)
                     Thread(target=self.run_program).start()
                     self.start_btn.configure(state=tk.NORMAL)
                 else:

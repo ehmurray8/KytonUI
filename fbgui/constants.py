@@ -1,8 +1,8 @@
 """Constants used throughout the program."""
-from enum import Enum
 import os
-from PIL import Image
+from enum import Enum
 
+from PIL import Image
 
 # Program identifiers
 BAKING = "Baking"

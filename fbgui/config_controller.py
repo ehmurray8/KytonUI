@@ -1,5 +1,6 @@
 import configparser
 from typing import List
+
 from fbgui.constants import *
 
 

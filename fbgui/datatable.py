@@ -1,9 +1,10 @@
 """Tkinter frame for the data view in the program."""
-from queue import Queue
-from typing import List, Callable
+import tkinter as tk
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
-import tkinter as tk
+from queue import Queue
+from typing import List, Callable
+
 import fbgui.ui_helper as uh
 from fbgui.messages import MessageType, Message
 

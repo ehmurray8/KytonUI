@@ -1,9 +1,11 @@
 """Data container for database data."""
 from queue import Queue
+
 import numpy as np
 import pandas as pd
-from fbgui.messages import MessageType, Message
+
 from fbgui.config_controller import *
+from fbgui.messages import MessageType, Message
 
 
 class DataCollection(object):

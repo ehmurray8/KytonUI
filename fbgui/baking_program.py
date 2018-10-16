@@ -1,14 +1,16 @@
 """Module for baking program specific logic."""
 import math
-import time
-import visa
-from uuid import UUID
 import socket
+import time
+from uuid import UUID
+
+import visa
+
 from fbgui import program
 from fbgui.constants import BAKING, TEMP
-from fbgui.main_program import Application
-from fbgui.exceptions import ProgramStopped
 from fbgui.database_controller import DatabaseController
+from fbgui.exceptions import ProgramStopped
+from fbgui.main_program import Application
 
 
 class BakingProgram(program.Program):
