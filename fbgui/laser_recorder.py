@@ -3,15 +3,17 @@ Gets the amplitude and wavelength data using the Micron Optics SM125, and the Op
 """
 import socket
 import time
-import numpy as np
+from queue import Queue
 from typing import List, Tuple
 from uuid import UUID
-from queue import Queue
-from fbgui.messages import MessageType, Message
-from fbgui.devices.sm125_laser import SM125
+
+import numpy as np
+
 from fbgui.devices.optical_switch import OpticalSwitch
-from fbgui.laser_data import LaserData
+from fbgui.devices.sm125_laser import SM125
 from fbgui.exceptions import ProgramStopped
+from fbgui.laser_data import LaserData
+from fbgui.messages import MessageType, Message
 
 
 class LaserRecorder:

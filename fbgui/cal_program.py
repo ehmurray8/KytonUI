@@ -1,17 +1,19 @@
 """Contains the calibration program specific logic."""
 
-from typing import List, Tuple, Optional
+import datetime
 import math
 import time
-import visa
-import datetime
+from typing import List, Tuple, Optional
 from uuid import UUID
+
+import visa
+
 from fbgui.constants import CAL, TEMP
-from fbgui.program import Program, ProgramType
-from fbgui.messages import MessageType, Message
-from fbgui.main_program import Application
 from fbgui.database_controller import DatabaseController
 from fbgui.exceptions import ProgramStopped
+from fbgui.main_program import Application
+from fbgui.messages import MessageType, Message
+from fbgui.program import Program, ProgramType
 
 
 class CalProgram(Program):
@@ -162,7 +164,7 @@ class CalProgram(Program):
         if temp <= float(start_temp + 273.15) - 4.5 or drift_rate < self.options.drift_rate.get():
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(thread_id, True)
             database_controller.record_calibration_point(curr_time, temp, waves, amps,
-                                                         drift_rate, True, cycle_num)
+                                                         drift_rate, True, cycle_num+1)
             return True
         return False
 

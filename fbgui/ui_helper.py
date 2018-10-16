@@ -1,14 +1,16 @@
 """Helper functions that help setup the ui."""
 import configparser
+import functools
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox as mbox
-import functools
 from typing import List, Union, Tuple, Optional
+
 from PIL import ImageTk
 from dateutil import parser
-from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
+
 import fbgui.constants as constants
+from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
 from fbgui.options_frame import OptionsPanel
 
 
