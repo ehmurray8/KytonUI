@@ -6,7 +6,10 @@ import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
 from openpyxl.chart import ScatterChart, Reference, Series, marker
 from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
+from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
+from openpyxl import drawing
 from openpyxl.worksheet import Worksheet
 
 from fbgui.calibration_excel_container import CalibrationExcelContainer
@@ -116,8 +119,13 @@ class ExcelFileController:
                                             styler_obj=Styler(font_color=utils.colors.red))
         full_style_frame.apply_column_style(cols_to_style=[DATE_TIME_HEADER],
                                             styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
+        first_column = "Temperature (K) Cycle {}".format(container.cycles[0])
+        first_temp = calibration_data_frame[first_column].values[0]
+        last_temp = calibration_data_frame[first_column].values[-1] + 5
+        temps = [first_temp, last_temp]
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
-                        len(calibration_data_frame.index), container.deviation_indexes, container.cycles)
+                        len(calibration_data_frame.index), container.deviation_indexes, container.cycles, temps,
+                        container.mean_indexes)
 
     def add_delta_wavelengths(self, data_frame: pd.DataFrame, data_collection: DataCollection,
                               column_ordering: List[str]):
@@ -151,14 +159,17 @@ class ExcelFileController:
         return style_frame
 
     def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], num_rows: int,
-                   deviation_indexes=None, cycles: List[int]=None):
+                   deviation_indexes=None, cycles: List[int]=None, temps: List[float]=None, mean_indexes: List[float]=None):
         ew = StyleFrame.ExcelWriter(self.excel_file_path)
         for style_frame, sheet_name in zip(style_frames, sheet_names):
             style_frame.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name=sheet_name)
 
         chart_sheet = ew.book.create_sheet(title="Chart")
         if self.is_calibration:
-            self.graph_calibration(chart_sheet, ew.sheets[sheet_names[0]], num_rows, deviation_indexes, cycles)
+            calibration_sheet = ew.sheets[sheet_names[0]]
+            self.graph_calibration_deviation(chart_sheet, calibration_sheet, num_rows,
+                                             deviation_indexes, cycles, temps)
+            self.graph_calibration_means(chart_sheet, calibration_sheet, temps, mean_indexes, num_rows, cycles)
         else:
             self.graph_bake(chart_sheet, ew.sheets[sheet_names[0]], num_rows)
 
@@ -178,39 +189,62 @@ class ExcelFileController:
             series = self.create_series_bake(x_values, y_values, i)
             chart.series.append(series)
 
-        chart.title = "{} Time vs. Wavelength (nm.)".format(u"\u0394")
-        chart.x_axis.title = "{} Time (hr.)".format(u"\u0394")
-        chart.y_axis.title = "Wavelength (nm.)"
+        chart_title = "{} Time vs. Wavelength (nm)".format(u"\u0394")
+        x_axis_title = "{} Time (hr)".format(u"\u0394")
+        y_axis_title = "Wavelength (nm)"
+        format_chart(chart, x_axis_title, y_axis_title, chart_title)
         chart_sheet.add_chart(chart, "B2")
 
-    def graph_calibration(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, num_rows: int,
-                          deviation_indexes: List[int], cycles: List[int]):
+    def graph_calibration_deviation(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, num_rows: int,
+                                    deviation_indexes: List[int], cycles: List[int], temperatures: List[float]):
         last_row = num_rows + 1
         min_col_x = 1
-        start_row = 2
+        start_row = 3
         deviation_index = 0
         for i, fbg_name in enumerate(self.fbg_names):
-            chart = ScatterChart()
-            chart.scatterStyle = "smoothMarker"
-            chart.height = 15
-            chart.width = 30
-            chart.x_axis.scaling.min = 310
-            chart.x_axis.scaling.max = 400
+            chart = create_chart(temperatures)
             if i != 0:
                 min_col_x += (len(self.fbg_names) * 2 + 1)
             for j, cycle in enumerate(cycles):
-                x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=2, max_row=last_row)
+                x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=start_row, max_row=last_row)
                 y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
-                                     min_row=2, max_row=last_row)
+                                     min_row=start_row, max_row=last_row)
                 series = Series(xvalues=x_values, values=y_values, title="Cycle {}".format(cycle))
                 series.marker = marker.Marker(MARKERS[j % len(MARKERS)])
-                # series.graphicalProperties.line.noFill = True
                 chart.series.append(series)
                 deviation_index += 1
-            chart.title = "{} Temperature vs. Wavelength Deviation".format(self.fbg_names[i])
-            chart.x_axis.title = "Temperature (K)"
-            chart.y_axis.title = "Wavelength Deviation from Mean (pm)"
+
+            chart_title = "{} Wavelength deviation from the mean calibration; Run {}; {} cycles" \
+                .format(self.fbg_names[i], self.excel_file_name, len(cycles))
+            x_axis_title = "Temperature (K)"
+            y_axis_title = "Wavelength Deviation from Mean (pm)"
+
+            format_chart(chart, x_axis_title, y_axis_title, chart_title)
+
             chart_sheet.add_chart(chart, "B" + str(start_row + (i * 30)))
+
+    def graph_calibration_means(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, temperatures: List[float],
+                                mean_indexes: List[float], num_rows: int, cycles: List[int]):
+        start_row = 3
+        last_row = num_rows + 1
+        min_col_x = 1
+        mean_index = 0
+        for i, fbg_name in enumerate(self.fbg_names):
+            chart = create_chart(temperatures)
+            if i != 0:
+                min_col_x += (len(self.fbg_names) * 2 + 1)
+            x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=start_row, max_row=last_row)
+            y_values = Reference(calibration_sheet, min_col=mean_indexes[mean_index] + 1,
+                                 min_row=start_row, max_row=last_row)
+            series = Series(xvalues=x_values, values=y_values, title="Mean")
+            series.marker = marker.Marker(MARKERS[0])
+            chart.series.append(series)
+            chart_title = "Mean Wavelength; Run {}; {} cycles".format(self.excel_file_name, len(cycles))
+            x_axis_title = "Temperature (K)"
+            y_axis_title = "Mean Wavelength (nm)"
+            format_chart(chart, x_axis_title, y_axis_title, chart_title)
+            chart_sheet.add_chart(chart, "V" + str(start_row + i * 30))
+            mean_index += 1
 
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
         series = Series(values=y_values, xvalues=x_values, title=self.fbg_names[index])
@@ -256,3 +290,33 @@ def hex_to_rgb(hex_index: int) -> List[float]:
         hex_int = int(hex_string[i:i+2], 16) / 255 * 100
         rgb_list.append(hex_int)
     return rgb_list
+
+
+def format_chart(chart: ScatterChart, x_axis_title: str, y_axis_title: str, title: str):
+    chart.title = title
+    chart.x_axis.title = x_axis_title
+    chart.y_axis.title = y_axis_title
+
+    font = drawing.text.Font(typeface='Arial')
+    cp_axis = CharacterProperties(latin=font, sz=1600, b=True)
+    cp_axis_title = CharacterProperties(latin=font, sz=1600)
+    cp_title = CharacterProperties(latin=font, sz=1200, b=True)
+    chart.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis), endParaRPr=cp_axis)])
+    chart.y_axis.title.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis),
+                                                    endParaRPr=cp_axis_title)])
+
+    chart.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis), endParaRPr=cp_axis)])
+    chart.x_axis.title.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis),
+                                                    endParaRPr=cp_axis_title)])
+    chart.title.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_title), endParaRPr=cp_title)])
+
+
+def create_chart(temperatures: List[float]) -> ScatterChart:
+    chart = ScatterChart()
+    chart.scatterStyle = "smoothMarker"
+    chart.height = 15
+    chart.width = 30
+    chart.x_axis.scaling.min = temperatures[0]
+    chart.x_axis.tickLblPos = "low"
+    chart.x_axis.scaling.max = temperatures[-1]
+    return chart

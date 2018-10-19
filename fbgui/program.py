@@ -121,8 +121,9 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file, in a new thread."""
+        temperatures = self.options.get_target_temps()
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
-                                               self.master.main_queue, self.program_type.prog_id)
+                                               self.master.main_queue, self.program_type.prog_id, temperatures)
         Thread(target=excel_controller.create_excel)
 
     def setup_tabs(self):

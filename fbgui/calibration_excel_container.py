@@ -17,6 +17,7 @@ class CalibrationExcelContainer:
             .get_wavelength_power_headers(real_point_data_frame)
         self.temperature_averages = []
         self.deviation_indexes = []
+        self.mean_indexes = []
         self.number_of_readings = 0
         self.calibration_data_frame = pd.DataFrame()
         self.populate()
@@ -71,14 +72,20 @@ class CalibrationExcelContainer:
         for i, wavelength_header in enumerate(self.wavelength_headers):
             mean_wavelength = get_mean_wavelength(list(self.real_point_data_frame[wavelength_header]),
                                                   self.number_of_readings)
+            fbg_name = fbg_name_from_header(wavelength_header)
             for j, cycle in enumerate(self.cycles):
                 wavelengths = self.get_wavelengths(cycle, wavelength_header)
-                fbg_name = fbg_name_from_header(wavelength_header)
-                deviation_column_name = "Cycle {} {} Wavelength Deviation (pm.)".format(cycle, fbg_name)
+                deviation_column_name = "Cycle {} {} Wavelength Deviation (pm)".format(cycle, fbg_name)
                 self.calibration_data_frame[deviation_column_name] = wavelengths
                 self.calibration_data_frame[deviation_column_name] -= mean_wavelength
                 self.calibration_data_frame[deviation_column_name] *= 1000
-                self.deviation_indexes.append(self.calibration_data_frame.columns.tolist().index(deviation_column_name))
+
+                deviation_index = self.calibration_data_frame.columns.tolist().index(deviation_column_name)
+                self.deviation_indexes.append(deviation_index)
+            mean_deviation_column_name = "{} Mean Wavelength (nm)".format(fbg_name)
+            self.calibration_data_frame[mean_deviation_column_name] = mean_wavelength
+            mean_index = self.calibration_data_frame.columns.tolist().index(mean_deviation_column_name)
+            self.mean_indexes.append(mean_index)
 
     def get_wavelengths(self, cycle_num: int, wavelength_header: str) -> List[float]:
         wavelengths = self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][wavelength_header]
