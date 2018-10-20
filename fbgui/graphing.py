@@ -176,7 +176,6 @@ class Graphing(object):
         """
         Sets up all of the individual Graph objects for the graphing program page.
 
-        :param fname: tkinter string variable corresponding to the program file name input field
         :param dims: the dimensions for the subplot grid
         :param is_cal: True if the program being graphed is a calibration run, False otherwise
         :param figure: the matplotlib figure of the graphing page

@@ -1,5 +1,6 @@
 import queue
 import sqlite3
+from typing import List
 
 import pandas as pd
 
@@ -142,7 +143,6 @@ class DatabaseController:
         Creates a pandas dataframe object from the database table corresponding to the program run of type
         func, and named name.
 
-        :param func: program identifier string
         :return: dataframe for the specified table, or an empty dataframe if one cannot be created for the table
         :raises IndexError: If program is not in the map, thus data has not been recorded for this program yet
         :raises RuntimeError: If program database has been corrupted, or the table is empty
@@ -169,9 +169,7 @@ class DatabaseController:
         """
         Checks whether or not there is data in the database for the program of type func, named name.
 
-        :param name: the name of the current running program run
         :param cursor: the database cursor
-        :param function_type: the program identifier string
         :return: True if the program exists, otherwise False
         """
         connection = None

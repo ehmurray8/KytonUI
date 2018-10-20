@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from tkinter.font import Font
 import tkinter as tk
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from fbgui.constants import LOG_BACKGROUND_COLOR
 
 #: Amount of time in between messages to enable the filtering
@@ -227,27 +227,28 @@ class LogView(ttk.Frame):
 
         :param msg: message to add to the log view
         """
-        if msg.msg in self.message_time:
-            if msg.time - self.message_time[msg.msg] > FILTER_TIME:
-                del self.message_time[msg.msg]
-            else:
-                if msg.msg not in self.message_time_filter:
-                    self.message_time_filter[msg.msg] = MessageDelay.FIRST
-                else:
-                    elapsed_time = msg.time - self.message_time[msg.msg]
-                    if elapsed_time > self.message_time_filter[msg.msg].value:
-                        self.messages[msg.type.name.title()].append((msg.time, msg.text))
-                        self.message_time[msg.msg] = msg.time
-                        if msg.type.filter_num <= self.current_filter.filter_num:
-                            self.write_msg(msg.text, msg.type.name)
-                        if self.message_time_filter[msg.msg] != MessageDelay.MAX:
-                            self.message_time_filter[msg.msg] = \
-                                self.message_delays[self.message_delays.index(self.message_time_filter[msg.msg])+1]
-        else:
-            self.message_time[msg.msg] = msg.time
-            self.messages[msg.type.name.title()].append((msg.time, msg.text))
-            if msg.type.filter_num <= self.current_filter.filter_num:
-                self.write_msg(msg.text, msg.type.name)
+        # TODO: Remove message filtering entirely, or update it to not filter out INFO Messages
+        # if msg.msg in self.message_time:
+        #     if msg.time - self.message_time[msg.msg] > FILTER_TIME:
+        #         del self.message_time[msg.msg]
+        #     else:
+        #         if msg.msg not in self.message_time_filter:
+        #             self.message_time_filter[msg.msg] = MessageDelay.FIRST
+        #         else:
+        #             elapsed_time = msg.time - self.message_time[msg.msg]
+        #             if elapsed_time > self.message_time_filter[msg.msg].value:
+        #                 self.messages[msg.type.name.title()].append((msg.time, msg.text))
+        #                 self.message_time[msg.msg] = msg.time
+        #                 if msg.type.filter_num <= self.current_filter.filter_num:
+        #                     self.write_msg(msg.text, msg.type.name)
+        #                 if self.message_time_filter[msg.msg] != MessageDelay.MAX:
+        #                     self.message_time_filter[msg.msg] = \
+        #                         self.message_delays[self.message_delays.index(self.message_time_filter[msg.msg])+1]
+        # else:
+        self.message_time[msg.msg] = msg.time
+        self.messages[msg.type.name.title()].append((msg.time, msg.text))
+        if msg.type.filter_num <= self.current_filter.filter_num:
+            self.write_msg(msg.text, msg.type.name)
 
     def write_msg(self, text: str, tag: str, start: str="1.0"):
         """
