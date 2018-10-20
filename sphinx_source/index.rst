@@ -27,6 +27,22 @@ fbgui.cal\_program module
     :undoc-members:
     :show-inheritance:
 
+fbgui.calibration\_excel\_container module
+------------------------------------------
+
+.. automodule:: fbgui.calibration_excel_container
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+fbgui.config\_controller module
+-------------------------------
+
+.. automodule:: fbgui.config_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 fbgui.constants module
 ----------------------
 
@@ -35,10 +51,10 @@ fbgui.constants module
     :undoc-members:
     :show-inheritance:
 
-fbgui.create\_excel module
---------------------------
+fbgui.create\_excel\_table module
+---------------------------------
 
-.. automodule:: fbgui.create_excel
+.. automodule:: fbgui.create_excel_table
     :members:
     :undoc-members:
     :show-inheritance:
@@ -51,6 +67,14 @@ fbgui.data\_container module
     :undoc-members:
     :show-inheritance:
 
+fbgui.database\_controller module
+---------------------------------
+
+.. automodule:: fbgui.database_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 fbgui.datatable module
 ----------------------
 
@@ -59,18 +83,18 @@ fbgui.datatable module
     :undoc-members:
     :show-inheritance:
 
-fbgui.exceptions module
------------------------
+fbgui.excel\_file\_controller module
+------------------------------------
 
-.. automodule:: fbgui.exceptions
+.. automodule:: fbgui.excel_file_controller
     :members:
     :undoc-members:
     :show-inheritance:
 
-fbgui.file\_helper module
--------------------------
+fbgui.exceptions module
+-----------------------
 
-.. automodule:: fbgui.file_helper
+.. automodule:: fbgui.exceptions
     :members:
     :undoc-members:
     :show-inheritance:

@@ -86,6 +86,19 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="fbgui.baking_program.BakingProgram.get_temperature">
+<code class="descname">get_temperature</code><span class="sig-paren">(</span><em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_program.html#BakingProgram.get_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_program.BakingProgram.get_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fbgui.baking_program.BakingProgram.program_loop">
 <code class="descname">program_loop</code><span class="sig-paren">(</span><em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_program.html#BakingProgram.program_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_program.BakingProgram.program_loop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the baking process.</p>
@@ -94,6 +107,19 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.baking_program.BakingProgram.set_oven">
+<code class="descname">set_oven</code><span class="sig-paren">(</span><em>count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_program.html#BakingProgram.set_oven"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_program.BakingProgram.set_oven" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -130,7 +156,7 @@
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.check_drift_rate">
-<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>thread_id</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>thread_id</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
 temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -140,6 +166,7 @@ temperature.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</li>
 <li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The number of the current calibration cycle</li>
+<li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used for writing calibration points to the database</li>
 </ul>
 </td>
 </tr>
@@ -205,7 +232,7 @@ temperature.</p>
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.reset_temp">
-<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>thread_id</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if the temperature is 4.5K below the starting temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -214,6 +241,8 @@ temperature.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>start_temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The first temperature the oven is set to</li>
 <li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</li>
+<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of the current cycle</li>
+<li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used to write the first calibration point</li>
 </ul>
 </td>
 </tr>
@@ -242,6 +271,122 @@ temperature.</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.calibration_excel_container">
+<span id="fbgui-calibration-excel-container-module"></span><h2>fbgui.calibration_excel_container module<a class="headerlink" href="#module-fbgui.calibration_excel_container" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer">
+<em class="property">class </em><code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">CalibrationExcelContainer</code><span class="sig-paren">(</span><em>real_point_data_frame</em>, <em>cycles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation">
+<code class="descname">add_deviation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_powers">
+<code class="descname">add_powers</code><span class="sig-paren">(</span><em>temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_powers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_powers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_wavelengths">
+<code class="descname">add_wavelengths</code><span class="sig-paren">(</span><em>temperatures</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_data_frame">
+<code class="descname">get_data_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_data_frame" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures">
+<code class="descname">get_temperatures</code><span class="sig-paren">(</span><em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelengths">
+<code class="descname">get_wavelengths</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>wavelength_header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.populate">
+<code class="descname">populate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.populate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.calibration_excel_container.fbg_name_from_header">
+<code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">fbg_name_from_header</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#fbg_name_from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.fbg_name_from_header" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.calibration_excel_container.get_mean_wavelength">
+<code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">get_mean_wavelength</code><span class="sig-paren">(</span><em>wavelengths</em>, <em>num_temps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#get_mean_wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.get_mean_wavelength" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.config_controller">
+<span id="fbgui-config-controller-module"></span><h2>fbgui.config_controller module<a class="headerlink" href="#module-fbgui.config_controller" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="fbgui.config_controller.get_configured_fbg_names">
+<code class="descclassname">fbgui.config_controller.</code><code class="descname">get_configured_fbg_names</code><span class="sig-paren">(</span><em>is_calibration</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/config_controller.html#get_configured_fbg_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.config_controller.get_configured_fbg_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the serial numbers recorded in the prog_config configuration file, under the header
+based on the is_cal parameter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>is_calibration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if program is calibration, False otherwise</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of serial numbers</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -291,12 +436,12 @@ temperature.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-fbgui.create_excel">
-<span id="fbgui-create-excel-module"></span><h2>fbgui.create_excel module<a class="headerlink" href="#module-fbgui.create_excel" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-fbgui.create_excel_table">
+<span id="fbgui-create-excel-table-module"></span><h2>fbgui.create_excel_table module<a class="headerlink" href="#module-fbgui.create_excel_table" title="Permalink to this headline">¶</a></h2>
 <p>Home page table used for creating excel spreadsheets of program runs.</p>
 <dl class="class">
-<dt id="fbgui.create_excel.ExcelTable">
-<em class="property">class </em><code class="descclassname">fbgui.create_excel.</code><code class="descname">ExcelTable</code><span class="sig-paren">(</span><em>master</em>, <em>main_queue</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel.html#ExcelTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel.ExcelTable" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.create_excel_table.ExcelTable">
+<em class="property">class </em><code class="descclassname">fbgui.create_excel_table.</code><code class="descname">ExcelTable</code><span class="sig-paren">(</span><em>master</em>, <em>main_queue</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tkinter.ttk.Frame</span></code></p>
 <p>Tkinter frame containing widgets for creating excel spreadsheets.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -316,8 +461,8 @@ temperature.</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="fbgui.create_excel.ExcelTable.add_data">
-<code class="descname">add_data</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel.html#ExcelTable.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel.ExcelTable.add_data" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.create_excel_table.ExcelTable.add_data">
+<code class="descname">add_data</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.add_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.add_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds data to the tree view for a program stored in the map database table.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -330,16 +475,21 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fbgui.create_excel.ExcelTable.create_spreadsheet">
-<code class="descname">create_spreadsheet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel.html#ExcelTable.create_spreadsheet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel.ExcelTable.create_spreadsheet" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.create_excel_table.ExcelTable.create_spreadsheet">
+<code class="descname">create_spreadsheet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.create_spreadsheet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.create_spreadsheet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the spreadsheet(s) for the selected elements of the tree view.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fbgui.create_excel.ExcelTable.refresh">
-<code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel.html#ExcelTable.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel.ExcelTable.refresh" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.create_excel_table.ExcelTable.refresh">
+<code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.refresh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Refreshes the table and loads all of the programs from the map database table.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="fbgui.create_excel_table.ExcelTable.show_spreadsheet">
+<code class="descname">show_spreadsheet</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>program_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.show_spreadsheet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.show_spreadsheet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -375,7 +525,7 @@ temperature.</p>
 </table>
 <dl class="method">
 <dt id="fbgui.data_container.DataCollection.create">
-<code class="descname">create</code><span class="sig-paren">(</span><em>is_cal</em>, <em>df</em>, <em>snums=None</em>, <em>main_queue=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/data_container.html#DataCollection.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.data_container.DataCollection.create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>is_cal</em>, <em>df</em>, <em>fbg_names=None</em>, <em>main_queue=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/data_container.html#DataCollection.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.data_container.DataCollection.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a data collection from the given dataframe, updates the instance variables to match how they are
 specified in the class docstring, numpy arrays are used instead of lists however.</p>
 <p><strong>Adds date time column to the data frame</strong></p>
@@ -386,7 +536,7 @@ specified in the class docstring, numpy arrays are used instead of lists however
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – boolean for whether or not the program is a calibration program</li>
 <li><strong>df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – dataframe representing the sql table for the program</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of serial numbers that are in use for the program, if None the serial numbers will be found
+<li><strong>fbg_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of serial numbers that are in use for the program, if None the serial numbers will be found
 using file_helper get_snums function</li>
 <li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>]) – if present used for writing messages to the program log</li>
 </ul>
@@ -400,6 +550,173 @@ using file_helper get_snums function</li>
 </dd></dl>
 
 </dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.database_controller">
+<span id="fbgui-database-controller-module"></span><h2>fbgui.database_controller module<a class="headerlink" href="#module-fbgui.database_controller" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.database_controller.DatabaseController">
+<em class="property">class </em><code class="descclassname">fbgui.database_controller.</code><code class="descname">DatabaseController</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em>, <em>table=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.add_entry_to_map">
+<code class="descname">add_entry_to_map</code><span class="sig-paren">(</span><em>cursor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.add_entry_to_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.add_entry_to_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.create_database_column_commands">
+<code class="descname">create_database_column_commands</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.create_database_column_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.create_database_column_commands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of strings used for creating the database attribute values, includes names and SQL types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of comma separated strings, names and types of table attributes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.create_program_table">
+<code class="descname">create_program_table</code><span class="sig-paren">(</span><em>cursor</em>, <em>columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.create_program_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.create_program_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.get_last_cycle_num">
+<code class="descname">get_last_cycle_num</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.get_last_cycle_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.get_last_cycle_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of the last calibration cycle that data is recorded for.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">last calibration cycle number, or 0 if there is no data calibration recorded</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.get_table_id">
+<code class="descname">get_table_id</code><span class="sig-paren">(</span><em>cursor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.get_table_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.get_table_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.handle_sql_error">
+<code class="descname">handle_sql_error</code><span class="sig-paren">(</span><em>sql_error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.handle_sql_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.handle_sql_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.program_exists">
+<code class="descname">program_exists</code><span class="sig-paren">(</span><em>cursor=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.program_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.program_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether or not there is data in the database for the program of type func, named name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> – the name of the current running program run</li>
+<li><strong>cursor</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>]) – the database cursor</li>
+<li><strong>function_type</strong> – the program identifier string</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the program exists, otherwise False</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.record_baking_point">
+<code class="descname">record_baking_point</code><span class="sig-paren">(</span><em>timestamp</em>, <em>temperature</em>, <em>wavelengths</em>, <em>powers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.record_baking_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.record_baking_point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.record_calibration_point">
+<code class="descname">record_calibration_point</code><span class="sig-paren">(</span><em>timestamp</em>, <em>temperature</em>, <em>wavelengths</em>, <em>powers</em>, <em>drift_rate</em>, <em>is_real_calibration_point</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.record_calibration_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.record_calibration_point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.record_point">
+<code class="descname">record_point</code><span class="sig-paren">(</span><em>column_command_string</em>, <em>values</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.record_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.record_point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.reset_controller">
+<code class="descname">reset_controller</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.reset_controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.reset_controller" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.to_data_frame">
+<code class="descname">to_data_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.to_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.to_data_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a pandas dataframe object from the database table corresponding to the program run of type
+func, and named name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>func</strong> – program identifier string</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dataframe for the specified table, or an empty dataframe if one cannot be created for the table</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IndexError" title="(in Python v3.7)"><strong>IndexError</strong></a> – If program is not in the map, thus data has not been recorded for this program yet</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><strong>RuntimeError</strong></a> – If program database has been corrupted, or the table is empty</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.database_controller.add_calibration_column_names">
+<code class="descclassname">fbgui.database_controller.</code><code class="descname">add_calibration_column_names</code><span class="sig-paren">(</span><em>columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#add_calibration_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.add_calibration_column_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.database_controller.add_calibration_commands">
+<code class="descclassname">fbgui.database_controller.</code><code class="descname">add_calibration_commands</code><span class="sig-paren">(</span><em>columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#add_calibration_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.add_calibration_commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.database_controller.create_column_names">
+<code class="descclassname">fbgui.database_controller.</code><code class="descname">create_column_names</code><span class="sig-paren">(</span><em>fbg_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#create_column_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.create_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the data column headers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fbg_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers for the current program run</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of header strings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.database_controller.create_wavelength_power_list">
+<code class="descclassname">fbgui.database_controller.</code><code class="descname">create_wavelength_power_list</code><span class="sig-paren">(</span><em>wavelengths</em>, <em>powers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#create_wavelength_power_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.create_wavelength_power_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-fbgui.datatable">
@@ -466,242 +783,120 @@ using file_helper get_snums function</li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-fbgui.excel_file_controller">
+<span id="fbgui-excel-file-controller-module"></span><h2>fbgui.excel_file_controller module<a class="headerlink" href="#module-fbgui.excel_file_controller" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.excel_file_controller.ExcelFileController">
+<em class="property">class </em><code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">ExcelFileController</code><span class="sig-paren">(</span><em>excel_file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.add_delta_powers">
+<code class="descname">add_delta_powers</code><span class="sig-paren">(</span><em>data_frame</em>, <em>data_collection</em>, <em>column_ordering</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.add_delta_powers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.add_delta_powers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.add_delta_wavelengths">
+<code class="descname">add_delta_wavelengths</code><span class="sig-paren">(</span><em>data_frame</em>, <em>data_collection</em>, <em>column_ordering</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.add_delta_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.add_delta_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.create_baking_excel">
+<code class="descname">create_baking_excel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.create_baking_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.create_baking_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.create_calibration_excel">
+<code class="descname">create_calibration_excel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.create_calibration_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.create_calibration_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.create_excel">
+<code class="descname">create_excel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.create_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.create_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.create_series_bake">
+<code class="descname">create_series_bake</code><span class="sig-paren">(</span><em>x_values</em>, <em>y_values</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.create_series_bake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.create_series_bake" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x00000174216B21E0&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.create_style_frame">
+<code class="descname">create_style_frame</code><span class="sig-paren">(</span><em>data_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.create_style_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.create_style_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_bake">
+<code class="descname">graph_bake</code><span class="sig-paren">(</span><em>chart_sheet</em>, <em>baking_sheet</em>, <em>num_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_bake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_bake" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_calibration">
+<code class="descname">graph_calibration</code><span class="sig-paren">(</span><em>chart_sheet</em>, <em>calibration_sheet</em>, <em>num_rows</em>, <em>deviation_indexes</em>, <em>cycles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_calibration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.show_excel">
+<code class="descname">show_excel</code><span class="sig-paren">(</span><em>style_frames</em>, <em>sheet_names</em>, <em>num_rows</em>, <em>deviation_indexes=None</em>, <em>cycles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.show_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.show_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.add_baking_duplicate_columns">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">add_baking_duplicate_columns</code><span class="sig-paren">(</span><em>data_frame</em>, <em>data_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#add_baking_duplicate_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.add_baking_duplicate_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.add_times">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">add_times</code><span class="sig-paren">(</span><em>data_frame</em>, <em>data_collection</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#add_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.add_times" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.add_wavelength_power_columns">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">add_wavelength_power_columns</code><span class="sig-paren">(</span><em>column_ordering</em>, <em>data_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#add_wavelength_power_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.add_wavelength_power_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.get_wavelength_power_headers">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">get_wavelength_power_headers</code><span class="sig-paren">(</span><em>data_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#get_wavelength_power_headers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.get_wavelength_power_headers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.hex_to_rgb">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">hex_to_rgb</code><span class="sig-paren">(</span><em>hex_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#hex_to_rgb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.hex_to_rgb" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-fbgui.exceptions">
 <span id="fbgui-exceptions-module"></span><h2>fbgui.exceptions module<a class="headerlink" href="#module-fbgui.exceptions" title="Permalink to this headline">¶</a></h2>
 <dl class="exception">
 <dt id="fbgui.exceptions.ProgramStopped">
 <em class="property">exception </em><code class="descclassname">fbgui.exceptions.</code><code class="descname">ProgramStopped</code><a class="reference internal" href="_modules/fbgui/exceptions.html#ProgramStopped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.exceptions.ProgramStopped" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-fbgui.file_helper">
-<span id="fbgui-file-helper-module"></span><h2>fbgui.file_helper module<a class="headerlink" href="#module-fbgui.file_helper" title="Permalink to this headline">¶</a></h2>
-<p>Module used for helping with creating output files, and communicating with the database.</p>
-<dl class="function">
-<dt id="fbgui.file_helper.create_excel_file">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">create_excel_file</code><span class="sig-paren">(</span><em>xcel_file</em>, <em>snums</em>, <em>main_queue</em>, <em>is_cal=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#create_excel_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.create_excel_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create an excel file using the xcel_file to get data from the corresponding sql table.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>xcel_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the excel file for the program to create the excel file for</li>
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of serial numbers to use for creating the excel file</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – queue to use for posting logging messages to</li>
-<li><strong>is_cal</strong> – True if creating an excel file for a calibration program run, False otherwise</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.create_headers">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">create_headers</code><span class="sig-paren">(</span><em>snums</em>, <em>is_cal</em>, <em>formatted</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#create_headers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.create_headers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create the data column headers.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers for the current program run</li>
-<li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if the current program run is a calibration run, False otherwise</li>
-<li><strong>formatted</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if headers are using facing, False if headers are used for the database</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of header strings</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.create_headers_init">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">create_headers_init</code><span class="sig-paren">(</span><em>snums</em>, <em>is_cal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#create_headers_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.create_headers_init" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of strings used for creating the database attribute values, includes names and SQL types.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>snums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers being used in the current program run</li>
-<li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if the program is a calibration run, False otherwise</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of comma separated strings, names and types of table attributes</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.db_to_df">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">db_to_df</code><span class="sig-paren">(</span><em>func</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#db_to_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.db_to_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a pandas dataframe object from the database table corresponding to the program run of type
-func, and named name.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the program run</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dataframe for the specified table, or an empty dataframe if one cannot be created for the table</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IndexError" title="(in Python v3.7)"><strong>IndexError</strong></a> – If program is not in the map, thus data has not been recorded for this program yet</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><strong>RuntimeError</strong></a> – If program database has been corrupted, or the table is empty</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.get_last_cycle_num">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">get_last_cycle_num</code><span class="sig-paren">(</span><em>file_name</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#get_last_cycle_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.get_last_cycle_num" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the number of the last calibration cycle that data is recorded for.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the name of the file that the current program corresponds to</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">last calibration cycle number, or 0 if there is no data calibration recorded</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.get_snums">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">get_snums</code><span class="sig-paren">(</span><em>is_cal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#get_snums"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.get_snums" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the serial numbers recorded in the prog_config configuration file, under the header
-based on the is_cal parameter</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if program is calibration, False otherwise</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of serial numbers</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.make_length">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">make_length</code><span class="sig-paren">(</span><em>values</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#make_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.make_length" title="Permalink to this definition">¶</a></dt>
-<dd><p>Force the values list to be of length, length.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]) – list to resize</li>
-<li><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – required length of the list</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of length, length</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.program_exists">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">program_exists</code><span class="sig-paren">(</span><em>name</em>, <em>cur_map</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#program_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.program_exists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether or not there is data in the database for the program of type func, named name.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the name of the current running program run</li>
-<li><strong>cur_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>) – the map table database cursor</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – the program identifier string</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the program exists, otherwise False</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="fbgui.file_helper.write_db">
-<code class="descclassname">fbgui.file_helper.</code><code class="descname">write_db</code><span class="sig-paren">(</span><em>file_name</em>, <em>serial_nums</em>, <em>timestamp</em>, <em>temp</em>, <em>wavelengths</em>, <em>powers</em>, <em>func</em>, <em>table</em>, <em>main_queue</em>, <em>drift_rate=None</em>, <em>real_cal_pt=False</em>, <em>cycle_num=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/file_helper.html#write_db"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.file_helper.write_db" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes the output to sqlite database.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – file name of the run of the program that data is being collected for</li>
-<li><strong>serial_nums</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – serial numbers of the fbgs being used for the run</li>
-<li><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – unix timestamp of when the data was recorded in s</li>
-<li><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – temperature of the oven when the data was recorded</li>
-<li><strong>wavelengths</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – list of wavelength readings to record</li>
-<li><strong>powers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – list of power readings to record</li>
-<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – program identifier string</li>
-<li><strong>table</strong> (<a class="reference internal" href="#fbgui.datatable.DataTable" title="fbgui.datatable.DataTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataTable</span></code></a>) – data table object to add the data points to as they are recorded in the table</li>
-<li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>) – queue used for adding logging messages to</li>
-<li><strong>drift_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – drift rate to record if the program is a calibration program</li>
-<li><strong>real_cal_pt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – boolean value whether or not this is an actual calibration point, used for calibration</li>
-<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the calibration cycle number if the program is a calibration program</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if wrote data successfully, False otherwise</p>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </div>
@@ -755,7 +950,7 @@ based on the is_cal parameter</p>
 <p>Module used for handling the graphing using matplotlib.</p>
 <dl class="class">
 <dt id="fbgui.graphing.Graph">
-<em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>title</em>, <em>xlabel</em>, <em>ylabels</em>, <em>animate_func</em>, <em>fig</em>, <em>dims</em>, <em>fname</em>, <em>is_cal</em>, <em>snums</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>title</em>, <em>xlabel</em>, <em>ylabels</em>, <em>animate_func</em>, <em>fig</em>, <em>dims</em>, <em>is_cal</em>, <em>snums</em>, <em>main_queue</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class describes a specific graph that can be represented as a subplot or a main plot.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -829,7 +1024,7 @@ the program exists</td>
 
 <dl class="class">
 <dt id="fbgui.graphing.Graphing">
-<em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graphing</code><span class="sig-paren">(</span><em>fname</em>, <em>dims</em>, <em>is_cal</em>, <em>figure</em>, <em>canvas</em>, <em>toolbar</em>, <em>master</em>, <em>snums</em>, <em>main_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graphing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graphing" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.graphing.</code><code class="descname">Graphing</code><span class="sig-paren">(</span><em>dims</em>, <em>is_cal</em>, <em>figure</em>, <em>canvas</em>, <em>toolbar</em>, <em>master</em>, <em>snums</em>, <em>main_queue</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graphing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graphing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class used for graphing the individual Graph objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -867,6 +1062,11 @@ the program exists</td>
 <code class="descname">play</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graphing.play"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graphing.play" title="Permalink to this definition">¶</a></dt>
 <dd><p>Play animation for all the graphs.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="fbgui.graphing.Graphing.setup_click_listener">
+<code class="descname">setup_click_listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#Graphing.setup_click_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.Graphing.setup_click_listener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="fbgui.graphing.Graphing.show_main_plot">
@@ -963,6 +1163,11 @@ list to show that graph</td>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="function">
+<dt id="fbgui.graphing.create_legend">
+<code class="descclassname">fbgui.graphing.</code><code class="descname">create_legend</code><span class="sig-paren">(</span><em>axis</em>, <em>fbg_names</em>, <em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/graphing.html#create_legend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.graphing.create_legend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="fbgui.graphing.drift_rate_graph">
@@ -1192,6 +1397,30 @@ list to show that graph</td>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – if list cannot be cast to the specified time</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.helpers.make_length">
+<code class="descclassname">fbgui.helpers.</code><code class="descname">make_length</code><span class="sig-paren">(</span><em>values</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/helpers.html#make_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.helpers.make_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force the values list to be of length, length.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]) – list to resize</li>
+<li><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – required length of the list</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[~T]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of length, length</p>
 </td>
 </tr>
 </tbody>
@@ -1618,6 +1847,11 @@ if start is ‘1.0’, if start tk.END add it to the end.</p>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="function">
+<dt id="fbgui.messages.sort_messages">
+<code class="descclassname">fbgui.messages.</code><code class="descname">sort_messages</code><span class="sig-paren">(</span><em>msgs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/messages.html#sort_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.messages.sort_messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-fbgui.options_frame">
@@ -2387,12 +2621,15 @@ the serial number entry and switch position switchbox for a FBG</p>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-fbgui.baking_program">fbgui.baking_program module</a></li>
 <li><a class="reference internal" href="#module-fbgui.cal_program">fbgui.cal_program module</a></li>
+<li><a class="reference internal" href="#module-fbgui.calibration_excel_container">fbgui.calibration_excel_container module</a></li>
+<li><a class="reference internal" href="#module-fbgui.config_controller">fbgui.config_controller module</a></li>
 <li><a class="reference internal" href="#module-fbgui.constants">fbgui.constants module</a></li>
-<li><a class="reference internal" href="#module-fbgui.create_excel">fbgui.create_excel module</a></li>
+<li><a class="reference internal" href="#module-fbgui.create_excel_table">fbgui.create_excel_table module</a></li>
 <li><a class="reference internal" href="#module-fbgui.data_container">fbgui.data_container module</a></li>
+<li><a class="reference internal" href="#module-fbgui.database_controller">fbgui.database_controller module</a></li>
 <li><a class="reference internal" href="#module-fbgui.datatable">fbgui.datatable module</a></li>
+<li><a class="reference internal" href="#module-fbgui.excel_file_controller">fbgui.excel_file_controller module</a></li>
 <li><a class="reference internal" href="#module-fbgui.exceptions">fbgui.exceptions module</a></li>
-<li><a class="reference internal" href="#module-fbgui.file_helper">fbgui.file_helper module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graph_toolbar">fbgui.graph_toolbar module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graphing">fbgui.graphing module</a></li>
 <li><a class="reference internal" href="#module-fbgui.helpers">fbgui.helpers module</a></li>
