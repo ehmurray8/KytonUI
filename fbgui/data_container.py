@@ -48,8 +48,8 @@ class DataCollection(object):
 
         :param is_cal: boolean for whether or not the program is a calibration program
         :param df: dataframe representing the sql table for the program
-        :param fbg_names: list of serial numbers that are in use for the program, if None the serial numbers will be found
-                      using file_helper get_snums function
+        :param fbg_names: list of serial numbers that are in use for the program, if None the serial numbers
+                    will be found using file_helper get_snums function
         :param main_queue: if present used for writing messages to the program log
         :raises RuntimeError: If the table has not been created or populated yet
         """
