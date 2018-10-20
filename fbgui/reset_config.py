@@ -30,12 +30,12 @@ def reset_config():
         with open(constants.DEV_CONFIG_PATH, "w") as f:  # type: IO[str]
             print("""
 [Devices]
-controller_location =
-oven_location = 
-op_switch_address = 
-op_switch_port = 
-sm125_address = 
-sm125_port = 
+controller_location = GPIB0::0::INSTR
+oven_location = GPIB0::0::INSTR
+op_switch_address = 0.0.0.0
+op_switch_port = 0
+sm125_address = 0.0.0.0
+sm125_port = 0
 """, file=f)
 
     if not os.path.isfile(constants.PROG_CONFIG_PATH):

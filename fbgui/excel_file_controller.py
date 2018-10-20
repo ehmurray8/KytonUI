@@ -5,19 +5,19 @@ from typing import Tuple, Callable
 
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
+from openpyxl import drawing
 from openpyxl.chart import ScatterChart, Reference, Series, marker
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
-from openpyxl import drawing
 
 from fbgui.calibration_excel_container import CalibrationExcelContainer
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
+from fbgui.excel_graph_helpers import *
 from fbgui.helpers import get_file_name
 from fbgui.messages import *
-from fbgui.excel_graph_helpers import *
 
 
 class ExcelFileController:
@@ -102,7 +102,8 @@ class ExcelFileController:
         full_style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                             styler_obj=Styler(font_color=utils.colors.red))
         full_style_frame.apply_column_style(cols_to_style=[DATE_TIME_HEADER],
-                                            styler_obj=Styler(number_format=utils.number_formats.date_time_with_seconds))
+                                            styler_obj=
+                                            Styler(number_format=utils.number_formats.date_time_with_seconds))
         first_column = "Temperature (K) Cycle {}".format(container.cycles[0])
         first_temp = calibration_data_frame[first_column].values[0]
         last_temp = calibration_data_frame[first_column].values[-1] + 5
@@ -169,8 +170,6 @@ class ExcelFileController:
 
     def graph_bake(self, parameters: GraphParameters):
         chart = ScatterChart()
-        chart.height = 15
-        chart.width = 30
         last_row = parameters.num_rows + 1
         start_row = 2
         start_column = 2
@@ -227,7 +226,7 @@ class ExcelFileController:
         y_axis_title = sub_type.y_axis_title()
         format_chart(chart, x_axis_title, y_axis_title, chart_title)
         excel_coordinate = sub_type.get_column_letter() \
-                           + str(sub_type.get_start_row(len(self.fbg_names)) + (index * 30))
+            + str(sub_type.get_start_row(len(self.fbg_names)) + (index * 30))
         chart_sheet.add_chart(chart, excel_coordinate)
 
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
@@ -271,12 +270,16 @@ def hex_to_rgb(hex_index: int) -> List[float]:
     hex_string = HEX_COLORS[hex_index][1:]
     rgb_list = []  # type: List[float]
     for i in range(0, len(hex_string), 2):
-        hex_int = int(hex_string[i:i+2], 16) / 255 * 100
+        hex_int = int(hex_string[i:i + 2], 16) / 255 * 100
         rgb_list.append(hex_int)
     return rgb_list
 
 
 def format_chart(chart: ScatterChart, x_axis_title: str, y_axis_title: str, title: str):
+    chart.height = 15
+    chart.width = 30
+    chart.x_axis.tickLblPos = "low"
+
     chart.title = title
     chart.x_axis.title = x_axis_title
     chart.y_axis.title = y_axis_title
@@ -298,10 +301,7 @@ def format_chart(chart: ScatterChart, x_axis_title: str, y_axis_title: str, titl
 def create_chart(temperatures: List[float]) -> ScatterChart:
     chart = ScatterChart()
     chart.scatterStyle = "smoothMarker"
-    chart.height = 15
-    chart.width = 30
     chart.x_axis.scaling.min = temperatures[0]
-    chart.x_axis.tickLblPos = "low"
     chart.x_axis.scaling.max = temperatures[-1]
     return chart
 
@@ -319,7 +319,7 @@ def _add_deviation_series(chart: ScatterChart, index: int,
 
 
 def _add_series(chart: ScatterChart, index: int, temperature_column: int,
-                series_parameters: SeriesParameters, cycle: int=None):
+                series_parameters: SeriesParameters, cycle: int = None):
     x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=CALIBRATION_START_ROW,
                          max_row=series_parameters.last_row)
     y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,

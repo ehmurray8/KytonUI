@@ -8,6 +8,7 @@ import re
 import socket
 import sqlite3
 import tkinter as tk
+import time
 import uuid
 from threading import Thread
 from tkinter import ttk, messagebox as mbox
@@ -121,9 +122,8 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file, in a new thread."""
-        temperatures = self.options.get_target_temps()
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
-                                               self.master.main_queue, self.program_type.prog_id, temperatures)
+                                               self.master.main_queue, self.program_type.prog_id)
         Thread(target=excel_controller.create_excel)
 
     def setup_tabs(self):
@@ -206,39 +206,45 @@ class Program(ttk.Notebook):
 
         :return: True if the home screen device inputs are properly configured, False otherwise
         """
+        device_config_title = "Device Configuration Error"
+        proper_config = True
         try:
             gpib_re = re.compile(r"GPIB\d+::\d+::INSTR$")
-            valid_gpib = gpib_re.match(self.master.controller_location.get()) and \
-                gpib_re.match(self.master.oven_location.get())
-            if not valid_gpib:
-                raise TypeError("GPIB")
-            int(self.master.op_switch_port.get())
-            int(self.master.sm125_port.get())
+            ip_re = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
+
+            ip_error_message = "Please make sure the {} address input on the home screen is a valid IP address."
+            gpib_error_message = "Please make sure the {} input on the home screen "\
+                                 "is a valid GPIB address. (eg. GPIB0::12::INSTR)"
+            port_error_message = "Please make sure the {} port input on the home screen is an integer value."
+
+            if not gpib_re.match(self.master.controller_location.get()):
+                proper_config = False
+                mbox.showerror(device_config_title, gpib_error_message.format("temperature controller"))
+            if not gpib_re.match(self.master.oven_location.get()):
+                proper_config = False
+                mbox.showerror(device_config_title, gpib_error_message.format("oven"))
+            if not ip_re.match(self.master.sm125_address.get()):
+                proper_config = False
+                mbox.showerror(device_config_title, ip_error_message.format("sm125"))
+            if not ip_re.match(self.master.op_switch_address.get()):
+                proper_config = False
+                mbox.showerror(device_config_title, ip_error_message.format("optical switch"))
+
             try:
-                if sum(bool(int(x)) for x in self.master.op_switch_address.get().split(".")) != 4:
-                    raise TypeError("IP")
-                if sum(bool(int(x)) for x in self.master.sm125_address.get().split(".")) != 4:
-                    raise TypeError("IP")
-            except (ValueError, TypeError):
-                raise TypeError
-            return True
+                int(self.master.op_switch_port.get())
+            except ValueError:
+                proper_config = False
+                mbox.showerror(device_config_title, port_error_message.format("optical switch"))
+            try:
+                int(self.master.sm125_port.get())
+            except ValueError:
+                proper_config = False
+                mbox.showerror(device_config_title, port_error_message.format("sm125"))
         except tk.TclError:
-            mbox.showerror("Device Configuration Error",
+            mbox.showerror(device_config_title,
                            "Please fill in all the device configuration inputs on the home screen before starting.")
-        except ValueError:
-            mbox.showerror("Device Configuration Error",
-                           "Please make sure the port Laser and Optical switch port inputs "
-                           "on the home screen are integer values.")
-        except TypeError as t:
-            if "IP" in str(t):
-                mbox.showerror("Device Configuration Error",
-                               "Please make sure the optical switch, and sm125 address inputs on "
-                               "the home screen are valid IP addresses.")
-            elif "GPIB" in str(t):
-                mbox.showerror("Device Configuration Error",
-                               "Please make sure the oven and temperature controller inputs on the home screen "
-                               "are valid GPIB address. (eg. GPIB0::12::INSTR)")
-        return False
+            proper_config = False
+        return proper_config
 
     def start(self):
         """
@@ -297,18 +303,17 @@ class Program(ttk.Notebook):
         self.master.open_threads.append(thread_id)
         self.master.main_queue.put(Message(MessageType.INFO, text="Starting data collection for {} program."
                                            .format(self.program_type.prog_id), title=None))
+        start_time = time.time()
         if self.connect_devices(thread_id):
             try:
                 self.program_loop(thread_id)
             except ProgramStopped:
                 pass
-            self.disconnect_devices()
-            self.master.main_queue.put(Message(MessageType.INFO, text="{} program is finished."
-                                               .format(self.program_type.prog_id), title=None))
-        else:
-            self.pause_program()
-            self.master.main_queue.put(Message(MessageType.INFO, text="Pausing data collection for {} program."
-                                               .format(self.program_type.prog_id), title=None))
+        self.pause_program()
+        end_time = time.time()
+        elapsed_time = round((end_time - start_time) / 60, 1)
+        self.master.main_queue.put(Message(MessageType.INFO, text="{} program is finished. It ran for {} minutes."
+                                           .format(self.program_type.prog_id, elapsed_time), title=None))
 
     def disconnect_devices(self):
         """Disconnect all the devices, and set them to None."""

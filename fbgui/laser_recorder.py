@@ -17,13 +17,12 @@ from fbgui.messages import MessageType, Message
 
 
 class LaserRecorder:
-
     def __init__(self, laser: SM125, switch: OpticalSwitch, switches: List[List[int]], num_pts: int,
                  thread_id: UUID, thread_map: dict, main_queue: Queue):
         """
-        Returns the averaged wavelength, and power data collected from the SM125, and potentially using the Optical Switch.
-        The data is collected num_pts amount of times and then averaged. The wavelengths and power data are returned
-        in order of the serial numbers, and corresponding indices match between the two lists.
+        Returns the averaged wavelength, and power data collected from the SM125, and potentially using the
+        Optical Switch. The data is collected num_pts amount of times and then averaged. The wavelengths and power
+        data are returned in order of the serial numbers, and corresponding indices match between the two lists.
 
 
         :param laser: the SM125 wrapper used for communicating with the SM125
@@ -31,8 +30,8 @@ class LaserRecorder:
         :param switches: 2D list with one list for each SM125 channel containing the switch positions on each channel
         :param num_pts: the number of readings to take for each fbg
         :param thread_id: UUID of the thread the code is currently running on
-        :param thread_map: Dictionary mapping UUIDs to boolean values corresponding to whether or not the thread with that
-                           UUID should be running
+        :param thread_map: Dictionary mapping UUIDs to boolean values corresponding to whether or not the
+                    thread with that UUID should be running
         :param main_queue: Queue used for writing log messages to
         """
         self.laser = laser
@@ -71,7 +70,7 @@ class LaserRecorder:
                 self.record_wavelengths_and_amplitudes(laser_data, switch_position)
             except socket.error:
                 self.main_queue.put(Message(MessageType.DEVELOPER, "Socket Error", "Error communicating with the "
-                                            "laser in dev_helper."))
+                                                                                   "laser in dev_helper."))
         return laser_data.get_wavelengths(), laser_data.get_powers()
 
     def __switch_to(self, position: int):
