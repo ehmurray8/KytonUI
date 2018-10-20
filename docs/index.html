@@ -138,17 +138,13 @@
 <p>Contains the logic specific for running a calibration program.</p>
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.cal_loop">
-<code class="descname">cal_loop</code><span class="sig-paren">(</span><em>temps</em>, <em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.cal_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.cal_loop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cal_loop</code><span class="sig-paren">(</span><em>temps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.cal_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.cal_loop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the main calibration loop.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>temps</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – the list of temperatures to set the oven to</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the code the thread is currently running in</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temps</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – the list of temperatures to set the oven to</td>
 </tr>
 </tbody>
 </table>
@@ -156,7 +152,7 @@
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.check_drift_rate">
-<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>thread_id</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
 temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -164,7 +160,6 @@ temperature.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</li>
 <li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The number of the current calibration cycle</li>
 <li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used for writing calibration points to the database</li>
 </ul>
@@ -181,8 +176,13 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fbgui.cal_program.CalProgram.check_program_stopped">
+<code class="descname">check_program_stopped</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_program_stopped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_program_stopped" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.cal_program.CalProgram.get_drift_rate">
-<code class="descname">get_drift_rate</code><span class="sig-paren">(</span><em>thread_id</em>, <em>get_wave_amp=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.get_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.get_drift_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_drift_rate</code><span class="sig-paren">(</span><em>get_wave_amp=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.get_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.get_drift_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the drift rate of the system.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -190,7 +190,7 @@ temperature.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Param:</th><td class="field-body">the UUID of the thread the code is currently running on</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the current drift rate in mK/min</td>
 </tr>
@@ -200,17 +200,15 @@ temperature.</p>
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.get_temp">
-<code class="descname">get_temp</code><span class="sig-paren">(</span><em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.get_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.get_temp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_temp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.get_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.get_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes the configured number of temperature readings and averages them.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the averaged temperature</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the averaged temperature</td>
 </tr>
 </tbody>
 </table>
@@ -232,7 +230,7 @@ temperature.</p>
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.reset_temp">
-<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>thread_id</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if the temperature is 4.5K below the starting temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -240,7 +238,6 @@ temperature.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>start_temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The first temperature the oven is set to</li>
-<li><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread the code is currently running in</li>
 <li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of the current cycle</li>
 <li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used to write the first calibration point</li>
 </ul>
@@ -255,20 +252,8 @@ temperature.</p>
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.sleep">
-<code class="descname">sleep</code><span class="sig-paren">(</span><em>thread_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.sleep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.sleep" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sleep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.sleep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.sleep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sleeps for the configured temp_interval on the home screen.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>thread_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></a>) – UUID of the thread this code is running in</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">False if the program was paused, True otherwise</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </dd></dl>
@@ -281,13 +266,23 @@ temperature.</p>
 <em class="property">class </em><code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">CalibrationExcelContainer</code><span class="sig-paren">(</span><em>real_point_data_frame</em>, <em>cycles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="method">
-<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation">
-<code class="descname">add_deviation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation_column">
+<code class="descname">add_deviation_column</code><span class="sig-paren">(</span><em>deviation_column_name</em>, <em>header</em>, <em>cycle</em>, <em>means</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_deviation_column"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_deviation_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_power_deviation">
+<code class="descname">add_power_deviation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_power_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_power_deviation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_powers">
 <code class="descname">add_powers</code><span class="sig-paren">(</span><em>temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_powers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_powers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.add_wavelength_deviation">
+<code class="descname">add_wavelength_deviation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.add_wavelength_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.add_wavelength_deviation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -309,8 +304,21 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures">
-<code class="descname">get_temperatures</code><span class="sig-paren">(</span><em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_means_and_fbg_name">
+<code class="descname">get_means_and_fbg_name</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_means_and_fbg_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_means_and_fbg_name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_readings">
+<code class="descname">get_readings</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_readings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_readings" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -322,8 +330,8 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelengths">
-<code class="descname">get_wavelengths</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>wavelength_header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_wavelengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelengths" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures">
+<code class="descname">get_temperatures</code><span class="sig-paren">(</span><em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_temperatures" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -355,8 +363,8 @@ temperature.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="fbgui.calibration_excel_container.get_mean_wavelength">
-<code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">get_mean_wavelength</code><span class="sig-paren">(</span><em>wavelengths</em>, <em>num_temps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#get_mean_wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.get_mean_wavelength" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.calibration_excel_container.get_means_at_temperatures">
+<code class="descclassname">fbgui.calibration_excel_container.</code><code class="descname">get_means_at_temperatures</code><span class="sig-paren">(</span><em>values</em>, <em>num_temps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#get_means_at_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.get_means_at_temperatures" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -536,8 +544,8 @@ specified in the class docstring, numpy arrays are used instead of lists however
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>is_cal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – boolean for whether or not the program is a calibration program</li>
 <li><strong>df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – dataframe representing the sql table for the program</li>
-<li><strong>fbg_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of serial numbers that are in use for the program, if None the serial numbers will be found
-using file_helper get_snums function</li>
+<li><strong>fbg_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of serial numbers that are in use for the program, if None the serial numbers
+will be found using file_helper get_snums function</li>
 <li><strong>main_queue</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/queue.html#queue.Queue" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></a>]) – if present used for writing messages to the program log</li>
 </ul>
 </td>
@@ -618,18 +626,11 @@ using file_helper get_snums function</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> – the name of the current running program run</li>
-<li><strong>cursor</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>]) – the database cursor</li>
-<li><strong>function_type</strong> – the program identifier string</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cursor</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>]) – the database cursor</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the program exists, otherwise False</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the program exists, otherwise False</td>
 </tr>
 </tbody>
 </table>
@@ -664,16 +665,13 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>func</strong> – program identifier string</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dataframe for the specified table, or an empty dataframe if one cannot be created for the table</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dataframe for the specified table, or an empty dataframe if one cannot be created for the table</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IndexError" title="(in Python v3.7)"><strong>IndexError</strong></a> – If program is not in the map, thus data has not been recorded for this program yet</li>
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.7)"><strong>RuntimeError</strong></a> – If program database has been corrupted, or the table is empty</li>
 </ul>
@@ -821,7 +819,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x00000174216B21E0&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x000002CEBFE3D268&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -834,17 +832,32 @@ func, and named name.</p>
 
 <dl class="method">
 <dt id="fbgui.excel_file_controller.ExcelFileController.graph_bake">
-<code class="descname">graph_bake</code><span class="sig-paren">(</span><em>chart_sheet</em>, <em>baking_sheet</em>, <em>num_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_bake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_bake" title="Permalink to this definition">¶</a></dt>
+<code class="descname">graph_bake</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_bake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_bake" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="fbgui.excel_file_controller.ExcelFileController.graph_calibration">
-<code class="descname">graph_calibration</code><span class="sig-paren">(</span><em>chart_sheet</em>, <em>calibration_sheet</em>, <em>num_rows</em>, <em>deviation_indexes</em>, <em>cycles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_calibration" title="Permalink to this definition">¶</a></dt>
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_power_deviation">
+<code class="descname">graph_power_deviation</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_power_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_power_deviation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_power_means">
+<code class="descname">graph_power_means</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_power_means"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_power_means" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_wavelength_deviation">
+<code class="descname">graph_wavelength_deviation</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_wavelength_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_wavelength_deviation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_wavelength_means">
+<code class="descname">graph_wavelength_means</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_wavelength_means"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_wavelength_means" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="fbgui.excel_file_controller.ExcelFileController.show_excel">
-<code class="descname">show_excel</code><span class="sig-paren">(</span><em>style_frames</em>, <em>sheet_names</em>, <em>num_rows</em>, <em>deviation_indexes=None</em>, <em>cycles=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.show_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.show_excel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show_excel</code><span class="sig-paren">(</span><em>style_frames</em>, <em>sheet_names</em>, <em>parameters</em>, <em>graph_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.show_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.show_excel" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -862,6 +875,24 @@ func, and named name.</p>
 <dl class="function">
 <dt id="fbgui.excel_file_controller.add_wavelength_power_columns">
 <code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">add_wavelength_power_columns</code><span class="sig-paren">(</span><em>column_ordering</em>, <em>data_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#add_wavelength_power_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.add_wavelength_power_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.create_chart">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">create_chart</code><span class="sig-paren">(</span><em>temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#create_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.create_chart" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScatterChart</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fbgui.excel_file_controller.format_chart">
+<code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">format_chart</code><span class="sig-paren">(</span><em>chart</em>, <em>x_axis_title</em>, <em>y_axis_title</em>, <em>title</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#format_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.format_chart" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -888,6 +919,88 @@ func, and named name.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fbgui.excel_graph_helpers">
+<span id="fbgui-excel-graph-helpers-module"></span><h2>fbgui.excel_graph_helpers module<a class="headerlink" href="#module-fbgui.excel_graph_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphParameters">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>temperatures</em>, <em>cycles</em>, <em>mean_wavelength_indexes</em>, <em>deviation_wavelength_indexes</em>, <em>mean_power_indexes</em>, <em>deviation_power_indexes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fbgui.excel_graph_helpers.GraphParameters" title="fbgui.excel_graph_helpers.GraphParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">fbgui.excel_graph_helpers.GraphParameters</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphSubType</code><span class="sig-paren">(</span><em>graph_type</em>, <em>start_row</em>, <em>reading_type</em>, <em>mean_units=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphSubType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_DEVIATION">
+<code class="descname">POWER_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean {}', 'Cycle {}', 'B')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', '(db)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_DEVIATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_MEAN">
+<code class="descname">POWER_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('Wavelength mean (nm)', 'Mean', 'V')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', '(db)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_DEVIATION">
+<code class="descname">WAVELENGTH_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean {}', 'Cycle {}', 'B')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', '(pm)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_DEVIATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_MEAN">
+<code class="descname">WAVELENGTH_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('Wavelength mean (nm)', 'Mean', 'V')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', '(pm)')&gt;, '(nm)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphType">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphType</code><span class="sig-paren">(</span><em>y_axis_specifier</em>, <em>series_title</em>, <em>column_letter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphType.DEVIATION">
+<code class="descname">DEVIATION</code><em class="property"> = ('{} deviation from mean {}', 'Cycle {}', 'B')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.DEVIATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphType.MEAN">
+<code class="descname">MEAN</code><em class="property"> = ('Wavelength mean (nm)', 'Mean', 'V')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.CalibrationReadingType">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationReadingType</code><span class="sig-paren">(</span><em>title</em>, <em>units</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationReadingType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationReadingType.POWER">
+<code class="descname">POWER</code><em class="property"> = ('Power', '(db)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.POWER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationReadingType.WAVELENGTH">
+<code class="descname">WAVELENGTH</code><em class="property"> = ('Wavelength', '(pm)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.WAVELENGTH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.GraphParameters">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">GraphParameters</code><span class="sig-paren">(</span><em>num_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#GraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.GraphParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.SeriesParameters">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">SeriesParameters</code><span class="sig-paren">(</span><em>parameters</em>, <em>indexes</em>, <em>sub_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#SeriesParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.SeriesParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 </dd></dl>
 
 </div>
@@ -2629,6 +2742,7 @@ the serial number entry and switch position switchbox for a FBG</p>
 <li><a class="reference internal" href="#module-fbgui.database_controller">fbgui.database_controller module</a></li>
 <li><a class="reference internal" href="#module-fbgui.datatable">fbgui.datatable module</a></li>
 <li><a class="reference internal" href="#module-fbgui.excel_file_controller">fbgui.excel_file_controller module</a></li>
+<li><a class="reference internal" href="#module-fbgui.excel_graph_helpers">fbgui.excel_graph_helpers module</a></li>
 <li><a class="reference internal" href="#module-fbgui.exceptions">fbgui.exceptions module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graph_toolbar">fbgui.graph_toolbar module</a></li>
 <li><a class="reference internal" href="#module-fbgui.graphing">fbgui.graphing module</a></li>
