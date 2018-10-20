@@ -10,7 +10,7 @@ a = Analysis(['fbgui\\install.py', 'fbgui\\baking_program.py', 'fbgui\\cal_progr
               'fbgui\\graph_toolbar.py', 'fbgui\\laser_data.py', 'fbgui\\messages.py', 'fbgui\\database_controller.py',
               'fbgui\\graphing.py', 'fbgui\\helpers.py', 'fbgui\\main_program.py', 'fbgui\\options_frame.py',
               'fbgui\\program.py', 'fbgui\\datatable.py', 'fbgui\\ui_helper.py', 'fbgui\\config_controller.py',
-              'fbgui\\reset_config.py', 'fbgui\\calibration_excel_container.py'],
+              'fbgui\\reset_config.py', 'fbgui\\calibration_excel_container.py', 'fbgui\\excel_graph_helpers.py'],
              pathex=['C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui'],
              binaries=[],
              datas=[('.\\fbgui\\assets', '.\\assets')],
