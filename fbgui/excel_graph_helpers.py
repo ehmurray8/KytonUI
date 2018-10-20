@@ -7,30 +7,51 @@ from fbgui.constants import *
 
 
 class CalibrationGraphType(enum.Enum):
-    DEVIATION = ("Wavelength deviation from mean (pm)", "Cycle {}", "B")
+    DEVIATION = ("{} deviation from mean {}", "Cycle {}", "B")
     MEAN = ("Wavelength mean (nm)", "Mean", "V")
 
     def __init__(self, y_axis_specifier, series_title, column_letter):
         self.y_axis_specifier = y_axis_specifier
-        self._series_title = series_title
+        self.series_title = series_title
         self.column_letter = column_letter
 
-    def get_series_title(self, num: int) -> str:
-        return self._series_title.format(num)
+
+class CalibrationReadingType(enum.Enum):
+    WAVELENGTH = ("Wavelength", "(pm)")
+    POWER = ("Power", "(db)")
+
+    def __init__(self, title: str, units: str):
+        self.title = title
+        self.units = units
 
 
 class CalibrationGraphSubType(enum.Enum):
-    WAVELENGTH_DEVIATION = (CalibrationGraphType.DEVIATION, CALIBRATION_GRAPH_START_ROW)
-    WAVELENGTH_MEAN = (CalibrationGraphType.MEAN, CALIBRATION_GRAPH_START_ROW)
-    POWER_DEVIATION = (CalibrationGraphType.DEVIATION, None)
-    POWER_MEAN = (CalibrationGraphType.MEAN, None)
+    WAVELENGTH_DEVIATION = (CalibrationGraphType.DEVIATION, CALIBRATION_GRAPH_START_ROW,
+                            CalibrationReadingType.WAVELENGTH)
+    WAVELENGTH_MEAN = (CalibrationGraphType.MEAN, CALIBRATION_GRAPH_START_ROW,
+                       CalibrationReadingType.WAVELENGTH, "(nm)")
+    POWER_DEVIATION = (CalibrationGraphType.DEVIATION, None, CalibrationReadingType.POWER)
+    POWER_MEAN = (CalibrationGraphType.MEAN, None, CalibrationReadingType.POWER)
 
-    def __init__(self, graph_type: CalibrationGraphType, start_row: Optional[int]):
-        self.graph_type = graph_type
+    def __init__(self, graph_type: CalibrationGraphType, start_row: Optional[int],
+                 reading_type: CalibrationReadingType, mean_units: str=None):
+        self._graph_type = graph_type
         self._start_row = start_row
+        self._reading_type = reading_type
+        self._mean_units = mean_units
 
     def get_start_row(self, num_fbgs: int) -> int:
         return self._start_row if self._start_row is not None else CALIBRATION_GRAPH_START_ROW + num_fbgs * 30
+
+    def get_column_letter(self):
+        return self._graph_type.column_letter
+
+    def get_series_title(self, num: int) -> str:
+        return self._graph_type.series_title.format(num)
+
+    def y_axis_title(self):
+        units = self._reading_type.units if self._mean_units is None else self._mean_units
+        return self._graph_type.y_axis_specifier.format(self._reading_type.title, units)
 
 
 class GraphParameters:
@@ -44,12 +65,15 @@ class GraphParameters:
 class CalibrationGraphParameters(GraphParameters):
 
     def __init__(self, num_rows: int, temperatures: List[float], cycles: List[int],
-                 mean_wavelength_indexes: List[int], deviation_wavelength_indexes: List[int]):
+                 mean_wavelength_indexes: List[int], deviation_wavelength_indexes: List[int],
+                 mean_power_indexes: List[int], deviation_power_indexes: List[int]):
         super().__init__(num_rows)
         self.temperatures = temperatures
         self.cycles = cycles
         self.mean_wavelength_indexes = mean_wavelength_indexes
         self.deviation_wavelength_indexes = deviation_wavelength_indexes
+        self.mean_power_indexes = mean_power_indexes
+        self.deviation_power_indexes = deviation_power_indexes
 
 
 class SeriesParameters:

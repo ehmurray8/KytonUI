@@ -39,6 +39,7 @@ class CalibrationExcelContainer:
         self.add_powers(temperatures)
         self.calibration_data_frame["Mean Temperature (K) "] = list(self.temperature_averages)
         self.add_wavelength_deviation()
+        self.add_power_deviation()
 
     def add_wavelengths(self, temperatures: List[float], cycle_num: int):
         self.calibration_data_frame["Temperature (K) Cycle {}".format(cycle_num)] = temperatures
@@ -112,21 +113,24 @@ class CalibrationExcelContainer:
         return means, fbg_name
 
     def add_deviation_column(self, deviation_column_name: str, header: str, cycle: int, means: List[float]):
-        wavelengths = self.get_readings(cycle, header)
-        self.calibration_data_frame[deviation_column_name] = wavelengths
+        readings = self.get_readings(cycle, header)
+        self.calibration_data_frame[deviation_column_name] = readings
         self.calibration_data_frame[deviation_column_name] -= means
 
     def _get_index(self, column_name: str) -> int:
         return self.calibration_data_frame.columns.tolist().index(column_name)
 
     def get_readings(self, cycle_num: int, header: str) -> List[float]:
-        wavelengths = \
+        readings = \
             self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][header]
-        return make_length(list(wavelengths), self.number_of_readings)
+        return make_length(list(readings), self.number_of_readings)
 
 
 def fbg_name_from_header(header: str) -> str:
-    return re.match("(.*)(?= Wavelength)", header).group(0)
+    name_match = re.match("(.*)(?= Wavelength)", header)
+    if name_match is None:
+        name_match = re.match("(.*)(?= Power)", header)
+    return name_match.group(0)
 
 
 def get_means_at_temperatures(values: List[float], num_temps: int) -> List[float]:

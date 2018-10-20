@@ -35,7 +35,7 @@ class ExcelFileController:
                 self.create_calibration_excel()
             else:
                 self.create_baking_excel()
-        except (RuntimeError, IndexError) as e:
+        except (RuntimeError, IndexError):
             self.main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
                                         "No data has been recorded yet, or the database has been corrupted."))
             traceback.print_exc()
@@ -108,7 +108,8 @@ class ExcelFileController:
         last_temp = calibration_data_frame[first_column].values[-1] + 5
         parameters = CalibrationGraphParameters(len(calibration_data_frame.index), [first_temp, last_temp],
                                                 container.cycles, container.mean_wavelength_indexes,
-                                                container.deviation_wavelength_indexes)
+                                                container.deviation_wavelength_indexes, container.mean_power_indexes,
+                                                container.deviation_power_indexes)
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
                         parameters, self._graph_calibration_results)
 
@@ -160,6 +161,8 @@ class ExcelFileController:
     def _graph_calibration_results(self, calibration_parameters: CalibrationGraphParameters):
         self.graph_wavelength_deviation(calibration_parameters)
         self.graph_wavelength_means(calibration_parameters)
+        self.graph_power_deviation(calibration_parameters)
+        self.graph_power_means(calibration_parameters)
 
     def _graph_bake_results(self, parameters: GraphParameters):
         self.graph_bake(parameters)
@@ -193,6 +196,14 @@ class ExcelFileController:
         self._graph_calibration(parameters.mean_wavelength_indexes,
                                 parameters, CalibrationGraphSubType.WAVELENGTH_MEAN, _add_mean_series)
 
+    def graph_power_deviation(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.deviation_power_indexes, parameters, CalibrationGraphSubType.POWER_DEVIATION,
+                                _add_deviation_series)
+
+    def graph_power_means(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.mean_power_indexes, parameters, CalibrationGraphSubType.POWER_MEAN,
+                                _add_mean_series)
+
     def _graph_calibration(self, indexes: List[int], parameters: CalibrationGraphParameters,
                            sub_type: CalibrationGraphSubType,
                            add_series: Callable[[ScatterChart, int, int, SeriesParameters], int]):
@@ -210,13 +221,13 @@ class ExcelFileController:
 
     def _create_chart(self, index: int, cycles: List[int], chart: ScatterChart, chart_sheet: Worksheet,
                       sub_type: CalibrationGraphSubType):
-        graph_type = sub_type.graph_type
         chart_title = "{} {} calibration; Run {}; {} cycles" \
-            .format(self.fbg_names[index], graph_type.y_axis_specifier, self.excel_file_name, len(cycles))
+            .format(self.fbg_names[index], sub_type.y_axis_title(), self.excel_file_name, len(cycles))
         x_axis_title = "Temperature (K)"
-        y_axis_title = graph_type.y_axis_specifier
+        y_axis_title = sub_type.y_axis_title()
         format_chart(chart, x_axis_title, y_axis_title, chart_title)
-        excel_coordinate = graph_type.column_letter + str(sub_type.get_start_row(len(self.fbg_names)) + (index * 30))
+        excel_coordinate = sub_type.get_column_letter() \
+                           + str(sub_type.get_start_row(len(self.fbg_names)) + (index * 30))
         chart_sheet.add_chart(chart, excel_coordinate)
 
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
@@ -313,7 +324,7 @@ def _add_series(chart: ScatterChart, index: int, temperature_column: int,
                          max_row=series_parameters.last_row)
     y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
                          min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
-    series_title = series_parameters.sub_type.graph_type.get_series_title(cycle)
+    series_title = series_parameters.sub_type.get_series_title(cycle)
     series = Series(xvalues=x_values, values=y_values, title=series_title)
     series.marker = marker.Marker(MARKERS[index % len(MARKERS)])
     chart.series.append(series)
