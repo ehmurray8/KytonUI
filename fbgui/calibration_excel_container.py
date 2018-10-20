@@ -1,10 +1,11 @@
 import re
-from typing import List
+from typing import List, Tuple, Callable
 
 import pandas as pd
 
 from fbgui import excel_file_controller
 from fbgui.helpers import make_length
+from fbgui.constants import *
 
 
 class CalibrationExcelContainer:
@@ -16,8 +17,10 @@ class CalibrationExcelContainer:
         self.wavelength_headers, self.power_headers = excel_file_controller\
             .get_wavelength_power_headers(real_point_data_frame)
         self.temperature_averages = []
-        self.deviation_indexes = []
-        self.mean_indexes = []
+        self.deviation_wavelength_indexes = []
+        self.deviation_power_indexes = []
+        self.mean_wavelength_indexes = []
+        self.mean_power_indexes = []
         self.number_of_readings = 0
         self.calibration_data_frame = pd.DataFrame()
         self.populate()
@@ -35,12 +38,12 @@ class CalibrationExcelContainer:
             make_length(list(self.temperature_averages), self.number_of_readings)
         self.add_powers(temperatures)
         self.calibration_data_frame["Mean Temperature (K) "] = list(self.temperature_averages)
-        self.add_deviation()
+        self.add_wavelength_deviation()
 
     def add_wavelengths(self, temperatures: List[float], cycle_num: int):
         self.calibration_data_frame["Temperature (K) Cycle {}".format(cycle_num)] = temperatures
         for wavelength_header in self.wavelength_headers:
-            wavelengths = self.get_wavelengths(cycle_num, wavelength_header)
+            wavelengths = self.get_readings(cycle_num, wavelength_header)
             delta_wavelengths = [(wavelength - wavelengths[0]) * 1000 for wavelength in wavelengths]
             self.calibration_data_frame["{} Cycle {}".format(wavelength_header, cycle_num)] = wavelengths
             fbg_name = fbg_name_from_header(wavelength_header)
@@ -56,7 +59,7 @@ class CalibrationExcelContainer:
                 self.calibration_data_frame["{} Cycle {}".format(power_header, cycle_num)] = powers
 
     def get_temperatures(self, cycle_num: int) -> List[float]:
-        header = excel_file_controller.TEMPERATURE_HEADER
+        header = TEMPERATURE_HEADER
         temperatures = list(
                 self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][header])
         if not self.number_of_readings:
@@ -68,27 +71,57 @@ class CalibrationExcelContainer:
         self.number_of_readings = len(self.temperature_averages)
         return make_length(list(temperatures), self.number_of_readings)
 
-    def add_deviation(self):
-        for i, wavelength_header in enumerate(self.wavelength_headers):
-            mean_wavelength = get_mean_wavelength(list(self.real_point_data_frame[wavelength_header]),
-                                                  self.number_of_readings)
-            fbg_name = fbg_name_from_header(wavelength_header)
-            for j, cycle in enumerate(self.cycles):
-                wavelengths = self.get_wavelengths(cycle, wavelength_header)
-                deviation_column_name = "Cycle {} {} Wavelength Deviation (pm)".format(cycle, fbg_name)
-                self.calibration_data_frame[deviation_column_name] = wavelengths
-                self.calibration_data_frame[deviation_column_name] -= mean_wavelength
-                self.calibration_data_frame[deviation_column_name] *= 1000
+    def add_wavelength_deviation(self):
+        self._add_deviation(self.wavelength_headers, "Wavelength (nm)", self.mean_wavelength_indexes,
+                            self._wavelength_inner_deviation)
 
-                deviation_index = self.calibration_data_frame.columns.tolist().index(deviation_column_name)
-                self.deviation_indexes.append(deviation_index)
-            mean_deviation_column_name = "{} Mean Wavelength (nm)".format(fbg_name)
-            self.calibration_data_frame[mean_deviation_column_name] = mean_wavelength
-            mean_index = self.calibration_data_frame.columns.tolist().index(mean_deviation_column_name)
-            self.mean_indexes.append(mean_index)
+    def add_power_deviation(self):
+        self._add_deviation(self.power_headers, "Power (db)", self.mean_power_indexes,
+                            self._power_inner_deviation)
 
-    def get_wavelengths(self, cycle_num: int, wavelength_header: str) -> List[float]:
-        wavelengths = self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][wavelength_header]
+    def _wavelength_inner_deviation(self, cycle: int, fbg_name: str, wavelength_header: str,
+                                    mean_wavelengths: List[float]):
+        deviation_column_name = "Cycle {} {} Wavelength Deviation (pm)".format(cycle, fbg_name)
+        self.add_deviation_column(deviation_column_name, wavelength_header, cycle, mean_wavelengths)
+        self.calibration_data_frame[deviation_column_name] *= 1000
+        self._add_deviation_index(deviation_column_name, self.deviation_wavelength_indexes)
+
+    def _power_inner_deviation(self, cycle: int, fbg_name: str, power_header: str, mean_powers: List[float]):
+        deviation_column_name = "Cycle {} {} Power Deviation (db)".format(cycle, fbg_name)
+        self.add_deviation_column(deviation_column_name, power_header, cycle, mean_powers)
+        self._add_deviation_index(deviation_column_name, self.deviation_power_indexes)
+
+    def _add_deviation_index(self, column_name: str, deviation_indexes: List[int]):
+        deviation_index = self._get_index(column_name)
+        deviation_indexes.append(deviation_index)
+
+    def _add_deviation(self, headers: List[str], header_specifier: str, mean_indexes: List[int],
+                       inner_deviation_function: Callable[[int, str, str, List[float]], None]):
+        for i, header in enumerate(headers):
+            means, fbg_name = self.get_means_and_fbg_name(header)
+            mean_deviation_column_name = "{} Mean {}".format(fbg_name, header_specifier)
+            self.calibration_data_frame[mean_deviation_column_name] = means
+            mean_index = self._get_index(mean_deviation_column_name)
+            mean_indexes.append(mean_index)
+            for cycle in self.cycles:
+                inner_deviation_function(cycle, fbg_name, header, means)
+
+    def get_means_and_fbg_name(self, header) -> Tuple[List[float], str]:
+        means = get_means_at_temperatures(list(self.real_point_data_frame[header]), self.number_of_readings)
+        fbg_name = fbg_name_from_header(header)
+        return means, fbg_name
+
+    def add_deviation_column(self, deviation_column_name: str, header: str, cycle: int, means: List[float]):
+        wavelengths = self.get_readings(cycle, header)
+        self.calibration_data_frame[deviation_column_name] = wavelengths
+        self.calibration_data_frame[deviation_column_name] -= means
+
+    def _get_index(self, column_name: str) -> int:
+        return self.calibration_data_frame.columns.tolist().index(column_name)
+
+    def get_readings(self, cycle_num: int, header: str) -> List[float]:
+        wavelengths = \
+            self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][header]
         return make_length(list(wavelengths), self.number_of_readings)
 
 
@@ -96,16 +129,17 @@ def fbg_name_from_header(header: str) -> str:
     return re.match("(.*)(?= Wavelength)", header).group(0)
 
 
-def get_mean_wavelength(wavelengths: List[float], num_temps: int) -> List[float]:
+def get_means_at_temperatures(values: List[float], num_temps: int) -> List[float]:
     try:
-        mean_wavelengths = []
+        means = []
         for i in range(num_temps):
             count = 0
-            mean_wavelength = 0
-            for j in range(i, len(wavelengths), num_temps):
-                mean_wavelength += wavelengths[j]
+            mean = 0
+            for j in range(i, len(values), num_temps):
+                mean += values[j]
                 count += 1
-            mean_wavelengths.append(mean_wavelength / count)
-        return mean_wavelengths
+            means.append(mean / count)
+        return means
     except ZeroDivisionError:
         return []
+

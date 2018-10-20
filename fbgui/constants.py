@@ -93,3 +93,25 @@ except FileNotFoundError:
         DOCS_ICON = ""
 
 
+# Calibration Graphing Constants
+DELTA_TIME_HEADER = "{} Time (hr.)".format(u"\u0394")
+DELTA_TIME_HEADER1 = "{} Time (hr.) ".format(u"\u0394")
+DELTA_TIME_HEADER2 = "{} Time (hr.)  ".format(u"\u0394")
+DATE_TIME_HEADER = "Date Time"
+TEMPERATURE_HEADER = "Mean Temperature (K)"
+DELTA_TEMPERATURE_HEADER = "{}T (K)".format(u"\u0394")
+DELTA_TEMPERATURE_HEADER1 = "{}T (K) ".format(u"\u0394")
+DELTA_TEMPERATURE_HEADER2 = "{}T (K)  ".format(u"\u0394")
+DELTA_TEMPERATURE_HEADER3 = "{}T (K)   ".format(u"\u0394")
+MEAN_DELTA_WAVELENGTH_HEADER = "Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")
+MEAN_DELTA_POWER_HEADER = "Mean raw {}{} (dBm.)".format(u"\u0394", "P")
+REAL_POINT_HEADER = "Real Point"
+CYCLE_HEADER = "Cycle Num"
+
+CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
+
+MARKERS = ['star', 'square', 'triangle', 'circle', 'dash', 'x', 'plus', 'dot', 'diamond']
+
+CALIBRATION_START_ROW = 3
+CALIBRATION_GRAPH_START_ROW = 2
+

@@ -1,6 +1,7 @@
 import queue
+import traceback
 from tkinter import messagebox
-from typing import Tuple
+from typing import Tuple, Callable
 
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
@@ -10,32 +11,13 @@ from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
 from openpyxl import drawing
-from openpyxl.worksheet import Worksheet
 
 from fbgui.calibration_excel_container import CalibrationExcelContainer
-from fbgui.constants import CAL, HEX_COLORS
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
 from fbgui.helpers import get_file_name
 from fbgui.messages import *
-
-DELTA_TIME_HEADER = "{} Time (hr.)".format(u"\u0394")
-DELTA_TIME_HEADER1 = "{} Time (hr.) ".format(u"\u0394")
-DELTA_TIME_HEADER2 = "{} Time (hr.)  ".format(u"\u0394")
-DATE_TIME_HEADER = "Date Time"
-TEMPERATURE_HEADER = "Mean Temperature (K)"
-DELTA_TEMPERATURE_HEADER = "{}T (K)".format(u"\u0394")
-DELTA_TEMPERATURE_HEADER1 = "{}T (K) ".format(u"\u0394")
-DELTA_TEMPERATURE_HEADER2 = "{}T (K)  ".format(u"\u0394")
-DELTA_TEMPERATURE_HEADER3 = "{}T (K)   ".format(u"\u0394")
-MEAN_DELTA_WAVELENGTH_HEADER = "Mean raw {}{} (pm.)".format(u"\u0394", u"\u03BB")
-MEAN_DELTA_POWER_HEADER = "Mean raw {}{} (dBm.)".format(u"\u0394", "P")
-REAL_POINT_HEADER = "Real Point"
-CYCLE_HEADER = "Cycle Num"
-
-CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
-
-MARKERS = ['star', 'square', 'triangle', 'circle', 'dash', 'x', 'plus', 'dot', 'diamond']
+from fbgui.excel_graph_helpers import *
 
 
 class ExcelFileController:
@@ -53,9 +35,10 @@ class ExcelFileController:
                 self.create_calibration_excel()
             else:
                 self.create_baking_excel()
-        except (RuntimeError, IndexError):
+        except (RuntimeError, IndexError) as e:
             self.main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error",
                                         "No data has been recorded yet, or the database has been corrupted."))
+            traceback.print_exc()
         except PermissionError:
             message = "Please close {}, before attempting to create a new copy of it.".format(self.excel_file_name)
             self.main_queue.put(Message(MessageType.WARNING, "Excel File Creation Error", message))
@@ -89,7 +72,8 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                        styler_obj=Styler(font_color=utils.colors.red))
-        self.show_excel([style_frame], ["Baking Data"], len(data_frame.index))
+        parameters = GraphParameters(len(data_frame.index))
+        self.show_excel([style_frame], ["Baking Data"], parameters, self._graph_bake_results)
 
     def create_calibration_excel(self):
         data_frame = self.database_controller.to_data_frame()
@@ -122,10 +106,11 @@ class ExcelFileController:
         first_column = "Temperature (K) Cycle {}".format(container.cycles[0])
         first_temp = calibration_data_frame[first_column].values[0]
         last_temp = calibration_data_frame[first_column].values[-1] + 5
-        temps = [first_temp, last_temp]
+        parameters = CalibrationGraphParameters(len(calibration_data_frame.index), [first_temp, last_temp],
+                                                container.cycles, container.mean_wavelength_indexes,
+                                                container.deviation_wavelength_indexes)
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
-                        len(calibration_data_frame.index), container.deviation_indexes, container.cycles, temps,
-                        container.mean_indexes)
+                        parameters, self._graph_calibration_results)
 
     def add_delta_wavelengths(self, data_frame: pd.DataFrame, data_collection: DataCollection,
                               column_ordering: List[str]):
@@ -158,34 +143,39 @@ class ExcelFileController:
                                        styler_obj=Styler(font_color=utils.colors.red))
         return style_frame
 
-    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], num_rows: int,
-                   deviation_indexes=None, cycles: List[int]=None, temps: List[float]=None, mean_indexes: List[float]=None):
-        ew = StyleFrame.ExcelWriter(self.excel_file_path)
+    def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], parameters: GraphParameters,
+                   graph_results: Callable[[GraphParameters], None]):
+        excel_writer = StyleFrame.ExcelWriter(self.excel_file_path)
         for style_frame, sheet_name in zip(style_frames, sheet_names):
-            style_frame.to_excel(excel_writer=ew, row_to_add_filters=0, sheet_name=sheet_name)
+            style_frame.to_excel(excel_writer=excel_writer, row_to_add_filters=0, sheet_name=sheet_name)
 
-        chart_sheet = ew.book.create_sheet(title="Chart")
-        if self.is_calibration:
-            calibration_sheet = ew.sheets[sheet_names[0]]
-            self.graph_calibration_deviation(chart_sheet, calibration_sheet, num_rows,
-                                             deviation_indexes, cycles, temps)
-            self.graph_calibration_means(chart_sheet, calibration_sheet, temps, mean_indexes, num_rows, cycles)
-        else:
-            self.graph_bake(chart_sheet, ew.sheets[sheet_names[0]], num_rows)
+        parameters.chart_sheet = excel_writer.book.create_sheet(title="Chart")
+        parameters.data_sheet = excel_writer.sheets[sheet_names[0]]
+        graph_results(parameters)
 
-        ew.save()
-        ew.close()
+        excel_writer.save()
+        excel_writer.close()
         os.startfile('"{}"'.format(self.excel_file_path.replace("\\", "\\\\")))
 
-    def graph_bake(self, chart_sheet: Worksheet, baking_sheet: Worksheet, num_rows: int):
+    def _graph_calibration_results(self, calibration_parameters: CalibrationGraphParameters):
+        self.graph_wavelength_deviation(calibration_parameters)
+        self.graph_wavelength_means(calibration_parameters)
+
+    def _graph_bake_results(self, parameters: GraphParameters):
+        self.graph_bake(parameters)
+
+    def graph_bake(self, parameters: GraphParameters):
         chart = ScatterChart()
         chart.height = 15
         chart.width = 30
+        last_row = parameters.num_rows + 1
+        start_row = 2
+        start_column = 2
 
-        last_row = num_rows + 1
-        x_values = Reference(baking_sheet, min_col=2, min_row=2, max_row=last_row)
+        x_values = Reference(parameters.data_sheet, min_col=start_column, min_row=start_row, max_row=last_row)
         for i, fbg_name in enumerate(self.fbg_names):
-            y_values = Reference(baking_sheet, min_col=2 * len(self.fbg_names) + 5 + i, min_row=2, max_row=last_row)
+            y_values = Reference(parameters.data_sheet, min_col=start_column * len(self.fbg_names) + 5 + i,
+                                 min_row=start_row, max_row=last_row)
             series = self.create_series_bake(x_values, y_values, i)
             chart.series.append(series)
 
@@ -193,58 +183,41 @@ class ExcelFileController:
         x_axis_title = "{} Time (hr)".format(u"\u0394")
         y_axis_title = "Wavelength (nm)"
         format_chart(chart, x_axis_title, y_axis_title, chart_title)
-        chart_sheet.add_chart(chart, "B2")
+        parameters.chart_sheet.add_chart(chart, "B2")
 
-    def graph_calibration_deviation(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, num_rows: int,
-                                    deviation_indexes: List[int], cycles: List[int], temperatures: List[float]):
-        last_row = num_rows + 1
-        min_col_x = 1
-        start_row = 3
-        deviation_index = 0
+    def graph_wavelength_deviation(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.deviation_wavelength_indexes,
+                                parameters, CalibrationGraphSubType.WAVELENGTH_DEVIATION, _add_deviation_series)
+
+    def graph_wavelength_means(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.mean_wavelength_indexes,
+                                parameters, CalibrationGraphSubType.WAVELENGTH_MEAN, _add_mean_series)
+
+    def _graph_calibration(self, indexes: List[int], parameters: CalibrationGraphParameters,
+                           sub_type: CalibrationGraphSubType,
+                           add_series: Callable[[ScatterChart, int, int, SeriesParameters], int]):
+        series_parameters = SeriesParameters(parameters, indexes, sub_type)
+        temperature_column = 1
+        index = 0
         for i, fbg_name in enumerate(self.fbg_names):
-            chart = create_chart(temperatures)
-            if i != 0:
-                min_col_x += (len(self.fbg_names) * 2 + 1)
-            for j, cycle in enumerate(cycles):
-                x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=start_row, max_row=last_row)
-                y_values = Reference(calibration_sheet, min_col=deviation_indexes[deviation_index] + 1,
-                                     min_row=start_row, max_row=last_row)
-                series = Series(xvalues=x_values, values=y_values, title="Cycle {}".format(cycle))
-                series.marker = marker.Marker(MARKERS[j % len(MARKERS)])
-                chart.series.append(series)
-                deviation_index += 1
+            chart = create_chart(parameters.temperatures)
+            temperature_column = self._get_temperature_column(i, temperature_column)
+            index = add_series(chart, index, temperature_column, series_parameters)
+            self._create_chart(i, parameters.cycles, chart, parameters.chart_sheet, sub_type)
 
-            chart_title = "{} Wavelength deviation from the mean calibration; Run {}; {} cycles" \
-                .format(self.fbg_names[i], self.excel_file_name, len(cycles))
-            x_axis_title = "Temperature (K)"
-            y_axis_title = "Wavelength Deviation from Mean (pm)"
+    def _get_temperature_column(self, index: int, temperature_column: int) -> int:
+        return 1 if index == 0 else temperature_column + (len(self.fbg_names) * 2 + 1)
 
-            format_chart(chart, x_axis_title, y_axis_title, chart_title)
-
-            chart_sheet.add_chart(chart, "B" + str(start_row + (i * 30)))
-
-    def graph_calibration_means(self, chart_sheet: Worksheet, calibration_sheet: Worksheet, temperatures: List[float],
-                                mean_indexes: List[float], num_rows: int, cycles: List[int]):
-        start_row = 3
-        last_row = num_rows + 1
-        min_col_x = 1
-        mean_index = 0
-        for i, fbg_name in enumerate(self.fbg_names):
-            chart = create_chart(temperatures)
-            if i != 0:
-                min_col_x += (len(self.fbg_names) * 2 + 1)
-            x_values = Reference(calibration_sheet, min_col=min_col_x, min_row=start_row, max_row=last_row)
-            y_values = Reference(calibration_sheet, min_col=mean_indexes[mean_index] + 1,
-                                 min_row=start_row, max_row=last_row)
-            series = Series(xvalues=x_values, values=y_values, title="Mean")
-            series.marker = marker.Marker(MARKERS[0])
-            chart.series.append(series)
-            chart_title = "Mean Wavelength; Run {}; {} cycles".format(self.excel_file_name, len(cycles))
-            x_axis_title = "Temperature (K)"
-            y_axis_title = "Mean Wavelength (nm)"
-            format_chart(chart, x_axis_title, y_axis_title, chart_title)
-            chart_sheet.add_chart(chart, "V" + str(start_row + i * 30))
-            mean_index += 1
+    def _create_chart(self, index: int, cycles: List[int], chart: ScatterChart, chart_sheet: Worksheet,
+                      sub_type: CalibrationGraphSubType):
+        graph_type = sub_type.graph_type
+        chart_title = "{} {} calibration; Run {}; {} cycles" \
+            .format(self.fbg_names[index], graph_type.y_axis_specifier, self.excel_file_name, len(cycles))
+        x_axis_title = "Temperature (K)"
+        y_axis_title = graph_type.y_axis_specifier
+        format_chart(chart, x_axis_title, y_axis_title, chart_title)
+        excel_coordinate = graph_type.column_letter + str(sub_type.get_start_row(len(self.fbg_names)) + (index * 30))
+        chart_sheet.add_chart(chart, excel_coordinate)
 
     def create_series_bake(self, x_values: Reference, y_values: Reference, index: int) -> Series:
         series = Series(values=y_values, xvalues=x_values, title=self.fbg_names[index])
@@ -320,3 +293,28 @@ def create_chart(temperatures: List[float]) -> ScatterChart:
     chart.x_axis.tickLblPos = "low"
     chart.x_axis.scaling.max = temperatures[-1]
     return chart
+
+
+def _add_mean_series(chart: ScatterChart, index: int, temperature_column: int,
+                     series_parameters: SeriesParameters) -> int:
+    return _add_series(chart, index, temperature_column, series_parameters)
+
+
+def _add_deviation_series(chart: ScatterChart, index: int,
+                          temperature_column: int, series_parameters: SeriesParameters) -> int:
+    for cycle in series_parameters.cycles:
+        index = _add_series(chart, index, temperature_column, series_parameters, cycle)
+    return index
+
+
+def _add_series(chart: ScatterChart, index: int, temperature_column: int,
+                series_parameters: SeriesParameters, cycle: int=None):
+    x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=CALIBRATION_START_ROW,
+                         max_row=series_parameters.last_row)
+    y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
+                         min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
+    series_title = series_parameters.sub_type.graph_type.get_series_title(cycle)
+    series = Series(xvalues=x_values, values=y_values, title=series_title)
+    series.marker = marker.Marker(MARKERS[index % len(MARKERS)])
+    chart.series.append(series)
+    return index + 1
