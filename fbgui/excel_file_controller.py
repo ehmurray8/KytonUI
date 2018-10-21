@@ -118,7 +118,7 @@ class ExcelFileController:
 
     def write_curve_fit_coefficients(self, coefficients_list: List[Tuple[List[List[float]], List[List[float]]]],
                                      worksheet: Worksheet, cycles: List[int]):
-        if(not len(coefficients_list[0]) or len(coefficients_list[1])):
+        if(not len(coefficients_list[0]) or not len(coefficients_list[1])):
             return
 
         names = self.fbg_names
