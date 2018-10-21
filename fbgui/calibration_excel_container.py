@@ -111,7 +111,7 @@ class CalibrationExcelContainer:
                                       indexes: List[int]):
         if(len(all_temperatures[0]) < 3):
             return
-        master_temperatures = self._get_master_temperatures(all_temperatures)[1:]
+        master_temperatures = self._get_master_temperatures(all_temperatures)
         for i, header in enumerate(headers):
             name = fbg_name_from_header(header)
             for k, cycle in enumerate(self.cycles):
@@ -124,7 +124,7 @@ class CalibrationExcelContainer:
                 fit_coefficients[0].append(list(reversed(coefficients)))
                 fit_coefficients[1].append(list(reversed(derivative_coefficients)))
                 sensitivity_column_name = "{} Sensitivity (K) Cycle {}".format(name, cycle)
-                self.calibration_data_frame[sensitivity_column_name] = poly.polyval(master_temperatures[k], derivative_coefficients)
+                self.calibration_data_frame[sensitivity_column_name] = poly.polyval(master_temperatures, derivative_coefficients)
                 self._add_deviation_index(sensitivity_column_name, indexes)
 
     def _get_master_temperatures(self, all_temperatures: List[List[float]]) -> List[float]:
