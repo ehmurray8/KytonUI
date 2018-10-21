@@ -110,9 +110,49 @@ class ExcelFileController:
         parameters = CalibrationGraphParameters(len(calibration_data_frame.index), [first_temp, last_temp],
                                                 container.cycles, container.mean_wavelength_indexes,
                                                 container.deviation_wavelength_indexes, container.mean_power_indexes,
-                                                container.deviation_power_indexes)
+                                                container.deviation_power_indexes, container.sensitivity_wavelength_indexes,
+                                                container.sensitivity_power_indexes, container.master_temperature_column)
+        coefficients = [container.wavelength_fit_coefficients, container.power_fit_coefficients]
         self.show_excel([calibration_style_frame, full_style_frame], ["Cal", "Full Cal"],
-                        parameters, self._graph_calibration_results)
+                        parameters, self._graph_calibration_results, coefficients)
+
+    def write_curve_fit_coefficients(self, coefficients_list: List[Tuple[List[List[float]], List[List[float]]]],
+                                     worksheet: Worksheet, cycles: List[int]):
+        if(not len(coefficients_list[0]) or len(coefficients_list[1])):
+            return
+
+        names = self.fbg_names
+        headers = ["Wavelength Deviation", "Power Deviation"]
+        row = 1
+        for header, (coefficients, derivative_coefficients) in zip(headers, coefficients_list):
+            worksheet.merge_cells("A{}:C{}".format(row, row))
+            worksheet.append([header])
+            row += 1
+            for i, name in enumerate(names):
+                worksheet.merge_cells("A{}:E{}".format(row, row))
+                worksheet.append([name])
+                row += 1
+                for k, cycle in enumerate(cycles):
+                    worksheet.append(["Cycle {}".format(cycle)])
+                    row += 1
+                    coefficient_specifiers = ["x^{}".format(num) for num in reversed(range(0, len(coefficients[i])))]
+                    coefficient_specifiers.append("")
+                    coefficient_specifiers.extend(["x^{}".format(num) for num in reversed(range(0, len(derivative_coefficients[i])))])
+                    worksheet.append(coefficient_specifiers)
+                    row += 1
+
+                    index = len(cycles) * i + k
+                    row_values = []
+                    row_values.extend(coefficients[index])
+                    row_values.append("")
+                    row_values.extend(derivative_coefficients[index])
+                    worksheet.append(row_values)
+                    row += 1
+                worksheet.append([])
+                row += 1
+            for _ in range(0, 3):
+                worksheet.append([])
+                row += 1
 
     def add_delta_wavelengths(self, data_frame: pd.DataFrame, data_collection: DataCollection,
                               column_ordering: List[str]):
@@ -146,10 +186,14 @@ class ExcelFileController:
         return style_frame
 
     def show_excel(self, style_frames: List[StyleFrame], sheet_names: List[str], parameters: GraphParameters,
-                   graph_results: Callable[[GraphParameters], None]):
+                   graph_results: Callable[[GraphParameters], None],
+                   coefficients: List[Tuple[List[List[float]], List[List[float]]]]):
         excel_writer = StyleFrame.ExcelWriter(self.excel_file_path)
         for style_frame, sheet_name in zip(style_frames, sheet_names):
             style_frame.to_excel(excel_writer=excel_writer, row_to_add_filters=0, sheet_name=sheet_name)
+
+        worksheet = excel_writer.book.create_sheet("Curve Fit")
+        self.write_curve_fit_coefficients(coefficients, worksheet, parameters.cycles)
 
         parameters.chart_sheet = excel_writer.book.create_sheet(title="Chart")
         parameters.data_sheet = excel_writer.sheets[sheet_names[0]]
@@ -164,6 +208,8 @@ class ExcelFileController:
         self.graph_wavelength_means(calibration_parameters)
         self.graph_power_deviation(calibration_parameters)
         self.graph_power_means(calibration_parameters)
+        self.graph_wavelength_sensitivity(calibration_parameters)
+        self.graph_power_sensitivity(calibration_parameters)
 
     def _graph_bake_results(self, parameters: GraphParameters):
         self.graph_bake(parameters)
@@ -189,7 +235,7 @@ class ExcelFileController:
 
     def graph_wavelength_deviation(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.deviation_wavelength_indexes,
-                                parameters, CalibrationGraphSubType.WAVELENGTH_DEVIATION, _add_deviation_series)
+                                parameters, CalibrationGraphSubType.WAVELENGTH_DEVIATION, _add_cycle_series)
 
     def graph_wavelength_means(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.mean_wavelength_indexes,
@@ -197,25 +243,38 @@ class ExcelFileController:
 
     def graph_power_deviation(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.deviation_power_indexes, parameters, CalibrationGraphSubType.POWER_DEVIATION,
-                                _add_deviation_series)
+                                _add_cycle_series)
 
     def graph_power_means(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.mean_power_indexes, parameters, CalibrationGraphSubType.POWER_MEAN,
                                 _add_mean_series)
 
+    def graph_wavelength_sensitivity(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.sensitivity_wavelength_indexes, parameters,
+                                CalibrationGraphSubType.WAVELENGTH_SENSITIVITY, _add_cycle_series,
+                                parameters.master_temperature_column)
+
+    def graph_power_sensitivity(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.sensitivity_power_indexes, parameters,
+                                CalibrationGraphSubType.POWER_SENSITIVITY, _add_cycle_series,
+                                parameters.master_temperature_column)
+
     def _graph_calibration(self, indexes: List[int], parameters: CalibrationGraphParameters,
                            sub_type: CalibrationGraphSubType,
-                           add_series: Callable[[ScatterChart, int, int, SeriesParameters], int]):
+                           add_series: Callable[[ScatterChart, int, int, SeriesParameters], int],
+                           master_temperature_column: int=None):
         series_parameters = SeriesParameters(parameters, indexes, sub_type)
-        temperature_column = 1
+        temperature_column = 1 if master_temperature_column is None else master_temperature_column
         index = 0
         for i, fbg_name in enumerate(self.fbg_names):
             chart = create_chart(parameters.temperatures)
-            temperature_column = self._get_temperature_column(i, temperature_column)
+            temperature_column = self._get_temperature_column(i, temperature_column, master_temperature_column)
             index = add_series(chart, index, temperature_column, series_parameters)
             self._create_chart(i, parameters.cycles, chart, parameters.chart_sheet, sub_type)
 
-    def _get_temperature_column(self, index: int, temperature_column: int) -> int:
+    def _get_temperature_column(self, index: int, temperature_column: int, master_temperature_column: int) -> int:
+        if(master_temperature_column is not None):
+            return master_temperature_column
         return 1 if index == 0 else temperature_column + (len(self.fbg_names) * 2 + 1)
 
     def _create_chart(self, index: int, cycles: List[int], chart: ScatterChart, chart_sheet: Worksheet,
@@ -311,8 +370,8 @@ def _add_mean_series(chart: ScatterChart, index: int, temperature_column: int,
     return _add_series(chart, index, temperature_column, series_parameters)
 
 
-def _add_deviation_series(chart: ScatterChart, index: int,
-                          temperature_column: int, series_parameters: SeriesParameters) -> int:
+def _add_cycle_series(chart: ScatterChart, index: int,
+                      temperature_column: int, series_parameters: SeriesParameters) -> int:
     for cycle in series_parameters.cycles:
         index = _add_series(chart, index, temperature_column, series_parameters, cycle)
     return index
