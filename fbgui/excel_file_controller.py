@@ -281,6 +281,16 @@ class ExcelFileController:
                                 CalibrationGraphSubType.POWER_SENSITIVITY, _add_mean_series,
                                 parameters.master_temperature_column)
 
+    def graph_wavelength_sensitivity(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.sensitivity_wavelength_indexes, parameters,
+                                CalibrationGraphSubType.WAVELENGTH_SENSITIVITY, _add_mean_series,
+                                parameters.master_temperature_column)
+
+    def graph_power_sensitivity(self, parameters: CalibrationGraphParameters):
+        self._graph_calibration(parameters.sensitivity_power_indexes, parameters,
+                                CalibrationGraphSubType.POWER_SENSITIVITY, _add_mean_series,
+                                parameters.master_temperature_column)
+
     def _graph_calibration(self, indexes: List[int], parameters: CalibrationGraphParameters,
                            sub_type: CalibrationGraphSubType,
                            add_series: Callable[[ScatterChart, int, int, SeriesParameters], int],
@@ -403,8 +413,11 @@ def _add_series(chart: ScatterChart, index: int, temperature_column: int,
                 series_parameters: SeriesParameters, cycle: int = None):
     x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=CALIBRATION_START_ROW,
                          max_row=series_parameters.last_row)
-    y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
-                         min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
+    try:
+        y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
+                             min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
+    except IndexError:
+        pass
     series_title = series_parameters.sub_type.get_series_title(cycle)
     series = Series(xvalues=x_values, values=y_values, title=series_title)
     series.marker = marker.Marker(MARKERS[index % len(MARKERS)])
