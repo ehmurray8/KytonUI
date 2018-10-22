@@ -7,9 +7,9 @@ from fbgui.constants import *
 
 
 class CalibrationGraphType(enum.Enum):
-    DEVIATION = ("{} deviation from mean {}", "Cycle {}", "B")
-    MEAN = ("{} mean {}", "Mean", "V")
-    SENSITIVITY = ("Sensitivity (K)", "Cycle {}", "AP")
+    DEVIATION = ("{} deviation from mean ({})", "Cycle {}", "B")
+    MEAN = ("{} mean ({})", "Mean", "V")
+    SENSITIVITY = ("{} sensitivity ({}/K)", "Sensitivity", "AP")
 
     def __init__(self, y_axis_specifier, series_title, column_letter):
         self.y_axis_specifier = y_axis_specifier
@@ -18,8 +18,8 @@ class CalibrationGraphType(enum.Enum):
 
 
 class CalibrationReadingType(enum.Enum):
-    WAVELENGTH = ("Wavelength", "(pm)")
-    POWER = ("Power", "(db)")
+    WAVELENGTH = ("Wavelength", "pm")
+    POWER = ("Power", "db")
 
     def __init__(self, title: str, units: str):
         self.title = title
@@ -30,7 +30,7 @@ class CalibrationGraphSubType(enum.Enum):
     WAVELENGTH_DEVIATION = (CalibrationGraphType.DEVIATION, CALIBRATION_GRAPH_START_ROW,
                             CalibrationReadingType.WAVELENGTH)
     WAVELENGTH_MEAN = (CalibrationGraphType.MEAN, CALIBRATION_GRAPH_START_ROW,
-                       CalibrationReadingType.WAVELENGTH, "(nm)")
+                       CalibrationReadingType.WAVELENGTH, "nm")
     WAVELENGTH_SENSITIVITY = (CalibrationGraphType.SENSITIVITY, CALIBRATION_GRAPH_START_ROW,
                               CalibrationReadingType.WAVELENGTH)
     POWER_DEVIATION = (CalibrationGraphType.DEVIATION, None, CalibrationReadingType.POWER)
@@ -60,11 +60,10 @@ class CalibrationGraphSubType(enum.Enum):
 
 class GraphParameters:
 
-    def __init__(self, num_rows: int, cycles: List[int]):
+    def __init__(self, num_rows: int):
         self.chart_sheet = None  # type: Worksheet
         self.data_sheet = None  # type: Worksheet
         self.num_rows = num_rows
-        self.cycles = cycles
 
 
 class CalibrationGraphParameters(GraphParameters):
@@ -73,17 +72,18 @@ class CalibrationGraphParameters(GraphParameters):
                  mean_wavelength_indexes: List[int], deviation_wavelength_indexes: List[int],
                  mean_power_indexes: List[int], deviation_power_indexes: List[int],
                  sensitivity_wavelength_indexes: List[int], sensitivity_power_indexes: List[int],
-                 master_temperature_column: int=0):
-        super().__init__(num_rows, cycles)
+                 master_temperature_column: int=0, mean_temperature_column: int=0):
+        super().__init__(num_rows)
         self.temperatures = temperatures
-        self.cycles = cycles
         self.mean_wavelength_indexes = mean_wavelength_indexes
         self.deviation_wavelength_indexes = deviation_wavelength_indexes
         self.mean_power_indexes = mean_power_indexes
         self.deviation_power_indexes = deviation_power_indexes
         self.sensitivity_wavelength_indexes = sensitivity_wavelength_indexes
-        self.sensitivity_power_indexes  = sensitivity_power_indexes
+        self.sensitivity_power_indexes = sensitivity_power_indexes
         self.master_temperature_column = master_temperature_column
+        self.mean_temperature_column = mean_temperature_column
+        self.cycles = cycles
 
 
 class SeriesParameters:
