@@ -12,7 +12,7 @@ from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
 
-from baking_curve_fit import curve_fit_baking
+from fbgui.baking_curve_fit import curve_fit_baking
 from fbgui.calibration_excel_container import CalibrationExcelContainer
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
