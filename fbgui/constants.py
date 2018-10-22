@@ -110,7 +110,7 @@ CYCLE_HEADER = "Cycle Num"
 
 CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
 
-MARKERS = ['star', 'square', 'triangle', 'circle', 'dash', 'x', 'plus', 'dot', 'diamond']
+MARKERS = ['star', 'square', 'triangle', 'circle', 'x', 'plus', 'diamond']
 
 CALIBRATION_START_ROW = 3
 CALIBRATION_GRAPH_START_ROW = 2
