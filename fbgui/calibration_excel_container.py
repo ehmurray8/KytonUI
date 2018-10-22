@@ -2,6 +2,7 @@ import re
 from typing import List, Tuple, Callable
 
 import pandas as pd
+import numpy.polynomial.polynomial as poly
 
 from fbgui import excel_file_controller
 from fbgui.helpers import make_length
@@ -21,6 +22,15 @@ class CalibrationExcelContainer:
         self.deviation_power_indexes = []
         self.mean_wavelength_indexes = []
         self.mean_power_indexes = []
+        self.sensitivity_wavelength_indexes = []
+        self.sensitivity_power_indexes = []
+        self.master_temperature_column = 0
+
+        # Tuple of Square Matrices, 1st matrix is the curve coefficient, 2nd matrix is the derivative coefficients
+        # Each coefficient in the form c0(x^n) + ... + cn(x^0)
+        self.wavelength_fit_coefficients = ([], [])  # type: Tuple[List[List[float]], List[List[float]]]
+        self.power_fit_coefficients = ([], [])
+
         self.number_of_readings = 0
         self.calibration_data_frame = pd.DataFrame()
         self.populate()
@@ -29,17 +39,24 @@ class CalibrationExcelContainer:
         return self.calibration_data_frame
 
     def populate(self):
-        temperatures = []
+        all_temperatures = []
         for cycle_num in self.cycles:
             temperatures = self.get_temperatures(cycle_num)
+            all_temperatures.append(temperatures)
             self.add_wavelengths(temperatures, cycle_num)
-
         self.calibration_data_frame["Mean Temperature (K)"] = \
             make_length(list(self.temperature_averages), self.number_of_readings)
-        self.add_powers(temperatures)
+
+        self.add_powers(all_temperatures[0])
+
         self.calibration_data_frame["Mean Temperature (K) "] = list(self.temperature_averages)
         self.add_wavelength_deviation()
         self.add_power_deviation()
+
+        self.get_wavelength_sensitivity_coefficients(all_temperatures)
+        self.get_power_sensitivity_coefficients(all_temperatures)
+
+        self.plot_master_temperatures(all_temperatures)
 
     def add_wavelengths(self, temperatures: List[float], cycle_num: int):
         self.calibration_data_frame["Temperature (K) Cycle {}".format(cycle_num)] = temperatures
@@ -79,6 +96,45 @@ class CalibrationExcelContainer:
     def add_power_deviation(self):
         self._add_deviation(self.power_headers, "Power (db)", self.mean_power_indexes,
                             self._power_inner_deviation)
+
+    def get_wavelength_sensitivity_coefficients(self, temperatures: List[List[float]]):
+        self._get_sensitivity_coefficients(self.wavelength_headers, self.wavelength_fit_coefficients, temperatures,
+                                           "Wavelength Deviation (pm)", self.sensitivity_wavelength_indexes)
+
+    def get_power_sensitivity_coefficients(self, temperatures: List[List[float]]):
+        self._get_sensitivity_coefficients(self.power_headers, self.power_fit_coefficients, temperatures,
+                                           "Power Deviation (db)", self.sensitivity_power_indexes)
+
+    def _get_sensitivity_coefficients(self, headers: List[str],
+                                      fit_coefficients: Tuple[List[List[float]], List[List[float]]],
+                                      all_temperatures: List[List[float]], type_specifier: str,
+                                      indexes: List[int]):
+        if(len(all_temperatures[0]) < 3):
+            return
+        master_temperatures = self._get_master_temperatures(all_temperatures)
+        for i, header in enumerate(headers):
+            name = fbg_name_from_header(header)
+            for k, cycle in enumerate(self.cycles):
+                deviation_column_name = "Cycle {} {} {}".format(cycle, name, type_specifier)
+                y_values = self.calibration_data_frame[deviation_column_name][1:]
+                number_of_fbgs = len(headers)
+                polynomial_order = number_of_fbgs - 2 if number_of_fbgs <= 13 else 11
+                coefficients = [round(x, 5) for x in poly.polyfit(all_temperatures[k][1:], y_values, polynomial_order)]
+                derivative_coefficients = [round(x, 5) for x in poly.polyder(coefficients)]
+                fit_coefficients[0].append(list(reversed(coefficients)))
+                fit_coefficients[1].append(list(reversed(derivative_coefficients)))
+                sensitivity_column_name = "{} Sensitivity (K) Cycle {}".format(name, cycle)
+                self.calibration_data_frame[sensitivity_column_name] = poly.polyval(master_temperatures, derivative_coefficients)
+                self._add_deviation_index(sensitivity_column_name, indexes)
+
+    def _get_master_temperatures(self, all_temperatures: List[List[float]]) -> List[float]:
+        master_temperatures = []
+        for k in range(len(all_temperatures[0])):
+            inner_temperatures = []
+            for temperatures in all_temperatures:
+                inner_temperatures.append(temperatures[k])
+            master_temperatures.append(int(sum(inner_temperatures) / len(inner_temperatures)))
+        return master_temperatures
 
     def _wavelength_inner_deviation(self, cycle: int, fbg_name: str, wavelength_header: str,
                                     mean_wavelengths: List[float]):
@@ -125,6 +181,11 @@ class CalibrationExcelContainer:
             self.real_point_data_frame[self.real_point_data_frame["Cycle Num"] == cycle_num][header]
         return make_length(list(readings), self.number_of_readings)
 
+    def plot_master_temperatures(self, all_temperatures: List[List[float]]):
+        master_temperatures = self._get_master_temperatures(all_temperatures)
+        master_temperature_column = "Master Temperatures (K)"
+        self.calibration_data_frame[master_temperature_column] = master_temperatures
+        self.master_temperature_column = self._get_index(master_temperature_column) + 1
 
 def fbg_name_from_header(header: str) -> str:
     name_match = re.match("(.*)(?= Wavelength)", header)

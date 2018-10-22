@@ -91,6 +91,14 @@ fbgui.excel\_file\_controller module
     :undoc-members:
     :show-inheritance:
 
+fbgui.excel\_graph\_helpers module
+----------------------------------
+
+.. automodule:: fbgui.excel_graph_helpers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 fbgui.exceptions module
 -----------------------
 
