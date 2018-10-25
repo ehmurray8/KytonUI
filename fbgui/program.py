@@ -124,7 +124,7 @@ class Program(ttk.Notebook):
         """Creates excel file, in a new thread."""
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
                                                self.master.main_queue, self.program_type.prog_id)
-        Thread(target=excel_controller.create_excel)
+        Thread(target=excel_controller.create_excel).start()
 
     def setup_tabs(self):
         """Setup the configuration, graphing, and table tabs."""
