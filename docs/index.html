@@ -62,9 +62,30 @@
 <div class="section" id="module-fbgui.baking_curve_fit">
 <span id="fbgui-baking-curve-fit-module"></span><h2>fbgui.baking_curve_fit module<a class="headerlink" href="#module-fbgui.baking_curve_fit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="fbgui.baking_curve_fit.add_baking_trend_line">
+<code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">add_baking_trend_line</code><span class="sig-paren">(</span><em>data_frame</em>, <em>coefficients</em>, <em>fbg_name</em>, <em>x_index=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#add_baking_trend_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.add_baking_trend_line" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="fbgui.baking_curve_fit.curve_fit_baking">
-<code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">curve_fit_baking</code><span class="sig-paren">(</span><em>data_frame</em>, <em>x_index</em>, <em>y_index=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#curve_fit_baking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.curve_fit_baking" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">curve_fit_baking</code><span class="sig-paren">(</span><em>data_frame</em>, <em>y_index</em>, <em>x_index=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#curve_fit_baking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.curve_fit_baking" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-fbgui.baking_program">
@@ -842,7 +863,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x00000236FE19B268&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x000001C213D01268&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -975,6 +996,12 @@ func, and named name.</p>
 </div>
 <div class="section" id="module-fbgui.excel_graph_helpers">
 <span id="fbgui-excel-graph-helpers-module"></span><h2>fbgui.excel_graph_helpers module<a class="headerlink" href="#module-fbgui.excel_graph_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fbgui.excel_graph_helpers.BakingGraphParameters">
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">BakingGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>trend_line_indexes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#BakingGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.BakingGraphParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fbgui.excel_graph_helpers.GraphParameters" title="fbgui.excel_graph_helpers.GraphParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">fbgui.excel_graph_helpers.GraphParameters</span></code></a></p>
+</dd></dl>
+
 <dl class="class">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphParameters">
 <em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>temperatures</em>, <em>cycles</em>, <em>mean_wavelength_indexes</em>, <em>deviation_wavelength_indexes</em>, <em>mean_power_indexes</em>, <em>deviation_power_indexes</em>, <em>sensitivity_wavelength_indexes</em>, <em>sensitivity_power_indexes</em>, <em>master_temperature_column=0</em>, <em>mean_temperature_column=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphParameters" title="Permalink to this definition">¶</a></dt>
