@@ -12,7 +12,7 @@ from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
 
-from fbgui.baking_curve_fit import curve_fit_baking
+from fbgui.baking_curve_fit import curve_fit_baking, add_baking_trend_line
 from fbgui.calibration_excel_container import CalibrationExcelContainer
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
@@ -65,6 +65,9 @@ class ExcelFileController:
         data_frame[MEAN_DELTA_POWER_HEADER] = data_collection.mean_delta_powers
         data_frame = data_frame[column_ordering]
 
+        baking_coefficients = self._create_baking_coefficients(data_frame)
+        trend_line_indexes = self._create_trend_lines(data_frame, baking_coefficients)
+
         style_frame = self.create_style_frame(data_frame)
         style_frame.apply_column_style(cols_to_style=MEAN_DELTA_WAVELENGTH_HEADER,
                                        styler_obj=Styler(font_color=utils.colors.red))
@@ -73,8 +76,7 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                        styler_obj=Styler(font_color=utils.colors.red))
-        parameters = GraphParameters(len(data_frame.index))
-        baking_coefficients = self._create_baking_coefficients(data_frame)
+        parameters = BakingGraphParameters(len(data_frame.index), trend_line_indexes)
         self.show_excel([style_frame], ["Baking Data"], parameters, self._graph_bake_results,
                         baking_coefficients=baking_coefficients)
 
@@ -83,6 +85,12 @@ class ExcelFileController:
         for i in range(len(self.fbg_names)):
             baking_coefficients.append(curve_fit_baking(data_frame, self._get_baking_wavelength_column(i)-1))
         return baking_coefficients
+
+    def _create_trend_lines(self, data_frame: pd.DataFrame, coefficients: List[List[float]]) -> List[int]:
+        trend_line_indexes = []
+        for i, fbg_name in enumerate(self.fbg_names):
+            trend_line_indexes.append(add_baking_trend_line(data_frame, list(reversed(coefficients[i])), fbg_name))
+        return trend_line_indexes
 
     def create_calibration_excel(self):
         data_frame = self.database_controller.to_data_frame()
@@ -94,13 +102,12 @@ class ExcelFileController:
         cycles.sort()
         del real_point_data_frame[REAL_POINT_HEADER]
         del real_point_data_frame[DATE_TIME_HEADER]
-        del data_frame[REAL_POINT_HEADER]
-        del data_frame[CYCLE_HEADER]
 
         full_column_ordering = [DATE_TIME_HEADER, DELTA_TIME_HEADER, TEMPERATURE_HEADER]
 
         add_times(data_frame, data_collection)
         add_wavelength_power_columns(full_column_ordering, data_frame)
+        full_column_ordering.extend([CYCLE_HEADER, REAL_POINT_HEADER])
         data_frame = data_frame[full_column_ordering]
 
         container = CalibrationExcelContainer(real_point_data_frame, cycles)
@@ -145,9 +152,16 @@ class ExcelFileController:
 
     def write_coefficients(self, worksheet: Worksheet, row: int, coefficients: List[List[float]],
                            derivative_coefficients: List[List[float]]=None) -> int:
+        sensitivity_header = "Sensitivity (pm/K)"
+        drift_rate_header = "Drift Rate"
         for i, name in enumerate(self.fbg_names):
             worksheet.merge_cells("A{}:E{}".format(row, row))
-            worksheet.append([name])
+            values = [name]
+            if derivative_coefficients is None and row == 1:
+                values.extend(["", "", "", "", "Sensitivity (pm/K)", "", "Drift Rate"])
+                worksheet.column_dimensions["F"].width = len(sensitivity_header) + 1
+                worksheet.column_dimensions["H"].width = len(drift_rate_header) + 1
+            worksheet.append(values)
             row += 1
 
             coefficient_specifiers = ["x^{}".format(num) for num in reversed(range(0, len(coefficients[i])))]
@@ -163,6 +177,9 @@ class ExcelFileController:
             row_values.extend([""] * (5 - len(list(filter(lambda x: x != 0, coefficients[i])))))
             if derivative_coefficients is not None:
                 row_values.extend(derivative_coefficients[i])
+            else:
+                row_values.extend([1, "", '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 10000 / F{0}, ""), "")'
+                                  .format(row)])
             worksheet.append(row_values)
             row += 1
         return row
@@ -229,23 +246,28 @@ class ExcelFileController:
         self.graph_wavelength_sensitivity(calibration_parameters)
         self.graph_power_sensitivity(calibration_parameters)
 
-    def _graph_bake_results(self, parameters: GraphParameters):
+    def _graph_bake_results(self, parameters: BakingGraphParameters):
         self.graph_bake(parameters)
 
-    def graph_bake(self, parameters: GraphParameters):
+    def graph_bake(self, parameters: BakingGraphParameters):
         last_row = parameters.num_rows + 1
         start_row = 2
         start_column = 2
 
         x_axis_title = "{} Time (hr)".format(u"\u0394")
-        y_axis_title = "Wavelength (nm)"
+        y_axis_title = "{} Wavelength (pm)".format(u"\u0394")
         x_values = Reference(parameters.data_sheet, min_col=start_column, min_row=start_row, max_row=last_row)
         for i, fbg_name in enumerate(self.fbg_names):
-            chart_title = "{} {} Time vs. Wavelength (nm); {}".format(fbg_name, u"\u0394", self.excel_file_name)
+            chart_title = "{} {} Time vs. Wavelength (pm); {}".format(fbg_name, u"\u0394", self.excel_file_name)
             chart = ScatterChart()
             y_values = Reference(parameters.data_sheet, min_col=self._get_baking_wavelength_column(i),
                                  min_row=start_row, max_row=last_row)
             series = self.create_series_bake(x_values, y_values, i)
+            chart.series.append(series)
+
+            trend_values = Reference(parameters.data_sheet, min_col=parameters.trend_line_indexes[i] + 1,
+                                     min_row=start_row, max_row=last_row)
+            series = Series(trend_values, x_values, title="Trend")
             chart.series.append(series)
 
             format_chart(chart, x_axis_title, y_axis_title, chart_title)
@@ -270,16 +292,6 @@ class ExcelFileController:
     def graph_power_means(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.mean_power_indexes, parameters, CalibrationGraphSubType.POWER_MEAN,
                                 _add_mean_series, parameters.mean_temperature_column)
-
-    def graph_wavelength_sensitivity(self, parameters: CalibrationGraphParameters):
-        self._graph_calibration(parameters.sensitivity_wavelength_indexes, parameters,
-                                CalibrationGraphSubType.WAVELENGTH_SENSITIVITY, _add_mean_series,
-                                parameters.master_temperature_column)
-
-    def graph_power_sensitivity(self, parameters: CalibrationGraphParameters):
-        self._graph_calibration(parameters.sensitivity_power_indexes, parameters,
-                                CalibrationGraphSubType.POWER_SENSITIVITY, _add_mean_series,
-                                parameters.master_temperature_column)
 
     def graph_wavelength_sensitivity(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.sensitivity_wavelength_indexes, parameters,
@@ -331,7 +343,7 @@ class ExcelFileController:
 
 def add_times(data_frame: pd.DataFrame, data_collection: DataCollection):
     data_frame[DATE_TIME_HEADER] = data_frame[DATE_TIME_HEADER] \
-        .apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern"))
+        .apply(lambda x: x.tz_localize("UTC").tz_convert("US/Eastern").strftime("%m/%d/%y %I:%M %p"))
     data_frame[DELTA_TIME_HEADER] = data_collection.times
 
 

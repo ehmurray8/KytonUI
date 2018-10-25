@@ -66,6 +66,13 @@ class GraphParameters:
         self.num_rows = num_rows
 
 
+class BakingGraphParameters(GraphParameters):
+
+    def __init__(self, num_rows: int, trend_line_indexes: List[int]):
+        super().__init__(num_rows)
+        self.trend_line_indexes = trend_line_indexes
+
+
 class CalibrationGraphParameters(GraphParameters):
 
     def __init__(self, num_rows: int, temperatures: List[float], cycles: List[int],
