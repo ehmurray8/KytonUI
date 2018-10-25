@@ -59,6 +59,14 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-fbgui.baking_curve_fit">
+<span id="fbgui-baking-curve-fit-module"></span><h2>fbgui.baking_curve_fit module<a class="headerlink" href="#module-fbgui.baking_curve_fit" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="fbgui.baking_curve_fit.curve_fit_baking">
+<code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">curve_fit_baking</code><span class="sig-paren">(</span><em>data_frame</em>, <em>x_index</em>, <em>y_index=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#curve_fit_baking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.curve_fit_baking" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 <div class="section" id="module-fbgui.baking_program">
 <span id="fbgui-baking-program-module"></span><h2>fbgui.baking_program module<a class="headerlink" href="#module-fbgui.baking_program" title="Permalink to this headline">¶</a></h2>
 <p>Module for baking program specific logic.</p>
@@ -317,6 +325,11 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_power_sensitivity_coefficients">
+<code class="descname">get_power_sensitivity_coefficients</code><span class="sig-paren">(</span><em>temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_power_sensitivity_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_power_sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_readings">
 <code class="descname">get_readings</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_readings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_readings" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -341,6 +354,16 @@ temperature.</p>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelength_sensitivity_coefficients">
+<code class="descname">get_wavelength_sensitivity_coefficients</code><span class="sig-paren">(</span><em>temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.get_wavelength_sensitivity_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.get_wavelength_sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.plot_master_temperatures">
+<code class="descname">plot_master_temperatures</code><span class="sig-paren">(</span><em>all_temperatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/calibration_excel_container.html#CalibrationExcelContainer.plot_master_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.calibration_excel_container.CalibrationExcelContainer.plot_master_temperatures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="fbgui.calibration_excel_container.CalibrationExcelContainer.populate">
@@ -819,7 +842,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x000002CEBFE3D268&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x00000236FE19B268&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -846,6 +869,11 @@ func, and named name.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_power_sensitivity">
+<code class="descname">graph_power_sensitivity</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_power_sensitivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_power_sensitivity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.excel_file_controller.ExcelFileController.graph_wavelength_deviation">
 <code class="descname">graph_wavelength_deviation</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_wavelength_deviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_wavelength_deviation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -856,8 +884,31 @@ func, and named name.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.graph_wavelength_sensitivity">
+<code class="descname">graph_wavelength_sensitivity</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.graph_wavelength_sensitivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.graph_wavelength_sensitivity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.excel_file_controller.ExcelFileController.show_excel">
-<code class="descname">show_excel</code><span class="sig-paren">(</span><em>style_frames</em>, <em>sheet_names</em>, <em>parameters</em>, <em>graph_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.show_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.show_excel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show_excel</code><span class="sig-paren">(</span><em>style_frames</em>, <em>sheet_names</em>, <em>parameters</em>, <em>graph_results</em>, <em>coefficients=None</em>, <em>baking_coefficients=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.show_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.show_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.write_coefficients">
+<code class="descname">write_coefficients</code><span class="sig-paren">(</span><em>worksheet</em>, <em>row</em>, <em>coefficients</em>, <em>derivative_coefficients=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.write_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.write_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.excel_file_controller.ExcelFileController.write_curve_fit_coefficients">
+<code class="descname">write_curve_fit_coefficients</code><span class="sig-paren">(</span><em>coefficients_list</em>, <em>worksheet</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController.write_curve_fit_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController.write_curve_fit_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -926,7 +977,7 @@ func, and named name.</p>
 <span id="fbgui-excel-graph-helpers-module"></span><h2>fbgui.excel_graph_helpers module<a class="headerlink" href="#module-fbgui.excel_graph_helpers" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphParameters">
-<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>temperatures</em>, <em>cycles</em>, <em>mean_wavelength_indexes</em>, <em>deviation_wavelength_indexes</em>, <em>mean_power_indexes</em>, <em>deviation_power_indexes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphParameters" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">CalibrationGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>temperatures</em>, <em>cycles</em>, <em>mean_wavelength_indexes</em>, <em>deviation_wavelength_indexes</em>, <em>mean_power_indexes</em>, <em>deviation_power_indexes</em>, <em>sensitivity_wavelength_indexes</em>, <em>sensitivity_power_indexes</em>, <em>master_temperature_column=0</em>, <em>mean_temperature_column=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#CalibrationGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#fbgui.excel_graph_helpers.GraphParameters" title="fbgui.excel_graph_helpers.GraphParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">fbgui.excel_graph_helpers.GraphParameters</span></code></a></p>
 </dd></dl>
 
@@ -937,22 +988,32 @@ func, and named name.</p>
 <p>An enumeration.</p>
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_DEVIATION">
-<code class="descname">POWER_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean {}', 'Cycle {}', 'B')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', '(db)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_DEVIATION" title="Permalink to this definition">¶</a></dt>
+<code class="descname">POWER_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean ({})', 'Cycle {}', 'B')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', 'db')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_DEVIATION" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_MEAN">
-<code class="descname">POWER_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('Wavelength mean (nm)', 'Mean', 'V')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', '(db)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_MEAN" title="Permalink to this definition">¶</a></dt>
+<code class="descname">POWER_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('{} mean ({})', 'Mean', 'V')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', 'db')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_SENSITIVITY">
+<code class="descname">POWER_SENSITIVITY</code><em class="property"> = (&lt;CalibrationGraphType.SENSITIVITY: ('{} sensitivity ({}/K)', 'Sensitivity', 'AP')&gt;, None, &lt;CalibrationReadingType.POWER: ('Power', 'db')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.POWER_SENSITIVITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_DEVIATION">
-<code class="descname">WAVELENGTH_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean {}', 'Cycle {}', 'B')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', '(pm)')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_DEVIATION" title="Permalink to this definition">¶</a></dt>
+<code class="descname">WAVELENGTH_DEVIATION</code><em class="property"> = (&lt;CalibrationGraphType.DEVIATION: ('{} deviation from mean ({})', 'Cycle {}', 'B')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', 'pm')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_DEVIATION" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_MEAN">
-<code class="descname">WAVELENGTH_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('Wavelength mean (nm)', 'Mean', 'V')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', '(pm)')&gt;, '(nm)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_MEAN" title="Permalink to this definition">¶</a></dt>
+<code class="descname">WAVELENGTH_MEAN</code><em class="property"> = (&lt;CalibrationGraphType.MEAN: ('{} mean ({})', 'Mean', 'V')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', 'pm')&gt;, 'nm')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_SENSITIVITY">
+<code class="descname">WAVELENGTH_SENSITIVITY</code><em class="property"> = (&lt;CalibrationGraphType.SENSITIVITY: ('{} sensitivity ({}/K)', 'Sensitivity', 'AP')&gt;, 2, &lt;CalibrationReadingType.WAVELENGTH: ('Wavelength', 'pm')&gt;)</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphSubType.WAVELENGTH_SENSITIVITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -964,12 +1025,17 @@ func, and named name.</p>
 <p>An enumeration.</p>
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphType.DEVIATION">
-<code class="descname">DEVIATION</code><em class="property"> = ('{} deviation from mean {}', 'Cycle {}', 'B')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.DEVIATION" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEVIATION</code><em class="property"> = ('{} deviation from mean ({})', 'Cycle {}', 'B')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.DEVIATION" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationGraphType.MEAN">
-<code class="descname">MEAN</code><em class="property"> = ('Wavelength mean (nm)', 'Mean', 'V')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.MEAN" title="Permalink to this definition">¶</a></dt>
+<code class="descname">MEAN</code><em class="property"> = ('{} mean ({})', 'Mean', 'V')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.MEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fbgui.excel_graph_helpers.CalibrationGraphType.SENSITIVITY">
+<code class="descname">SENSITIVITY</code><em class="property"> = ('{} sensitivity ({}/K)', 'Sensitivity', 'AP')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationGraphType.SENSITIVITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -981,12 +1047,12 @@ func, and named name.</p>
 <p>An enumeration.</p>
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationReadingType.POWER">
-<code class="descname">POWER</code><em class="property"> = ('Power', '(db)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.POWER" title="Permalink to this definition">¶</a></dt>
+<code class="descname">POWER</code><em class="property"> = ('Power', 'db')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.POWER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="fbgui.excel_graph_helpers.CalibrationReadingType.WAVELENGTH">
-<code class="descname">WAVELENGTH</code><em class="property"> = ('Wavelength', '(pm)')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.WAVELENGTH" title="Permalink to this definition">¶</a></dt>
+<code class="descname">WAVELENGTH</code><em class="property"> = ('Wavelength', 'pm')</em><a class="headerlink" href="#fbgui.excel_graph_helpers.CalibrationReadingType.WAVELENGTH" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2732,6 +2798,7 @@ the serial number entry and switch position switchbox for a FBG</p>
 <li><a class="reference internal" href="#">fbgui package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-fbgui.baking_curve_fit">fbgui.baking_curve_fit module</a></li>
 <li><a class="reference internal" href="#module-fbgui.baking_program">fbgui.baking_program module</a></li>
 <li><a class="reference internal" href="#module-fbgui.cal_program">fbgui.cal_program module</a></li>
 <li><a class="reference internal" href="#module-fbgui.calibration_excel_container">fbgui.calibration_excel_container module</a></li>

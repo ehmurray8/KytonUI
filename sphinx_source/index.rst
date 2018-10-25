@@ -11,6 +11,14 @@ Subpackages
 Submodules
 ----------
 
+fbgui.baking\_curve\_fit module
+-------------------------------
+
+.. automodule:: fbgui.baking_curve_fit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 fbgui.baking\_program module
 ----------------------------
 

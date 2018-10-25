@@ -250,6 +250,7 @@ class ExcelFileController:
         self.graph_bake(parameters)
 
     def graph_bake(self, parameters: BakingGraphParameters):
+        chart = ScatterChart()
         last_row = parameters.num_rows + 1
         start_row = 2
         start_column = 2
@@ -425,11 +426,8 @@ def _add_series(chart: ScatterChart, index: int, temperature_column: int,
                 series_parameters: SeriesParameters, cycle: int = None):
     x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=CALIBRATION_START_ROW,
                          max_row=series_parameters.last_row)
-    try:
-        y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
-                             min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
-    except IndexError:
-        pass
+    y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
+                         min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
     series_title = series_parameters.sub_type.get_series_title(cycle)
     series = Series(xvalues=x_values, values=y_values, title=series_title)
     series.marker = marker.Marker(MARKERS[index % len(MARKERS)])
