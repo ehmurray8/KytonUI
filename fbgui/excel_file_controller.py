@@ -11,6 +11,7 @@ from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.text import RichText
 from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
+from openpyxl.utils import get_column_letter
 
 from fbgui.baking_curve_fit import curve_fit_baking, add_baking_trend_line
 from fbgui.calibration_excel_container import CalibrationExcelContainer
@@ -145,13 +146,13 @@ class ExcelFileController:
             worksheet.append([header])
             worksheet.merge_cells("A{}:C{}".format(row, row))
             row += 1
-            row = self.write_coefficients(worksheet, row, coefficients, derivative_coefficients)
+            row = self.write_coefficients(worksheet, row, coefficients, derivative_coefficients, row == 2)
             for _ in range(0, 3):
                 worksheet.append([])
                 row += 1
 
     def write_coefficients(self, worksheet: Worksheet, row: int, coefficients: List[List[float]],
-                           derivative_coefficients: List[List[float]]=None) -> int:
+                           derivative_coefficients: List[List[float]]=None, write_sensitivity: bool = False) -> int:
         sensitivity_header = "Sensitivity (pm/K)"
         drift_rate_header = "Drift Rate"
         for i, name in enumerate(self.fbg_names):
@@ -165,10 +166,19 @@ class ExcelFileController:
             row += 1
 
             coefficient_specifiers = ["x^{}".format(num) for num in reversed(range(0, len(coefficients[i])))]
-            coefficient_specifiers.extend([""] * (5 - len(list(filter(lambda x: x != 0, coefficients[i])))))
+            offset = (5 - len(list(filter(lambda x: x != 0, coefficients[i]))))
+            coefficient_specifiers.extend([""] * offset)
             if derivative_coefficients is not None:
                 coefficient_specifiers\
                     .extend(["x^{}".format(num) for num in reversed(range(0, len(derivative_coefficients[i])))])
+                if write_sensitivity:
+                    coefficient_specifiers.extend([""] * offset)
+                    temperature_header = "Temperature [C]"
+                    coefficient_specifiers.extend([temperature_header, sensitivity_header])
+                    column = get_column_letter(coefficient_specifiers.index(temperature_header) + 1)
+                    worksheet.column_dimensions[column].width = len(temperature_header) + 1
+                    column = get_column_letter(coefficient_specifiers.index(sensitivity_header) + 1)
+                    worksheet.column_dimensions[column].width = len(sensitivity_header) + 1
             worksheet.append(coefficient_specifiers)
             row += 1
 
@@ -177,6 +187,21 @@ class ExcelFileController:
             row_values.extend([""] * (5 - len(list(filter(lambda x: x != 0, coefficients[i])))))
             if derivative_coefficients is not None:
                 row_values.extend(derivative_coefficients[i])
+                if write_sensitivity:
+                    row_values.extend([""] * offset)
+                    row_values.append(100)
+                    start = len(coefficients[i]) + offset + 1
+                    temperature_index = start + len(derivative_coefficients[i]) + offset
+                    temperature_column = get_column_letter(temperature_index)
+                    columns = [get_column_letter(i) for i in range(start, start + len(derivative_coefficients[i]))]
+                    temperature_identifier = "{}{}".format(temperature_column, row)
+                    equation_parts = []
+                    for k, column in enumerate(columns):
+                        exponent = len(columns) - 1 - k
+                        equation_parts.append("(({} + 273.15)^{} * {}{})"
+                                              .format(temperature_identifier, exponent, column, row))
+                    equation = "=({}) * 1000".format(" + ".join(equation_parts))
+                    row_values.append(equation)
             else:
                 row_values.extend([1, "", '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 10000 / F{0}, ""), "")'
                                   .format(row)])
