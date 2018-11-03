@@ -9,7 +9,6 @@ from uuid import UUID
 import visa
 
 from fbgui.constants import CAL, TEMP
-from fbgui.database_controller import DatabaseController
 from fbgui.exceptions import ProgramStopped
 from fbgui.main_program import Application
 from fbgui.messages import MessageType, Message
@@ -77,15 +76,14 @@ class CalProgram(Program):
 
         :param temps: the list of temperatures to set the oven to
         """
-        database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
-                                                 CAL, self.table)
-        last_cycle_num = database_controller.get_last_cycle_num()
-        if last_cycle_num == self.options.num_cal_cycles.get():
+        cycles = set(self.database_controller.get_cycle_nums())
+        last_cycle_num = self.database_controller.get_last_cycle_num()
+        if len(cycles) >= self.options.num_cal_cycles.get():
             self.master.main_queue.put(Message(MessageType.WARNING, "Calibration Program Complete",
                                                "The calibration program has already completed the specified {} cycles"
                                                .format(self.options.num_cal_cycles.get())))
-        for cycle_num in range(self.options.num_cal_cycles.get() - last_cycle_num):
-            cycle_num += last_cycle_num
+        next_cycle_num = last_cycle_num + 1
+        for cycle_num in range(next_cycle_num, next_cycle_num + self.options.num_cal_cycles.get() - len(cycles)):
             self.check_program_stopped()
 
             temp = self.get_temp()
@@ -97,7 +95,7 @@ class CalProgram(Program):
                 kwargs["cooling"] = True
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {} C."
-                                               .format(cycle_num+1, temps[0]-5), title=None))
+                                               .format(cycle_num, temps[0]-5), title=None))
             start_init_time = time.time()
             self.check_program_stopped()
 
@@ -105,13 +103,13 @@ class CalProgram(Program):
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
-            while not self.reset_temp(temps[0], cycle_num, database_controller):
+            while not self.reset_temp(temps[0], cycle_num):
                 self.sleep()
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
-                cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
+                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_init_time)))), title=None))
 
-            self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num+1),
+            self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num),
                                                title=None))
             start_cycle_time = time.time()
             for temp in temps:
@@ -124,21 +122,19 @@ class CalProgram(Program):
                 self.disconnect_devices()
                 self.sleep()
                 kwargs["force_connect"] = False
-                while not self.check_drift_rate(cycle_num+1, database_controller):
+                while not self.check_drift_rate(cycle_num):
                     self.sleep()
                     self.set_oven_temp(**kwargs)
             self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
-                cycle_num+1, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
+                cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
         self.set_oven_temp(50, force_connect=False, heat=False)
 
-    def reset_temp(self, start_temp: float, cycle_num: int,
-                   database_controller: DatabaseController) -> bool:
+    def reset_temp(self, start_temp: float, cycle_num: int) -> bool:
         """
         Checks to see if the temperature is 4.5K below the starting temperature.
 
         :param start_temp: The first temperature the oven is set to
         :param cycle_num: Number of the current cycle
-        :param database_controller: Used to write the first calibration point
         """
         temp = self.get_temp()
         drift_rate = self.get_drift_rate()
@@ -152,8 +148,8 @@ class CalProgram(Program):
             drift_rate = drift_rate[0]
         if temp <= float(start_temp + 273.15) - 4.5 or drift_rate < self.options.drift_rate.get():
             drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(True)
-            database_controller.record_calibration_point(curr_time, temp, waves, amps,
-                                                         drift_rate, True, cycle_num+1)
+            self.database_controller.record_calibration_point(curr_time, temp, waves, amps,
+                                                              drift_rate, True, cycle_num)
             return True
         return False
 
@@ -188,13 +184,12 @@ class CalProgram(Program):
         drift_rate *= 60000.
         return drift_rate, curr_temp, curr_time, waves, amps
 
-    def check_drift_rate(self, cycle_num: int, database_controller: DatabaseController) -> bool:
+    def check_drift_rate(self, cycle_num: int) -> bool:
         """
         Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
         temperature.
 
         :param cycle_num: The number of the current calibration cycle
-        :param database_controller: Used for writing calibration points to the database
         :return: True if the drift rate is below the configured drift rate, otherwise False
         """
         while True:
@@ -202,13 +197,13 @@ class CalProgram(Program):
                 drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(True)
 
                 if drift_rate <= self.options.drift_rate.get():
-                    database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
-                                                                 drift_rate, True, cycle_num)
+                    self.database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
+                                                                      drift_rate, True, cycle_num)
                     return True
 
                 self.check_program_stopped()
-                database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
-                                                             drift_rate, False, cycle_num)
+                self.database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
+                                                                  drift_rate, False, cycle_num)
                 return False
             except (AttributeError, visa.VisaIOError):
                 self.temp_controller_error()
