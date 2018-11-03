@@ -254,9 +254,6 @@ class Program(ttk.Notebook):
         """
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
-        self.database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
-                                                      self.program_type.prog_id, self.table,
-                                                      excel_table=self.master.excel_table)
 
         can_start = self.check_device_config() and self.options.check_config(self.database_controller)
         if can_start:
