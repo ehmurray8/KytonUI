@@ -1,15 +1,18 @@
 """Home page table used for creating excel spreadsheets of program runs."""
+import configparser
 import sqlite3
 import threading
 import tkinter
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
+from tkinter import messagebox as mbox
 from queue import Queue
 from tkinter import LEFT, E, RIGHT, W
 from typing import List, Dict
 
 from fbgui import ui_helper as uh
-from fbgui.constants import DB_PATH
+from fbgui.constants import DB_PATH, PROG_CONFIG_PATH, BAKING, CAL
+from fbgui.database_controller import delete_tables
 from fbgui.excel_file_controller import ExcelFileController
 from fbgui.messages import MessageType, Message
 
@@ -41,6 +44,7 @@ class ExcelTable(ttk.Frame):
         self.item_ids = []  # type: List[int]
         self.file_paths = None  # type: Dict[int, str]
         self.s_nums = None  # type: List[str]
+        self.current_table_id = None  # type: int
         self._setup_widgets()
         self._setup_headers()
         self.refresh()
@@ -82,8 +86,12 @@ class ExcelTable(ttk.Frame):
         vsb.grid(column=1, row=1, sticky='ns', in_=self)
         hsb.grid(column=0, row=2, sticky='ew', in_=self)
 
-        create_excel = ttk.Button(self, text="Generate Spreadsheet for Selected", command=self.create_spreadsheet)
-        create_excel.grid(column=0, row=3, pady=10)
+        button_frame = ttk.Frame(self)
+        button_frame.grid(column=0, row=3, pady=10)
+        create_excel = ttk.Button(button_frame, text="Generate Spreadsheet", command=self.create_spreadsheet)
+        create_excel.grid(column=0, row=0, padx=5)
+        delete_table = ttk.Button(button_frame, text="Delete Run", command=self.delete_run)
+        delete_table.grid(column=1, row=0, padx=5)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -94,6 +102,29 @@ class ExcelTable(ttk.Frame):
             f_name = self.file_paths[values[0]]
             s_nums = self.s_nums[values[0]].split(",")
             threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2])).start()
+
+    def delete_run(self):
+        table_ids = []
+        program_names = []
+        program_types = []
+        conf_parser = configparser.ConfigParser()
+        conf_parser.read(PROG_CONFIG_PATH)
+        for item in self.tree.selection():
+            values = self.tree.item(item)['values']
+            table_id = values[0]
+            table_ids.append(table_id)
+            if table_id is not None and table_id == self.current_table_id and \
+                    (conf_parser.getboolean(BAKING, "running") or conf_parser.getboolean(CAL, "running")):
+                mbox.showerror("Deletion Error", "Cannot delete the currently running program.")
+                return
+            program_name = values[1]
+            program_names.append(program_name)
+            program_type = values[2]
+            program_types.append(program_type)
+        message = "Are you sure you would like to delete the runs: {}?".format(", ".join(program_names))
+        if mbox.askyesno("Delete Programs", message):
+            delete_tables(table_ids, program_types)
+            self.refresh()
 
     def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str):
         excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize())

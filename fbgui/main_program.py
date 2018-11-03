@@ -90,6 +90,7 @@ class Application(tk.Tk):
         self.laser = None  # type: Optional[SM125]
         self.switch = None  # type: Optional[OpticalSwitch]
         self.is_full_screen = False
+        self.excel_table = None  # type: create_excel_table.ExcelTable
 
         self.controller_location = tk.StringVar()
         self.oven_location = tk.StringVar()
@@ -174,7 +175,8 @@ class Application(tk.Tk):
         self.log_view = messages.LogView(hframe)
         self.log_view.pack(expand=True, fill=tk.BOTH, side=tk.LEFT, anchor=tk.W, padx=25, pady=50)
 
-        create_excel_table.ExcelTable(hframe, self.main_queue).pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
+        self.excel_table = create_excel_table.ExcelTable(hframe, self.main_queue)
+        self.excel_table.pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
     def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id: UUID=None):
         """
@@ -325,6 +327,7 @@ if __name__ == "__main__":
     # Need to defer import to here to avoid circular imports
     from fbgui.baking_program import BakingProgram
     from fbgui.cal_program import CalProgram
+    from fbgui.database_controller import *
     try:
         APP = Application()
         APP.bake_program = BakingProgram(APP)
