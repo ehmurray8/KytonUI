@@ -21,7 +21,7 @@ from matplotlib.figure import Figure
 
 from fbgui import graphing, ui_helper, options_frame, helpers
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
-    CAL, BAKING, LASER, SWITCH, TEMP, OVEN
+    CAL, BAKING, LASER, SWITCH, TEMP, OVEN, REAL_POINT_HEADER, TEMPERATURE_HEADER
 from fbgui.database_controller import DatabaseController
 from fbgui.datatable import DataTable
 from fbgui.excel_file_controller import ExcelFileController
@@ -156,7 +156,8 @@ class Program(ttk.Notebook):
         toolbar.update()
         file_name = self.options.file_name
         self.database_controller = DatabaseController(file_name.get(), self.snums,
-                                                      self.master.main_queue, self.program_type.prog_id)
+                                                      self.master.main_queue, self.program_type.prog_id,
+                                                      excel_table=self.master.excel_table)
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
                                               self.database_controller)
@@ -253,7 +254,11 @@ class Program(ttk.Notebook):
         """
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
-        can_start = self.check_device_config() and self.options.check_config()
+        self.database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
+                                                      self.program_type.prog_id, self.table,
+                                                      excel_table=self.master.excel_table)
+
+        can_start = self.check_device_config() and self.options.check_config(self.database_controller)
         if can_start:
             if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:
@@ -287,6 +292,8 @@ class Program(ttk.Notebook):
                     ui_helper.lock_main_widgets(self.master.device_frame)
                     self.graph_helper.show_subplots()
                     self.database_controller.reset_controller(self.options.file_name.get(), self.snums)
+
+                    self.handle_partial_cycles()
                     Thread(target=self.run_program).start()
                     self.start_btn.configure(state=tk.NORMAL)
                 else:
@@ -295,6 +302,25 @@ class Program(ttk.Notebook):
         else:
             self.start_btn.configure(text=self.program_type.start_title)
             self.start_btn.configure(state=tk.NORMAL)
+
+    def handle_partial_cycles(self):
+        if self.program_type.prog_id == CAL:
+            try:
+                data_frame = self.database_controller.to_data_frame()
+            except IndexError:
+                return
+            real_point_data_frame = data_frame[data_frame[REAL_POINT_HEADER] == "True"]
+            cycle_nums = set(self.database_controller.get_cycle_nums())
+            partial_cycle_nums = []
+            for cycle_num in cycle_nums:
+                temperatures = list(
+                    real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
+                if len(temperatures) != len(self.options.get_target_temps()) + 1:
+                    partial_cycle_nums.append(cycle_num)
+
+            if len(partial_cycle_nums) and mbox.askyesno("Calibration", "The run contains partially completed cycles, "
+                                                                        "would you like to delete them?"):
+                self.database_controller.delete_partial_cycles(partial_cycle_nums)
 
     def run_program(self):
         """Setups the thread and the thread map, and then starts the data collection process."""

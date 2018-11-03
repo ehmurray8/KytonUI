@@ -13,10 +13,11 @@ from fbgui.messages import *
 
 class DatabaseController:
     def __init__(self, file_path: str, fbg_names: List[str], main_queue: queue.Queue,
-                 function_type: str, table: DataTable = None):
+                 function_type: str, table: DataTable = None, excel_table=None):
         self.main_queue = main_queue
         self.table = table
         self.function_type = function_type
+        self.excel_table = excel_table  # type: create_excel_table.ExcelTable
         self.file_path = None  # type: str
         self.file_name = None  # type: str
         self.fbg_names = None  # type: List[str]
@@ -60,9 +61,11 @@ class DatabaseController:
         if not self.program_exists(cursor):
             self.create_program_table(cursor, column_command_string)
 
+        table_id = self.get_table_id(cursor)
         if self.table is not None:
             self.table.add_data(values)
-        table_id = self.get_table_id(cursor)
+        if self.excel_table is not None:
+            self.excel_table.current_table_id = table_id
         values[0] = timestamp
         values = ",".join([str(value) for value in values])
         add_baking_command = "INSERT INTO {}({}) VALUES ({})".format(self.function_type.lower() + str(table_id),
@@ -108,12 +111,11 @@ class DatabaseController:
 
     def handle_sql_error(self, sql_error: sqlite3.OperationalError):
         try:
-            if "column" in sql_error:
-                msg = Message(MessageType.ERROR, "Configuration Error",
-                              "Serial numbers have changed from the first time this program was run. Please "
-                              "use a new file name.")
-                self.main_queue.put(msg)
-                raise ProgramStopped
+            msg = Message(MessageType.ERROR, "Configuration Error",
+                          "Fbg names have changed from the first time this program was run. Please "
+                          "use a new file name.")
+            self.main_queue.put(msg)
+            raise ProgramStopped
         except TypeError as type_error:
             self.main_queue.put(Message(MessageType.DEVELOPER, "Write DB sqlite3 Error Dump", str(sql_error)))
             self.main_queue.put(Message(MessageType.DEVELOPER, "Write DB Type Error Dump", str(type_error)))
@@ -124,19 +126,24 @@ class DatabaseController:
 
         :return: last calibration cycle number, or 0 if there is no data calibration recorded
         """
+        cycle_nums = self.get_cycle_nums()
+        if len(cycle_nums) == 0:
+            return 0
+        return cycle_nums[-1]
+
+    def get_cycle_nums(self) -> List[int]:
         connection = sqlite3.connect(DB_PATH)
         cursor = connection.cursor()
         try:
             table_id = self.get_table_id(cursor)
         except (sqlite3.OperationalError, IndexError):
             connection.close()
-            return 0
+            return []
         table_name = self.function_type.lower() + str(table_id)
         cursor.execute("SELECT {}.'Cycle Num' FROM {};".format(table_name, table_name))
-        last_cycle_num = cursor.fetchall()
-        last_cycle_num = last_cycle_num[-1][0]
+        cycle_nums = cursor.fetchall()
         connection.close()
-        return int(last_cycle_num)
+        return [int(cycle_num[0]) for cycle_num in cycle_nums]
 
     def to_data_frame(self) -> pd.DataFrame:
         """
@@ -196,6 +203,33 @@ class DatabaseController:
         except ValueError:
             return False
 
+    def get_fbg_list(self) -> List[str]:
+        try:
+            connection = sqlite3.connect(DB_PATH)
+            cursor = connection.cursor()
+            try:
+                table_id = self.get_table_id(cursor)
+            except IndexError:
+                return []
+            cursor.execute("SELECT ID, Snums from map")
+            rows = cursor.fetchall()
+            id_to_fbg_names = {row[0]: row[1] for row in rows}
+            fbg_names = id_to_fbg_names[table_id]
+            connection.close()
+            return fbg_names.split(",")
+        except sqlite3.OperationalError:
+            return []
+
+    def delete_partial_cycles(self, partial_cycle_nums: List[int]):
+        connection = sqlite3.connect(DB_PATH)
+        cursor = connection.cursor()
+        for cycle_num in partial_cycle_nums:
+            cursor.execute("DELETE FROM {}{} WHERE `Cycle Num` = {};".format(self.function_type.lower(),
+                                                                             self.get_table_id(cursor),
+                                                                             cycle_num))
+        connection.commit()
+        connection.close()
+
 
 def create_wavelength_power_list(wavelengths: List[float], powers: List[float]):
     wavelength_power = []
@@ -230,3 +264,16 @@ def add_calibration_column_names(columns: List[str]):
     columns.append("'Drift Rate'")
     columns.append("'Real Point'")
     columns.append("'Cycle Num'")
+
+
+def delete_tables(table_ids: List[int], program_types: List[str]):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    for table_id, program_type in zip(table_ids, program_types):
+        try:
+            cursor.execute("DELETE FROM map WHERE ID = {};".format(table_id))
+            cursor.execute("DROP TABLE {}{};".format(program_type.lower(), table_id))
+            connection.commit()
+        except sqlite3.OperationalError:
+            pass
+    connection.close()

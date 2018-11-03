@@ -80,7 +80,7 @@ class OptionsPanel(ttk.Frame):
 
         self.create_options_grid()
 
-    def check_config(self) -> bool:
+    def check_config(self, db_controller) -> bool:
         """
         Checks to make sure all of the input fields are filled in properly, and of the right types.
 
@@ -89,6 +89,7 @@ class OptionsPanel(ttk.Frame):
         type.
         **
 
+        :param db_controller fbgui.DatabaseController
         :return True if properly configured, False otherwise
         """
         try:
@@ -113,6 +114,17 @@ class OptionsPanel(ttk.Frame):
                 float(self.drift_rate.get())
                 float(self.num_cal_cycles.get())
 
+            fbg_names = [fbg_name.get() for snum_list in self.sn_ents for fbg_name in snum_list]
+
+            if len(fbg_names) != len(set(fbg_names)):
+                mbox.showerror("Invalid configuration", "Multiple FBGs have the same name.")
+                return False
+            stored_fbg_names = db_controller.get_fbg_list()
+            if len(stored_fbg_names) > 0 and set(fbg_names) != set(stored_fbg_names):
+                mbox.showerror("Invalid configuration",
+                               "The fbg names have changed since the last time the program was run, "
+                               "please start the program with a new file name.")
+                return False
         except (ValueError, tk.TclError):
             mbox.showerror("Invalid configuration",
                            "Please check to make sure the configuration settings are numeric.")

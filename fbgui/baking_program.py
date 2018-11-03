@@ -8,7 +8,6 @@ import visa
 
 from fbgui import program
 from fbgui.constants import BAKING, TEMP
-from fbgui.database_controller import DatabaseController
 from fbgui.exceptions import ProgramStopped
 from fbgui.main_program import Application
 
@@ -54,8 +53,6 @@ class BakingProgram(program.Program):
 
         :param thread_id: UUID of the thread this code is running in
         """
-        database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
-                                                 BAKING, self.table)
         stable = False
         while self.master.thread_map[thread_id] and self.options.set_temp.get() and not stable:
             stable = self.check_stable(thread_id)
@@ -78,7 +75,7 @@ class BakingProgram(program.Program):
 
             self.disconnect_devices()
 
-            database_controller.record_baking_point(curr_time, temperature, waves, powers)
+            self.database_controller.record_baking_point(curr_time, temperature, waves, powers)
 
             start_time = time.time()
             count = 0
