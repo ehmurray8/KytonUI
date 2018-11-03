@@ -156,7 +156,8 @@ class Program(ttk.Notebook):
         toolbar.update()
         file_name = self.options.file_name
         self.database_controller = DatabaseController(file_name.get(), self.snums,
-                                                      self.master.main_queue, self.program_type.prog_id)
+                                                      self.master.main_queue, self.program_type.prog_id,
+                                                      excel_table=self.master.excel_table)
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
                                               self.database_controller)
@@ -254,7 +255,8 @@ class Program(ttk.Notebook):
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
         self.database_controller = DatabaseController(self.options.file_name.get(), self.snums, self.master.main_queue,
-                                                      self.program_type.prog_id, self.table)
+                                                      self.program_type.prog_id, self.table,
+                                                      excel_table=self.master.excel_table)
 
         can_start = self.check_device_config() and self.options.check_config(self.database_controller)
         if can_start:
