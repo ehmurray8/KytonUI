@@ -181,24 +181,18 @@
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.check_drift_rate">
-<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_drift_rate</code><span class="sig-paren">(</span><em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.check_drift_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.check_drift_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the drift rate is below the configured drift, and the temperature is within 1 degree of the set
 temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The number of the current calibration cycle</li>
-<li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used for writing calibration points to the database</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The number of the current calibration cycle</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the drift rate is below the configured drift rate, otherwise False</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the drift rate is below the configured drift rate, otherwise False</td>
 </tr>
 </tbody>
 </table>
@@ -259,7 +253,7 @@ temperature.</p>
 
 <dl class="method">
 <dt id="fbgui.cal_program.CalProgram.reset_temp">
-<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>cycle_num</em>, <em>database_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if the temperature is 4.5K below the starting temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -268,7 +262,6 @@ temperature.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>start_temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The first temperature the oven is set to</li>
 <li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of the current cycle</li>
-<li><strong>database_controller</strong> (<a class="reference internal" href="#fbgui.database_controller.DatabaseController" title="fbgui.database_controller.DatabaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseController</span></code></a>) – Used to write the first calibration point</li>
 </ul>
 </td>
 </tr>
@@ -533,6 +526,11 @@ based on the is_cal parameter</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fbgui.create_excel_table.ExcelTable.delete_run">
+<code class="descname">delete_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.delete_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.delete_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.create_excel_table.ExcelTable.refresh">
 <code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.refresh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Refreshes the table and loads all of the programs from the map database table.</p>
@@ -608,7 +606,7 @@ will be found using file_helper get_snums function</li>
 <span id="fbgui-database-controller-module"></span><h2>fbgui.database_controller module<a class="headerlink" href="#module-fbgui.database_controller" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="fbgui.database_controller.DatabaseController">
-<em class="property">class </em><code class="descclassname">fbgui.database_controller.</code><code class="descname">DatabaseController</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em>, <em>table=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.database_controller.</code><code class="descname">DatabaseController</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em>, <em>table=None</em>, <em>excel_table=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="method">
 <dt id="fbgui.database_controller.DatabaseController.add_entry_to_map">
@@ -635,6 +633,37 @@ will be found using file_helper get_snums function</li>
 <dt id="fbgui.database_controller.DatabaseController.create_program_table">
 <code class="descname">create_program_table</code><span class="sig-paren">(</span><em>cursor</em>, <em>columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.create_program_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.create_program_table" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.delete_partial_cycles">
+<code class="descname">delete_partial_cycles</code><span class="sig-paren">(</span><em>partial_cycle_nums</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.delete_partial_cycles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.delete_partial_cycles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.get_cycle_nums">
+<code class="descname">get_cycle_nums</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.get_cycle_nums"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.get_cycle_nums" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.get_fbg_list">
+<code class="descname">get_fbg_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.get_fbg_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.get_fbg_list" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="fbgui.database_controller.DatabaseController.get_last_cycle_num">
@@ -760,6 +789,11 @@ func, and named name.</p>
 <code class="descclassname">fbgui.database_controller.</code><code class="descname">create_wavelength_power_list</code><span class="sig-paren">(</span><em>wavelengths</em>, <em>powers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#create_wavelength_power_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.create_wavelength_power_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt id="fbgui.database_controller.delete_tables">
+<code class="descclassname">fbgui.database_controller.</code><code class="descname">delete_tables</code><span class="sig-paren">(</span><em>table_ids</em>, <em>program_types</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#delete_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.delete_tables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-fbgui.datatable">
 <span id="fbgui-datatable-module"></span><h2>fbgui.datatable module<a class="headerlink" href="#module-fbgui.datatable" title="Permalink to this headline">¶</a></h2>
@@ -863,7 +897,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x0000022F1EF34268&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x0000017791ACF730&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -2124,13 +2158,14 @@ are not None then set the serial number entry, and switch position entry to thei
 
 <dl class="method">
 <dt id="fbgui.options_frame.OptionsPanel.check_config">
-<code class="descname">check_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.check_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.check_config" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_config</code><span class="sig-paren">(</span><em>db_controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.check_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.check_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to make sure all of the input fields are filled in properly, and of the right types.</p>
 <p>**
 This does not ensure the configuration settings make sense, just that the fields have values of the proper
 type.
 **</p>
-<p>:return True if properly configured, False otherwise</p>
+<p>:param db_controller fbgui.DatabaseController
+:return True if properly configured, False otherwise</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2298,6 +2333,11 @@ formatted, and the ports are integer values.</p>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="fbgui.program.Program.handle_partial_cycles">
+<code class="descname">handle_partial_cycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/program.html#Program.handle_partial_cycles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.program.Program.handle_partial_cycles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="fbgui.program.Program.is_valid_file">
