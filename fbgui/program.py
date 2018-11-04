@@ -157,7 +157,7 @@ class Program(ttk.Notebook):
         file_name = self.options.file_name
         self.database_controller = DatabaseController(file_name.get(), self.snums,
                                                       self.master.main_queue, self.program_type.prog_id,
-                                                      excel_table=self.master.excel_table)
+                                                      self.table, excel_table=self.master.excel_table)
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
                                               self.database_controller)
