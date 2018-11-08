@@ -255,7 +255,8 @@ class Program(ttk.Notebook):
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
 
-        can_start = self.check_device_config() and self.options.check_config(self.database_controller)
+        controller = self.database_controller.new_instance(self.options.file_name.get(), self.snums)
+        can_start = self.check_device_config() and self.options.check_config(controller)
         if can_start:
             if self.master.running:
                 if self.master.running_prog != self.program_type.prog_id:

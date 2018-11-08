@@ -35,6 +35,10 @@ class DatabaseController:
         if self.table is not None:
             self.table.setup_headers(table_column_names, reset=True)
 
+    def new_instance(self, file_path: str, fbg_names: List[str]):
+        return DatabaseController(file_path, fbg_names, self.main_queue, self.function_type,
+                                  self.table, self.excel_table)
+
     def record_baking_point(self, timestamp: float, temperature: float, wavelengths: List[float], powers: List[float]):
         column_command_string = ",".join(self.create_database_column_commands())
         readable_time = datetime.datetime.fromtimestamp(int(timestamp)).strftime("%d/%m/%y %H:%M")
