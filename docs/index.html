@@ -692,6 +692,11 @@ will be found using file_helper get_snums function</li>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="fbgui.database_controller.DatabaseController.new_instance">
+<code class="descname">new_instance</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.new_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.new_instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.database_controller.DatabaseController.program_exists">
 <code class="descname">program_exists</code><span class="sig-paren">(</span><em>cursor=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/database_controller.html#DatabaseController.program_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.database_controller.DatabaseController.program_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether or not there is data in the database for the program of type func, named name.</p>
@@ -897,7 +902,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x000002D1DBD3A268&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x0000019FDD878158&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -2114,6 +2119,8 @@ is used for determining the number of FBGs on a channel</li>
 <li><strong>switch_positions</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>tkinter.IntVar</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of tkinter
 IntVars each representing a ttk spinbox used for specifying
 the FBGs switch position</li>
+<li><strong>selected_fbgs</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>tk.IntVar</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of IntVars, which are used
+to watch the value of the CheckButtons in each fbg frame</li>
 <li><strong>snum_frames</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>tkinter.Frame</em><em>]</em><em>]</em>) – 2D list with one list for each SM125 channel, of tkinter Frames, each
 Frame contains a serial number, and switch input for a FBG</li>
 <li><strong>file_name</strong> (<em>tkinter.StringVar</em>) – tkinter StringVar corresponding to the file input</li>
@@ -2137,7 +2144,7 @@ cooling</li>
 </table>
 <dl class="method">
 <dt id="fbgui.options_frame.OptionsPanel.add_fbg">
-<code class="descname">add_fbg</code><span class="sig-paren">(</span><em>fbg_grid</em>, <em>chan</em>, <em>fbg_name=None</em>, <em>switch_pos=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.add_fbg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.add_fbg" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_fbg</code><span class="sig-paren">(</span><em>chan</em>, <em>fbg_name=None</em>, <em>switch_pos=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.add_fbg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.add_fbg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an fbg input to the view, at the column corresponding to the chan index. If fbg_name, and switch_pos
 are not None then set the serial number entry, and switch position entry to their values respectively.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2145,7 +2152,6 @@ are not None then set the serial number entry, and switch position entry to thei
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fbg_grid</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – Container frame for fbg configuration</li>
 <li><strong>chan</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – index of where the new fbg sub frame should be added</li>
 <li><strong>fbg_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – If not None, the name of the FBG to add</li>
 <li><strong>switch_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – If not None, the switch position of the FBG to add</li>
@@ -2724,11 +2730,12 @@ in the options_grid and the fbg_grid of the options_panel.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IntVar</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Entry</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IntVar</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IntVar</span></code>]</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">serial number entry widget, IntVar referencing the switch position spinbox, the frame containing
-the serial number entry and switch position switchbox for a FBG</p>
+the serial number entry and switch position switchbox for a FBG, and an IntVar referencing the
+CheckButton</p>
 </td>
 </tr>
 </tbody>
