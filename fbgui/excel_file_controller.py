@@ -416,7 +416,7 @@ def format_chart(chart: ScatterChart, x_axis_title: str, y_axis_title: str, titl
     font = drawing.text.Font(typeface='Arial')
     cp_axis = CharacterProperties(latin=font, sz=1600, b=True)
     cp_axis_title = CharacterProperties(latin=font, sz=1600)
-    cp_title = CharacterProperties(latin=font, sz=1200, b=True)
+    cp_title = CharacterProperties(latin=font, sz=1200)
     chart.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis), endParaRPr=cp_axis)])
     chart.y_axis.title.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_axis),
                                                     endParaRPr=cp_axis_title)])
@@ -456,5 +456,6 @@ def _add_series(chart: ScatterChart, index: int, temperature_column: int,
     series_title = series_parameters.sub_type.get_series_title(cycle)
     series = Series(xvalues=x_values, values=y_values, title=series_title)
     series.marker = marker.Marker(MARKERS[index % len(MARKERS)])
+    series.marker.size = 12
     chart.series.append(series)
     return index + 1
