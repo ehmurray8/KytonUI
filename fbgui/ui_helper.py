@@ -170,7 +170,7 @@ def units_entry(container: ttk.Frame, label_text: str, row: int, width: int, uni
 
 
 def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
-                     switch_pos: Optional[int]) ->Tuple[ttk.Entry, tk.IntVar, ttk.Frame]:
+                     switch_pos: Optional[int]) ->Tuple[ttk.Entry, tk.IntVar, ttk.Frame, tk.IntVar]:
     """
     Creates a serial number entry with channel number and switch position.
 
@@ -180,7 +180,8 @@ def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
     :param def_snum: the default name of the serial number being added
     :param switch_pos: the default switch position, if None then use 0 as the switch position
     :return: serial number entry widget, IntVar referencing the switch position spinbox, the frame containing
-             the serial number entry and switch position switchbox for a FBG
+             the serial number entry and switch position switchbox for a FBG, and an IntVar referencing the
+             CheckButton
     """
     snum_frame = ttk.Frame(container)
     serial_num_ent = ttk.Entry(snum_frame, font=ENTRY_FONT, width=20)
@@ -190,10 +191,13 @@ def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
                state="readonly").pack(side="left", fill="both", expand=True)
     if switch_pos is None:
         switch_pos = 0
+    selected = tk.IntVar()
+    tk.Checkbutton(snum_frame, variable=selected).pack(side="left")
+    selected.set(0)
     switch_pos_ent.set(str(switch_pos))
     snum_frame.grid(row=row, column=col, sticky='ew')
     serial_num_ent.insert(0, def_snum)
-    return serial_num_ent, switch_pos_ent, snum_frame
+    return serial_num_ent, switch_pos_ent, snum_frame, selected
 
 
 def remove_snum_entry(snum_frame):
