@@ -22,6 +22,8 @@ class OptionsPanel(ttk.Frame):
     :ivar List[List[tkinter.IntVar]] switch_positions: 2D list with one list for each SM125 channel, of tkinter
                                                        IntVars each representing a ttk spinbox used for specifying
                                                        the FBGs switch position
+    :ivar List[List[tk.IntVar]] selected_fbgs: 2D list with one list for each SM125 channel, of IntVars, which are used
+                                               to watch the value of the CheckButtons in each fbg frame
     :ivar List[List[tkinter.Frame]] snum_frames: 2D list with one list for each SM125 channel, of tkinter Frames, each
                                                  Frame contains a serial number, and switch input for a FBG
     :ivar tkinter.StringVar file_name: tkinter StringVar corresponding to the file input
@@ -47,6 +49,7 @@ class OptionsPanel(ttk.Frame):
         self.chan_nums = [[], [], [], []]  # type: List[List[int]]
         self.switch_positions = [[], [], [], []]  # type: List[List[tk.IntVar]]
         self.snum_frames = [[], [], [], []]  # type: List[List[ttk.Frame]]
+        self.selected_fbgs = [[], [], [], []]  # type: List[List[tk.IntVar]]
 
         self.file_name = tk.StringVar()
         self.prim_time = tk.DoubleVar()
@@ -220,12 +223,11 @@ class OptionsPanel(ttk.Frame):
         start_button.pack(anchor='center', pady=20)
         return start_button
 
-    def add_fbg(self, fbg_grid: ttk.Frame, chan: int, fbg_name: str=None, switch_pos: int=None):
+    def add_fbg(self, chan: int, fbg_name: str=None, switch_pos: int=None):
         """
         Add an fbg input to the view, at the column corresponding to the chan index. If fbg_name, and switch_pos
         are not None then set the serial number entry, and switch position entry to their values respectively.
 
-        :param fbg_grid: Container frame for fbg configuration
         :param chan: index of where the new fbg sub frame should be added
         :param fbg_name: If not None, the name of the FBG to add
         :param switch_pos: If not None, the switch position of the FBG to add
@@ -237,8 +239,9 @@ class OptionsPanel(ttk.Frame):
             def_name = "FBG {}".format(sum(len(x) for x in self.chan_nums))
             if fbg_name is not None:
                 def_name = fbg_name
-            serial_num, switch_pos, frame = uh.serial_num_entry(fbg_grid, len(self.chan_nums[chan])+1,
-                                                                chan, def_name, switch_pos)
+            serial_num, switch_pos, frame, selected = uh.serial_num_entry(self.fbg_grid, len(self.chan_nums[chan])+1,
+                                                                          chan, def_name, switch_pos)
+            self.selected_fbgs[chan].append(selected)
             self.snum_frames[chan].append(frame)
             self.sn_ents[chan].append(serial_num)
             self.switch_positions[chan].append(switch_pos)
@@ -249,11 +252,34 @@ class OptionsPanel(ttk.Frame):
 
         :param chan: index of which column to remove a FBG sub frame from
         """
-        if len(self.chan_nums[chan]):
-            self.chan_nums[chan].pop()
-            uh.remove_snum_entry(self.snum_frames[chan].pop())
-            self.sn_ents[chan].pop()
-            self.switch_positions[chan].pop()
+        need_refresh = False
+        for i, selected in enumerate(self.selected_fbgs[chan]):
+            if selected.get():
+                need_refresh = True
+                del self.chan_nums[chan][i]
+                frame = self.snum_frames[chan][i]
+                uh.remove_snum_entry(frame)
+                del self.snum_frames[chan][i]
+                del self.sn_ents[chan][i]
+                del self.switch_positions[chan][i]
+                del self.selected_fbgs[chan][i]
+
+        if need_refresh:
+            for frame in self.snum_frames[chan]:
+                uh.remove_snum_entry(frame)
+
+            channel_numbers = [x for x in self.chan_nums[chan]]
+            snum_entries = [x for x in self.sn_ents[chan]]
+            switch_positions = [x for x in self.switch_positions[chan]]
+
+            self.chan_nums[chan].clear()
+            self.snum_frames[chan].clear()
+            self.sn_ents[chan].clear()
+            self.switch_positions[chan].clear()
+            self.selected_fbgs[chan].clear()
+
+            for channel_number, snum_entry, switch_position in zip(channel_numbers, snum_entries, switch_positions):
+                self.add_fbg(channel_number, snum_entry.get(), switch_position.get())
 
     def init_fbgs(self):
         """ Initialize the fbg input section of the options page, using settings stored in prog_config."""
@@ -266,7 +292,7 @@ class OptionsPanel(ttk.Frame):
             ttk.Button(buttons_frame, image=self.img_minus, command=lambda chan=i: self.minus_fbg(chan)) \
                 .pack(side="left", anchor='e')
             ttk.Button(buttons_frame, image=self.img_plus,
-                       command=lambda col=i, chan=i: self.add_fbg(self.fbg_grid, chan)).pack(side='left', anchor='e')
+                       command=lambda col=i, chan=i: self.add_fbg(chan)).pack(side='left', anchor='e')
             buttons_frame.pack(anchor='e')
             title_frame.grid(sticky='nsew', column=i, row=0)
 
@@ -276,8 +302,8 @@ class OptionsPanel(ttk.Frame):
             try:
                 positions = helpers.list_cast(positions, int)
                 for snum, pos in zip(snums, positions):
-                    self.add_fbg(self.fbg_grid, i, snum, pos)
+                    self.add_fbg(i, snum, pos)
             except ValueError:
                 for snum in snums:
                     if snum:
-                        self.add_fbg(self.fbg_grid, i, snum)
+                        self.add_fbg(i, snum)
