@@ -140,11 +140,12 @@ class ExcelFileController:
         if not len(coefficients_list[0]) or not len(coefficients_list[1]):
             return
 
-        headers = ["Wavelength Deviation", "Power Deviation"]
+        headers = ["Wavelength Deviation: Fit parameters from mean calibration curve",
+                   "Power Deviation: Fit parameters from mean calibration curve"]
         row = 1
         for header, (coefficients, derivative_coefficients) in zip(headers, coefficients_list):
             worksheet.append([header])
-            worksheet.merge_cells("A{}:C{}".format(row, row))
+            worksheet.merge_cells("A{}:H{}".format(row, row))
             row += 1
             row = self.write_coefficients(worksheet, row, coefficients, derivative_coefficients, row == 2)
             for _ in range(0, 3):
@@ -159,7 +160,7 @@ class ExcelFileController:
             worksheet.merge_cells("A{}:E{}".format(row, row))
             values = [name]
             if derivative_coefficients is None and row == 1:
-                values.extend(["", "", "", "", "Sensitivity (pm/K)", "", "Drift Rate"])
+                values.extend(["", "", "", "", "Sensitivity (pm/K)", "", "Drift Rate (mK/hr)"])
                 worksheet.column_dimensions["F"].width = len(sensitivity_header) + 1
                 worksheet.column_dimensions["H"].width = len(drift_rate_header) + 1
             worksheet.append(values)
@@ -203,7 +204,7 @@ class ExcelFileController:
                     equation = "=({}) * 1000".format(" + ".join(equation_parts))
                     row_values.append(equation)
             else:
-                row_values.extend([1, "", '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 10000 / F{0}, ""), "")'
+                row_values.extend([1, "", '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 1000 / F{0}, ""), "")'
                                   .format(row)])
             worksheet.append(row_values)
             row += 1
@@ -259,6 +260,8 @@ class ExcelFileController:
         parameters.data_sheet = excel_writer.sheets[sheet_names[0]]
         graph_results(parameters)
 
+        excel_writer.book.create_sheet("Notes")
+
         excel_writer.save()
         excel_writer.close()
         os.startfile('"{}"'.format(self.excel_file_path.replace("\\", "\\\\")))
@@ -275,7 +278,6 @@ class ExcelFileController:
         self.graph_bake(parameters)
 
     def graph_bake(self, parameters: BakingGraphParameters):
-        chart = ScatterChart()
         last_row = parameters.num_rows + 1
         start_row = 2
         start_column = 2

@@ -169,6 +169,28 @@ def units_entry(container: ttk.Frame, label_text: str, row: int, width: int, uni
     return text_var
 
 
+def extra_point_entry(container: ttk.Frame, label_text: str, row: int) -> Tuple[tk.DoubleVar, tk.DoubleVar, tk.DoubleVar]:
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    temperature = tk.DoubleVar()
+    wavelength = tk.DoubleVar()
+    power = tk.DoubleVar()
+    entry_frame = ttk.Frame(container)
+    entry_frame.grid(row=row, column=2, columnspan=3, sticky='ew')
+    ttk.Entry(entry_frame, textvariable=temperature, width=10, font=ENTRY_FONT) \
+        .pack(side=tk.LEFT)
+    ttk.Label(entry_frame, text="K").pack(side=tk.LEFT, padx=5)
+    ttk.Entry(entry_frame, textvariable=wavelength, width=10, font=ENTRY_FONT) \
+        .pack(side=tk.LEFT, padx=5)
+    ttk.Label(entry_frame, text="nm").pack(side=tk.LEFT, padx=5)
+    ttk.Entry(entry_frame, textvariable=power, width=10, font=ENTRY_FONT) \
+        .pack(side=tk.LEFT, padx=5)
+    ttk.Label(entry_frame, text="dB").pack(side=tk.LEFT, padx=5)
+    temperature.set(0.0)
+    wavelength.set(0.0)
+    power.set(0.0)
+    return temperature, wavelength, power
+
+
 def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
                      switch_pos: Optional[int]) ->Tuple[ttk.Entry, tk.IntVar, ttk.Frame, tk.IntVar]:
     """

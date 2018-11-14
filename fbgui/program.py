@@ -310,10 +310,22 @@ class Program(ttk.Notebook):
             real_point_data_frame = data_frame[data_frame[REAL_POINT_HEADER] == "True"]
             cycle_nums = set(self.database_controller.get_cycle_nums())
             partial_cycle_nums = []
+            extra_point_nums = 0
+            for extra_point in self.options.extra_points:
+                valid = True
+                for part in extra_point:
+                    try:
+                        part = float(part.get())
+                        if part == 0:
+                            valid = False
+                    except ValueError:
+                        valid = False
+                if valid:
+                    extra_point_nums += 1
             for cycle_num in cycle_nums:
                 temperatures = list(
                     real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
-                if len(temperatures) != len(self.options.get_target_temps()) + 1:
+                if len(temperatures) != len(self.options.get_target_temps()) + extra_point_nums:
                     partial_cycle_nums.append(cycle_num)
 
             if len(partial_cycle_nums) and mbox.askyesno("Calibration", "The run contains partially completed cycles, "
@@ -475,6 +487,10 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "temp_interval", str(self.options.temp_interval.get()))
             self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
+            self.conf_parser.set(self.program_type.prog_id, "extra_point1",
+                                 ",".join(str(x.get()) for x in self.options.extra_points[0]))
+            self.conf_parser.set(self.program_type.prog_id, "extra_point2",
+                                 ",".join(str(x.get()) for x in self.options.extra_points[1]))
             self.conf_parser.set(self.program_type.prog_id, "target_temps",
                                  ",".join(str(x) for x in self.options.get_target_temps()))
 

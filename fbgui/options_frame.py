@@ -51,6 +51,8 @@ class OptionsPanel(ttk.Frame):
         self.snum_frames = [[], [], [], []]  # type: List[List[ttk.Frame]]
         self.selected_fbgs = [[], [], [], []]  # type: List[List[tk.IntVar]]
 
+        self.extra_points = []  # type: List[List[tk.DoubleVar]]
+
         self.file_name = tk.StringVar()
         self.prim_time = tk.DoubleVar()
         self.num_pts = tk.IntVar()
@@ -188,6 +190,38 @@ class OptionsPanel(ttk.Frame):
             target_temps = self.conf_parser.get(self.program, "target_temps")
             self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
                                                      .format(u'\u00B0'), row_num, 10, 2, target_temps)
+            row_num += 1
+            saved_point1 = self.conf_parser.get(self.program, "extra_point1").split(",")
+            saved_point2 = self.conf_parser.get(self.program, "extra_point2").split(",")
+            temperature1, wavelength1, power1 = uh.extra_point_entry(self.options_grid, "Extra Point 1", row_num)
+            try:
+                temperature1.set(float(saved_point1[0]))
+            except ValueError:
+                pass
+            try:
+                wavelength1.set(float(saved_point1[1]))
+            except ValueError:
+                pass
+            try:
+                power1.set(float(saved_point1[2]))
+            except ValueError:
+                pass
+            self.extra_points.append([temperature1, wavelength1, power1])
+            row_num += 1
+            temperature2, wavelength2, power2 = uh.extra_point_entry(self.options_grid, "Extra Point 2", row_num)
+            try:
+                temperature2.set(float(saved_point2[0]))
+            except ValueError:
+                pass
+            try:
+                wavelength2.set(float(saved_point2[1]))
+            except ValueError:
+                pass
+            try:
+                power2.set(float(saved_point2[2]))
+            except ValueError:
+                pass
+            self.extra_points.append([temperature2, wavelength2, power2])
             row_num += 1
         else:
             set_temp = self.conf_parser.getfloat(self.program, "set_temp")

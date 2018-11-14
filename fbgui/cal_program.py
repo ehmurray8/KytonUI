@@ -95,7 +95,7 @@ class CalProgram(Program):
                 kwargs["cooling"] = True
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {} C."
-                                               .format(cycle_num, temps[0]-5), title=None))
+                                               .format(cycle_num, temps[0] - 5), title=None))
             start_init_time = time.time()
             self.check_program_stopped()
 
@@ -103,7 +103,8 @@ class CalProgram(Program):
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
-            while not self.reset_temp(temps[0], cycle_num):
+            self.record_extra_points()
+            while not self.reset_temp(temps[0]):
                 self.sleep()
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
@@ -129,7 +130,34 @@ class CalProgram(Program):
                 cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
         self.set_oven_temp(50, force_connect=False, heat=False)
 
-    def reset_temp(self, start_temp: float, cycle_num: int) -> bool:
+    def record_extra_points(self, cycle_num: int):
+        for extra_point in self.options.extra_points:
+            valid = True
+            temperature, wavelength, power = 0, 0, 0
+            try:
+                temperature = float(extra_point[0].get())
+                if temperature == 0:
+                    valid = False
+            except ValueError:
+                valid = False
+            try:
+                wavelength = float(extra_point[1].get())
+                if wavelength == 0:
+                    valid = False
+            except ValueError:
+                valid = False
+            try:
+                power = float(extra_point[2].get())
+                if power == 0:
+                    valid = False
+            except ValueError:
+                valid = False
+            if valid:
+                curr_time = time.time()
+                self.database_controller.record_calibration_point(curr_time, temperature, waves, amps,
+                                                                  0, False, cycle_num)
+
+    def reset_temp(self, start_temp: float) -> bool:
         """
         Checks to see if the temperature is 4.5K below the starting temperature.
 
@@ -147,9 +175,6 @@ class CalProgram(Program):
         if drift_rate is not None:
             drift_rate = drift_rate[0]
         if temp <= float(start_temp + 273.15) - 4.5 or drift_rate < self.options.drift_rate.get():
-            drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(True)
-            self.database_controller.record_calibration_point(curr_time, temp, waves, amps,
-                                                              drift_rate, True, cycle_num)
             return True
         return False
 
