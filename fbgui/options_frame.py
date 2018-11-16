@@ -66,16 +66,28 @@ class OptionsPanel(ttk.Frame):
         self.program = program
         self.options_grid = ttk.Frame(self)
 
-        text = "Configure Calibration Run"
+        self.conf_parser = configparser.ConfigParser()
+        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
+
         if self.program == BAKING:
             text = "Configure Baking Run"
-        ttk.Label(self, text=text).pack(anchor="center", pady=20)
+            ttk.Label(self, text=text).pack(anchor="center", pady=20)
+        else:
+            text = "Configure Calibration Run"
+            header = ttk.Frame(self)
+            header.pack(anchor=tk.W, pady=5)
+            ttk.Label(header, text=text).pack(anchor=tk.W, side=tk.LEFT)
+            use_cool = self.conf_parser.getboolean(self.program, "use_cool")
+            self.cooling = tk.IntVar()
+            ttk.Label(header, text="Use oven cooling function?").pack(side=tk.LEFT, padx=50)
+            checkbox = ttk.Checkbutton(header, variable=self.cooling, width=5)
+            checkbox.pack(side=tk.LEFT)
+            if use_cool:
+                checkbox.invoke()
+            # self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
         self.options_grid.pack(expand=True, fill="both", anchor="center")
         self.fbg_grid = ttk.Frame(self)
         self.fbg_grid.pack(expand=True, fill="both", anchor="n")
-
-        self.conf_parser = configparser.ConfigParser()
-        self.conf_parser.read(os.path.join("config", "prog_config.cfg"))
 
         # Prevent from being garbage collected
         path = os.path.join(ASSETS_PATH, 'plus.png')
@@ -160,9 +172,10 @@ class OptionsPanel(ttk.Frame):
 
         row_num = 0
         if self.program == CAL:
-            use_cool = self.conf_parser.getboolean(self.program, "use_cool")
-            self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
             row_num += 1
+            # use_cool = self.conf_parser.getboolean(self.program, "use_cool")
+            # self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
+            # row_num += 1
 
         num_scans = self.conf_parser.getint(self.program, "num_scans")
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
@@ -189,37 +202,22 @@ class OptionsPanel(ttk.Frame):
 
             target_temps = self.conf_parser.get(self.program, "target_temps")
             self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
-                                                     .format(u'\u00B0'), row_num, 10, 2, target_temps)
+                                                     .format(u'\u00B0'), row_num, width=10, height=1,
+                                                     default_arr=target_temps)
             row_num += 1
             saved_point1 = self.conf_parser.get(self.program, "extra_point1").split(",")
             saved_point2 = self.conf_parser.get(self.program, "extra_point2").split(",")
-            temperature1, wavelength1, power1 = uh.extra_point_entry(self.options_grid, "Extra Point 1", row_num)
+            temperature1, wavelength1, power1 = uh.extra_point_entry(self.options_grid, "Extra Point 1", row_num, saved_point1)
             try:
                 temperature1.set(float(saved_point1[0]))
-            except ValueError:
-                pass
-            try:
-                wavelength1.set(float(saved_point1[1]))
-            except ValueError:
-                pass
-            try:
-                power1.set(float(saved_point1[2]))
-            except ValueError:
+            except (ValueError, IndexError):
                 pass
             self.extra_points.append([temperature1, wavelength1, power1])
             row_num += 1
-            temperature2, wavelength2, power2 = uh.extra_point_entry(self.options_grid, "Extra Point 2", row_num)
+            temperature2, wavelength2, power2 = uh.extra_point_entry(self.options_grid, "Extra Point 2", row_num, saved_point2)
             try:
                 temperature2.set(float(saved_point2[0]))
-            except ValueError:
-                pass
-            try:
-                wavelength2.set(float(saved_point2[1]))
-            except ValueError:
-                pass
-            try:
-                power2.set(float(saved_point2[2]))
-            except ValueError:
+            except (ValueError, IndexError):
                 pass
             self.extra_points.append([temperature2, wavelength2, power2])
             row_num += 1
@@ -287,16 +285,20 @@ class OptionsPanel(ttk.Frame):
         :param chan: index of which column to remove a FBG sub frame from
         """
         need_refresh = False
+        positions_to_remove = []
         for i, selected in enumerate(self.selected_fbgs[chan]):
             if selected.get():
                 need_refresh = True
-                del self.chan_nums[chan][i]
-                frame = self.snum_frames[chan][i]
-                uh.remove_snum_entry(frame)
-                del self.snum_frames[chan][i]
-                del self.sn_ents[chan][i]
-                del self.switch_positions[chan][i]
-                del self.selected_fbgs[chan][i]
+                positions_to_remove.append(i)
+
+        for i in reversed(positions_to_remove):
+            del self.chan_nums[chan][i]
+            frame = self.snum_frames[chan][i]
+            uh.remove_snum_entry(frame)
+            del self.snum_frames[chan][i]
+            del self.sn_ents[chan][i]
+            del self.switch_positions[chan][i]
+            del self.selected_fbgs[chan][i]
 
         if need_refresh:
             for frame in self.snum_frames[chan]:

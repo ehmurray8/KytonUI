@@ -103,7 +103,7 @@ class CalProgram(Program):
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
-            self.record_extra_points()
+            self.record_extra_points(cycle_num)
             while not self.reset_temp(temps[0]):
                 self.sleep()
 
