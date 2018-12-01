@@ -26,7 +26,7 @@ class MessageType(enum.Enum):
 
     def __init__(self, filter_num: int, color: str):
         """
-        Createa a Message Type.
+        Create a Message Type.
 
         :param filter_num: Level of filtering, lower numbers are more important
         :param color: the color to write the message as
@@ -101,7 +101,7 @@ class Message(object):
 
     def __init__(self, msg_type: MessageType, title: Optional[str], text: str):
         """
-        Create a message, and log the time it was creaeted.
+        Create a message, and log the time it was created.
 
         :param MessageType msg_type: type of message
         :param str title: title of the message, can be None
@@ -124,7 +124,7 @@ class LogView(ttk.Frame):
     :ivar List[MessageType] message_types: the MessageTypes to include in the filter combobox
     :ivar List[MessageType] all_types: a list of all the message types
     :ivar List[MessageDelay] message_delays: a list of all of the message delays
-    :ivar Dict[str: collections.deque] messages: mapping of message type title string to deques of fixed
+    :ivar Dict[str: collections.deque] messages: mapping of message type title string to dequeues of fixed
                                                  size containing messages' body
     :ivar Dict[str: float] message_time: message body without timestamp mapped to time in s
     :ivar Dict[str: MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay
@@ -166,7 +166,7 @@ class LogView(ttk.Frame):
         header_lbl.pack(anchor=tk.W, side=tk.LEFT)
         header_lbl.bind("<Button-1>", self.click_handler)
 
-        self.filter_box = ttk.Combobox(header_frame, values=[mtype.name.title() for mtype in self.message_types])
+        self.filter_box = ttk.Combobox(header_frame, values=[_type.name.title() for _type in self.message_types])
         self.filter_box.config(state="readonly")
         self.filter_box.set(MessageType.INFO.name.title())
         self.filter_box.pack(anchor=tk.E, side=tk.RIGHT)
@@ -194,7 +194,7 @@ class LogView(ttk.Frame):
             else:
                 self.message_types.remove(MessageType.DEVELOPER)
             self.showing = not self.showing
-            self.filter_box.config(values=[mtype.name.title() for mtype in self.message_types])
+            self.filter_box.config(values=[_type.name.title() for _type in self.message_types])
 
     def export(self):
         """Export the messages to a log text file in the log folder."""
@@ -203,10 +203,10 @@ class LogView(ttk.Frame):
         if not os.path.isdir("log"):
             os.mkdir("log")
         with open(os.path.join("log", "{}_log.txt".format(str(timestamp))), "w") as f:
-            mtype = MessageType.INFO.filter_num
+            _type = MessageType.INFO.filter_num
             if MessageType.DEVELOPER in self.message_types:
-                mtype = MessageType.DEVELOPER.filter_num
-            msgs = self.get_msgs(mtype)
+                _type = MessageType.DEVELOPER.filter_num
+            msgs = self.get_msgs(_type)
             msgs_sorted = sort_messages(msgs)
             for t, (text, tag) in msgs_sorted:
                 f.write(text)
@@ -227,24 +227,6 @@ class LogView(ttk.Frame):
 
         :param msg: message to add to the log view
         """
-        # TODO: Remove message filtering entirely, or update it to not filter out INFO Messages
-        # if msg.msg in self.message_time:
-        #     if msg.time - self.message_time[msg.msg] > FILTER_TIME:
-        #         del self.message_time[msg.msg]
-        #     else:
-        #         if msg.msg not in self.message_time_filter:
-        #             self.message_time_filter[msg.msg] = MessageDelay.FIRST
-        #         else:
-        #             elapsed_time = msg.time - self.message_time[msg.msg]
-        #             if elapsed_time > self.message_time_filter[msg.msg].value:
-        #                 self.messages[msg.type.name.title()].append((msg.time, msg.text))
-        #                 self.message_time[msg.msg] = msg.time
-        #                 if msg.type.filter_num <= self.current_filter.filter_num:
-        #                     self.write_msg(msg.text, msg.type.name)
-        #                 if self.message_time_filter[msg.msg] != MessageDelay.MAX:
-        #                     self.message_time_filter[msg.msg] = \
-        #                         self.message_delays[self.message_delays.index(self.message_time_filter[msg.msg])+1]
-        # else:
         self.message_time[msg.msg] = msg.time
         self.messages[msg.type.name.title()].append((msg.time, msg.text))
         if msg.type.filter_num <= self.current_filter.filter_num:

@@ -6,6 +6,7 @@ import time
 from typing import List, Tuple
 from uuid import UUID
 
+import tkinter as tk
 import visa
 
 from fbgui.constants import CAL, TEMP
@@ -95,7 +96,7 @@ class CalProgram(Program):
                 kwargs["cooling"] = True
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} to start temperature {} C."
-                                               .format(cycle_num, temps[0]-5), title=None))
+                                               .format(cycle_num, temps[0] - 5), title=None))
             start_init_time = time.time()
             self.check_program_stopped()
 
@@ -103,7 +104,8 @@ class CalProgram(Program):
             self.set_oven_temp(temps[0] - 5, **kwargs)
             self.disconnect_devices()
             kwargs["force_connect"] = False
-            while not self.reset_temp(temps[0], cycle_num):
+
+            while not self.reset_temp(temps[0]):
                 self.sleep()
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Initializing cycle {} took {}.".format(
@@ -111,6 +113,8 @@ class CalProgram(Program):
 
             self.master.main_queue.put(Message(MessageType.INFO, text="Starting cycle {}.".format(cycle_num),
                                                title=None))
+            self.record_beginning_extra_points(cycle_num, temps[0])
+
             start_cycle_time = time.time()
             for temp in temps:
                 self.current_set_temp = temp
@@ -125,11 +129,40 @@ class CalProgram(Program):
                 while not self.check_drift_rate(cycle_num):
                     self.sleep()
                     self.set_oven_temp(**kwargs)
+            self.record_end_extra_points(cycle_num, temps[-1])
             self.master.main_queue.put(Message(MessageType.INFO, text="Cycle {} complete it ran for {}.".format(
                 cycle_num, str(datetime.timedelta(seconds=int(time.time()-start_cycle_time)))), title=None))
         self.set_oven_temp(50, force_connect=False, heat=False)
 
-    def reset_temp(self, start_temp: float, cycle_num: int) -> bool:
+    def record_beginning_extra_points(self, cycle_num: int, first_temperature: float):
+        for temperature_float_var, wavelength_text, power_text in self.options.extra_points:
+            temperature = temperature_float_var.get()
+            if temperature != 0 and temperature < first_temperature:
+                self.record_extra_point(cycle_num, temperature, wavelength_text, power_text)
+
+    def record_end_extra_points(self, cycle_num: int, last_temperature: float):
+        for temperature_float_var, wavelength_text, power_text in self.options.extra_points:
+            temperature = temperature_float_var.get()
+            if temperature != 0 and temperature > last_temperature:
+                self.record_extra_point(cycle_num, temperature, wavelength_text, power_text)
+
+    def record_extra_point(self, cycle_num: int, temperature: float, wavelength_text: tk.Text, power_text: tk.Text):
+        try:
+            wavelengths = [float(x) for x in wavelength_text.get(1.0, tk.END).split(",") if float(x) != 0.0]
+        except ValueError:
+            wavelengths = []
+        try:
+            powers = [float(x) for x in power_text.get(1.0, tk.END).split(",") if float(x) != 0.0]
+        except ValueError:
+            powers = []
+        number_of_fbgs = sum(len(x) for x in self.options.sn_ents)
+        if len(wavelengths) == number_of_fbgs == len(powers):
+            curr_time = time.time()
+            temperature += 273.15
+            self.database_controller.record_calibration_point(curr_time, temperature, wavelengths, powers, drift_rate=0,
+                                                              is_real_calibration_point=True, cycle_num=cycle_num)
+
+    def reset_temp(self, start_temp: float) -> bool:
         """
         Checks to see if the temperature is 4.5K below the starting temperature.
 
@@ -147,9 +180,6 @@ class CalProgram(Program):
         if drift_rate is not None:
             drift_rate = drift_rate[0]
         if temp <= float(start_temp + 273.15) - 4.5 or drift_rate < self.options.drift_rate.get():
-            drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(True)
-            self.database_controller.record_calibration_point(curr_time, temp, waves, amps,
-                                                              drift_rate, True, cycle_num)
             return True
         return False
 
@@ -194,16 +224,18 @@ class CalProgram(Program):
         """
         while True:
             try:
-                drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(True)
+                drift_rate, curr_temp, curr_time, waves, amps = self.get_drift_rate(get_wave_amp=True)
 
                 if drift_rate <= self.options.drift_rate.get():
-                    self.database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
-                                                                      drift_rate, True, cycle_num)
+                    self.database_controller.record_calibration_point(curr_time, curr_temp, waves, amps, drift_rate,
+                                                                      is_real_calibration_point=True,
+                                                                      cycle_num=cycle_num)
                     return True
 
                 self.check_program_stopped()
                 self.database_controller.record_calibration_point(curr_time, curr_temp, waves, amps,
-                                                                  drift_rate, False, cycle_num)
+                                                                  drift_rate, is_real_calibration_point=False,
+                                                                  cycle_num=cycle_num)
                 return False
             except (AttributeError, visa.VisaIOError):
                 self.temp_controller_error()

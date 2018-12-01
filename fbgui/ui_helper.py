@@ -10,11 +10,12 @@ from PIL import ImageTk
 from dateutil import parser
 
 import fbgui.constants as constants
+from fbgui import helpers
 from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
 from fbgui.options_frame import OptionsPanel
 
 
-def ui_entry(var_type, use_func: bool=False):
+def ui_entry(var_type, use_func: bool = False):
     """
     Decorator for a standard ui entry input field.
 
@@ -24,7 +25,7 @@ def ui_entry(var_type, use_func: bool=False):
     def _ui_entry(func):
         @functools.wraps(func)
         def _wrapper(container: ttk.Frame, label_text: str, row: int, width: int,
-                     default: Union[str, int, float]=None) -> tk.Variable:
+                     default: Union[str, int, float] = None) -> tk.Variable:
             """
             Default behavior for a UI Entry widget.
 
@@ -36,27 +37,32 @@ def ui_entry(var_type, use_func: bool=False):
             :return: the tkinter variable storing the value of the entry
             """
             var = var_type()
-            ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+            label = ttk.Label(container, text=label_text)
+            label.grid(row=row, column=0, sticky='ew')
             ttk.Entry(container, textvariable=var, width=width, font=ENTRY_FONT) \
                 .grid(row=row, column=2, columnspan=2, sticky='ew')
             if default:
                 var.set(default)
             if use_func:
-                func(var, container, row)
+                func(var, container, row, label)
             return var
+
         return _wrapper
+
     return _ui_entry
 
 
 @ui_entry(tk.StringVar, True)
-def file_entry(text_var: tk.StringVar, container: ttk.Frame, row: int):
+def file_entry(text_var: tk.StringVar, container: ttk.Frame, row: int, label: ttk.Label):
     """
     Creates a labeled entry with a browse button for the excel file.
 
     :param text_var: the variable that will store the entry value
     :param container: the container to add the widgets to
     :param row: the row of the container grid to add the widget to
+    :param label: the row label, used for binding an onClick handler
     """
+    label.bind("<Button-1>", lambda _: mbox.showinfo("File name", text_var.get()))
     docs_photo = ImageTk.PhotoImage(DOCS_ICON)
     browse_button = ttk.Button(container, image=docs_photo, command=lambda: browse_file(text_var), width=10)
     browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
@@ -81,7 +87,7 @@ def string_entry() -> tk.StringVar:
     pass
 
 
-def checkbox_entry(container: ttk.Frame, label_text: str, row: int, checked: bool=True) -> tk.IntVar:
+def checkbox_entry(container: ttk.Frame, label_text: str, row: int, checked: bool = True) -> tk.IntVar:
     """
     Creates a checkbox entry, and returns a reference to the entry var.
 
@@ -101,7 +107,7 @@ def checkbox_entry(container: ttk.Frame, label_text: str, row: int, checked: boo
 
 
 def array_entry(container: ttk.Frame, label_text: str, row: int, width: int, height: int,
-                default_arr: List=None) -> tk.Text:
+                default_arr: List = None) -> tk.Text:
     """
     Creates an entry to input multi line text, used for storing array values.
 
@@ -152,7 +158,7 @@ def device_entry(container: ttk.Frame, dev_text: str, loc_str: str, row: int, po
 
 
 def units_entry(container: ttk.Frame, label_text: str, row: int, width: int, unit: str,
-                default_double: float=0.0) -> tk.DoubleVar:
+                default_double: float = 0.0) -> tk.DoubleVar:
     """
     Creates a time entry, and returns a reference to the entry var.
 
@@ -169,8 +175,44 @@ def units_entry(container: ttk.Frame, label_text: str, row: int, width: int, uni
     return text_var
 
 
+def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperature_value: float) -> \
+        Tuple[tk.DoubleVar, tk.Text, tk.Text]:
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    temperature = tk.DoubleVar()
+    entry_frame = ttk.Frame(container)
+    entry_frame.grid(row=row, column=2, columnspan=3, sticky='nsew')
+    temperature.set(temperature_value)
+
+    ttk.Entry(entry_frame, textvariable=temperature, width=10, font=ENTRY_FONT) \
+        .pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+    ttk.Label(entry_frame, text="K").pack(side=tk.LEFT, padx=5)
+
+    wavelength_text = tk.Text(entry_frame, width=30, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
+    wavelength_text.pack(side=tk.LEFT)
+    wavelength_label = ttk.Label(entry_frame, text="nm")
+    wavelength_label.pack(side=tk.LEFT, padx=5)
+    wavelength_label.bind("<Button-1>", lambda e: show_entries(e, "Wavelength (nm) @ {}", temperature, wavelength_text))
+
+    power_text = tk.Text(entry_frame, width=25, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
+    power_text.pack(side=tk.LEFT)
+    power_label = ttk.Label(entry_frame, text="dB")
+    power_label.pack(side=tk.LEFT, padx=5)
+    power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, wavelength_text))
+    return temperature, wavelength_text, power_text
+
+
+def show_entries(_, title: str, temperature: tk.DoubleVar, values_entry: tk.Text):
+    title_str = title.format(temperature.get())
+    try:
+        mbox.showinfo("Extra Point Viewer", "{}\n{}"
+                      .format(title_str, "\n".join("{}. {}".format(i+1, x)
+                                                   for i, x in enumerate(values_entry.get(1.0, tk.END).split(",")))))
+    except ValueError:
+        mbox.showwarning(title_str, "Text in the field is misformatted, please update the values.")
+
+
 def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
-                     switch_pos: Optional[int]) ->Tuple[ttk.Entry, tk.IntVar, ttk.Frame, tk.IntVar]:
+                     switch_pos: Optional[int]) -> Tuple[ttk.Entry, tk.IntVar, ttk.Frame, tk.IntVar]:
     """
     Creates a serial number entry with channel number and switch position.
 
@@ -312,7 +354,7 @@ def sort_column(tree: ttk.Treeview, col: int, descending: bool):
     tree.heading(col, command=lambda c=col: sort_column(tree, c, not descending))
 
 
-def get_all_children_tree(tree: ttk.Treeview, item: str="") -> List:
+def get_all_children_tree(tree: ttk.Treeview, item: str = "") -> List:
     """
     Get all of the children of item.
 
@@ -359,12 +401,12 @@ def setup_style():
         "Bold.TLabel": {"configure": {"font": ('Helvetica', 18, 'bold')}},
         "TLabel": {"configure": {"font": ('Helvetica', 16), "foreground": constants.TEXT_COLOR}},
         "TEntry": {"configure": {"font": ('Helvetica', 14)},
-                   "map":       {"fieldbackground": [("active", constants.ENTRY_COLOR),
-                                                     ("disabled", constants.BG_COLOR)],
-                                 "foreground": [("active", "black"),
-                                                ("disabled", constants.TEXT_COLOR)]}},
+                   "map": {"fieldbackground": [("active", constants.ENTRY_COLOR),
+                                               ("disabled", constants.BG_COLOR)],
+                           "foreground": [("active", "black"),
+                                          ("disabled", constants.TEXT_COLOR)]}},
         "Treeview": {"configure":
-                     {"foreground": constants.Colors.WHITE, "background": constants.BG_COLOR},
+                         {"foreground": constants.Colors.WHITE, "background": constants.BG_COLOR},
                      "map": {"background": [("selected", constants.TABS_COLOR)],
                              "font": [("selected", ('Helvetica', 10, "bold"))],
                              "foreground": [("selected", constants.Colors.BLACK)]}
@@ -376,8 +418,8 @@ def setup_style():
         "TNotebook.Tab": {
             "configure": {"padding": [10, 4], "font": ('Helvetica', 18),
                           "background": constants.TAB_COLOR},
-            "map":       {"background": [("selected", constants.TABS_COLOR)],
-                          "font": [("selected", ('Helvetica', 18, "bold"))],
-                          "expand": [("selected", [1, 1, 1, 0])]}}})
+            "map": {"background": [("selected", constants.TABS_COLOR)],
+                    "font": [("selected", ('Helvetica', 18, "bold"))],
+                    "expand": [("selected", [1, 1, 1, 0])]}}})
 
     style.theme_use("main")

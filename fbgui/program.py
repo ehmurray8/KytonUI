@@ -122,8 +122,11 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file, in a new thread."""
+        bake_sensitivity = self.options.bake_sensitivity.get()
+        if bake_sensitivity == 0:
+            bake_sensitivity = None
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
-                                               self.master.main_queue, self.program_type.prog_id)
+                                               self.master.main_queue, self.program_type.prog_id, bake_sensitivity)
         Thread(target=excel_controller.create_excel).start()
 
     def setup_tabs(self):
@@ -310,10 +313,14 @@ class Program(ttk.Notebook):
             real_point_data_frame = data_frame[data_frame[REAL_POINT_HEADER] == "True"]
             cycle_nums = set(self.database_controller.get_cycle_nums())
             partial_cycle_nums = []
+            num_points_in_cycle = len(self.options.get_target_temps())
+            for temperature, _, _ in self.options.extra_points:
+                if temperature.get() != 0:
+                    num_points_in_cycle += 1
             for cycle_num in cycle_nums:
                 temperatures = list(
                     real_point_data_frame[real_point_data_frame["Cycle Num"] == cycle_num][TEMPERATURE_HEADER])
-                if len(temperatures) != len(self.options.get_target_temps()) + 1:
+                if len(temperatures) != num_points_in_cycle:
                     partial_cycle_nums.append(cycle_num)
 
             if len(partial_cycle_nums) and mbox.askyesno("Calibration", "The run contains partially completed cycles, "
@@ -467,6 +474,7 @@ class Program(ttk.Notebook):
             except tk.TclError:
                 pass
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
+            self.conf_parser.set(self.program_type.prog_id, "bake_sensitivity", str(self.options.bake_sensitivity.get()))
         else:
             self.conf_parser.set(BAKING, "running", "false")
             self.conf_parser.set(self.program_type.prog_id, "use_cool", str(self.options.cooling.get()))
@@ -475,6 +483,13 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "temp_interval", str(self.options.temp_interval.get()))
             self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
+            for i, (temperature, wavelength_text, power_text) in enumerate(self.options.extra_points):
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_temperature".format(i+1),
+                                     str(temperature.get()))
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_wavelengths".format(i+1),
+                                     wavelength_text.get(1.0, tk.END))
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_powers".format(i+1),
+                                     power_text.get(1.0, tk.END))
             self.conf_parser.set(self.program_type.prog_id, "target_temps",
                                  ",".join(str(x) for x in self.options.get_target_temps()))
 

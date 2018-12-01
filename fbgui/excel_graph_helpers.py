@@ -68,9 +68,10 @@ class GraphParameters:
 
 class BakingGraphParameters(GraphParameters):
 
-    def __init__(self, num_rows: int, trend_line_indexes: List[int]):
+    def __init__(self, num_rows: int, trend_line_indexes: List[int], sensitivity_indexes: List[int]):
         super().__init__(num_rows)
         self.trend_line_indexes = trend_line_indexes
+        self.sensitivity_indexes = sensitivity_indexes
 
 
 class CalibrationGraphParameters(GraphParameters):

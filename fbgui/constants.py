@@ -50,6 +50,7 @@ BUTTON_TEXT = str(Colors.BLACK)
 ARRAY_ENTRY_COLOR = str(Colors.WHITE)
 
 ENTRY_FONT = ('Helvetica', 14)
+ENTRY_SMALL_FONT = ('Helvetica', 11)
 
 # Excel column colors
 HEX_COLORS = ["#FFD700", "#008080", "#FF7373", "#FFC0CB",
@@ -112,6 +113,6 @@ CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
 
 MARKERS = ['star', 'square', 'triangle', 'circle', 'x', 'plus', 'diamond']
 
-CALIBRATION_START_ROW = 3
+CALIBRATION_START_ROW = 2
 CALIBRATION_GRAPH_START_ROW = 2
 
