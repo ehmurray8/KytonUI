@@ -190,7 +190,6 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperatu
     wavelength_label = ttk.Label(entry_frame, text="nm")
     wavelength_label.pack(side=tk.LEFT, padx=5)
     wavelength_label.bind("<Button-1>", lambda e: show_entries(e, "Wavelength (nm) @ {}", temperature, wavelength_text))
-    wavelength_text
 
     power_text = tk.Text(entry_frame, width=25, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
     power_text.pack(side=tk.LEFT)
