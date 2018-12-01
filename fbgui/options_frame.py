@@ -163,9 +163,10 @@ class OptionsPanel(ttk.Frame):
                     mbox.showerror("Configuration Error", "Extra point {} has an invalid temperature.".format(i+1))
                     return False
 
-                if not self.check_extra_point(wavelength_text, i + 1, "wavelengths") or \
-                        not self.check_extra_point(power_text, i + 1, "powers"):
-                    return False
+                if temperature.get() != 0:
+                    if not self.check_extra_point(wavelength_text, i + 1, "wavelengths") or \
+                            not self.check_extra_point(power_text, i + 1, "powers"):
+                        return False
         return True
 
     def check_extra_point(self, text: tk.Text, point_num: int, input_type: str) -> bool:
