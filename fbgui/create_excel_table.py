@@ -44,6 +44,7 @@ class ExcelTable(ttk.Frame):
         self.item_ids = []  # type: List[int]
         self.file_paths = None  # type: Dict[int, str]
         self.s_nums = None  # type: List[str]
+        self.bake_sensitivities = None
         self.current_table_id = None  # type: int
         self._setup_widgets()
         self._setup_headers()
@@ -63,10 +64,12 @@ class ExcelTable(ttk.Frame):
         types = [tup[2] for tup in res]
         paths = [tup[3] for tup in res]
         snums = [tup[4] for tup in res]
+        sensitivities = [tup[5] for tup in res]
 
         prog_info = {"Id": ids, "Name": names, "Type": types}
         self.file_paths = {i: path for i, path in zip(prog_info["Id"], paths)}
         self.s_nums = {i: snum for i, snum in zip(prog_info["Id"], snums)}
+        self.bake_sensitivities = {i: sensitivity for i, sensitivity in zip(prog_info["Id"], sensitivities)}
         conn.close()
         for i, name, ptype in zip(prog_info["Id"][::-1], prog_info["Name"][::-1], prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
@@ -88,10 +91,10 @@ class ExcelTable(ttk.Frame):
 
         button_frame = ttk.Frame(self)
         button_frame.grid(column=0, row=3, pady=10)
-        create_excel = ttk.Button(button_frame, text="Generate Spreadsheet", command=self.create_spreadsheet)
-        create_excel.grid(column=0, row=0, padx=5)
         delete_table = ttk.Button(button_frame, text="Delete Run", command=self.delete_run)
         delete_table.grid(column=1, row=0, padx=5)
+        create_excel = ttk.Button(button_frame, text="Generate Spreadsheet", command=self.create_spreadsheet)
+        create_excel.grid(column=0, row=0, padx=5)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -101,7 +104,8 @@ class ExcelTable(ttk.Frame):
             values = self.tree.item(item)['values']
             f_name = self.file_paths[values[0]]
             s_nums = self.s_nums[values[0]].split(",")
-            threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2])).start()
+            sensitivity = self.bake_sensitivities[values[0]]
+            threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2], sensitivity)).start()
 
     def delete_run(self):
         table_ids = []
@@ -126,8 +130,9 @@ class ExcelTable(ttk.Frame):
             delete_tables(table_ids, program_types)
             self.refresh()
 
-    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str):
-        excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize())
+    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str, sensitivity: float):
+        excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize(),
+                                               sensitivity)
         excel_controller.create_excel()
 
     def _setup_headers(self):
