@@ -85,20 +85,22 @@
 </li>
       <li><a href="index.html#fbgui.database_controller.DatabaseController.add_entry_to_map">add_entry_to_map() (fbgui.database_controller.DatabaseController method)</a>
 </li>
+      <li><a href="index.html#fbgui.options_frame.OptionsPanel.add_extra_point">add_extra_point() (fbgui.options_frame.OptionsPanel method)</a>
+</li>
       <li><a href="index.html#fbgui.options_frame.OptionsPanel.add_fbg">add_fbg() (fbgui.options_frame.OptionsPanel method)</a>
 </li>
       <li><a href="index.html#fbgui.messages.LogView.add_msg">add_msg() (fbgui.messages.LogView method)</a>
 </li>
       <li><a href="index.html#fbgui.calibration_excel_container.CalibrationExcelContainer.add_power_deviation">add_power_deviation() (fbgui.calibration_excel_container.CalibrationExcelContainer method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#fbgui.calibration_excel_container.CalibrationExcelContainer.add_powers">add_powers() (fbgui.calibration_excel_container.CalibrationExcelContainer method)</a>
 
       <ul>
         <li><a href="index.html#fbgui.laser_data.LaserData.add_powers">(fbgui.laser_data.LaserData method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#fbgui.excel_file_controller.add_times">add_times() (in module fbgui.excel_file_controller)</a>
 </li>
       <li><a href="index.html#fbgui.calibration_excel_container.CalibrationExcelContainer.add_wavelength_deviation">add_wavelength_deviation() (fbgui.calibration_excel_container.CalibrationExcelContainer method)</a>
@@ -169,6 +171,8 @@
 </li>
       <li><a href="index.html#fbgui.cal_program.CalProgram.check_drift_rate">check_drift_rate() (fbgui.cal_program.CalProgram method)</a>
 </li>
+      <li><a href="index.html#fbgui.options_frame.OptionsPanel.check_extra_point">check_extra_point() (fbgui.options_frame.OptionsPanel method)</a>
+</li>
       <li><a href="index.html#fbgui.cal_program.CalProgram.check_program_stopped">check_program_stopped() (fbgui.cal_program.CalProgram method)</a>
 </li>
       <li><a href="index.html#fbgui.main_program.Application.check_queue">check_queue() (fbgui.main_program.Application method)</a>
@@ -228,6 +232,8 @@
       <li><a href="index.html#fbgui.options_frame.OptionsPanel.create_options_grid">create_options_grid() (fbgui.options_frame.OptionsPanel method)</a>
 </li>
       <li><a href="index.html#fbgui.database_controller.DatabaseController.create_program_table">create_program_table() (fbgui.database_controller.DatabaseController method)</a>
+</li>
+      <li><a href="index.html#fbgui.baking_curve_fit.create_sensitivity_line">create_sensitivity_line() (in module fbgui.baking_curve_fit)</a>
 </li>
       <li><a href="index.html#fbgui.excel_file_controller.ExcelFileController.create_series_bake">create_series_bake() (fbgui.excel_file_controller.ExcelFileController method)</a>
 </li>
@@ -289,13 +295,15 @@
 </li>
       <li><a href="index.html#fbgui.messages.MessageType.ERROR">ERROR (fbgui.messages.MessageType attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#fbgui.excel_file_controller.ExcelFileController">ExcelFileController (class in fbgui.excel_file_controller)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#fbgui.create_excel_table.ExcelTable">ExcelTable (class in fbgui.create_excel_table)</a>
 </li>
       <li><a href="index.html#fbgui.messages.LogView.export">export() (fbgui.messages.LogView method)</a>
+</li>
+      <li><a href="index.html#fbgui.ui_helper.extra_point_entry">extra_point_entry() (in module fbgui.ui_helper)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -647,16 +655,22 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#fbgui.database_controller.DatabaseController.record_baking_point">record_baking_point() (fbgui.database_controller.DatabaseController method)</a>
 </li>
+      <li><a href="index.html#fbgui.cal_program.CalProgram.record_beginning_extra_points">record_beginning_extra_points() (fbgui.cal_program.CalProgram method)</a>
+</li>
       <li><a href="index.html#fbgui.database_controller.DatabaseController.record_calibration_point">record_calibration_point() (fbgui.database_controller.DatabaseController method)</a>
+</li>
+      <li><a href="index.html#fbgui.cal_program.CalProgram.record_end_extra_points">record_end_extra_points() (fbgui.cal_program.CalProgram method)</a>
+</li>
+      <li><a href="index.html#fbgui.cal_program.CalProgram.record_extra_point">record_extra_point() (fbgui.cal_program.CalProgram method)</a>
 </li>
       <li><a href="index.html#fbgui.database_controller.DatabaseController.record_point">record_point() (fbgui.database_controller.DatabaseController method)</a>
 </li>
       <li><a href="index.html#fbgui.laser_recorder.LaserRecorder.record_wavelengths_and_amplitudes">record_wavelengths_and_amplitudes() (fbgui.laser_recorder.LaserRecorder method)</a>
 </li>
-      <li><a href="index.html#fbgui.create_excel_table.ExcelTable.refresh">refresh() (fbgui.create_excel_table.ExcelTable method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#fbgui.create_excel_table.ExcelTable.refresh">refresh() (fbgui.create_excel_table.ExcelTable method)</a>
+</li>
       <li><a href="index.html#fbgui.ui_helper.remove_snum_entry">remove_snum_entry() (in module fbgui.ui_helper)</a>
 </li>
       <li><a href="index.html#fbgui.datatable.DataTable.reset">reset() (fbgui.datatable.DataTable method)</a>
@@ -709,6 +723,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#fbgui.ui_helper.show_entries">show_entries() (in module fbgui.ui_helper)</a>
+</li>
       <li><a href="index.html#fbgui.excel_file_controller.ExcelFileController.show_excel">show_excel() (fbgui.excel_file_controller.ExcelFileController method)</a>
 </li>
       <li><a href="index.html#fbgui.graphing.Graph.show_main">show_main() (fbgui.graphing.Graph method)</a>
