@@ -22,7 +22,6 @@ def ui_entry(var_type, use_func: bool = False):
     :param var_type: tkinter variable class to use for the ttk Entry
     :param use_func: If True call the wrapped function
     """
-
     def _ui_entry(func):
         @functools.wraps(func)
         def _wrapper(container: ttk.Frame, label_text: str, row: int, width: int,
@@ -38,13 +37,14 @@ def ui_entry(var_type, use_func: bool = False):
             :return: the tkinter variable storing the value of the entry
             """
             var = var_type()
-            ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+            label = ttk.Label(container, text=label_text)
+            label.grid(row=row, column=0, sticky='ew')
             ttk.Entry(container, textvariable=var, width=width, font=ENTRY_FONT) \
                 .grid(row=row, column=2, columnspan=2, sticky='ew')
             if default:
                 var.set(default)
             if use_func:
-                func(var, container, row)
+                func(var, container, row, label)
             return var
 
         return _wrapper
@@ -53,14 +53,16 @@ def ui_entry(var_type, use_func: bool = False):
 
 
 @ui_entry(tk.StringVar, True)
-def file_entry(text_var: tk.StringVar, container: ttk.Frame, row: int):
+def file_entry(text_var: tk.StringVar, container: ttk.Frame, row: int, label: ttk.Label):
     """
     Creates a labeled entry with a browse button for the excel file.
 
     :param text_var: the variable that will store the entry value
     :param container: the container to add the widgets to
     :param row: the row of the container grid to add the widget to
+    :param label: the row label, used for binding an onClick handler
     """
+    label.bind("<Button-1>", lambda _: mbox.showinfo("File name", text_var.get()))
     docs_photo = ImageTk.PhotoImage(DOCS_ICON)
     browse_button = ttk.Button(container, image=docs_photo, command=lambda: browse_file(text_var), width=10)
     browse_button.grid(column=4, row=row, sticky=(tk.E, tk.W), padx=5, pady=5)
