@@ -173,12 +173,13 @@ def units_entry(container: ttk.Frame, label_text: str, row: int, width: int, uni
     return text_var
 
 
-def extra_point_entry(container: ttk.Frame, label_text: str, row: int, default_str: str) -> \
+def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperature_value: float) -> \
         Tuple[tk.DoubleVar, tk.Text, tk.Text]:
     ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
     temperature = tk.DoubleVar()
     entry_frame = ttk.Frame(container)
     entry_frame.grid(row=row, column=2, columnspan=3, sticky='nsew')
+    temperature.set(temperature_value)
 
     ttk.Entry(entry_frame, textvariable=temperature, width=10, font=ENTRY_FONT) \
         .pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
@@ -189,13 +190,13 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, default_s
     wavelength_label = ttk.Label(entry_frame, text="nm")
     wavelength_label.pack(side=tk.LEFT, padx=5)
     wavelength_label.bind("<Button-1>", lambda e: show_entries(e, "Wavelength (nm) @ {}", temperature, wavelength_text))
+    wavelength_text
 
     power_text = tk.Text(entry_frame, width=25, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
     power_text.pack(side=tk.LEFT)
     power_label = ttk.Label(entry_frame, text="dB")
     power_label.pack(side=tk.LEFT, padx=5)
     power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, wavelength_text))
-    temperature.set(0.0)
     return temperature, wavelength_text, power_text
 
 

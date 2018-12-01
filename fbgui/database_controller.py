@@ -100,7 +100,8 @@ class DatabaseController:
             self.add_entry_to_map(cursor)
         except sqlite3.OperationalError:
             cursor.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                           "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
+                           "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT, "
+                           "'BakeSensitivity REAL )")
             self.add_entry_to_map(cursor)
         table_id = self.get_table_id(cursor)
         cursor.execute("CREATE TABLE `{}` ({});".format(self.function_type.lower() + str(table_id), columns))

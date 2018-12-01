@@ -113,6 +113,6 @@ CALIBRATION_TEMPERATURE_HEADER = "Mean Temperature (K) {}"
 
 MARKERS = ['star', 'square', 'triangle', 'circle', 'x', 'plus', 'diamond']
 
-CALIBRATION_START_ROW = 3
+CALIBRATION_START_ROW = 2
 CALIBRATION_GRAPH_START_ROW = 2
 

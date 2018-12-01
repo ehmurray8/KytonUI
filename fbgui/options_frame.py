@@ -62,6 +62,7 @@ class OptionsPanel(ttk.Frame):
         self.num_cal_cycles = tk.IntVar()
         self.set_temp = tk.DoubleVar()
         self.cooling = tk.IntVar()
+        self.bake_sensitivity = tk.DoubleVar()
         self.target_temps_entry = None  # type: tk.Text
         self.program = program
         self.options_grid = ttk.Frame(self)
@@ -84,7 +85,6 @@ class OptionsPanel(ttk.Frame):
             checkbox.pack(side=tk.LEFT)
             if use_cool:
                 checkbox.invoke()
-            # self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
         self.options_grid.pack(expand=True, fill="both", anchor="center")
         self.fbg_grid = ttk.Frame(self)
         self.fbg_grid.pack(expand=True, fill="both", anchor="n")
@@ -156,6 +156,35 @@ class OptionsPanel(ttk.Frame):
                                "temps as comma separated decimal numbers.")
                 return False
 
+            for i, (temperature, wavelength_text, power_text) in enumerate(self.extra_points):
+                try:
+                    float(temperature.get())
+                except ValueError:
+                    mbox.showerror("Configuration Error", "Extra point {} has an invalid temperature.".format(i+1))
+                    return False
+
+                if not self.check_extra_point(wavelength_text, i + 1, "wavelengths") or \
+                        not self.check_extra_point(power_text, i + 1, "powers"):
+                    return False
+        return True
+
+    def check_extra_point(self, text: tk.Text, point_num: int, input_type: str) -> bool:
+        not_enough_error = str("Extra point {} doesn't have the same amount of {} as there are fbgs. To get a better "
+                               "view of the elements in the text box click on the unit label to the right of the text "
+                               "box.").format(point_num, input_type)
+        invalid_error = str("Extra point {} has invalid {}, ensure that all the values in the text box are "
+                            "decimal numbers. To get a better view of the elements in the text box click on the unit "
+                            "label to the right of the text box.").format(point_num, input_type)
+        error_title = "Configuration Error"
+        number_of_fbgs = sum(len(x) for x in self.sn_ents)
+        try:
+            values = [float(x) for x in text.get(1.0, tk.END).split(",")]
+            if len(values) != number_of_fbgs:
+                mbox.showerror(error_title, not_enough_error)
+                return False
+        except ValueError:
+            mbox.showerror(error_title, invalid_error)
+            return False
         return True
 
     def get_target_temps(self) -> List[float]:
@@ -171,11 +200,6 @@ class OptionsPanel(ttk.Frame):
         """Creates the grid for the user to configure options, in the upper portion of the options screen."""
 
         row_num = 0
-        if self.program == CAL:
-            row_num += 1
-            # use_cool = self.conf_parser.getboolean(self.program, "use_cool")
-            # self.cooling = uh.checkbox_entry(self.options_grid, "Use oven cooling function?", row_num, use_cool)
-            # row_num += 1
 
         num_scans = self.conf_parser.getint(self.program, "num_scans")
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
@@ -205,21 +229,9 @@ class OptionsPanel(ttk.Frame):
                                                      .format(u'\u00B0'), row_num, width=10, height=1,
                                                      default_arr=target_temps)
             row_num += 1
-            saved_point1 = self.conf_parser.get(self.program, "extra_point1").split(",")
-            saved_point2 = self.conf_parser.get(self.program, "extra_point2").split(",")
-            temperature1, wavelength1, power1 = uh.extra_point_entry(self.options_grid, "Extra Point 1", row_num, saved_point1)
-            try:
-                temperature1.set(float(saved_point1[0]))
-            except (ValueError, IndexError):
-                pass
-            self.extra_points.append([temperature1, wavelength1, power1])
+            self.add_extra_point(row_num, "1")
             row_num += 1
-            temperature2, wavelength2, power2 = uh.extra_point_entry(self.options_grid, "Extra Point 2", row_num, saved_point2)
-            try:
-                temperature2.set(float(saved_point2[0]))
-            except (ValueError, IndexError):
-                pass
-            self.extra_points.append([temperature2, wavelength2, power2])
+            self.add_extra_point(row_num, "2")
             row_num += 1
         else:
             set_temp = self.conf_parser.getfloat(self.program, "set_temp")
@@ -236,9 +248,39 @@ class OptionsPanel(ttk.Frame):
                                             "hours", prim_interval)
             row_num += 1
 
+            bake_sensitivity = self.conf_parser.getfloat(self.program, "bake_sensitivity")
+            self.bake_sensitivity = uh.units_entry(self.options_grid, "Bake Sensitivity: ", row_num, 5,
+                                                   "pm/K", bake_sensitivity)
+            row_num += 1
+
         fname = self.conf_parser.get(self.program, "file")
         self.file_name = uh.file_entry(self.options_grid, "Excel file name: ", row_num, 50, fname)
         row_num += 1
+
+    def add_extra_point(self, row_num: int, point_num: str):
+        saved_temperature = self.conf_parser.get(self.program, "extra_point{}_temperature".format(point_num))
+        try:
+            saved_temperature = float(saved_temperature)
+        except ValueError:
+            saved_temperature = 0.0
+
+        temperature, wavelength, power = uh.extra_point_entry(self.options_grid, "Extra Point {}".format(point_num),
+                                                              row_num, saved_temperature)
+        saved_wavelengths = self.conf_parser.get(self.program, "extra_point{}_wavelengths".format(point_num))
+        try:
+            [float(x) for x in saved_wavelengths.split(",")]
+        except ValueError:
+            saved_wavelengths = ""
+
+        saved_powers = self.conf_parser.get(self.program, "extra_point{}_powers".format(point_num))
+        try:
+            [float(x) for x in saved_powers.split(",")]
+        except ValueError:
+            saved_powers = ""
+
+        self.extra_points.append([temperature, wavelength, power])
+        wavelength.insert(1.0, saved_wavelengths)
+        power.insert(1.0, saved_powers)
 
     def create_start_btn(self, start: Callable) -> ttk.Button:
         """

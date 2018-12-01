@@ -21,8 +21,7 @@ def _get_master_temperatures(all_temperatures: List[List[float]]) -> List[float]
 
 
 class CalibrationExcelContainer:
-    def __init__(self, real_point_data_frame: pd.DataFrame, cycles: List[int],
-                 extra_points: List[List[float]]):
+    def __init__(self, real_point_data_frame: pd.DataFrame, cycles: List[int]):
         super().__init__()
         self.real_point_data_frame = real_point_data_frame
         self.cycles = cycles

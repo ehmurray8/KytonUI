@@ -13,7 +13,7 @@ from openpyxl.drawing.colors import ColorChoice, RGBPercent
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties
 from openpyxl.utils import get_column_letter
 
-from fbgui.baking_curve_fit import curve_fit_baking, add_baking_trend_line
+from fbgui.baking_curve_fit import curve_fit_baking, add_baking_trend_line, create_sensitivity_line
 from fbgui.calibration_excel_container import CalibrationExcelContainer
 from fbgui.data_container import DataCollection
 from fbgui.database_controller import DatabaseController
@@ -23,11 +23,13 @@ from fbgui.messages import *
 
 
 class ExcelFileController:
-    def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str):
+    def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str,
+                 bake_sensitivity: float=None):
         self.excel_file_path = excel_file_path
         self.excel_file_name = get_file_name(excel_file_path)
         self.fbg_names = fbg_names
         self.main_queue = main_queue
+        self.bake_sensitivity = bake_sensitivity
         self.database_controller = DatabaseController(excel_file_path, fbg_names, main_queue, function_type)
         self.is_calibration = function_type == CAL
 
@@ -68,6 +70,7 @@ class ExcelFileController:
 
         baking_coefficients = self._create_baking_coefficients(data_frame)
         trend_line_indexes = self._create_trend_lines(data_frame, baking_coefficients)
+        sensitivity_indexes = self._create_sensitivity_lines(data_frame, trend_line_indexes)
 
         style_frame = self.create_style_frame(data_frame)
         style_frame.apply_column_style(cols_to_style=MEAN_DELTA_WAVELENGTH_HEADER,
@@ -77,7 +80,7 @@ class ExcelFileController:
         delta_temperature_headers = [col for col in data_frame.columns.values if DELTA_TEMPERATURE_HEADER in col]
         style_frame.apply_column_style(cols_to_style=delta_temperature_headers,
                                        styler_obj=Styler(font_color=utils.colors.red))
-        parameters = BakingGraphParameters(len(data_frame.index), trend_line_indexes)
+        parameters = BakingGraphParameters(len(data_frame.index), trend_line_indexes, sensitivity_indexes)
         self.show_excel([style_frame], ["Baking Data"], parameters, self._graph_bake_results,
                         baking_coefficients=baking_coefficients)
 
@@ -92,6 +95,14 @@ class ExcelFileController:
         for i, fbg_name in enumerate(self.fbg_names):
             trend_line_indexes.append(add_baking_trend_line(data_frame, list(reversed(coefficients[i])), fbg_name))
         return trend_line_indexes
+
+    def _create_sensitivity_lines(self, data_frame: pd.DataFrame, trend_line_indexes: List[int]) -> List[int]:
+        sensitivity_indexes = []
+        if self.bake_sensitivity is not None:
+            for trend_index, fbg_name in zip(trend_line_indexes, self.fbg_names):
+                sensitivity_index = create_sensitivity_line(data_frame, self.bake_sensitivity, trend_index, fbg_name)
+                sensitivity_indexes.append(sensitivity_index)
+        return sensitivity_indexes
 
     def create_calibration_excel(self):
         data_frame = self.database_controller.to_data_frame()
@@ -155,14 +166,14 @@ class ExcelFileController:
     def write_coefficients(self, worksheet: Worksheet, row: int, coefficients: List[List[float]],
                            derivative_coefficients: List[List[float]]=None, write_sensitivity: bool = False) -> int:
         sensitivity_header = "Sensitivity (pm/K)"
-        drift_rate_header = "Drift Rate"
+        drift_rate_header = "Drift Rate (mK/hr)"
         for i, name in enumerate(self.fbg_names):
             worksheet.merge_cells("A{}:E{}".format(row, row))
             values = [name]
             if derivative_coefficients is None and row == 1:
-                values.extend(["", "", "", "", "Sensitivity (pm/K)", "", "Drift Rate (mK/hr)"])
-                worksheet.column_dimensions["F"].width = len(sensitivity_header) + 1
-                worksheet.column_dimensions["H"].width = len(drift_rate_header) + 1
+                values.extend(["", "", "", "", sensitivity_header, "", drift_rate_header])
+                worksheet.column_dimensions["F"].width = len(sensitivity_header)
+                worksheet.column_dimensions["H"].width = len(drift_rate_header)
             worksheet.append(values)
             row += 1
 
@@ -204,8 +215,11 @@ class ExcelFileController:
                     equation = "=({}) * 1000".format(" + ".join(equation_parts))
                     row_values.append(equation)
             else:
-                row_values.extend([1, "", '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 1000 / F{0}, ""), "")'
-                                  .format(row)])
+                sensitivity = 1
+                if self.bake_sensitivity is not None:
+                    sensitivity = self.bake_sensitivity
+                row_values.extend([sensitivity, "",
+                                   '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 1000 / F{0}, ""), "")' .format(row)])
             worksheet.append(row_values)
             row += 1
         return row
@@ -282,11 +296,13 @@ class ExcelFileController:
         start_row = 2
         start_column = 2
 
-        x_axis_title = "{} Time (hr)".format(u"\u0394")
+        x_axis_title = "{} Time from start (hr)".format(u"\u0394")
         y_axis_title = "{} Wavelength (pm)".format(u"\u0394")
+        y_axis_title_sensitivity = "Drift (mK)"
         x_values = Reference(parameters.data_sheet, min_col=start_column, min_row=start_row, max_row=last_row)
         for i, fbg_name in enumerate(self.fbg_names):
-            chart_title = "{} {} Time vs. Wavelength (pm); {}".format(fbg_name, u"\u0394", self.excel_file_name)
+            chart_title = "{} {} Wavelength (pm) vs. {} Time from start ; {}"\
+                .format(fbg_name, u"\u0394", u"\u0394", self.excel_file_name)
             chart = ScatterChart()
             y_values = Reference(parameters.data_sheet, min_col=self._get_baking_wavelength_column(i),
                                  min_row=start_row, max_row=last_row)
@@ -295,18 +311,29 @@ class ExcelFileController:
 
             trend_values = Reference(parameters.data_sheet, min_col=parameters.trend_line_indexes[i] + 1,
                                      min_row=start_row, max_row=last_row)
-            series = Series(trend_values, x_values, title="Trend")
+            series = Series(trend_values, x_values, title="Trend (pm)")
             chart.series.append(series)
-
             format_chart(chart, x_axis_title, y_axis_title, chart_title)
             parameters.chart_sheet.add_chart(chart, "B{}".format(30*i + 2))
+
+            if self.bake_sensitivity is not None:
+                sensitivity_chart_title = "{} drift (mK) vs. {} Time from start; {}"\
+                    .format(fbg_name, u"\u0394", self.excel_file_name)
+                sensitivity_chart = ScatterChart()
+                sensitivity_values = Reference(parameters.data_sheet, min_col=parameters.sensitivity_indexes[i] + 1,
+                                               min_row=start_row, max_row=last_row)
+                series = Series(sensitivity_values, x_values, title="Drift (mK)")
+                sensitivity_chart.series.append(series)
+                format_chart(sensitivity_chart, x_axis_title, y_axis_title_sensitivity, sensitivity_chart_title)
+                parameters.chart_sheet.add_chart(sensitivity_chart, "V{}".format(30 * i + 2))
 
     def _get_baking_wavelength_column(self, fbg_index: int):
         return 2 * len(self.fbg_names) + 5 + fbg_index + 1
 
     def graph_wavelength_deviation(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.deviation_wavelength_indexes,
-                                parameters, CalibrationGraphSubType.WAVELENGTH_DEVIATION, _add_cycle_series)
+                                parameters, CalibrationGraphSubType.WAVELENGTH_DEVIATION, _add_cycle_series,
+                                parameters.mean_temperature_column)
 
     def graph_wavelength_means(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.mean_wavelength_indexes,
@@ -315,7 +342,7 @@ class ExcelFileController:
 
     def graph_power_deviation(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.deviation_power_indexes, parameters, CalibrationGraphSubType.POWER_DEVIATION,
-                                _add_cycle_series)
+                                _add_cycle_series, parameters.mean_temperature_column)
 
     def graph_power_means(self, parameters: CalibrationGraphParameters):
         self._graph_calibration(parameters.mean_power_indexes, parameters, CalibrationGraphSubType.POWER_MEAN,
@@ -334,20 +361,14 @@ class ExcelFileController:
     def _graph_calibration(self, indexes: List[int], parameters: CalibrationGraphParameters,
                            sub_type: CalibrationGraphSubType,
                            add_series: Callable[[ScatterChart, int, int, SeriesParameters], int],
-                           static_temperature_column: int=None):
+                           static_temperature_column: int):
         series_parameters = SeriesParameters(parameters, indexes, sub_type)
-        temperature_column = 1 if static_temperature_column is None else static_temperature_column
+        temperature_column = static_temperature_column
         index = 0
         for i, fbg_name in enumerate(self.fbg_names):
             chart = create_chart(parameters.temperatures)
-            temperature_column = self._get_temperature_column(i, temperature_column, static_temperature_column)
             index = add_series(chart, index, temperature_column, series_parameters)
             self._create_chart(i, parameters.cycles, chart, parameters.chart_sheet, sub_type)
-
-    def _get_temperature_column(self, index: int, temperature_column: int, static_temperature_column: int) -> int:
-        if static_temperature_column is not None:
-            return static_temperature_column
-        return 1 if index == 0 else temperature_column + (len(self.fbg_names) * 2 + 1)
 
     def _create_chart(self, index: int, cycles: List[int], chart: ScatterChart, chart_sheet: Worksheet,
                       sub_type: CalibrationGraphSubType):
