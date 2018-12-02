@@ -19,7 +19,7 @@ from PIL import ImageTk, Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from fbgui import graphing, ui_helper, options_frame, helpers
+from fbgui import graphing, ui_helper, options_frame, helpers, reset_config
 from fbgui.constants import PROG_CONFIG_PATH, CONFIG_IMG_PATH, GRAPH_PATH, FILE_PATH, DB_PATH, DEV_CONFIG_PATH, \
     CAL, BAKING, LASER, SWITCH, TEMP, OVEN, REAL_POINT_HEADER, TEMPERATURE_HEADER
 from fbgui.database_controller import DatabaseController
@@ -106,8 +106,19 @@ class Program(ttk.Notebook):
         self.file_photo = ImageTk.PhotoImage(Image.open(FILE_PATH))
         self.setup_tabs()
 
-        is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
-        is_running = is_running or self.program_type.prog_id == CAL and self.conf_parser.getboolean(CAL, "running")
+        is_running = False
+        try:
+            try:
+                is_running = self.program_type.prog_id == BAKING and self.conf_parser.getboolean(BAKING, "running")
+            except configparser.NoOptionError:
+                pass
+            try:
+                is_running = is_running or self.program_type.prog_id == CAL \
+                                           and self.conf_parser.getboolean(CAL, "running")
+            except configparser.NoOptionError:
+                pass
+        except configparser.NoSectionError:
+            reset_config.reset_config(rewrite_program=True)
         if is_running:
             self.start()
 

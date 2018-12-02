@@ -10,7 +10,7 @@ from queue import Queue
 from tkinter import LEFT, E, RIGHT, W
 from typing import List, Dict
 
-from fbgui import ui_helper as uh
+from fbgui import ui_helper as uh, reset_config
 from fbgui.constants import DB_PATH, PROG_CONFIG_PATH, BAKING, CAL
 from fbgui.database_controller import delete_tables
 from fbgui.excel_file_controller import ExcelFileController
@@ -117,8 +117,14 @@ class ExcelTable(ttk.Frame):
             values = self.tree.item(item)['values']
             table_id = values[0]
             table_ids.append(table_id)
-            if table_id is not None and table_id == self.current_table_id and \
-                    (conf_parser.getboolean(BAKING, "running") or conf_parser.getboolean(CAL, "running")):
+            is_running = False
+            try:
+                is_running = conf_parser.getboolean(BAKING, "running") or conf_parser.getboolean(CAL, "running")
+            except configparser.NoOptionError:
+                pass
+            except configparser.NoSectionError:
+                reset_config.reset_config(rewrite_program=True)
+            if table_id is not None and table_id == self.current_table_id and is_running:
                 mbox.showerror("Deletion Error", "Cannot delete the currently running program.")
                 return
             program_name = values[1]
