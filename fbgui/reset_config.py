@@ -6,7 +6,7 @@ from typing import IO
 import fbgui.constants as constants
 
 
-def reset_config():
+def reset_config(rewrite_dev=False, rewrite_program=False):
     """
     Ensures the configuration files, and database exist. Writes default config files if they do not exist
     """
@@ -26,7 +26,7 @@ def reset_config():
                     "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
     conn.close()
 
-    if not os.path.isfile(constants.DEV_CONFIG_PATH):
+    if rewrite_dev or not os.path.isfile(constants.DEV_CONFIG_PATH):
         with open(constants.DEV_CONFIG_PATH, "w") as f:  # type: IO[str]
             print("""
 [Devices]
@@ -38,7 +38,7 @@ sm125_address = 0.0.0.0
 sm125_port = 0
 """, file=f)
 
-    if not os.path.isfile(constants.PROG_CONFIG_PATH):
+    if rewrite_program or not os.path.isfile(constants.PROG_CONFIG_PATH):
         with open(constants.PROG_CONFIG_PATH, "w") as f:  # type: IO[str]
             print("""
 [Baking]

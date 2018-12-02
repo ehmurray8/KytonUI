@@ -1,6 +1,7 @@
 import configparser
 from typing import List
 
+from fbgui import reset_config
 from fbgui.constants import *
 
 
@@ -19,6 +20,11 @@ def get_configured_fbg_names(is_calibration: bool) -> List[str]:
     parser.read(PROG_CONFIG_PATH)
     serial_nums = []
     for i in range(4):
-        serial_nums.extend(parser.get(program, "chan{}_fbgs".format(i+1)).split(","))
+        try:
+            serial_nums.extend(parser.get(program, "chan{}_fbgs".format(i+1)).split(","))
+        except configparser.NoOptionError:
+            pass
+        except configparser.NoSectionError:
+            reset_config.reset_config(rewrite_program=True)
     serial_nums = [s for s in serial_nums if s != '']
     return serial_nums

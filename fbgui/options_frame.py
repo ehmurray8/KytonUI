@@ -7,7 +7,7 @@ from tkinter import messagebox as mbox
 from tkinter import ttk
 from typing import List, Callable
 
-from fbgui import helpers, ui_helper as uh
+from fbgui import helpers, ui_helper as uh, reset_config
 from fbgui.constants import BAKING, CAL, ASSETS_PATH
 
 
@@ -78,7 +78,10 @@ class OptionsPanel(ttk.Frame):
             header = ttk.Frame(self)
             header.pack(anchor=tk.W, pady=5)
             ttk.Label(header, text=text).pack(anchor=tk.W, side=tk.LEFT)
-            use_cool = self.conf_parser.getboolean(self.program, "use_cool")
+            try:
+                use_cool = self.conf_parser.getboolean(self.program, "use_cool")
+            except configparser.NoOptionError:
+                use_cool = False
             self.cooling = tk.IntVar()
             ttk.Label(header, text="Use oven cooling function?").pack(side=tk.LEFT, padx=50)
             checkbox = ttk.Checkbutton(header, variable=self.cooling, width=5)
@@ -95,7 +98,11 @@ class OptionsPanel(ttk.Frame):
         path = os.path.join(ASSETS_PATH, 'minus.png')
         self.img_minus = tk.PhotoImage(file=path)
 
-        self.create_options_grid()
+        try:
+            self.create_options_grid()
+        except configparser.NoSectionError:
+            reset_config.reset_config(rewrite_program=True)
+            mbox.showerror("Internal error", "Please restart the program.")
 
     def check_config(self, db_controller) -> bool:
         """
@@ -163,9 +170,10 @@ class OptionsPanel(ttk.Frame):
                     mbox.showerror("Configuration Error", "Extra point {} has an invalid temperature.".format(i+1))
                     return False
 
-                if not self.check_extra_point(wavelength_text, i + 1, "wavelengths") or \
-                        not self.check_extra_point(power_text, i + 1, "powers"):
-                    return False
+                if temperature.get() != 0:
+                    if not self.check_extra_point(wavelength_text, i + 1, "wavelengths") or \
+                            not self.check_extra_point(power_text, i + 1, "powers"):
+                        return False
         return True
 
     def check_extra_point(self, text: tk.Text, point_num: int, input_type: str) -> bool:
@@ -201,30 +209,51 @@ class OptionsPanel(ttk.Frame):
 
         row_num = 0
 
-        num_scans = self.conf_parser.getint(self.program, "num_scans")
+        try:
+            num_scans = self.conf_parser.getint(self.program, "num_scans")
+        except configparser.NoOptionError:
+            num_scans = 1
         self.num_pts = uh.int_entry(self.options_grid, "Num laser scans to average:", row_num, 5, num_scans)
         row_num += 1
 
         if self.program == CAL:
-            num_readings = self.conf_parser.getint(self.program, "num_temp_readings")
+            try:
+                num_readings = self.conf_parser.getint(self.program, "num_temp_readings")
+            except configparser.NoOptionError:
+                num_readings = 1
             self.num_temp_readings = uh.int_entry(self.options_grid, "Num temperature readings to average: ",
                                                   row_num, 10, num_readings)
             row_num += 1
 
-            temp_int = self.conf_parser.getfloat(self.program, "temp_interval")
+            try:
+                temp_int = self.conf_parser.getfloat(self.program, "temp_interval")
+            except configparser.NoOptionError:
+                temp_int = 1.0
+
             self.temp_interval = uh.units_entry(self.options_grid, "Time between temp readings: ", row_num, 10,
                                                 "seconds", temp_int)
             row_num += 1
 
-            drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            try:
+                drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            except configparser.NoOptionError:
+                drate = 5.0
+
             self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
-            num_cycles = self.conf_parser.getint(self.program, "num_cycles")
+            try:
+                num_cycles = self.conf_parser.getint(self.program, "num_cycles")
+            except configparser.NoOptionError:
+                num_cycles = 1
+
             self.num_cal_cycles = uh.int_entry(self.options_grid, "Num cal cycles: ", row_num, 10, num_cycles)
             row_num += 1
 
-            target_temps = self.conf_parser.get(self.program, "target_temps")
+            try:
+                target_temps = self.conf_parser.get(self.program, "target_temps")
+            except configparser.NoOptionError:
+                target_temps = ""
             self.target_temps_entry = uh.array_entry(self.options_grid, "Target temps {}C [Comma Separated]"
                                                      .format(u'\u00B0'), row_num, width=10, height=1,
                                                      default_arr=target_temps)
@@ -234,21 +263,34 @@ class OptionsPanel(ttk.Frame):
             self.add_extra_point(row_num, "2")
             row_num += 1
         else:
-            set_temp = self.conf_parser.getfloat(self.program, "set_temp")
+            try:
+                set_temp = self.conf_parser.getfloat(self.program, "set_temp")
+            except configparser.NoOptionError:
+                set_temp = 0.0
             self.set_temp = uh.double_entry(self.options_grid, "Baking Temperature ({}C): ".format(u'\u00B0'),
                                             row_num, 10, set_temp)
             row_num += 1
 
-            drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            try:
+                drate = self.conf_parser.getfloat(self.program, "drift_rate")
+            except configparser.NoOptionError:
+                drate = 5.0
             self.drift_rate = uh.units_entry(self.options_grid, "Drift rate: ", row_num, 10, "mK/min", drate)
             row_num += 1
 
-            prim_interval = self.conf_parser.getfloat(self.program, "prim_interval")
+            try:
+                prim_interval = self.conf_parser.getfloat(self.program, "prim_interval")
+            except configparser.NoOptionError:
+                prim_interval = 1.0
+
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
                                             "hours", prim_interval)
             row_num += 1
 
-            bake_sensitivity = self.conf_parser.getfloat(self.program, "bake_sensitivity")
+            try:
+                bake_sensitivity = self.conf_parser.getfloat(self.program, "bake_sensitivity")
+            except configparser.NoOptionError:
+                bake_sensitivity = 0.0
             self.bake_sensitivity = uh.units_entry(self.options_grid, "Bake Sensitivity: ", row_num, 5,
                                                    "pm/K", bake_sensitivity)
             row_num += 1
@@ -258,7 +300,10 @@ class OptionsPanel(ttk.Frame):
         row_num += 1
 
     def add_extra_point(self, row_num: int, point_num: str):
-        saved_temperature = self.conf_parser.get(self.program, "extra_point{}_temperature".format(point_num))
+        try:
+            saved_temperature = self.conf_parser.get(self.program, "extra_point{}_temperature".format(point_num))
+        except configparser.NoOptionError:
+            saved_temperature = 0.0
         try:
             saved_temperature = float(saved_temperature)
         except ValueError:
@@ -266,13 +311,19 @@ class OptionsPanel(ttk.Frame):
 
         temperature, wavelength, power = uh.extra_point_entry(self.options_grid, "Extra Point {}".format(point_num),
                                                               row_num, saved_temperature)
-        saved_wavelengths = self.conf_parser.get(self.program, "extra_point{}_wavelengths".format(point_num))
+        try:
+            saved_wavelengths = self.conf_parser.get(self.program, "extra_point{}_wavelengths".format(point_num))
+        except configparser.NoOptionError:
+            saved_wavelengths = ""
         try:
             [float(x) for x in saved_wavelengths.split(",")]
         except ValueError:
             saved_wavelengths = ""
 
-        saved_powers = self.conf_parser.get(self.program, "extra_point{}_powers".format(point_num))
+        try:
+            saved_powers = self.conf_parser.get(self.program, "extra_point{}_powers".format(point_num))
+        except configparser.NoOptionError:
+            saved_powers = ""
         try:
             [float(x) for x in saved_powers.split(",")]
         except ValueError:
@@ -375,8 +426,20 @@ class OptionsPanel(ttk.Frame):
             title_frame.grid(sticky='nsew', column=i, row=0)
 
         for i in range(4):
-            snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
-            positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
+            try:
+                try:
+                    snums = self.conf_parser.get(self.program, "chan{}_fbgs".format(i+1)).split(",")
+                except configparser.NoOptionError:
+                    return
+                try:
+                    positions = self.conf_parser.get(self.program, "chan{}_positions".format(i+1)).split(",")
+                except configparser.NoOptionError:
+                    return
+            except configparser.NoSectionError:
+                reset_config.reset_config(rewrite_program=True)
+                return
+            if len(snums) != len(positions):
+                return
             try:
                 positions = helpers.list_cast(positions, int)
                 for snum, pos in zip(snums, positions):

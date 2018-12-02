@@ -158,12 +158,36 @@ class Application(tk.Tk):
         ttk.Label(self.device_frame, text="Device", style="Bold.TLabel").grid(row=1, column=1, sticky='nsew')
         ttk.Label(self.device_frame, text="Location", style="Bold.TLabel").grid(row=1, column=3, sticky='nsew')
         ttk.Label(self.device_frame, text="Port", style="Bold.TLabel").grid(row=1, column=5, sticky='nsew')
-        laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
-        laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
-        switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
-        switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
-        temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
-        oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
+
+        laser_loc, laser_port, switch_loc, switch_port, temp_loc, oven_loc = "", "", "", "", "", ""
+        try:
+            try:
+                laser_loc = self.conf_parser.get(constants.DEV_HEADER, "sm125_address")
+            except configparser.NoOptionError:
+                pass
+            try:
+                laser_port = self.conf_parser.get(constants.DEV_HEADER, "sm125_port")
+            except configparser.NoOptionError:
+                pass
+            try:
+                switch_loc = self.conf_parser.get(constants.DEV_HEADER, "op_switch_address")
+            except configparser.NoOptionError:
+                pass
+            try:
+                switch_port = self.conf_parser.get(constants.DEV_HEADER, "op_switch_port")
+            except configparser.NoOptionError:
+                pass
+            try:
+                temp_loc = self.conf_parser.get(constants.DEV_HEADER, "controller_location")
+            except configparser.NoOptionError:
+                pass
+            try:
+                oven_loc = self.conf_parser.get(constants.DEV_HEADER, "oven_location")
+            except configparser.NoOptionError:
+                pass
+        except configparser.NoSectionError:
+            reset_config.reset_config(rewrite_dev=True)
+
         switch_conf = [(constants.LASER, laser_loc, laser_port, self.sm125_address, self.sm125_port),
                        (constants.SWITCH, switch_loc, switch_port, self.op_switch_address, self.op_switch_port),
                        (constants.TEMP, temp_loc, None, self.controller_location, None),

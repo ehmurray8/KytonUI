@@ -75,6 +75,19 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="fbgui.baking_curve_fit.create_sensitivity_line">
+<code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">create_sensitivity_line</code><span class="sig-paren">(</span><em>data_frame</em>, <em>sensitivity</em>, <em>trend_index</em>, <em>fbg_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#create_sensitivity_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.create_sensitivity_line" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="fbgui.baking_curve_fit.curve_fit_baking">
 <code class="descclassname">fbgui.baking_curve_fit.</code><code class="descname">curve_fit_baking</code><span class="sig-paren">(</span><em>data_frame</em>, <em>y_index</em>, <em>x_index=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/baking_curve_fit.html#curve_fit_baking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.baking_curve_fit.curve_fit_baking" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -252,8 +265,23 @@ temperature.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fbgui.cal_program.CalProgram.record_beginning_extra_points">
+<code class="descname">record_beginning_extra_points</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>first_temperature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.record_beginning_extra_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.record_beginning_extra_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.cal_program.CalProgram.record_end_extra_points">
+<code class="descname">record_end_extra_points</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>last_temperature</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.record_end_extra_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.record_end_extra_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fbgui.cal_program.CalProgram.record_extra_point">
+<code class="descname">record_extra_point</code><span class="sig-paren">(</span><em>cycle_num</em>, <em>temperature</em>, <em>wavelength_text</em>, <em>power_text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.record_extra_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.record_extra_point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.cal_program.CalProgram.reset_temp">
-<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em>, <em>cycle_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_temp</code><span class="sig-paren">(</span><em>start_temp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/cal_program.html#CalProgram.reset_temp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.cal_program.CalProgram.reset_temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks to see if the temperature is 4.5K below the starting temperature.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -261,7 +289,7 @@ temperature.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>start_temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The first temperature the oven is set to</li>
-<li><strong>cycle_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of the current cycle</li>
+<li><strong>cycle_num</strong> – Number of the current cycle</li>
 </ul>
 </td>
 </tr>
@@ -538,7 +566,7 @@ based on the is_cal parameter</p>
 
 <dl class="method">
 <dt id="fbgui.create_excel_table.ExcelTable.show_spreadsheet">
-<code class="descname">show_spreadsheet</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>program_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.show_spreadsheet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.show_spreadsheet" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show_spreadsheet</code><span class="sig-paren">(</span><em>file_path</em>, <em>fbg_names</em>, <em>program_type</em>, <em>sensitivity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/create_excel_table.html#ExcelTable.show_spreadsheet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.create_excel_table.ExcelTable.show_spreadsheet" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -868,7 +896,7 @@ func, and named name.</p>
 <span id="fbgui-excel-file-controller-module"></span><h2>fbgui.excel_file_controller module<a class="headerlink" href="#module-fbgui.excel_file_controller" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="fbgui.excel_file_controller.ExcelFileController">
-<em class="property">class </em><code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">ExcelFileController</code><span class="sig-paren">(</span><em>excel_file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.excel_file_controller.</code><code class="descname">ExcelFileController</code><span class="sig-paren">(</span><em>excel_file_path</em>, <em>fbg_names</em>, <em>main_queue</em>, <em>function_type</em>, <em>bake_sensitivity=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_file_controller.html#ExcelFileController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_file_controller.ExcelFileController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="method">
 <dt id="fbgui.excel_file_controller.ExcelFileController.add_delta_powers">
@@ -902,7 +930,7 @@ func, and named name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x0000019FDD878158&gt;</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">&lt;function SeriesFactory at 0x000001AEFBB166A8&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -1037,7 +1065,7 @@ func, and named name.</p>
 <span id="fbgui-excel-graph-helpers-module"></span><h2>fbgui.excel_graph_helpers module<a class="headerlink" href="#module-fbgui.excel_graph_helpers" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="fbgui.excel_graph_helpers.BakingGraphParameters">
-<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">BakingGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>trend_line_indexes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#BakingGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.BakingGraphParameters" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">fbgui.excel_graph_helpers.</code><code class="descname">BakingGraphParameters</code><span class="sig-paren">(</span><em>num_rows</em>, <em>trend_line_indexes</em>, <em>sensitivity_indexes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/excel_graph_helpers.html#BakingGraphParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.excel_graph_helpers.BakingGraphParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#fbgui.excel_graph_helpers.GraphParameters" title="fbgui.excel_graph_helpers.GraphParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">fbgui.excel_graph_helpers.GraphParameters</span></code></a></p>
 </dd></dl>
 
@@ -1882,7 +1910,7 @@ connected to the optical switch</li>
 <li><strong>message_types</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageType" title="fbgui.messages.MessageType"><em>MessageType</em></a><em>]</em>) – the MessageTypes to include in the filter combobox</li>
 <li><strong>all_types</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageType" title="fbgui.messages.MessageType"><em>MessageType</em></a><em>]</em>) – a list of all the message types</li>
 <li><strong>message_delays</strong> (<em>List</em><em>[</em><a class="reference internal" href="#fbgui.messages.MessageDelay" title="fbgui.messages.MessageDelay"><em>MessageDelay</em></a><em>]</em>) – a list of all of the message delays</li>
-<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><strong>str</strong></a> – collections.deque] messages: mapping of message type title string to deques of fixed
+<li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><strong>str</strong></a> – collections.deque] messages: mapping of message type title string to dequeues of fixed
 size containing messages’ body</li>
 <li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><strong>str</strong></a> – float] message_time: message body without timestamp mapped to time in s</li>
 <li><strong>Dict</strong><strong>[</strong><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><strong>str</strong></a> – MessageDelay] message_time_filer: message body without timestamp mapped to MessageDelay</li>
@@ -2143,6 +2171,11 @@ cooling</li>
 </tbody>
 </table>
 <dl class="method">
+<dt id="fbgui.options_frame.OptionsPanel.add_extra_point">
+<code class="descname">add_extra_point</code><span class="sig-paren">(</span><em>row_num</em>, <em>point_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.add_extra_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.add_extra_point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fbgui.options_frame.OptionsPanel.add_fbg">
 <code class="descname">add_fbg</code><span class="sig-paren">(</span><em>chan</em>, <em>fbg_name=None</em>, <em>switch_pos=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.add_fbg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.add_fbg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an fbg input to the view, at the column corresponding to the chan index. If fbg_name, and switch_pos
@@ -2173,6 +2206,19 @@ type.
 <p>:param db_controller fbgui.DatabaseController
 :return True if properly configured, False otherwise</p>
 <table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fbgui.options_frame.OptionsPanel.check_extra_point">
+<code class="descname">check_extra_point</code><span class="sig-paren">(</span><em>text</em>, <em>point_num</em>, <em>input_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/options_frame.html#OptionsPanel.check_extra_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.options_frame.OptionsPanel.check_extra_point" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2590,8 +2636,21 @@ Pause the program if the program is already running.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="fbgui.ui_helper.extra_point_entry">
+<code class="descclassname">fbgui.ui_helper.</code><code class="descname">extra_point_entry</code><span class="sig-paren">(</span><em>container</em>, <em>label_text</em>, <em>row</em>, <em>temperature_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#extra_point_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.extra_point_entry" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">DoubleVar</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Text</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Text</span></code>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="fbgui.ui_helper.file_entry">
-<code class="descclassname">fbgui.ui_helper.</code><code class="descname">file_entry</code><span class="sig-paren">(</span><em>text_var</em>, <em>container</em>, <em>row</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#file_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.file_entry" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">fbgui.ui_helper.</code><code class="descname">file_entry</code><span class="sig-paren">(</span><em>text_var</em>, <em>container</em>, <em>row</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#file_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.file_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a labeled entry with a browse button for the excel file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2601,6 +2660,7 @@ Pause the program if the program is already running.</p>
 <li><strong>text_var</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">StringVar</span></code>) – the variable that will store the entry value</li>
 <li><strong>container</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>) – the container to add the widgets to</li>
 <li><strong>row</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – the row of the container grid to add the widget to</li>
+<li><strong>label</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Label</span></code>) – the row label, used for binding an onClick handler</li>
 </ul>
 </td>
 </tr>
@@ -2747,6 +2807,11 @@ CheckButton</p>
 <code class="descclassname">fbgui.ui_helper.</code><code class="descname">setup_style</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#setup_style"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.setup_style" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up the main style of the program.</p>
 </dd></dl>
+
+<dl class="function">
+<dt id="fbgui.ui_helper.show_entries">
+<code class="descclassname">fbgui.ui_helper.</code><code class="descname">show_entries</code><span class="sig-paren">(</span><em>_</em>, <em>title</em>, <em>temperature</em>, <em>values_entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fbgui/ui_helper.html#show_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fbgui.ui_helper.show_entries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="fbgui.ui_helper.sort_column">
