@@ -133,9 +133,7 @@ class Program(ttk.Notebook):
 
     def create_excel(self):
         """Creates excel file, in a new thread."""
-        bake_sensitivity = self.options.bake_sensitivity.get()
-        if bake_sensitivity == 0:
-            bake_sensitivity = None
+        bake_sensitivity = self.options.get_bake_sensitivity()
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
                                                self.master.main_queue, self.program_type.prog_id, bake_sensitivity)
         Thread(target=excel_controller.create_excel).start()
@@ -171,7 +169,8 @@ class Program(ttk.Notebook):
         file_name = self.options.file_name
         self.database_controller = DatabaseController(file_name.get(), self.snums,
                                                       self.master.main_queue, self.program_type.prog_id,
-                                                      self.table, excel_table=self.master.excel_table)
+                                                      self.table, excel_table=self.master.excel_table,
+                                                      bake_sensitivity=self.options.get_bake_sensitivity())
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
                                               self.database_controller)
@@ -269,7 +268,8 @@ class Program(ttk.Notebook):
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
 
-        controller = self.database_controller.new_instance(self.options.file_name.get(), self.snums)
+        controller = self.database_controller.new_instance(self.options.file_name.get(), self.snums,
+                                                           self.options.get_bake_sensitivity())
         can_start = self.check_device_config() and self.options.check_config(controller)
         if can_start:
             if self.master.running:
@@ -303,7 +303,8 @@ class Program(ttk.Notebook):
                     ui_helper.lock_widgets(self.options)
                     ui_helper.lock_main_widgets(self.master.device_frame)
                     self.graph_helper.show_subplots()
-                    self.database_controller.reset_controller(self.options.file_name.get(), self.snums)
+                    self.database_controller.reset_controller(self.options.file_name.get(), self.snums,
+                                                              self.options.get_bake_sensitivity())
 
                     self.handle_partial_cycles()
                     Thread(target=self.run_program).start()
@@ -485,7 +486,12 @@ class Program(ttk.Notebook):
             except tk.TclError:
                 pass
             self.conf_parser.set(self.program_type.prog_id, "prim_interval", str(self.options.prim_time.get()))
-            self.conf_parser.set(self.program_type.prog_id, "bake_sensitivity", str(self.options.bake_sensitivity.get()))
+            bake_sensitivity = self.options.get_bake_sensitivity()
+            if bake_sensitivity is None:
+                bake_sensitivity = ""
+            else:
+                bake_sensitivity = ",".join(str(x) for x in bake_sensitivity)
+            self.conf_parser.set(self.program_type.prog_id, "bake_sensitivity", str(bake_sensitivity))
         else:
             self.conf_parser.set(BAKING, "running", "false")
             self.conf_parser.set(self.program_type.prog_id, "use_cool", str(self.options.cooling.get()))

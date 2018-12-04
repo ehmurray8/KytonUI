@@ -24,13 +24,14 @@ from fbgui.messages import *
 
 class ExcelFileController:
     def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str,
-                 bake_sensitivity: float=None):
+                 bake_sensitivity: List[float]=None):
         self.excel_file_path = excel_file_path
         self.excel_file_name = get_file_name(excel_file_path)
         self.fbg_names = fbg_names
         self.main_queue = main_queue
         self.bake_sensitivity = bake_sensitivity
-        self.database_controller = DatabaseController(excel_file_path, fbg_names, main_queue, function_type)
+        self.database_controller = DatabaseController(excel_file_path, fbg_names, main_queue, function_type,
+                                                      bake_sensitivity=bake_sensitivity)
         self.is_calibration = function_type == CAL
 
     def create_excel(self):
@@ -99,8 +100,8 @@ class ExcelFileController:
     def _create_sensitivity_lines(self, data_frame: pd.DataFrame, trend_line_indexes: List[int]) -> List[int]:
         sensitivity_indexes = []
         if self.bake_sensitivity is not None:
-            for trend_index, fbg_name in zip(trend_line_indexes, self.fbg_names):
-                sensitivity_index = create_sensitivity_line(data_frame, self.bake_sensitivity, trend_index, fbg_name)
+            for i, (trend_index, fbg_name) in enumerate(zip(trend_line_indexes, self.fbg_names)):
+                sensitivity_index = create_sensitivity_line(data_frame, self.bake_sensitivity, trend_index, fbg_name, i)
                 sensitivity_indexes.append(sensitivity_index)
         return sensitivity_indexes
 
@@ -217,7 +218,7 @@ class ExcelFileController:
             else:
                 sensitivity = 1
                 if self.bake_sensitivity is not None:
-                    sensitivity = self.bake_sensitivity
+                    sensitivity = self.bake_sensitivity[i]
                 row_values.extend([sensitivity, "",
                                    '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 1000 / F{0}, ""), "")' .format(row)])
             worksheet.append(row_values)

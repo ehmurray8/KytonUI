@@ -197,8 +197,17 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperatu
     power_text.pack(side=tk.LEFT)
     power_label = ttk.Label(entry_frame, text="dB")
     power_label.pack(side=tk.LEFT, padx=5)
-    power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, wavelength_text))
+    power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, power_text))
     return temperature, wavelength_text, power_text
+
+
+def baking_sensitivity_entry(container: ttk.Frame, label_text: str, row: int, default_value: str) -> tk.Text:
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    bake_sensitivity_text = tk.Text(container, width=10, height=2, bg=ARRAY_ENTRY_COLOR,
+                                    font=constants.ENTRY_SMALL_FONT)
+    bake_sensitivity_text.grid(row=row, column=2, columnspan=2, sticky='ew')
+    bake_sensitivity_text.insert(1.0, default_value)
+    return bake_sensitivity_text
 
 
 def show_entries(_, title: str, temperature: tk.DoubleVar, values_entry: tk.Text):

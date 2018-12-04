@@ -104,7 +104,7 @@ class ExcelTable(ttk.Frame):
             values = self.tree.item(item)['values']
             f_name = self.file_paths[values[0]]
             s_nums = self.s_nums[values[0]].split(",")
-            sensitivity = self.bake_sensitivities[values[0]]
+            sensitivity = self.bake_sensitivities[values[0]].split(",")
             threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2], sensitivity)).start()
 
     def delete_run(self):
@@ -136,7 +136,7 @@ class ExcelTable(ttk.Frame):
             delete_tables(table_ids, program_types)
             self.refresh()
 
-    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str, sensitivity: float):
+    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str, sensitivity: List[float]):
         excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize(),
                                                sensitivity)
         excel_controller.create_excel()

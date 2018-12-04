@@ -5,7 +5,7 @@ from typing import List
 import pandas as pd
 
 from fbgui import helpers
-from fbgui.constants import DB_PATH, CAL
+from fbgui.constants import DB_PATH, CAL, BAKING
 from fbgui.datatable import DataTable
 from fbgui.exceptions import ProgramStopped
 from fbgui.messages import *
@@ -13,21 +13,24 @@ from fbgui.messages import *
 
 class DatabaseController:
     def __init__(self, file_path: str, fbg_names: List[str], main_queue: queue.Queue,
-                 function_type: str, table: DataTable = None, excel_table=None):
+                 function_type: str, table: DataTable = None, excel_table=None, bake_sensitivity: List[float] = None):
         self.main_queue = main_queue
         self.table = table
         self.function_type = function_type
         self.excel_table = excel_table  # type: create_excel_table.ExcelTable
+        self.bake_sensitivity = None  # type: List[float]
         self.file_path = None  # type: str
         self.file_name = None  # type: str
         self.fbg_names = None  # type: List[str]
         self.column_names = None  # type: List[str]
-        self.reset_controller(file_path, fbg_names)
+        self.reset_controller(file_path, fbg_names, bake_sensitivity)
 
-    def reset_controller(self, file_path: str, fbg_names: List[str]):
+    def reset_controller(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float] = None):
         self.file_path = file_path
         self.file_name = helpers.get_file_name(self.file_path)
         self.fbg_names = fbg_names
+        if self.function_type == BAKING:
+            self.bake_sensitivity = bake_sensitivity
         self.column_names = create_column_names(fbg_names)
         if self.function_type == CAL:
             add_calibration_column_names(self.column_names)
@@ -35,9 +38,9 @@ class DatabaseController:
         if self.table is not None:
             self.table.setup_headers(table_column_names, reset=True)
 
-    def new_instance(self, file_path: str, fbg_names: List[str]):
+    def new_instance(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float] = None):
         return DatabaseController(file_path, fbg_names, self.main_queue, self.function_type,
-                                  self.table, self.excel_table)
+                                  self.table, self.excel_table, bake_sensitivity)
 
     def record_baking_point(self, timestamp: float, temperature: float, wavelengths: List[float], powers: List[float]):
         column_command_string = ",".join(self.create_database_column_commands())
@@ -101,7 +104,7 @@ class DatabaseController:
         except sqlite3.OperationalError:
             cursor.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                            "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT, "
-                           "'BakeSensitivity REAL )")
+                           "'BakeSensitivity TEXT )")
             self.add_entry_to_map(cursor)
         table_id = self.get_table_id(cursor)
         cursor.execute("CREATE TABLE `{}` ({});".format(self.function_type.lower() + str(table_id), columns))
@@ -111,8 +114,15 @@ class DatabaseController:
         return cursor.fetchall()[0][0]
 
     def add_entry_to_map(self, cursor: sqlite3.Cursor):
-        cursor.execute("INSERT INTO map('ProgName','ProgType','FilePath','Snums') VALUES ('{}','{}','{}','{}')"
-                       .format(self.file_name, self.function_type.lower(), self.file_path, ",".join(self.fbg_names)))
+        if self.bake_sensitivity is None:
+            cursor.execute("INSERT INTO map('ProgName','ProgType','FilePath','Snums') VALUES ('{}','{}','{}','{}')"
+                           .format(self.file_name, self.function_type.lower(), self.file_path,
+                                   ",".join(self.fbg_names)))
+        else:
+            cursor.execute("INSERT INTO map('ProgName','ProgType','FilePath','Snums', 'BakeSensitivity') "
+                           "VALUES ('{}','{}','{}','{}','{}')"
+                           .format(self.file_name, self.function_type.lower(), self.file_path, ",".join(self.fbg_names),
+                                   ",".join(str(x) for x in self.bake_sensitivity)))
 
     def handle_sql_error(self, sql_error: sqlite3.OperationalError):
         try:
