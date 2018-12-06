@@ -23,8 +23,12 @@ def _get_values(data_frame: pd.DataFrame, index: int) -> Iterable[float]:
     return data_frame[column_name]
 
 
-def create_sensitivity_line(data_frame: pd.DataFrame, sensitivity: float, trend_index: int, fbg_name: str) -> int:
-    column_name = "{} [Trend line / Sensitivity] (K)".format(fbg_name)
+def create_sensitivity_line(data_frame: pd.DataFrame, sensitivity: List[float], trend_index: int, fbg_name: str,
+                            fbg_index: int) -> int:
+    column_name = "{} Drift (mK)".format(fbg_name)
     trend_column = data_frame.columns.tolist()[trend_index]
-    data_frame[column_name] = 1000 * (data_frame[trend_column] / sensitivity)
+    try:
+        data_frame[column_name] = 1000 * (data_frame[trend_column] / float(sensitivity[fbg_index]))
+    except ValueError:
+        pass
     return data_frame.columns.tolist().index(column_name)

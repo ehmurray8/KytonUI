@@ -95,9 +95,11 @@ class CalibrationGraphParameters(GraphParameters):
 
 
 class SeriesParameters:
-    def __init__(self, parameters: CalibrationGraphParameters, indexes: List[int], sub_type: CalibrationGraphSubType):
+    def __init__(self, parameters: CalibrationGraphParameters, indexes: List[int], sub_type: CalibrationGraphSubType,
+                 extra_point_temperatures: List[float]):
         self.indexes = indexes
         self.data_sheet = parameters.data_sheet
         self.last_row = parameters.num_rows + 1
         self.sub_type = sub_type
         self.cycles = parameters.cycles
+        self.extra_point_temperatures = extra_point_temperatures
