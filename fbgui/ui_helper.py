@@ -10,7 +10,6 @@ from PIL import ImageTk
 from dateutil import parser
 
 import fbgui.constants as constants
-from fbgui import helpers
 from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
 from fbgui.options_frame import OptionsPanel
 
@@ -185,7 +184,7 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperatu
 
     ttk.Entry(entry_frame, textvariable=temperature, width=10, font=ENTRY_FONT) \
         .pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
-    ttk.Label(entry_frame, text="K").pack(side=tk.LEFT, padx=5)
+    ttk.Label(entry_frame, text="C").pack(side=tk.LEFT, padx=5)
 
     wavelength_text = tk.Text(entry_frame, width=30, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
     wavelength_text.pack(side=tk.LEFT)
@@ -197,8 +196,17 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperatu
     power_text.pack(side=tk.LEFT)
     power_label = ttk.Label(entry_frame, text="dB")
     power_label.pack(side=tk.LEFT, padx=5)
-    power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, wavelength_text))
+    power_label.bind("<Button-1>", lambda e: show_entries(e, "Power (dB) @ {}", temperature, power_text))
     return temperature, wavelength_text, power_text
+
+
+def baking_sensitivity_entry(container: ttk.Frame, label_text: str, row: int, default_value: str) -> tk.Text:
+    ttk.Label(container, text=label_text).grid(row=row, column=0, sticky='ew')
+    bake_sensitivity_text = tk.Text(container, width=10, height=2, bg=ARRAY_ENTRY_COLOR,
+                                    font=constants.ENTRY_SMALL_FONT)
+    bake_sensitivity_text.grid(row=row, column=2, columnspan=2, sticky='ew')
+    bake_sensitivity_text.insert(1.0, default_value)
+    return bake_sensitivity_text
 
 
 def show_entries(_, title: str, temperature: tk.DoubleVar, values_entry: tk.Text):

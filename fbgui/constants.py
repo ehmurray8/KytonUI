@@ -115,3 +115,8 @@ MARKERS = ['star', 'square', 'triangle', 'circle', 'x', 'plus', 'diamond']
 
 CALIBRATION_START_ROW = 2
 CALIBRATION_GRAPH_START_ROW = 2
+
+
+CREATE_MAP_TABLE = str("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                       "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT, "
+                       "'BakeSensitivity' TEXT, 'ExtraPoint1Temperature' REAL, 'ExtraPoint2Temperature' REAL)")

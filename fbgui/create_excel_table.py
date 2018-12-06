@@ -44,7 +44,9 @@ class ExcelTable(ttk.Frame):
         self.item_ids = []  # type: List[int]
         self.file_paths = None  # type: Dict[int, str]
         self.s_nums = None  # type: List[str]
-        self.bake_sensitivities = None
+        self.bake_sensitivities = None  # type: Dict[int, str]
+        self.extra_point1_dict = None  # type: Dict[int, float]
+        self.extra_point2_dict = None  # type: Dict[int, float]
         self.current_table_id = None  # type: int
         self._setup_widgets()
         self._setup_headers()
@@ -65,13 +67,18 @@ class ExcelTable(ttk.Frame):
         paths = [tup[3] for tup in res]
         snums = [tup[4] for tup in res]
         sensitivities = [tup[5] for tup in res]
+        extra_point1 = [tup[6] for tup in res]
+        extra_point2 = [tup[7] for tup in res]
 
         prog_info = {"Id": ids, "Name": names, "Type": types}
-        self.file_paths = {i: path for i, path in zip(prog_info["Id"], paths)}
-        self.s_nums = {i: snum for i, snum in zip(prog_info["Id"], snums)}
-        self.bake_sensitivities = {i: sensitivity for i, sensitivity in zip(prog_info["Id"], sensitivities)}
+        id_column = prog_info["Id"]
+        self.file_paths = {i: path for i, path in zip(id_column, paths)}
+        self.s_nums = {i: snum for i, snum in zip(id_column, snums)}
+        self.bake_sensitivities = {i: sensitivity for i, sensitivity in zip(id_column, sensitivities)}
+        self.extra_point1_dict = {i: ep for i, ep in zip(id_column, extra_point1)}
+        self.extra_point2_dict = {i: ep for i, ep in zip(id_column, extra_point2)}
         conn.close()
-        for i, name, ptype in zip(prog_info["Id"][::-1], prog_info["Name"][::-1], prog_info["Type"][::-1]):
+        for i, name, ptype in zip(id_column[::-1], prog_info["Name"][::-1], prog_info["Type"][::-1]):
             self.add_data([i, name, ptype])
 
     def _setup_widgets(self):
@@ -102,10 +109,24 @@ class ExcelTable(ttk.Frame):
         """Create the spreadsheet(s) for the selected elements of the tree view."""
         for item in self.tree.selection():
             values = self.tree.item(item)['values']
-            f_name = self.file_paths[values[0]]
-            s_nums = self.s_nums[values[0]].split(",")
-            sensitivity = self.bake_sensitivities[values[0]]
-            threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2], sensitivity)).start()
+            selected_index = values[0]
+            f_name = self.file_paths[selected_index]
+            s_nums = self.s_nums[selected_index].split(",")
+            try:
+                sensitivity = self.bake_sensitivities[selected_index].split(",")
+            except AttributeError:
+                sensitivity = None
+            extra_points = []
+            extra_point1 = self.extra_point1_dict[selected_index]
+            extra_point2 = self.extra_point2_dict[selected_index]
+            if extra_point1 is not None:
+                extra_points.append(extra_point1)
+            if extra_point2 is not None:
+                extra_points.append(extra_point2)
+            if len(extra_points) == 0:
+                extra_points = None
+            threading.Thread(target=self.show_spreadsheet, args=(f_name, s_nums, values[2], sensitivity,
+                                                                 extra_points)).start()
 
     def delete_run(self):
         table_ids = []
@@ -136,9 +157,10 @@ class ExcelTable(ttk.Frame):
             delete_tables(table_ids, program_types)
             self.refresh()
 
-    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str, sensitivity: float):
+    def show_spreadsheet(self, file_path: str, fbg_names: List[str], program_type: str, sensitivity: List[float],
+                         extra_points: List[float]):
         excel_controller = ExcelFileController(file_path, fbg_names, self.main_queue, program_type.capitalize(),
-                                               sensitivity)
+                                               bake_sensitivity=sensitivity, extra_point_temperatures=extra_points)
         excel_controller.create_excel()
 
     def _setup_headers(self):

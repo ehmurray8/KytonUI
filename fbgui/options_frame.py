@@ -5,7 +5,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox as mbox
 from tkinter import ttk
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 from fbgui import helpers, ui_helper as uh, reset_config
 from fbgui.constants import BAKING, CAL, ASSETS_PATH
@@ -62,7 +62,7 @@ class OptionsPanel(ttk.Frame):
         self.num_cal_cycles = tk.IntVar()
         self.set_temp = tk.DoubleVar()
         self.cooling = tk.IntVar()
-        self.bake_sensitivity = tk.DoubleVar()
+        self._bake_sensitivity = None  # type: tk.Text
         self.target_temps_entry = None  # type: tk.Text
         self.program = program
         self.options_grid = ttk.Frame(self)
@@ -204,10 +204,29 @@ class OptionsPanel(ttk.Frame):
         """
         return helpers.list_cast(self.target_temps_entry.get(1.0, tk.END).split(","), float)
 
+    def get_bake_sensitivity(self) -> Optional[List[float]]:
+        try:
+            bake_sensitivity = helpers.list_cast(self._bake_sensitivity.get(1.0, tk.END).split(","), float)
+        except (ValueError, AttributeError):
+            return None
+        if len(bake_sensitivity) == 0:
+            return None
+        return bake_sensitivity
+
+    def get_extra_point_temperatures(self) -> Optional[List[float]]:
+        temperatures = []
+        for temperature, _, _ in self.extra_points:
+            if temperature.get() != 0.0:
+                temperatures.append(temperature.get())
+        if len(temperatures) == 0:
+            temperatures = None
+        return temperatures
+
     def create_options_grid(self):
         """Creates the grid for the user to configure options, in the upper portion of the options screen."""
 
         row_num = 0
+
         try:
             num_scans = self.conf_parser.getint(self.program, "num_scans")
         except configparser.NoOptionError:
@@ -271,6 +290,14 @@ class OptionsPanel(ttk.Frame):
             row_num += 1
 
             try:
+                bake_sensitivity_str = self.conf_parser.get(self.program, "bake_sensitivity")
+            except configparser.NoOptionError:
+                bake_sensitivity_str = ""
+            self._bake_sensitivity = uh.baking_sensitivity_entry(self.options_grid, "Bake Sensitivity (pm/K): ",
+                                                                 row_num, bake_sensitivity_str)
+            row_num += 1
+
+            try:
                 drate = self.conf_parser.getfloat(self.program, "drift_rate")
             except configparser.NoOptionError:
                 drate = 5.0
@@ -284,14 +311,6 @@ class OptionsPanel(ttk.Frame):
 
             self.prim_time = uh.units_entry(self.options_grid, "Primary time interval: ", row_num, 5,
                                             "hours", prim_interval)
-            row_num += 1
-
-            try:
-                bake_sensitivity = self.conf_parser.getfloat(self.program, "bake_sensitivity")
-            except configparser.NoOptionError:
-                bake_sensitivity = 0.0
-            self.bake_sensitivity = uh.units_entry(self.options_grid, "Bake Sensitivity: ", row_num, 5,
-                                                   "pm/K", bake_sensitivity)
             row_num += 1
 
         fname = self.conf_parser.get(self.program, "file")
