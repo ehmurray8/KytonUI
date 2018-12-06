@@ -2,6 +2,7 @@ import queue
 import traceback
 from tkinter import messagebox
 from typing import Tuple, Callable
+import math
 
 import pandas as pd
 from StyleFrame import Styler, utils, StyleFrame
@@ -24,14 +25,16 @@ from fbgui.messages import *
 
 class ExcelFileController:
     def __init__(self, excel_file_path: str, fbg_names: List[str], main_queue: queue.Queue, function_type: str,
-                 bake_sensitivity: List[float]=None):
+                 bake_sensitivity: List[float]=None, extra_point_temperatures: List[float]=None):
         self.excel_file_path = excel_file_path
         self.excel_file_name = get_file_name(excel_file_path)
         self.fbg_names = fbg_names
         self.main_queue = main_queue
         self.bake_sensitivity = bake_sensitivity
+        self.extra_point_temperatures = extra_point_temperatures
         self.database_controller = DatabaseController(excel_file_path, fbg_names, main_queue, function_type,
-                                                      bake_sensitivity=bake_sensitivity)
+                                                      bake_sensitivity=bake_sensitivity,
+                                                      extra_point_temperatures=extra_point_temperatures)
         self.is_calibration = function_type == CAL
 
     def create_excel(self):
@@ -134,9 +137,8 @@ class ExcelFileController:
                                             styler_obj=
                                             Styler(number_format=utils.number_formats.date_time_with_seconds))
         first_column = "Temperature (K) Cycle {}".format(container.cycles[0])
-        first_temp = calibration_data_frame[first_column].values[0]
-        last_temp = calibration_data_frame[first_column].values[-1] + 5
-        parameters = CalibrationGraphParameters(len(calibration_data_frame.index), [first_temp, last_temp],
+        temperatures = calibration_data_frame[first_column].values
+        parameters = CalibrationGraphParameters(len(calibration_data_frame.index), temperatures,
                                                 container.cycles, container.mean_wavelength_indexes,
                                                 container.deviation_wavelength_indexes, container.mean_power_indexes,
                                                 container.deviation_power_indexes,
@@ -363,11 +365,14 @@ class ExcelFileController:
                            sub_type: CalibrationGraphSubType,
                            add_series: Callable[[ScatterChart, int, int, SeriesParameters], int],
                            static_temperature_column: int):
-        series_parameters = SeriesParameters(parameters, indexes, sub_type)
+        series_parameters = SeriesParameters(parameters, indexes, sub_type, self.extra_point_temperatures)
         temperature_column = static_temperature_column
         index = 0
         for i, fbg_name in enumerate(self.fbg_names):
-            chart = create_chart(parameters.temperatures)
+            extra_points = None
+            if add_series == _add_cycle_series:
+                extra_points = self.extra_point_temperatures
+            chart = create_chart(parameters.temperatures, extra_points)
             index = add_series(chart, index, temperature_column, series_parameters)
             self._create_chart(i, parameters.cycles, chart, parameters.chart_sheet, sub_type)
 
@@ -451,11 +456,17 @@ def format_chart(chart: ScatterChart, x_axis_title: str, y_axis_title: str, titl
     chart.title.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp_title), endParaRPr=cp_title)])
 
 
-def create_chart(temperatures: List[float]) -> ScatterChart:
+def create_chart(temperatures: List[float], extra_point_temperatures: List[float]=None) -> ScatterChart:
     chart = ScatterChart()
     chart.scatterStyle = "smoothMarker"
-    chart.x_axis.scaling.min = temperatures[0]
-    chart.x_axis.scaling.max = temperatures[-1]
+    temperatures_copy = [t for t in temperatures]
+    if extra_point_temperatures is not None:
+        for extra in extra_point_temperatures:
+            for temperature in temperatures:
+                if math.isclose(extra, temperature, abs_tol=0.5):
+                    temperatures_copy.remove(temperature)
+    chart.x_axis.scaling.min = round(temperatures_copy[0], 1) - 1
+    chart.x_axis.scaling.max = round(temperatures_copy[-1], 1) + 1
     return chart
 
 
@@ -467,16 +478,31 @@ def _add_mean_series(chart: ScatterChart, index: int, temperature_column: int,
 def _add_cycle_series(chart: ScatterChart, index: int,
                       temperature_column: int, series_parameters: SeriesParameters) -> int:
     for cycle in series_parameters.cycles:
-        index = _add_series(chart, index, temperature_column, series_parameters, cycle)
+        index = _add_series(chart, index, temperature_column, series_parameters, cycle=cycle)
     return index
 
 
 def _add_series(chart: ScatterChart, index: int, temperature_column: int,
                 series_parameters: SeriesParameters, cycle: int = None):
-    x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=CALIBRATION_START_ROW,
-                         max_row=series_parameters.last_row)
+    start_row = CALIBRATION_START_ROW
+    end_row = series_parameters.last_row
+    extra_point_indexes = []
+    if cycle is not None and series_parameters.extra_point_temperatures is not None:
+        for temperature in series_parameters.extra_point_temperatures:
+            for row_number in range(start_row, end_row+1):
+                column_letter = get_column_letter(temperature_column)
+                column = "{}{}".format(column_letter, row_number)
+                excel_temperature = series_parameters.data_sheet[column].value
+                if math.isclose(temperature, excel_temperature, abs_tol=.5):
+                    extra_point_indexes.append(row_number - 1)
+    for i in extra_point_indexes:
+        if i < 2:
+            start_row += 1
+        else:
+            end_row -= 1
+    x_values = Reference(series_parameters.data_sheet, min_col=temperature_column, min_row=start_row, max_row=end_row)
     y_values = Reference(series_parameters.data_sheet, min_col=series_parameters.indexes[index] + 1,
-                         min_row=CALIBRATION_START_ROW, max_row=series_parameters.last_row)
+                         min_row=start_row, max_row=end_row)
     series_title = series_parameters.sub_type.get_series_title(cycle)
     series = Series(xvalues=x_values, values=y_values, title=series_title)
     series.marker = marker.Marker(MARKERS[index % len(MARKERS)])

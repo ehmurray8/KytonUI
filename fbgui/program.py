@@ -134,8 +134,10 @@ class Program(ttk.Notebook):
     def create_excel(self):
         """Creates excel file, in a new thread."""
         bake_sensitivity = self.options.get_bake_sensitivity()
+        extra_points = self.options.get_extra_point_temperatures()
         excel_controller = ExcelFileController(self.options.file_name.get(), self.snums,
-                                               self.master.main_queue, self.program_type.prog_id, bake_sensitivity)
+                                               self.master.main_queue, self.program_type.prog_id,
+                                               bake_sensitivity=bake_sensitivity, extra_point_temperatures=extra_points)
         Thread(target=excel_controller.create_excel).start()
 
     def setup_tabs(self):
@@ -167,10 +169,12 @@ class Program(ttk.Notebook):
         toolbar = Toolbar(canvas, graph_frame)
         toolbar.update()
         file_name = self.options.file_name
+        extra_points = self.options.get_extra_point_temperatures()
         self.database_controller = DatabaseController(file_name.get(), self.snums,
                                                       self.master.main_queue, self.program_type.prog_id,
                                                       self.table, excel_table=self.master.excel_table,
-                                                      bake_sensitivity=self.options.get_bake_sensitivity())
+                                                      bake_sensitivity=self.options.get_bake_sensitivity(),
+                                                      extra_point_temperatures=extra_points)
         self.graph_helper = graphing.Graphing(MPL_PLOT_NUM, self.program_type.prog_id == CAL,
                                               fig, canvas, toolbar, self.master, self.snums, self.master.main_queue,
                                               self.database_controller)
@@ -268,8 +272,10 @@ class Program(ttk.Notebook):
         self.start_btn.configure(state=tk.DISABLED)
         self.start_btn.configure(text="Pause")
 
+        extra_points = self.options.get_extra_point_temperatures()
         controller = self.database_controller.new_instance(self.options.file_name.get(), self.snums,
-                                                           self.options.get_bake_sensitivity())
+                                                           bake_sensitivity=self.options.get_bake_sensitivity(),
+                                                           extra_point_temperatures=extra_points)
         can_start = self.check_device_config() and self.options.check_config(controller)
         if can_start:
             if self.master.running:
@@ -303,8 +309,10 @@ class Program(ttk.Notebook):
                     ui_helper.lock_widgets(self.options)
                     ui_helper.lock_main_widgets(self.master.device_frame)
                     self.graph_helper.show_subplots()
+                    extra_points = self.options.get_extra_point_temperatures()
                     self.database_controller.reset_controller(self.options.file_name.get(), self.snums,
-                                                              self.options.get_bake_sensitivity())
+                                                              bake_sensitivity=self.options.get_bake_sensitivity(),
+                                                              extra_point_temperatures=extra_points)
 
                     self.handle_partial_cycles()
                     Thread(target=self.run_program).start()

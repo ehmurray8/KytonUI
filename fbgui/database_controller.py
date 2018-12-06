@@ -5,7 +5,7 @@ from typing import List
 import pandas as pd
 
 from fbgui import helpers
-from fbgui.constants import DB_PATH, CAL, BAKING
+from fbgui.constants import DB_PATH, CAL, BAKING, CREATE_MAP_TABLE
 from fbgui.datatable import DataTable
 from fbgui.exceptions import ProgramStopped
 from fbgui.messages import *
@@ -13,7 +13,8 @@ from fbgui.messages import *
 
 class DatabaseController:
     def __init__(self, file_path: str, fbg_names: List[str], main_queue: queue.Queue,
-                 function_type: str, table: DataTable = None, excel_table=None, bake_sensitivity: List[float] = None):
+                 function_type: str, table: DataTable=None, excel_table=None, bake_sensitivity: List[float]=None,
+                 extra_point_temperatures: List[float]=None):
         self.main_queue = main_queue
         self.table = table
         self.function_type = function_type
@@ -23,12 +24,15 @@ class DatabaseController:
         self.file_name = None  # type: str
         self.fbg_names = None  # type: List[str]
         self.column_names = None  # type: List[str]
-        self.reset_controller(file_path, fbg_names, bake_sensitivity)
+        self.extra_point_temperatures = None  # type: List[str]
+        self.reset_controller(file_path, fbg_names, bake_sensitivity, extra_point_temperatures)
 
-    def reset_controller(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float] = None):
+    def reset_controller(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float]=None,
+                         extra_point_temperatures: List[float]=None):
         self.file_path = file_path
         self.file_name = helpers.get_file_name(self.file_path)
         self.fbg_names = fbg_names
+        self.extra_point_temperatures = extra_point_temperatures
         if self.function_type == BAKING:
             self.bake_sensitivity = bake_sensitivity
         self.column_names = create_column_names(fbg_names)
@@ -38,9 +42,10 @@ class DatabaseController:
         if self.table is not None:
             self.table.setup_headers(table_column_names, reset=True)
 
-    def new_instance(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float] = None):
+    def new_instance(self, file_path: str, fbg_names: List[str], bake_sensitivity: List[float]=None,
+                     extra_point_temperatures: List[float]=None):
         return DatabaseController(file_path, fbg_names, self.main_queue, self.function_type,
-                                  self.table, self.excel_table, bake_sensitivity)
+                                  self.table, self.excel_table, bake_sensitivity, extra_point_temperatures)
 
     def record_baking_point(self, timestamp: float, temperature: float, wavelengths: List[float], powers: List[float]):
         column_command_string = ",".join(self.create_database_column_commands())
@@ -102,9 +107,7 @@ class DatabaseController:
         try:
             self.add_entry_to_map(cursor)
         except sqlite3.OperationalError:
-            cursor.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                           "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT, "
-                           "'BakeSensitivity TEXT )")
+            cursor.execute(CREATE_MAP_TABLE)
             self.add_entry_to_map(cursor)
         table_id = self.get_table_id(cursor)
         cursor.execute("CREATE TABLE `{}` ({});".format(self.function_type.lower() + str(table_id), columns))

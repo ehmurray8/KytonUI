@@ -22,8 +22,12 @@ def reset_config(rewrite_dev=False, rewrite_program=False):
         cur.execute('SELECT * FROM map;')
         cur.fetchall()
     except sqlite3.OperationalError:
-        cur.execute("CREATE TABLE 'map' ( 'ID' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                    "'ProgName' TEXT NOT NULL, 'ProgType' INTEGER NOT NULL, 'FilePath' TEXT, 'Snums' TEXT )")
+        cur.execute(constants.CREATE_MAP_TABLE)
+
+    add_column_to_map(cur, "BakeSensitivity", "TEXT")
+    for i in range(2):
+        add_column_to_map(cur, "ExtraPoint{}Temperature".format(i+1), "REAL")
+
     conn.close()
 
     if rewrite_dev or not os.path.isfile(constants.DEV_CONFIG_PATH):
@@ -85,3 +89,10 @@ chan3_positions =
 chan4_fbgs = 
 chan4_positions = 
         """, file=f)
+
+
+def add_column_to_map(cursor: sqlite3.Cursor, column_name: str, data_type: str):
+    try:
+        cursor.execute("ALTER TABLE map ADD COLUMN '{}' {}".format(column_name, data_type))
+    except sqlite3.OperationalError:
+        pass

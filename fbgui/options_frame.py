@@ -213,6 +213,15 @@ class OptionsPanel(ttk.Frame):
             return None
         return bake_sensitivity
 
+    def get_extra_point_temperatures(self) -> Optional[List[float]]:
+        temperatures = []
+        for temperature, _, _ in self.extra_points:
+            if temperature.get() != 0.0:
+                temperatures.append(temperature.get())
+        if len(temperatures) == 0:
+            temperatures = None
+        return temperatures
+
     def create_options_grid(self):
         """Creates the grid for the user to configure options, in the upper portion of the options screen."""
 

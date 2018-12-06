@@ -10,7 +10,6 @@ from PIL import ImageTk
 from dateutil import parser
 
 import fbgui.constants as constants
-from fbgui import helpers
 from fbgui.constants import ENTRY_FONT, ARRAY_ENTRY_COLOR, DOCS_ICON, PROG_CONFIG_PATH
 from fbgui.options_frame import OptionsPanel
 
@@ -185,7 +184,7 @@ def extra_point_entry(container: ttk.Frame, label_text: str, row: int, temperatu
 
     ttk.Entry(entry_frame, textvariable=temperature, width=10, font=ENTRY_FONT) \
         .pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
-    ttk.Label(entry_frame, text="K").pack(side=tk.LEFT, padx=5)
+    ttk.Label(entry_frame, text="C").pack(side=tk.LEFT, padx=5)
 
     wavelength_text = tk.Text(entry_frame, width=30, height=4, bg=ARRAY_ENTRY_COLOR, font=constants.ENTRY_SMALL_FONT)
     wavelength_text.pack(side=tk.LEFT)
