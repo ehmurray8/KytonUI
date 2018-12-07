@@ -136,7 +136,7 @@ class DatabaseController:
 
         if sensitivity is not None:
             columns += ", 'BakeSensitivity'"
-            values += ",'{}".format(sensitivity)
+            values += ",'{}'".format(sensitivity)
         if extra_point1 is not None:
             columns += ", 'ExtraPoint1Temperature'"
             values += ",'{}'".format(extra_point1)
