@@ -62,6 +62,7 @@ class BakingProgram(program.Program):
         else:
             self.disconnect_devices()
 
+        count = 0
         while self.master.thread_map[thread_id] and self.master.running:
             temperature = self.get_temperature(thread_id)
 
@@ -75,7 +76,9 @@ class BakingProgram(program.Program):
 
             self.disconnect_devices()
 
-            self.database_controller.record_baking_point(curr_time, temperature, waves, powers)
+            if count != 0:
+                self.database_controller.record_baking_point(curr_time, temperature, waves, powers)
+            count += 1
 
             start_time = time.time()
             count = 0
