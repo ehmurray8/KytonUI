@@ -121,8 +121,14 @@ class DatabaseController:
         extra_point2 = None
         if self.extra_point_temperatures is not None:
             try:
-                extra_point1 = self.extra_point_temperatures[0]
-                extra_point2 = self.extra_point_temperatures[1]
+                try:
+                    extra_point1 = str(float(self.extra_point_temperatures[0]) + 273.15)
+                except ValueError:
+                    pass
+                try:
+                    extra_point2 = str(float(self.extra_point_temperatures[1]) + 273.15)
+                except ValueError:
+                    pass
             except IndexError:
                 pass
 
