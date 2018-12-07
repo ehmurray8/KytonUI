@@ -117,15 +117,33 @@ class DatabaseController:
         return cursor.fetchall()[0][0]
 
     def add_entry_to_map(self, cursor: sqlite3.Cursor):
-        if self.bake_sensitivity is None:
-            cursor.execute("INSERT INTO map('ProgName','ProgType','FilePath','Snums') VALUES ('{}','{}','{}','{}')"
-                           .format(self.file_name, self.function_type.lower(), self.file_path,
-                                   ",".join(self.fbg_names)))
-        else:
-            cursor.execute("INSERT INTO map('ProgName','ProgType','FilePath','Snums', 'BakeSensitivity') "
-                           "VALUES ('{}','{}','{}','{}','{}')"
-                           .format(self.file_name, self.function_type.lower(), self.file_path, ",".join(self.fbg_names),
-                                   ",".join(str(x) for x in self.bake_sensitivity)))
+        extra_point1 = None
+        extra_point2 = None
+        if self.extra_point_temperatures is not None:
+            try:
+                extra_point1 = self.extra_point_temperatures[0]
+                extra_point2 = self.extra_point_temperatures[1]
+            except IndexError:
+                pass
+
+        sensitivity = None
+        if self.bake_sensitivity is not None:
+            sensitivity = ",".join(str(x) for x in self.bake_sensitivity)
+
+        columns = "'ProgName','ProgType','FilePath','Snums'"
+        values = "'{}','{}','{}','{}'" \
+                 .format(self.file_name, self.function_type.lower(), self.file_path, ",".join(self.fbg_names))
+
+        if sensitivity is not None:
+            columns += ", 'BakeSensitivity'"
+            values += ",'{}".format(sensitivity)
+        if extra_point1 is not None:
+            columns += ", 'ExtraPoint1Temperature'"
+            values += ",'{}'".format(extra_point1)
+        if extra_point2 is not None:
+            columns += ", 'ExtraPoint2Temperature'"
+            values += ",'{}'".format(extra_point2)
+        cursor.execute("INSERT INTO map({}) VALUES ({})".format(columns, values))
 
     def handle_sql_error(self, sql_error: sqlite3.OperationalError):
         try:
