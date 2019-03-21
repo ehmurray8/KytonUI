@@ -12,7 +12,7 @@ a = Analysis(['fbgui\\install.py', 'fbgui\\baking_program.py', 'fbgui\\cal_progr
               'fbgui\\program.py', 'fbgui\\datatable.py', 'fbgui\\ui_helper.py', 'fbgui\\config_controller.py',
               'fbgui\\reset_config.py', 'fbgui\\calibration_excel_container.py', 'fbgui\\excel_graph_helpers.py',
               'fbgui\\baking_curve_fit.py'],
-             pathex=['C:\\Users\\Emmet\\source_code\\KytonUI\\fbgui'],
+             pathex=['C:\\Users\\phils\\Documents\\FbgUI\\fbgui'],
              binaries=[],
              datas=[('.\\fbgui\\assets', '.\\assets')],
              hiddenimports=[],
@@ -33,7 +33,8 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False, icon='.\\fbgui\\assets\\program_logo.ico')
+          console=False,
+          icon='.\\fbgui\\assets\\program_logo.ico')
 
 coll = COLLECT(exe,
                a.binaries,

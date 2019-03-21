@@ -105,7 +105,8 @@ class ExcelFileController:
         if self.bake_sensitivity is not None:
             for i, (trend_index, fbg_name) in enumerate(zip(trend_line_indexes, self.fbg_names)):
                 sensitivity_index = create_sensitivity_line(data_frame, self.bake_sensitivity, trend_index, fbg_name, i)
-                sensitivity_indexes.append(sensitivity_index)
+                if sensitivity_index is not None:
+                    sensitivity_indexes.append(sensitivity_index)
         return sensitivity_indexes
 
     def create_calibration_excel(self):
@@ -219,8 +220,8 @@ class ExcelFileController:
                     row_values.append(equation)
             else:
                 sensitivity = 1
-                if self.bake_sensitivity is not None:
-                    sensitivity = self.bake_sensitivity[i]
+                if self.bake_sensitivity is not None and len(self.bake_sensitivity) == len(self.fbg_names):
+                    sensitivity = float(self.bake_sensitivity[i])
                 row_values.extend([sensitivity, "",
                                    '=IF(ISNUMBER(A{0}), IF(ISNUMBER(F{0}),  A{0} * 1000 / F{0}, ""), "")' .format(row)])
             worksheet.append(row_values)
@@ -319,7 +320,7 @@ class ExcelFileController:
             format_chart(chart, x_axis_title, y_axis_title, chart_title)
             parameters.chart_sheet.add_chart(chart, "B{}".format(30*i + 2))
 
-            if self.bake_sensitivity is not None:
+            if self.bake_sensitivity is not None and len(self.bake_sensitivity) == len(self.fbg_names):
                 sensitivity_chart_title = "{} drift (mK) vs. {} Time from start; {}"\
                     .format(fbg_name, u"\u0394", self.excel_file_name)
                 sensitivity_chart = ScatterChart()
