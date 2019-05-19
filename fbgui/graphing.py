@@ -155,7 +155,7 @@ class Graph(object):
             self.main_queue.put(Message(MessageType.DEVELOPER, "Main Graph Error Dump", str(i)))
 
 
-class Graphing(object):
+class Graphing:
     """
     Class used for graphing the individual Graph objects.
 
