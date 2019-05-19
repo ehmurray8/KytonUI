@@ -1,7 +1,7 @@
 rmdir dist /S /Q
 rmdir build /S /Q
-%HOMEPATH%\AppData\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean --windowed -n fbgui .\fbgui.spec
-%HOMEPATH%\AppData\Local\Programs\Python\Python35\python.exe -m PyInstaller --clean --windowed .\install.spec
+%HOMEPATH%\AppData\Local\Programs\Python35\python.exe -m PyInstaller --clean --windowed -n fbgui .\fbgui.spec
+%HOMEPATH%\AppData\Local\Programs\Python35\python.exe -m PyInstaller --clean --windowed .\install.spec
 sphinx-apidoc.exe -f -o sphinx_source fbgui
 move sphinx_source\fbgui.rst sphinx_source\index.rst
 call make.bat html

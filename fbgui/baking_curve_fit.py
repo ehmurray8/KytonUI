@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import pandas as pd
 import numpy.polynomial.polynomial as poly
@@ -24,11 +24,11 @@ def _get_values(data_frame: pd.DataFrame, index: int) -> Iterable[float]:
 
 
 def create_sensitivity_line(data_frame: pd.DataFrame, sensitivity: List[float], trend_index: int, fbg_name: str,
-                            fbg_index: int) -> int:
+                            fbg_index: int) -> Optional[int]:
     column_name = "{} Drift (mK)".format(fbg_name)
     trend_column = data_frame.columns.tolist()[trend_index]
     try:
         data_frame[column_name] = 1000 * (data_frame[trend_column] / float(sensitivity[fbg_index]))
-    except ValueError:
-        pass
-    return data_frame.columns.tolist().index(column_name)
+        return data_frame.columns.tolist().index(column_name)
+    except (ValueError, IndexError):
+        return None

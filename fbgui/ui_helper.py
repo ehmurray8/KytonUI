@@ -213,10 +213,10 @@ def show_entries(_, title: str, temperature: tk.DoubleVar, values_entry: tk.Text
     title_str = title.format(temperature.get())
     try:
         mbox.showinfo("Extra Point Viewer", "{}\n{}"
-                      .format(title_str, "\n".join("{}. {}".format(i+1, x)
+                      .format(title_str, "\n".join("{}. {}".format(i+1, x.strip())
                                                    for i, x in enumerate(values_entry.get(1.0, tk.END).split(",")))))
     except ValueError:
-        mbox.showwarning(title_str, "Text in the field is misformatted, please update the values.")
+        mbox.showwarning(title_str, "Text in the field is malformed, please update the values.")
 
 
 def serial_num_entry(container: ttk.Frame, row: int, col: int, def_snum: str,
