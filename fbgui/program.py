@@ -315,6 +315,7 @@ class Program(ttk.Notebook):
                                                               extra_point_temperatures=extra_points)
 
                     self.handle_partial_cycles()
+                    self.graph_helper.snums = self.snums
                     Thread(target=self.run_program).start()
                     self.start_btn.configure(state=tk.NORMAL)
                 else:
