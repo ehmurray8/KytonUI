@@ -114,7 +114,7 @@ class Program(ttk.Notebook):
                 pass
             try:
                 is_running = is_running or self.program_type.prog_id == CAL \
-                                           and self.conf_parser.getboolean(CAL, "running")
+                             and self.conf_parser.getboolean(CAL, "running")
             except configparser.NoOptionError:
                 pass
         except configparser.NoSectionError:
@@ -231,7 +231,7 @@ class Program(ttk.Notebook):
             ip_re = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
 
             ip_error_message = "Please make sure the {} address input on the home screen is a valid IP address."
-            gpib_error_message = "Please make sure the {} input on the home screen "\
+            gpib_error_message = "Please make sure the {} input on the home screen " \
                                  "is a valid GPIB address. (eg. GPIB0::12::INSTR)"
             port_error_message = "Please make sure the {} port input on the home screen is an integer value."
 
@@ -395,7 +395,7 @@ class Program(ttk.Notebook):
         self.master.conn_dev(LASER, try_once=True)
         self.master.conn_dev(TEMP, try_once=True)
 
-        if self.master.thread_map[thread_id] and sum(len(switch) for switch in self.switches):
+        if self.master.thread_map[thread_id] and sum(sum(s for s in switch) for switch in self.switches):
             need_switch = True
             self.master.conn_dev(SWITCH, try_once=True)
 
@@ -411,7 +411,7 @@ class Program(ttk.Notebook):
                 and self.program_type.prog_id == BAKING:
             self.set_oven_temp(force_connect=True, thread_id=thread_id)
 
-        if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and\
+        if self.master.thread_map[thread_id] and self.need_oven == (self.master.oven is not None) and \
                 (self.master.switch is not None) == need_switch and self.master.laser is not None and \
                 self.master.temp_controller is not None:
             self.disconnect_devices()
@@ -419,7 +419,7 @@ class Program(ttk.Notebook):
             return True
         return False
 
-    def set_oven_temp(self, temp: float=None, heat: bool=True, force_connect: bool=False, thread_id=None,
+    def set_oven_temp(self, temp: float = None, heat: bool = True, force_connect: bool = False, thread_id=None,
                       cooling=False):
         """
         Sets the oven temperature to temp, or to the bake temperature configured on the options screen.
@@ -510,11 +510,11 @@ class Program(ttk.Notebook):
             self.conf_parser.set(self.program_type.prog_id, "drift_rate", str(self.options.drift_rate.get()))
             self.conf_parser.set(self.program_type.prog_id, "num_cycles", str(self.options.num_cal_cycles.get()))
             for i, (temperature, wavelength_text, power_text) in enumerate(self.options.extra_points):
-                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_temperature".format(i+1),
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_temperature".format(i + 1),
                                      str(temperature.get()))
-                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_wavelengths".format(i+1),
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_wavelengths".format(i + 1),
                                      wavelength_text.get(1.0, tk.END))
-                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_powers".format(i+1),
+                self.conf_parser.set(self.program_type.prog_id, "extra_point{}_powers".format(i + 1),
                                      power_text.get(1.0, tk.END))
             self.conf_parser.set(self.program_type.prog_id, "target_temps",
                                  ",".join(str(x) for x in self.options.get_target_temps()))
@@ -574,7 +574,7 @@ class Program(ttk.Notebook):
                     self.master.conn_dev(SWITCH, thread_id=thread_id)
                 self.master.conn_dev(LASER, thread_id=thread_id)
                 return LaserRecorder(self.master.laser, self.master.switch, self.switches, self.options.num_pts.get(),
-                                     thread_id, self.master.thread_map, self.master.main_queue)\
+                                     thread_id, self.master.thread_map, self.master.main_queue) \
                     .get_wavelength_amplitude_data()
             except (AttributeError, visa.VisaIOError, socket.error):
                 self.temp_controller_error()

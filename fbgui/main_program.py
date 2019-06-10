@@ -110,7 +110,7 @@ class Application(tk.Tk):
         self.setup_home_frame()
 
         self.bake_program = None  # type: BakingProgram
-        self.calibration_program = None   # type: CalProgram
+        self.calibration_program = None  # type: CalProgram
         self.check_queue()
 
     def check_queue(self):
@@ -202,7 +202,7 @@ class Application(tk.Tk):
         self.excel_table = create_excel_table.ExcelTable(hframe, self.main_queue)
         self.excel_table.pack(anchor=tk.E, expand=True, side=tk.LEFT, padx=25)
 
-    def conn_dev(self, dev: str, connect: bool=True, try_once: bool=False, thread_id: UUID=None):
+    def conn_dev(self, dev: str, connect: bool = True, try_once: bool = False, thread_id: UUID = None):
         """
         Connects or Disconnects the program to a required device based on the input location params.
 
@@ -352,6 +352,7 @@ if __name__ == "__main__":
     from fbgui.baking_program import BakingProgram
     from fbgui.cal_program import CalProgram
     from fbgui.database_controller import *
+
     try:
         APP = Application()
         APP.bake_program = BakingProgram(APP)
