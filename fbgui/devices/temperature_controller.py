@@ -1,5 +1,4 @@
-
-rom pyvisa.resources.gpib import GPIBInstrument
+from pyvisa.resources.gpib import GPIBInstrument
 
 
 class TemperatureController(object):
